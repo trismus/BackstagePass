@@ -6,3 +6,4 @@ Hier sammeln wir Projekt- und Fachdokumentation (z. B. Architektur, Entscheidung
 - `architecture/` – Architekturskizzen und Diagramme
 - `decisions/` – Architektur-Entscheidungen (ADRs)
 - `specs/` – Fachliche/technische Spezifikationen
+- `team.md` – Teamrollen, Workflow und System Prompts
