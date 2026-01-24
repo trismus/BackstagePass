@@ -13,6 +13,7 @@ Grundkonfiguration für das Projekt **Argus**. Dieses Repository enthält Basisk
 - Zusammenarbeit: siehe `CONTRIBUTING.md` und `CODE_OF_CONDUCT.md`.
 - Pull Requests: Vorlage in `.github/PULL_REQUEST_TEMPLATE.md`.
 - Issues: Templates in `.github/ISSUE_TEMPLATE/`.
+- Doku- und Journal-Ordner: siehe `docs/` und `journal/`.
 - Doku- und Journal-Ordner: siehe `docu/` und `journal/`.
 
 ## Arbeitsweise
