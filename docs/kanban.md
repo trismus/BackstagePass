@@ -1,40 +1,43 @@
 # Kanban Board (Start)
 
-Dieses Board ist als schlanker Startpunkt gedacht und kann später in GitHub Projects übertragen werden.
+Dieses Board ist als schlanker Startpunkt gedacht und wird in GitHub Projects gepflegt.
 
-## GitHub Projects Einrichtung (empfohlen)
+## GitHub Projects Board
 
-1. **GitHub → Projects → New Project**
-   - Typ: *Board*
-   - Name: *BackstagePass Kanban*
-2. **Spalten anlegen** (entsprechend diesem Dokument):
-   - Backlog
-   - Ready
-   - In Progress
-   - Review
-   - Done
-3. **Issue-Integration aktivieren**
-   - Repository: `/workspace/Argus` (GitHub Repo)
-   - Automations: Optional (z. B. „Item moved to In Progress when assigned“)
-4. **Initiale Karten anlegen**
-   - Die Einträge aus den Listen unten als Issues anlegen und dem Project hinzufügen.
+**👉 Live-Board:** https://github.com/users/trismus/projects/2/views/1
 
-> Hinweis: Dieses Dokument bleibt als „Single Source of Truth“ für die initiale Struktur.
+> Dieses Dokument dient als Backup und Übersicht. Das GitHub Projects Board ist die "Single Source of Truth" für den aktuellen Stand.
+
+## Spalten-Struktur
+
+| Spalte | Beschreibung |
+|--------|--------------|
+| **Backlog** | Ideen und geplante Arbeit |
+| **Ready** | Priorisiert, bereit zur Umsetzung |
+| **In Progress** | Aktiv in Bearbeitung |
+| **Review** | Code Review / QA |
+| **Done** | Abgeschlossen |
 
 ## Backlog
-- Projektziel und Scope definieren
-- Stakeholder und Rollen klären
-- Technische Architektur skizzieren
+- Supabase-Projekt anlegen und Zugriffsdaten bereitstellen
+- Supabase-Client anbinden und Mockup-Seiten aus DB lesen
+- Migration für `mockup_pages` erstellen
+- RLS aktivieren und Read-Policy prüfen
 
 ## Ready
-- Repositorium initial aufsetzen
-- Basis-Dokumentation erstellen
+- Vercel-Projekt anlegen und Deployment-URL dokumentieren
+- Vercel Environment Variables setzen
+- Next.js Mockup-Seiten in `apps/web/app/mockup` erstellen
 
 ## In Progress
-- 
+- Dummy-Daten-Layer in `apps/web/lib/mockup/data.ts` anlegen
 
 ## Review
-- 
+- Basis-Setup Tech Plan (journal/2026-01-24.md)
 
 ## Done
-- 
+- ✅ Projektziel und Scope definiert
+- ✅ Team-Rollen dokumentiert (docs/team.md)
+- ✅ Repositorium initial aufgesetzt
+- ✅ Basis-Dokumentation erstellt
+- ✅ Technische Architektur skizziert
