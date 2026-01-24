@@ -31,6 +31,9 @@ Idee (Journal)
 5. **Code** (Pull Request) ➔ **Kritiker** prüft auf Fehler.
 6. **Merge** ➔ **Chronist** aktualisiert die Doku.
 
+**Projekt-Board (Kanban):**
+- https://github.com/users/trismus/projects/2/views/1
+
 ---
 
 ## 1. 🎭 Der Regisseur (Product Manager/ PO)
