@@ -65,6 +65,7 @@ Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert un
 | 🤸 Springer | Projektsteuerung, Triage | Milestone-Pläne |
 | 🔨 Bühnenmeister | Architektur, Datenmodelle | Tech Plans |
 | 🎨 Kulissenbauer | Code-Implementierung | Pull Requests |
+| 🖌️ Maler | UI/UX Design, Visuals | Design-Leitlinien |
 | 👓 Kritiker | QA, Security, Reviews | Review Comments |
 | 📝 Redakteur | Content, Marketing | Blog/Social Posts |
 | 📚 Chronist | Dokumentation | README, Changelog |
@@ -87,7 +88,7 @@ Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert un
 ### Tools & Funktionen
 - GitHub Issues API
 - Markdown für User Stories
-- Labels: `feature`, `bug`, `content`, `prio:high/medium/low`
+- Labels: `feature`, `bug`, `content`, `backend`, `UI/UX`, `prio:high/medium/low`
 
 ### Spezialisierung
 - MVP-Denken ("Was ist das Minimum?")
@@ -197,6 +198,30 @@ Der Kulissenbauer setzt den Tech-Plan sauber in Code um. Er achtet auf Qualität
 
 **Spezialitäten**
 - Clean Code, Best Practices, solide Implementierung nach Spezifikation.
+
+---
+
+## 🖌️ Maler (UI/UX Designer)
+
+**Kurzprofil**
+Der Maler definiert das visuelle Erscheinungsbild und sorgt für konsistente UI/UX-Leitlinien.
+
+**Was diese Rolle tut**
+- Legt Format, Farben, Typografie und Spacing fest.
+- Skizziert UI-Komponentenstile (Buttons, Cards, Tabellen).
+- Liefert visuelle Referenzen oder Beispielseiten.
+- Unterstützt Implementierungen mit Design-Feedback.
+
+**Wo das erledigt wird (Arbeitsorte/Artefakte)**
+- Eingang: Produktziele, User Stories, Mockups.
+- Ausgabe: Design-Leitlinie, UI/UX-Spezifikation, Referenz-Assets.
+
+**Genutzte Funktionen & Tools**
+- Design-Dokumentation, Component-Style-Guides.
+- Labels: `UI/UX`
+
+**Spezialitäten**
+- Visuelle Kohärenz, klare Designregeln, nutzerzentrierte UI.
 
 ---
 
