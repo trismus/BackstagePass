@@ -19,21 +19,19 @@ Dieses Board ist als schlanker Startpunkt gedacht und wird in GitHub Projects ge
 | **Done** | Abgeschlossen |
 
 ## Backlog
-- Supabase-Projekt anlegen und Zugriffsdaten bereitstellen
 - Supabase-Client anbinden und Mockup-Seiten aus DB lesen
 - Migration für `mockup_pages` erstellen
 - RLS aktivieren und Read-Policy prüfen
 
 ## Ready
-- Vercel-Projekt anlegen und Deployment-URL dokumentieren
-- Vercel Environment Variables setzen
 - Next.js Mockup-Seiten in `apps/web/app/mockup` erstellen
-
-## In Progress
 - Dummy-Daten-Layer in `apps/web/lib/mockup/data.ts` anlegen
 
+## In Progress
+- Basis-Setup Tech Plan umsetzen (journal/2026-01-24.md)
+
 ## Review
-- Basis-Setup Tech Plan (journal/2026-01-24.md)
+- (leer)
 
 ## Done
 - ✅ Projektziel und Scope definiert
@@ -41,3 +39,8 @@ Dieses Board ist als schlanker Startpunkt gedacht und wird in GitHub Projects ge
 - ✅ Repositorium initial aufgesetzt
 - ✅ Basis-Dokumentation erstellt
 - ✅ Technische Architektur skizziert
+- ✅ Kanban-Board gefixt und mit GitHub Projects verlinkt
+- ✅ 7 GitHub Issues erstellt und dem Project Board zugewiesen (#12-#18)
+- ✅ Vercel-Projekt erstellt
+- ✅ Supabase-Vercel Integration aktiviert (Env Vars auto-sync)
+- ✅ Blogpost: Supabase-Vercel Integration (journal/content/)
