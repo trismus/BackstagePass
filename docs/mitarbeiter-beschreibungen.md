@@ -38,6 +38,7 @@ Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert un
 - Triage von Issues und Bugs inkl. Labels (Severity/Priority).
 - Erkennt Engpässe, stößt Eskalationen an und koordiniert Blocker-Resolution.
 - Sichert den Status-Abgleich zwischen Rollen.
+- Stellt sicher, dass die Regie Ideen im `journal/00_inbox/` erfasst und Aufträge als Backlog-Issues sauber einordnet.
 
 **Wo das erledigt wird (Arbeitsorte/Artefakte)**
 - Eingang: Backlog-Ideen, laufende Issues, Release-Ziele.
@@ -102,6 +103,7 @@ Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert un
 - Issue-Triage und Priorisierung
 - Blocker erkennen und eskalieren
 - Team-Koordination zwischen Rollen
+- Die Regie anleiten, Ideen im Journal-Posteingang zu dokumentieren und Aufträge im Backlog zu platzieren
 
 ### Arbeitsort / Artefakte
 - **Input:** Backlog-Issues, Release-Ziele
