@@ -2,16 +2,16 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getMockupPage, getAllMockupPages } from '../../../lib/mockup/data'
 
-import { type PageProps } from 'next'
-
-type MockupPageProps = PageProps<{ slug: string }>
-
 export async function generateStaticParams() {
   const pages = getAllMockupPages()
   return pages.map((page) => ({ slug: page.slug }))
 }
 
-export default function MockupDetailPage({ params }: MockupPageProps) {
+export default function MockupDetailPage({
+  params,
+}: {
+  params: { slug: string }
+}) {
   const { slug } = params
   const page = getMockupPage(slug)
 
