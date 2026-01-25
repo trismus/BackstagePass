@@ -1,6 +1,6 @@
 # Supabase + Vercel: Die Lazy-Dev Integration
 
-**Autor:** TechGeekNode
+**Autor:** TechGeekNote
 **Datum:** 2026-01-24
 **Tags:** `supabase` `vercel` `next.js` `devops`
 
