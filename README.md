@@ -18,6 +18,7 @@ BackstagePass ist der digitale Backstage-Bereich f√ºr die Theatergruppe Widen ‚Ä
 - [Arbeitsweise](#arbeitsweise)
 - [Kanban](#kanban)
 - [Infrastruktur](#infrastruktur)
+- [Module (Detailkonzept)](docs/backstagepass-module-details.md)
 
 ## Aktueller Status
 
