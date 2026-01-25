@@ -316,3 +316,150 @@ Grundlegende UI/UX-Leitlinien definieren (Format, Farben, Typografie, Komponente
 ---
 
 *Erstellt am 2026-01-24 vom Bühnenmeister*
+
+---
+
+# Epics: Modulplanung (Vereinsleben, Produktion, Künstlerische Leitung)
+
+Diese Epics bilden den Rahmen für die drei Kernmodule. Die Issues darunter sind als Start‑Backlog mit User Stories und klaren Akzeptanzkriterien definiert.
+
+---
+
+## Epic 1: Vereinsleben & Helfereinsätze
+
+**Ziel:** Laufender Vereinsbetrieb außerhalb von Produktionen (Events, Einsätze, Engagement).
+
+### Issue 1.1: Vereinsanlässe verwalten
+
+**User Story:** Als Vorstandsmitglied möchte ich Vereinsanlässe anlegen und verwalten, damit Mitglieder jederzeit über kommende Events informiert sind.
+
+**Akzeptanzkriterien**
+- [ ] Events können erstellt, bearbeitet und gelöscht werden
+- [ ] Event enthält Titel, Datum, Ort, Beschreibung
+- [ ] Liste zeigt zukünftige & vergangene Events
+
+### Issue 1.2: Mitglieder‑Anmeldung & Abmeldung
+
+**User Story:** Als Mitglied möchte ich mich zu Vereinsanlässen anmelden oder abmelden, damit ich meinen Einsatz planen kann.
+
+**Akzeptanzkriterien**
+- [ ] Mitglieder können sich zu Events anmelden/abmelden
+- [ ] Status sichtbar (angemeldet, abgemeldet, Warteliste)
+
+### Issue 1.3: Helfereinsätze mit Rollen & Kontingenten
+
+**User Story:** Als Helferkoordination möchte ich Rollen und Kontingente pro Event definieren, damit Einsätze gezielt besetzt werden können.
+
+**Akzeptanzkriterien**
+- [ ] Rollen definierbar (z. B. Bar, Kasse)
+- [ ] Kontingent pro Rolle einstellbar
+- [ ] Status offen / bestätigt / voll
+
+### Issue 1.4: „Meine Events & Einsätze“ Übersicht
+
+**User Story:** Als Mitglied möchte ich eine Übersicht meiner kommenden Events und Einsätze sehen, damit ich meine Termine im Blick habe.
+
+**Akzeptanzkriterien**
+- [ ] Persönliche Liste „Meine Events“
+- [ ] Filter nach Datum / Status
+
+### Issue 1.5: Helferstunden dokumentieren
+
+**User Story:** Als Vorstand möchte ich Helferstunden nachvollziehen können, damit Engagement sichtbar wird.
+
+**Akzeptanzkriterien**
+- [ ] Einsätze werden mit Stunden gespeichert
+- [ ] Übersicht pro Mitglied
+
+---
+
+## Epic 2: Produktion & Logistik
+
+**Ziel:** Operative Planung rund um Aufführungen und Helferplanung.
+
+### Issue 2.1: Aufführungen anlegen
+
+**User Story:** Als Produktionsleitung möchte ich Aufführungen anlegen, damit Termine und Orte definiert sind.
+
+**Akzeptanzkriterien**
+- [ ] Aufführung mit Datum, Uhrzeit, Ort
+- [ ] Liste aller Aufführungen
+
+### Issue 2.2: Helferrollen & Schichten definieren
+
+**User Story:** Als Logistik möchte ich Rollen & Schichten je Aufführung definieren, damit Einsätze klar geplant sind.
+
+**Akzeptanzkriterien**
+- [ ] Rollen (Kasse, Service, Technik …)
+- [ ] Schichten mit Start/Ende
+- [ ] Status offen / bestätigt / voll
+
+### Issue 2.3: Templates für Standard‑Helferpläne
+
+**User Story:** Als Koordination möchte ich Helfer‑Templates wiederverwenden, damit ich nicht jedes Mal neu planen muss.
+
+**Akzeptanzkriterien**
+- [ ] Template erstellen
+- [ ] Auf neue Aufführung anwenden
+
+### Issue 2.4: Helferregistrierung intern/extern
+
+**User Story:** Als Helferkoordinator möchte ich interne Mitglieder und externe Helfer einplanen, damit alle Schichten besetzt werden.
+
+**Akzeptanzkriterien**
+- [ ] Interne Anmeldung mit Login
+- [ ] Externe Anmeldung optional ohne Login
+
+### Issue 2.5: Konflikterkennung (Person / Zeit / Raum)
+
+**User Story:** Als Koordination möchte ich Konflikte sehen, damit Doppelbelegungen vermieden werden.
+
+**Akzeptanzkriterien**
+- [ ] Warnung bei Überschneidung
+- [ ] Übersicht fehlerhafter Schichten
+
+---
+
+## Epic 3: Künstlerische Leitung
+
+**Ziel:** Kreative Planung, Rollen, Szenen und Probenlogik.
+
+### Issue 3.1: Stücke anlegen & verwalten
+
+**User Story:** Als künstlerische Leitung möchte ich Stücke anlegen, damit jede Produktion strukturiert ist.
+
+**Akzeptanzkriterien**
+- [ ] Stück mit Titel, Beschreibung, Saison
+- [ ] Liste aller Stücke
+
+### Issue 3.2: Szenen & Rollen definieren
+
+**User Story:** Als Regie möchte ich Szenen und Rollen definieren, damit das Stück strukturiert ist.
+
+**Akzeptanzkriterien**
+- [ ] Szenenliste je Stück
+- [ ] Rollen pro Szene zuordenbar
+
+### Issue 3.3: Besetzung der Rollen
+
+**User Story:** Als Regie möchte ich Rollen mit Mitgliedern besetzen, damit klar ist, wer spielt.
+
+**Akzeptanzkriterien**
+- [ ] Rollen können mehreren Mitgliedern zugeordnet werden
+- [ ] Mitglied ≠ Login (künstlerische Person separat)
+
+### Issue 3.4: Probenplanung
+
+**User Story:** Als Regieassistenz möchte ich Proben planen, damit Beteiligte wissen, wann sie gebraucht werden.
+
+**Akzeptanzkriterien**
+- [ ] Probe mit Datum/Uhrzeit/Raum
+- [ ] Bezug zu Szene & Rollen
+
+### Issue 3.5: Verfügbarkeitsabfrage
+
+**User Story:** Als Regie möchte ich Verfügbarkeiten abfragen, damit Proben effektiv geplant werden.
+
+**Akzeptanzkriterien**
+- [ ] Doodle‑ähnliche Verfügbarkeitsabfrage
+- [ ] Übersicht pro Person
