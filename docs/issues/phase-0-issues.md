@@ -294,6 +294,7 @@ Einen klaren, versionierten Kanal für DB-Änderungen aufbauen, damit Schema-Erw
 
 ### Beschreibung
 Grundlegende UI/UX-Leitlinien definieren (Format, Farben, Typografie, Komponenten-Stil), damit der Maler/UX-Designer ein klares Arbeitsumfeld und konsistente Vorgaben hat. Stilrichtung: **Uber-inspiriert** (clean, modern, viel Weißraum, klare Typografie, dezente Akzentfarbe).
+Grundlegende UI/UX-Leitlinien definieren (Format, Farben, Typografie, Komponenten-Stil), damit der Maler/UX-Designer ein klares Arbeitsumfeld und konsistente Vorgaben hat.
 
 ### Tasks
 - [ ] Designziele und Tonalität festhalten
