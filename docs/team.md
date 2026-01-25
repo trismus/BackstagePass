@@ -3,6 +3,8 @@
 Dieses Dokument definiert die Rollen und Verantwortlichkeiten der virtuellen AI-Mitarbeiter für das Projekt **BackstagePass**.
 Es dient als "Single Source of Truth" für Custom Instructions und System Prompts.
 
+**Ergänzende Detailbeschreibungen:** Siehe `docs/mitarbeiter-beschreibungen.md` für ausführliche Rollenprofile (Aufgaben, Arbeitsorte/Artefakte, Tools, Spezialitäten).
+
 ---
 
 ## 📋 Der Workflow (Die Kette)
