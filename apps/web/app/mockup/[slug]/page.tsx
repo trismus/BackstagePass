@@ -9,7 +9,7 @@ export async function generateStaticParams() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface MockupPageProps extends PageProps<{ slug: string }> {}
+interface MockupPageProps extends PageProps<'/mockup/[slug]'> {}
 
 export default async function MockupDetailPage({ params }: MockupPageProps) {
   const { slug } = await params
