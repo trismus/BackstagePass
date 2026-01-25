@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getMockupPage, getAllMockupPages } from '../../../lib/mockup/data'
 
-interface MockupPageProps {
-  params: { slug: string }
-}
+import { type PageProps } from 'next'
+
+interface MockupPageProps extends PageProps<{ slug: string }> {}
 
 export async function generateStaticParams() {
   const pages = getAllMockupPages()
