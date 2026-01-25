@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { getMockupPage, getAllMockupPages } from '../../../lib/mockup/data'
 
 interface MockupPageProps {
-  params: Promise<{ slug: string }>
+  params: { slug: string }
 }
 
 export async function generateStaticParams() {
@@ -11,8 +11,8 @@ export async function generateStaticParams() {
   return pages.map((page) => ({ slug: page.slug }))
 }
 
-export default async function MockupDetailPage({ params }: MockupPageProps) {
-  const { slug } = await params
+export default function MockupDetailPage({ params }: MockupPageProps) {
+  const { slug } = params
   const page = getMockupPage(slug)
 
   if (!page) {
