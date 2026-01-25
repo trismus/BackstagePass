@@ -1,6 +1,16 @@
 # Argus
 
-Grundkonfiguration für das Projekt **Argus**. Dieses Repository enthält Basiskonventionen, Prozessdokumentation und ein schlankes Kanban-Board als Ausgangspunkt.
+> **BackstagePass** – Die digitale Plattform für die Theatergruppe Widen (TGW)
+
+Dieses Repository enthält den Quellcode für **BackstagePass**, eine Web-Applikation zur Unterstützung des TGW bei Organisation, Kommunikation und Bühnenbetrieb. Der Projektname *Argus* steht für das wachsame Auge hinter den Kulissen.
+
+## Was ist BackstagePass?
+
+BackstagePass ist der digitale Backstage-Bereich für die Theatergruppe Widen – ein zentraler Ort für:
+- Probenplanung und Terminkoordination
+- Kommunikation zwischen Ensemble und Crew
+- Dokumentation und Ressourcenverwaltung
+- Alles, was hinter der Bühne passiert
 
 ## Inhalt
 - [Aktueller Status](#aktueller-status)
