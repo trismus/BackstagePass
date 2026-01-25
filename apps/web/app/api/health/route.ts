@@ -30,8 +30,6 @@ interface VercelCheck {
 }
 
 export async function GET() {
-  const startTime = Date.now()
-
   // 1. Environment Variables Check
   const requiredEnvVars = [
     'NEXT_PUBLIC_SUPABASE_URL',
