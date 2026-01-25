@@ -4,7 +4,7 @@ import { getMockupPage, getAllMockupPages } from '../../../lib/mockup/data'
 
 import { type PageProps } from 'next'
 
-interface MockupPageProps extends PageProps<{ slug: string }> {}
+type MockupPageProps = PageProps<{ slug: string }>
 
 export async function generateStaticParams() {
   const pages = getAllMockupPages()
