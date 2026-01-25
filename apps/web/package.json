@@ -10,7 +10,9 @@
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:config": "npx tsx scripts/check-config.ts",
+    "check:health": "curl -s http://localhost:3000/api/health | npx json"
   },
   "dependencies": {
     "next": "^15.1.0",
