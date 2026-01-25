@@ -1,17 +1,17 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getMockupPage, getAllMockupPages } from '../../../lib/mockup/data'
+import { type PageProps } from 'next'
 
 export async function generateStaticParams() {
   const pages = getAllMockupPages()
   return pages.map((page) => ({ slug: page.slug }))
 }
 
-export default function MockupDetailPage({
-  params,
-}: {
-  params: { slug: string }
-}) {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface MockupPageProps extends PageProps<{ slug: string }> {}
+
+export default function MockupDetailPage({ params }: MockupPageProps) {
   const { slug } = params
   const page = getMockupPage(slug)
 
