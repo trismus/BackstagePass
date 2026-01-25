@@ -15,69 +15,52 @@ export default async function HomePage() {
       }
 
   return (
-    <main className="min-h-screen bg-white text-neutral-900">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 py-16 sm:py-20">
-        <header className="flex flex-col gap-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-neutral-500">
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 py-16">
+        <header className="flex flex-col gap-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
             BackstagePass
           </p>
-          <h1 className="text-4xl font-semibold leading-tight text-neutral-950 sm:text-5xl lg:text-6xl">
-            Vereinsverwaltung mit klarer Struktur für Proben, Mitglieder und
-            Produktionen.
+          <h1 className="text-4xl font-semibold text-white sm:text-5xl">
+            Vereinsverwaltung, die Proben, Mitglieder und Produktionen an einem Ort
+            zusammenbringt.
           </h1>
-          <p className="max-w-2xl text-lg text-neutral-600">
-            Dieses Deployment zeigt die neue, uber-inspirierte Designrichtung: viel
-            Weißraum, reduzierte Flächen und eine klare Typografie für schnelle
-            Orientierung im Alltag des Vereins.
+          <p className="max-w-2xl text-lg text-slate-300">
+            Dieses Deployment liefert eine schlanke Statusseite für das BackstagePass-
+            Projekt. Sie zeigt den aktuellen Stand der Supabase-Anbindung sowie den
+            geplanten Technologie-Stack.
           </p>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-500">
-            <span className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-3 py-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              UI Richtung: Minimal + Editorial
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-3 py-1">
-              Farben anpassbar im Admin (später)
-            </span>
-          </div>
         </header>
 
-        <section className="grid gap-8 lg:grid-cols-[2.1fr_1fr]">
-          <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.35)]">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-neutral-900">
-                Projektbeschreibung
-              </h2>
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">
-                Overview
-              </span>
-            </div>
-            <p className="mt-4 text-base leading-relaxed text-neutral-600">
+        <section className="grid gap-6 md:grid-cols-[2fr_1fr]">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg">
+            <h2 className="text-xl font-semibold">Projektbeschreibung</h2>
+            <p className="mt-3 text-slate-300">
               BackstagePass unterstützt Theatervereine dabei, Mitglieder zu verwalten,
               Kommunikationswege zu bündeln und Produktionsdaten zentral zu speichern.
-              Das Ziel ist ein übersichtliches Dashboard, das von der Probenplanung bis
-              zur Premiere Klarheit schafft.
+              Das Ziel ist ein übersichtliches Dashboard, das den Vereinsalltag von der
+              Probenplanung bis zur Premiere begleitet.
             </p>
-
-            <div className="mt-8 rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
+            <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/80 p-4">
+              <p className="text-sm uppercase tracking-[0.2em] text-slate-400">
                 Supabase Status
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
+              <div className="mt-2 flex flex-wrap items-center gap-3">
                 <span
                   className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
                     error
-                      ? 'bg-rose-100 text-rose-600'
-                      : 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-rose-500/20 text-rose-200'
+                      : 'bg-emerald-500/20 text-emerald-200'
                   }`}
                 >
                   {connectionStatus.label}
                 </span>
-                <span className="text-sm text-neutral-600">
+                <span className="text-sm text-slate-300">
                   {connectionStatus.detail}
                 </span>
               </div>
               {error && (
-                <p className="mt-3 text-xs text-neutral-500">
+                <p className="mt-3 text-xs text-slate-400">
                   Hinweis: Die Tabelle <span className="font-semibold">personen</span>{' '}
                   ist per RLS geschützt. Für einen erfolgreichen Check ist ein gültiger
                   Auth-Session erforderlich.
@@ -86,54 +69,46 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6 rounded-3xl border border-neutral-200 bg-white p-8">
-            <div>
-              <h2 className="text-xl font-semibold text-neutral-900">Tech Stack</h2>
-              <p className="mt-2 text-sm text-neutral-500">
-                Fokus auf schnelle Iteration, klare Struktur und stabile Datenbasis.
-              </p>
-            </div>
-            <ul className="space-y-4 text-neutral-600">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+            <h2 className="text-xl font-semibold">Tech Stack</h2>
+            <ul className="mt-4 space-y-3 text-slate-300">
               <li className="flex items-start gap-3">
-                <span className="mt-2 h-2 w-2 rounded-full bg-neutral-400" />
+                <span className="mt-1 h-2 w-2 rounded-full bg-slate-500" />
                 <div>
-                  <p className="font-medium text-neutral-900">Next.js 14</p>
-                  <p className="text-sm text-neutral-500">
+                  <p className="font-medium text-slate-100">Next.js 15</p>
+                  <p className="text-sm text-slate-400">
                     App Router, Server Components und Layouts für schnelle Iteration.
                   </p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="mt-2 h-2 w-2 rounded-full bg-neutral-400" />
+                <span className="mt-1 h-2 w-2 rounded-full bg-slate-500" />
                 <div>
-                  <p className="font-medium text-neutral-900">Supabase</p>
-                  <p className="text-sm text-neutral-500">
+                  <p className="font-medium text-slate-100">Supabase</p>
+                  <p className="text-sm text-slate-400">
                     Postgres, Auth und Storage als zentrale Datenplattform.
                   </p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="mt-2 h-2 w-2 rounded-full bg-neutral-400" />
+                <span className="mt-1 h-2 w-2 rounded-full bg-slate-500" />
                 <div>
-                  <p className="font-medium text-neutral-900">Tailwind CSS</p>
-                  <p className="text-sm text-neutral-500">
+                  <p className="font-medium text-slate-100">Tailwind CSS</p>
+                  <p className="text-sm text-slate-400">
                     Utility-First Styling für konsistente UI-Bausteine.
                   </p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="mt-2 h-2 w-2 rounded-full bg-neutral-400" />
+                <span className="mt-1 h-2 w-2 rounded-full bg-slate-500" />
                 <div>
-                  <p className="font-medium text-neutral-900">Vercel</p>
-                  <p className="text-sm text-neutral-500">
+                  <p className="font-medium text-slate-100">Vercel</p>
+                  <p className="text-sm text-slate-400">
                     Automatisierte Deployments und Preview-Umgebungen.
                   </p>
                 </div>
               </li>
             </ul>
-            <div className="mt-auto rounded-2xl border border-neutral-200 px-4 py-3 text-xs text-neutral-500">
-              Design-Token: Primary #111111 · Accent #2EBD85 · Radius 24px
-            </div>
           </div>
         </section>
       </div>
