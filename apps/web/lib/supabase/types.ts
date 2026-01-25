@@ -9,6 +9,10 @@ export type Person = {
   id: string
   vorname: string
   nachname: string
+  strasse: string | null
+  plz: string | null
+  ort: string | null
+  geburtstag: string | null
   email: string | null
   telefon: string | null
   rolle: Rolle

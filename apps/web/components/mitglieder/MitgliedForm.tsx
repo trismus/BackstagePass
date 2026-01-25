@@ -25,6 +25,10 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
 
   const [vorname, setVorname] = useState(person?.vorname || '')
   const [nachname, setNachname] = useState(person?.nachname || '')
+  const [strasse, setStrasse] = useState(person?.strasse || '')
+  const [plz, setPlz] = useState(person?.plz || '')
+  const [ort, setOrt] = useState(person?.ort || '')
+  const [geburtstag, setGeburtstag] = useState(person?.geburtstag || '')
   const [email, setEmail] = useState(person?.email || '')
   const [telefon, setTelefon] = useState(person?.telefon || '')
   const [rolle, setRolle] = useState<Rolle>(person?.rolle || 'mitglied')
@@ -39,6 +43,10 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
     const data = {
       vorname,
       nachname,
+      strasse: strasse || null,
+      plz: plz || null,
+      ort: ort || null,
+      geburtstag: geburtstag || null,
       email: email || null,
       telefon: telefon || null,
       rolle,
@@ -82,86 +90,166 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Vorname */}
-        <div>
-          <label htmlFor="vorname" className="block text-sm font-medium text-gray-700 mb-1">
-            Vorname *
-          </label>
-          <input
-            id="vorname"
-            type="text"
-            required
-            value={vorname}
-            onChange={(e) => setVorname(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+      {/* Persönliche Daten */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Persönliche Daten</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Vorname */}
+          <div>
+            <label htmlFor="vorname" className="block text-sm font-medium text-gray-700 mb-1">
+              Vorname *
+            </label>
+            <input
+              id="vorname"
+              type="text"
+              required
+              value={vorname}
+              onChange={(e) => setVorname(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
 
-        {/* Nachname */}
-        <div>
-          <label htmlFor="nachname" className="block text-sm font-medium text-gray-700 mb-1">
-            Nachname *
-          </label>
-          <input
-            id="nachname"
-            type="text"
-            required
-            value={nachname}
-            onChange={(e) => setNachname(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+          {/* Nachname */}
+          <div>
+            <label htmlFor="nachname" className="block text-sm font-medium text-gray-700 mb-1">
+              Nachname *
+            </label>
+            <input
+              id="nachname"
+              type="text"
+              required
+              value={nachname}
+              onChange={(e) => setNachname(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
 
-        {/* Email */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            E-Mail
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+          {/* Geburtstag */}
+          <div>
+            <label htmlFor="geburtstag" className="block text-sm font-medium text-gray-700 mb-1">
+              Geburtstag
+            </label>
+            <input
+              id="geburtstag"
+              type="date"
+              value={geburtstag}
+              onChange={(e) => setGeburtstag(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
 
-        {/* Telefon */}
-        <div>
-          <label htmlFor="telefon" className="block text-sm font-medium text-gray-700 mb-1">
-            Telefon
-          </label>
-          <input
-            id="telefon"
-            type="tel"
-            value={telefon}
-            onChange={(e) => setTelefon(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+          {/* Rolle */}
+          <div>
+            <label htmlFor="rolle" className="block text-sm font-medium text-gray-700 mb-1">
+              Rolle
+            </label>
+            <select
+              id="rolle"
+              value={rolle}
+              onChange={(e) => setRolle(e.target.value as Rolle)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {rollenOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+      </div>
 
-        {/* Rolle */}
-        <div>
-          <label htmlFor="rolle" className="block text-sm font-medium text-gray-700 mb-1">
-            Rolle
-          </label>
-          <select
-            id="rolle"
-            value={rolle}
-            onChange={(e) => setRolle(e.target.value as Rolle)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {rollenOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+      {/* Adresse */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Adresse</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Strasse */}
+          <div className="md:col-span-2">
+            <label htmlFor="strasse" className="block text-sm font-medium text-gray-700 mb-1">
+              Straße
+            </label>
+            <input
+              id="strasse"
+              type="text"
+              value={strasse}
+              onChange={(e) => setStrasse(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Musterstraße 123"
+            />
+          </div>
+
+          {/* PLZ */}
+          <div>
+            <label htmlFor="plz" className="block text-sm font-medium text-gray-700 mb-1">
+              PLZ
+            </label>
+            <input
+              id="plz"
+              type="text"
+              value={plz}
+              onChange={(e) => setPlz(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="80331"
+            />
+          </div>
+
+          {/* Ort */}
+          <div>
+            <label htmlFor="ort" className="block text-sm font-medium text-gray-700 mb-1">
+              Ort
+            </label>
+            <input
+              id="ort"
+              type="text"
+              value={ort}
+              onChange={(e) => setOrt(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="München"
+            />
+          </div>
         </div>
+      </div>
+
+      {/* Kontakt */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Kontakt</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              E-Mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Telefon */}
+          <div>
+            <label htmlFor="telefon" className="block text-sm font-medium text-gray-700 mb-1">
+              Telefon
+            </label>
+            <input
+              id="telefon"
+              type="tel"
+              value={telefon}
+              onChange={(e) => setTelefon(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Sonstiges */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Sonstiges</h3>
 
         {/* Aktiv */}
-        <div className="flex items-center">
+        <div className="mb-4">
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -172,20 +260,20 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
             <span className="text-sm font-medium text-gray-700">Aktives Mitglied</span>
           </label>
         </div>
-      </div>
 
-      {/* Notizen */}
-      <div>
-        <label htmlFor="notizen" className="block text-sm font-medium text-gray-700 mb-1">
-          Notizen
-        </label>
-        <textarea
-          id="notizen"
-          rows={3}
-          value={notizen}
-          onChange={(e) => setNotizen(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
+        {/* Notizen */}
+        <div>
+          <label htmlFor="notizen" className="block text-sm font-medium text-gray-700 mb-1">
+            Notizen
+          </label>
+          <textarea
+            id="notizen"
+            rows={3}
+            value={notizen}
+            onChange={(e) => setNotizen(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
       </div>
 
       {/* Actions */}
