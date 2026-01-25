@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getMockupPage, getAllMockupPages } from '../../../lib/mockup/data'
-import { type PageProps } from 'next'
+
 
 export async function generateStaticParams() {
   const pages = getAllMockupPages()
