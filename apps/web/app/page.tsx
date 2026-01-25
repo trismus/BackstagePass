@@ -75,7 +75,7 @@ export default async function HomePage() {
               <li className="flex items-start gap-3">
                 <span className="mt-1 h-2 w-2 rounded-full bg-slate-500" />
                 <div>
-                  <p className="font-medium text-slate-100">Next.js 14</p>
+                  <p className="font-medium text-slate-100">Next.js 15</p>
                   <p className="text-sm text-slate-400">
                     App Router, Server Components und Layouts für schnelle Iteration.
                   </p>
