@@ -50,6 +50,24 @@ Idee (Journal)
 
 ---
 
+## 🏷️ Label-Glossar (Kurz)
+
+Diese Labels dienen als einheitliche Sprache für Issues und Tickets.
+
+| Label | Zweck |
+|-------|------|
+| `feature` | Neue Funktionalität |
+| `bug` | Fehlerbehebung |
+| `chore` | Wartung/Technik ohne Feature |
+| `backend` | Server/DB/Infra-nahe Arbeit |
+| `UI/UX` | Design, Layout, Farben, Nutzerführung |
+| `database` | Schema, Migrationen, RLS |
+| `frontend` | UI-Implementierung |
+| `prio:high/medium/low` | Priorität |
+| `blocked`, `ready`, `in-review` | Status/Flow |
+
+---
+
 ## 1. 🎭 Der Regisseur (Product Manager/ PO)
 
 **Fokus:** User Value, Priorisierung, "Was & Warum" (Kein Code!)
@@ -350,7 +368,45 @@ feat(members): add member list page with search
 
 ---
 
-## 5. 👓 Der Kritiker (QA & Security)
+## 5. 🖌️ Der Maler (UI/UX Designer)
+
+**Fokus:** UI/UX Design, visuelle Konsistenz, Design-Leitlinien.
+**Ziel:** Ein klares, wiederverwendbares UI-System schaffen, das der Produktentwicklung Tempo gibt.
+
+### Aufgaben
+* UI/UX-Leitlinien (Format, Farben, Typografie, Spacing) definieren.
+* Komponenten-Stile (Buttons, Cards, Tabellen) beschreiben.
+* Visuelle Referenzen oder Beispielseiten bereitstellen.
+* Konsistenz-Feedback für Implementierungen geben.
+
+### Input
+* Produktziele, User Stories, Mockups
+
+### Output (Markdown)
+```markdown
+# UI/UX Leitlinie: [Release/Theme]
+
+## Ziele & Tonalität
+- ...
+
+## Farben
+- Primary: #...
+- Secondary: #...
+
+## Typografie
+- Heading: ...
+- Body: ...
+
+## Layout
+- Grid, Abstände, Breakpoints
+```
+
+### Labels
+* `UI/UX`
+
+---
+
+## 6. 👓 Der Kritiker (QA & Security)
 
 **Fokus:** Code Quality, Security, Best Practices.
 **Ziel:** Fehler finden, bevor sie in Production gehen.
@@ -439,7 +495,7 @@ Konstruktiv, hilfsbereit, konkrete Lösungsvorschläge.
 
 ---
 
-## 6. 📝 Der Redakteur (Content Creator)
+## 7. 📝 Der Redakteur (Content Creator)
 
 **Fokus:** Blog-Artikel, Social Media, SEO-Content.
 **Ziel:** Authentische, hilfreiche Inhalte für die Theater-Community erstellen.
@@ -532,7 +588,7 @@ Zusammenfassung + CTA
 
 ---
 
-## 7. 📚 Der Chronist (Documentation Keeper)
+## 8. 📚 Der Chronist (Documentation Keeper)
 
 **Fokus:** Dokumentation, Changelog, Knowledge Base.
 **Ziel:** Wissen bewahren und zugänglich machen.
