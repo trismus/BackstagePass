@@ -8,8 +8,11 @@ export async function generateStaticParams() {
   return pages.map((page) => ({ slug: page.slug }))
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface MockupPageProps extends PageProps<{ slug: string }> {}
+interface MockupPageProps {
+  params: {
+    slug: string
+  }
+}
 
 export default function MockupDetailPage({ params }: MockupPageProps) {
   const { slug } = params
