@@ -293,6 +293,7 @@ Einen klaren, versionierten Kanal für DB-Änderungen aufbauen, damit Schema-Erw
 **Labels:** `phase-1`, `UI/UX`, `P1`
 
 ### Beschreibung
+Grundlegende UI/UX-Leitlinien definieren (Format, Farben, Typografie, Komponenten-Stil), damit der Maler/UX-Designer ein klares Arbeitsumfeld und konsistente Vorgaben hat. Stilrichtung: **Uber-inspiriert** (clean, modern, viel Weißraum, klare Typografie, dezente Akzentfarbe).
 Grundlegende UI/UX-Leitlinien definieren (Format, Farben, Typografie, Komponenten-Stil), damit der Maler/UX-Designer ein klares Arbeitsumfeld und konsistente Vorgaben hat.
 
 ### Tasks
@@ -301,6 +302,11 @@ Grundlegende UI/UX-Leitlinien definieren (Format, Farben, Typografie, Komponente
 - [ ] Layout-Grundraster und Abstände beschreiben
 - [ ] UI-Komponentenstil (Buttons, Karten, Tabellen) skizzieren
 - [ ] Beispielseite bzw. UI-Referenz dokumentieren
+
+### Style-Vorschlag (Startpunkt)
+- **Look & Feel:** minimal, editorial, ruhig, hochwertig
+- **Palette (Beispiel):** Primary #111111, Surface #FFFFFF, Muted #F5F5F5, Text #111111/#6B6B6B, Accent #2EBD85
+- **Typografie:** Inter (Heading Semibold, Body Regular)
 
 ### Akzeptanzkriterien
 - [ ] Dokumentierte UI/UX-Leitlinie existiert
