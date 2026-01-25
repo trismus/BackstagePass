@@ -264,4 +264,49 @@ apps/web/
 
 ---
 
+## Issue 8: Datenbank-Änderungen aus dem Repo steuern
+
+**Titel:** `Phase 1.3: Datenbank-Migrationen aus dem GitHub Repo`
+
+**Labels:** `phase-1`, `backend`, `database`, `P1`
+
+### Beschreibung
+Einen klaren, versionierten Kanal für DB-Änderungen aufbauen, damit Schema-Erweiterungen nicht mehr manuell per SQL-Skript erfolgen müssen, sondern aus dem Repo heraus nachvollziehbar deployt werden.
+
+### Tasks
+- [ ] Migrations-Ordner und Konvention für Supabase definieren (`supabase/migrations`)
+- [ ] Beispiel-Migration für eine kleine Schema-Erweiterung anlegen
+- [ ] Dokumentation für den Workflow "DB-Änderung aus Repo" ergänzen
+- [ ] Optional: CI-Check vorbereiten, der ungemergte Migrationen erkennt
+
+### Akzeptanzkriterien
+- [ ] Migrationen liegen versioniert im Repo
+- [ ] Standard-Workflow für DB-Änderungen ist dokumentiert
+- [ ] Änderungen können reproduzierbar aus dem Repo ausgerollt werden
+
+---
+
+## Issue 9: UI/UX Designrahmen für BackstagePass
+
+**Titel:** `Phase 1.4: UI/UX Leitlinie (Format, Farben, Layout)`
+
+**Labels:** `phase-1`, `UI/UX`, `P1`
+
+### Beschreibung
+Grundlegende UI/UX-Leitlinien definieren (Format, Farben, Typografie, Komponenten-Stil), damit der Maler/UX-Designer ein klares Arbeitsumfeld und konsistente Vorgaben hat.
+
+### Tasks
+- [ ] Designziele und Tonalität festhalten
+- [ ] Farbpalette und Typografie definieren
+- [ ] Layout-Grundraster und Abstände beschreiben
+- [ ] UI-Komponentenstil (Buttons, Karten, Tabellen) skizzieren
+- [ ] Beispielseite bzw. UI-Referenz dokumentieren
+
+### Akzeptanzkriterien
+- [ ] Dokumentierte UI/UX-Leitlinie existiert
+- [ ] Farben, Typografie und Layout-Regeln sind festgelegt
+- [ ] UI-Komponentenstil ist klar beschrieben
+
+---
+
 *Erstellt am 2026-01-24 vom Bühnenmeister*
