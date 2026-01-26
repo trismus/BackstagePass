@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { logAuditEvent } from '@/lib/audit'
 
 export async function signIn(email: string, password: string) {
   const supabase = await createClient()
@@ -15,6 +16,8 @@ export async function signIn(email: string, password: string) {
   if (error) {
     return { error: error.message }
   }
+
+  await logAuditEvent('auth.login')
 
   revalidatePath('/', 'layout')
   redirect('/dashboard')
@@ -43,12 +46,17 @@ export async function signUp(
 
   // Profile is auto-created by database trigger (on_auth_user_created)
 
+  await logAuditEvent('auth.signup')
+
   revalidatePath('/', 'layout')
   redirect('/dashboard')
 }
 
 export async function signOut() {
   const supabase = await createClient()
+
+  await logAuditEvent('auth.logout')
+
   await supabase.auth.signOut()
 
   revalidatePath('/', 'layout')

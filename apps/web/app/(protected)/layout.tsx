@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { getUser } from '@/lib/supabase/server'
+import { getUser, getUserProfile } from '@/lib/supabase/server'
 import { LogoutButton } from '@/components/auth/LogoutButton'
 
 export default async function ProtectedLayout({
@@ -9,10 +9,13 @@ export default async function ProtectedLayout({
   children: React.ReactNode
 }) {
   const user = await getUser()
+  const profile = await getUserProfile()
 
   if (!user) {
     redirect('/login')
   }
+
+  const isAdmin = profile?.role === 'ADMIN'
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -37,12 +40,31 @@ export default async function ProtectedLayout({
               >
                 Mitglieder
               </Link>
+              {isAdmin && (
+                <>
+                  <Link
+                    href="/admin/users"
+                    className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+                  >
+                    Benutzer
+                  </Link>
+                  <Link
+                    href="/admin/audit"
+                    className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+                  >
+                    Audit Log
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-neutral-600 sm:inline">
+            <Link
+              href="/profile"
+              className="hidden text-sm text-neutral-600 hover:text-neutral-900 sm:inline"
+            >
               {user.email}
-            </span>
+            </Link>
             <LogoutButton />
           </div>
         </div>
