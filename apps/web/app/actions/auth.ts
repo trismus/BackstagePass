@@ -27,7 +27,7 @@ export async function signUp(
 ) {
   const supabase = await createClient()
 
-  const { error, data } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -41,19 +41,7 @@ export async function signUp(
     return { error: error.message }
   }
 
-  // Auto-create profile
-  if (data.user) {
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      email,
-      display_name: displayName,
-      role: 'VIEWER',
-    })
-
-    if (profileError) {
-      return { error: profileError.message }
-    }
-  }
+  // Profile is auto-created by database trigger (on_auth_user_created)
 
   revalidatePath('/', 'layout')
   redirect('/dashboard')
