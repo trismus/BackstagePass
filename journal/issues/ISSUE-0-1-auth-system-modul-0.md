@@ -1,11 +1,11 @@
 # 🔐 Issue 0.1: Auth-System Modul 0 - Supabase SSR + Next.js App Router
 
-**Status:** 📋 Backlog  
-**GitHub:** https://github.com/trismus/BackstagePass/issues/[TBD]  
-**Milestone:** Modul 0  
-**Priority:** 🔴 CRITICAL (Blocking)  
-**Zugewiesen:** Peter (Kulissenbauer/Senior Developer)  
-**Owner:** Martin (Bühnenmeister) - Tech Plan  
+**Status:** 📋 Backlog
+**GitHub:** https://github.com/trismus/BackstagePass/issues/[TBD]
+**Milestone:** Modul 0
+**Priority:** 🔴 CRITICAL (Blocking)
+**Zugewiesen:** Peter (Kulissenbauer/Senior Developer)
+**Owner:** Martin (Bühnenmeister) - Tech Plan
 
 ---
 
@@ -179,15 +179,15 @@ export async function getUser() {
 export async function getUserProfile() {
   const supabase = await createClient()
   const user = await getUser()
-  
+
   if (!user) return null
-  
+
   const { data } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
-  
+
   return data
 }
 ```
@@ -548,17 +548,17 @@ export function LogoutButton() {
 
 export async function requireRole(requiredRole: 'ADMIN' | 'EDITOR' | 'VIEWER') {
   const profile = await getUserProfile()
-  
+
   if (!profile) throw new Error('Profile not found')
-  
+
   const roles = ['ADMIN', 'EDITOR', 'VIEWER']
   const required = roles.indexOf(requiredRole)
   const current = roles.indexOf(profile.role)
-  
+
   if (current < required) {
     throw new Error('Insufficient permissions')
   }
-  
+
   return profile
 }
 
@@ -568,7 +568,7 @@ export function canAccess(route: string, userRole: string): boolean {
     '/admin': ['ADMIN'],
     '/mitglieder': ['ADMIN', 'EDITOR'],
   }
-  
+
   const allowed = accessMap[route] || []
   return allowed.includes(userRole)
 }
@@ -675,13 +675,13 @@ export function canAccess(route: string, userRole: string): boolean {
 
 ## 📝 Status Tracking
 
-**Erstellt:** 2026-01-26  
-**Owner:** Peter (Implementation)  
-**Reviewer:** Martin (Tech), Ioannis (Security)  
+**Erstellt:** 2026-01-26
+**Owner:** Peter (Implementation)
+**Reviewer:** Martin (Tech), Ioannis (Security)
 **Next:** Kim finalisiert Design-Screenshots
 
 ---
 
-*Issue erstellt von Greg (Springer)*  
-*Tech Plan by Martin (Bühnenmeister)*  
+*Issue erstellt von Greg (Springer)*
+*Tech Plan by Martin (Bühnenmeister)*
 *Ready for Peter (Kulissenbauer) Implementation*

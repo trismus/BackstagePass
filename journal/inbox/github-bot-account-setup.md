@@ -1,9 +1,9 @@
 # GitHub Bot Account Setup für BackstagePass AI Team
 
-**Status:** 📋 Inbox Item  
-**Erstellt von:** Greg (Springer/Project Manager)  
-**Datum:** 2026-01-26  
-**Kategorie:** Infrastructure / Git Setup  
+**Status:** 📋 Inbox Item
+**Erstellt von:** Greg (Springer/Project Manager)
+**Datum:** 2026-01-26
+**Kategorie:** Infrastructure / Git Setup
 **Priority:** 🟡 Medium (Nice-to-have, aber sauber)
 
 ---
@@ -269,5 +269,5 @@ refactor(types): Simplify user types [Agent: Peter - Kulissenbauer]
 
 ---
 
-*Erstellt von Greg (Springer)*  
+*Erstellt von Greg (Springer)*
 *Ready for Discussion & Implementation*
