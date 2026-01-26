@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npx:*)",
+      "Bash(npm run lint)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(gh issue view:*)",
+      "Bash(gh project field-list:*)",
+      "Bash(gh api:*)",
+      "Bash(gh project:*)"
     ]
   }
 }
