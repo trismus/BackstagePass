@@ -11,7 +11,10 @@ type CookieToSet = {
 const protectedRoutes = ['/dashboard', '/mitglieder', '/app']
 
 // Routes only accessible when NOT authenticated
-const authRoutes = ['/login', '/signup']
+const authRoutes = ['/login', '/signup', '/forgot-password']
+
+// Routes accessible regardless of auth state (password reset flow)
+const publicRoutes = ['/reset-password']
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -58,6 +61,9 @@ export async function updateSession(request: NextRequest) {
   // Check if current path is an auth route (login/signup)
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
 
+  // Check if current path is a public route (reset-password)
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
+
   // Redirect to login if accessing protected route without authentication
   if (isProtectedRoute && !user) {
     const loginUrl = new URL('/login', request.url)
@@ -66,7 +72,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Redirect to dashboard if accessing auth routes while authenticated
-  if (isAuthRoute && user) {
+  // (but not public routes like reset-password)
+  if (isAuthRoute && user && !isPublicRoute) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
