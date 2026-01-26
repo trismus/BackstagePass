@@ -15,14 +15,19 @@ Module 0 (Basis) → Module 1 (Vereinsleben) → Module 2 (Logistik) → Module 
 
 ## 🔧 **Module 0: Mitglieder & Authentifizierung (FOUNDATION)**
 
-**Status:** Noch zu definieren
+**Status:** 🚀 In Progress
 **Ziel:** Basis für alle anderen Module
 
-### Mögliche Issues (zu klären):
-- [ ] Mitgliederverwaltung & Profil
-- [ ] Authentifizierung & Autorisierung
-- [ ] Benutzerrollen (Member, Admin, Regie, etc.)
-- [ ] Datenzugriff & Security (RLS)
+### Issues zugeordnet:
+- [x] #[TBD] – **0.0 UI/UX Design-Vorgaben & Component Style Guide** 🎨 (BLOCKING)
+- [x] #88 – 0.1 Benutzer-Authentifizierung & Login-System
+- [x] #89 – 0.2 Mitgliederprofil & Benutzerverwaltung
+- [x] #90 – 0.3 Rollenmanagement & Permissions
+- [x] #91 – 0.4 Audit Log & Activity Tracking
+
+### Dokumentation:
+- 📋 Tech Plan: `journal/decisions/PLAN-module-0-foundation.md`
+- 📝 Implementation Brief: `journal/implementation-briefs/BRIEF-module-0-kulissenbauer.md`
 
 ### Abhängigkeiten für:
 - ✅ Modul 1 (benötigt Mitglied-Objekt)
@@ -31,6 +36,8 @@ Module 0 (Basis) → Module 1 (Vereinsleben) → Module 2 (Logistik) → Module 
 
 **Priority:** 🔴 HIGH
 **Timeline:** V0.1 (Basis)
+**Start:** 2026-01-26
+**Geschätzte Dauer:** 3-4 Tage
 
 ---
 
@@ -84,14 +91,17 @@ Module 0 (Basis) → Module 1 (Vereinsleben) → Module 2 (Logistik) → Module 
 
 ## 📈 Gesamtstatus
 
-| Modul | Epic | Issues | Priority | Status |
-|-------|------|--------|----------|--------|
-| 0 | Foundation (zu definieren) | ? | 🔴 HIGH | ⏳ Planung |
-| 1 | Vereinsleben & Helfereinsätze | 3 | 🟡 MEDIUM-HIGH | ⏳ Backlog |
-| 2 | Operative Aufführungslogistik | 3 | 🟡 MEDIUM-HIGH | ⏳ Backlog |
-| 3 | Künstlerische Leitung | 3 | 🟡 MEDIUM-HIGH | ⏳ Backlog |
+| Modul | Epic | Issues | Priority | Status | Start |
+|-------|------|--------|----------|--------|-------|
+| 0 | Foundation (Auth & Mitglieder) | **5** (1 Design + 4 Dev) | 🔴 HIGH | 🚀 In Progress | 2026-01-26 |
+| 1 | Vereinsleben & Helfereinsätze | 3 | 🟡 MEDIUM-HIGH | ⏳ Backlog | - |
+| 2 | Operative Aufführungslogistik | 3 | 🟡 MEDIUM-HIGH | ⏳ Backlog | - |
+| 3 | Künstlerische Leitung | 3 | 🟡 MEDIUM-HIGH | ⏳ Backlog | - |
 
-**Total Issues:** 9 + ?  (Modul 0 zu definieren)
+**Total Issues:** 14 (1 Design + 4 Modul 0 + 3x3 für Module 1-3)
+**In Progress:** 
+- Design (Maler - Issue 0.0)
+- Modul 0 Development (Kulissenbauer - Issues #88-91)
 
 ---
 
