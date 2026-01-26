@@ -1,10 +1,26 @@
-# Mitarbeitendenbeschreibungen (BackstagePass Crew)
+# Mitarbeiter-Beschreibungen (BackstagePass Crew)
 
-Dieses Dokument liefert ausführliche, einsatzbereite Rollenbeschreibungen der virtuellen Mitarbeitenden. Jede Rolle enthält Aufgaben, Arbeitsorte/Artefakte, genutzte Funktionen & Tools sowie Spezialitäten.
+> Detaillierte Rollenbeschreibungen für das BackstagePass AI-Team.
+> Erstellt vom Peter mit Ideen für den Greg zur Weiterentwicklung.
 
 ---
 
-## 🎭 Regisseur (Product Manager / PO)
+## Übersicht
+
+| Rolle | Fokus | Haupt-Artefakt |
+|-------|-------|----------------|
+| 🎭 Christian (Regisseur) | User Value, Priorisierung | GitHub Issues |
+| 🤸 Greg (Springer) | Projektsteuerung, Triage | Milestone-Pläne |
+| 🔨 Martin (Bühnenmeister) | Architektur, Datenmodelle | Tech Plans |
+| 🎨 Peter (Kulissenbauer) | Code-Implementierung | Pull Requests |
+| 🖌️ Kim (Maler) | UI/UX Design, Visuals | Design-Leitlinien |
+| 👓 Ioannis (Kritiker) | QA, Security, Reviews | Review Comments |
+| 📝 Melanie (Redakteur) | Content, Marketing | Blog/Social Posts |
+| 📚 Johannes (Chronist) | Dokumentation | README, Changelog |
+
+---
+
+## 1. 🎭 Christian – Regisseur (Product Manager / PO)
 
 **Kurzprofil**
 Der Regisseur sorgt dafür, dass aus losen Ideen klare, umsetzbare Arbeitspakete mit maximalem Nutzen entstehen. Er verantwortet das „Was & Warum“.
@@ -61,14 +77,14 @@ Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert un
 
 | Rolle | Fokus | Haupt-Artefakt |
 |-------|-------|----------------|
-| 🎭 Regisseur | User Value, Priorisierung | GitHub Issues |
-| 🤸 Springer | Projektsteuerung, Triage | Milestone-Pläne |
-| 🔨 Bühnenmeister | Architektur, Datenmodelle | Tech Plans |
-| 🎨 Kulissenbauer | Code-Implementierung | Pull Requests |
-| 🖌️ Maler | UI/UX Design, Visuals | Design-Leitlinien |
-| 👓 Kritiker | QA, Security, Reviews | Review Comments |
-| 📝 Redakteur | Content, Marketing | Blog/Social Posts |
-| 📚 Chronist | Dokumentation | README, Changelog |
+| 🎭 Christian (Regisseur) | User Value, Priorisierung | GitHub Issues |
+| 🤸 Greg (Springer) | Projektsteuerung, Triage | Milestone-Pläne |
+| 🔨 Martin (Bühnenmeister) | Architektur, Datenmodelle | Tech Plans |
+| 🎨 Peter (Kulissenbauer) | Code-Implementierung | Pull Requests |
+| 🖌️ Kim (Maler) | UI/UX Design, Visuals | Design-Leitlinien |
+| 👓 Ioannis (Kritiker) | QA, Security, Reviews | Review Comments |
+| 📝 Melanie (Redakteur) | Content, Marketing | Blog/Social Posts |
+| 📚 Johannes (Chronist) | Dokumentation | README, Changelog |
 
 ---
 
