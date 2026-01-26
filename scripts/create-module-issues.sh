@@ -1,31 +1,53 @@
-# Module Epics & Issues für GitHub
+#!/usr/bin/env bash
+set -euo pipefail
 
-> Erstellt am 2026-01-24
-> Kopiere diese Epics/Issues auf: https://github.com/trismus/Argus/issues/new
+if [[ -z "${REPO:-}" ]]; then
+  remote_url="$(git remote get-url origin)"
+  if [[ "$remote_url" == https://github.com/* ]]; then
+    REPO="${remote_url#https://github.com/}"
+    REPO="${REPO%.git}"
+  elif [[ "$remote_url" == git@github.com:* ]]; then
+    REPO="${remote_url#git@github.com:}"
+    REPO="${REPO%.git}"
+  else
+    echo "Konnte GitHub-Repo nicht aus origin ableiten. Setze REPO=owner/repo." >&2
+    exit 1
+  fi
+fi
 
----
+token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+if [[ -z "$token" ]]; then
+  echo "Kein GitHub Token gefunden. Setze GITHUB_TOKEN oder GH_TOKEN." >&2
+  exit 1
+fi
 
-## GitHub-Import per Script
+create_issue() {
+  local title="$1"
+  local body="$2"
+  local payload
+  payload="$(
+    python - <<'PY' "$title" "$body"
+import json
+import sys
 
-Du kannst die Epics/Issues automatisch über die GitHub-API erstellen, sobald ein Token verfügbar ist:
+title = sys.argv[1]
+body = sys.argv[2]
+print(json.dumps({"title": title, "body": body}))
+PY
+  )"
 
-```bash
-./scripts/create-module-issues.sh
-```
+  curl -sSf \
+    -H "Authorization: token ${token}" \
+    -H "Accept: application/vnd.github+json" \
+    "https://api.github.com/repos/${REPO}/issues" \
+    -d "$payload" \
+    >/dev/null
+  echo "✓ Erstellt: ${title}"
+}
 
-**Voraussetzungen**
-- `GITHUB_TOKEN` oder `GH_TOKEN` muss gesetzt sein (z. B. als PAT mit `repo`-Scope).
-- Der Repo-Remote `origin` muss auf `trismus/Argus` zeigen (oder setze `REPO=owner/repo`).
-
----
-
-## Epic 1: Vereinsleben & Helfereinsätze zentral abbilden
-
-**Title:** `Epic: Vereinsleben & Helfereinsätze zentral abbilden`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Epic: Vereinsleben & Helfereinsätze zentral abbilden" \
+  "## Ziel
 Vereinsinterne Anlässe und externe Helfereinsätze inklusive Anmeldung, Rollen, Kalender und Helferstunden transparent verwalten.
 
 ## Nutzen/ User Storys
@@ -39,18 +61,11 @@ Vereinsinterne Anlässe und externe Helfereinsätze inklusive Anmeldung, Rollen,
 
 ## Alternativen
 - Externe Tools für Anmeldungen (Doodle/Forms).
-- Nur interne Events, keine externen Helfereinsätze.
-```
+- Nur interne Events, keine externen Helfereinsätze."
 
----
-
-## Issue 1.1: Vereinsevents verwalten (Erstellen/Planen/Anmelden)
-
-**Title:** `Vereinsevents verwalten (Erstellen/Planen/Anmelden)`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Vereinsevents verwalten (Erstellen/Planen/Anmelden)" \
+  "## Ziel
 Vereinsinterne Anlässe (z. B. GV, Helferessen, Ausflug) als Events mit An- und Abmeldung verwaltbar machen.
 
 ## Nutzen/ User Storys
@@ -64,18 +79,11 @@ Vereinsinterne Anlässe (z. B. GV, Helferessen, Ausflug) als Events mit An- und 
 
 ## Alternativen
 - Anmeldungen nur über externes Tool (z. B. Doodle/Forms) ohne Integration.
-- Nur interne Events ohne externen Helferbezug abbilden.
-```
+- Nur interne Events ohne externen Helferbezug abbilden."
 
----
-
-## Issue 1.2: Externe Helfereinsätze abbilden
-
-**Title:** `Externe Helfereinsätze abbilden`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Externe Helfereinsätze abbilden" \
+  "## Ziel
 Externe Helfereinsätze bei Partnerorganisationen erfassen und verwalten.
 
 ## Nutzen/ User Storys
@@ -89,18 +97,11 @@ Externe Helfereinsätze bei Partnerorganisationen erfassen und verwalten.
 
 ## Alternativen
 - Nur interne Helfereinsätze, externe nur als Notizfeld.
-- Einsatzhistorie ausschließlich manuell.
-```
+- Einsatzhistorie ausschließlich manuell."
 
----
-
-## Issue 1.3: Persönliche Einsatz- und Kalenderübersicht
-
-**Title:** `Persönliche Einsatz- und Kalenderübersicht`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Persönliche Einsatz- und Kalenderübersicht" \
+  "## Ziel
 Persönliche Kalender- und Einsatzübersichten bereitstellen.
 
 ## Nutzen/ User Storys
@@ -114,18 +115,11 @@ Persönliche Kalender- und Einsatzübersichten bereitstellen.
 
 ## Alternativen
 - Nur Listenansicht ohne Kalender.
-- Keine persönliche Übersicht (nur Eventlisten).
-```
+- Keine persönliche Übersicht (nur Eventlisten)."
 
----
-
-## Epic 2: Operative Aufführungslogistik effizient planen
-
-**Title:** `Epic: Operative Aufführungslogistik effizient planen`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Epic: Operative Aufführungslogistik effizient planen" \
+  "## Ziel
 Aufführungen, Helferpläne, Räume, Ressourcen und wiederkehrende Abläufe für die Spielphase koordinieren.
 
 ## Nutzen/ User Storys
@@ -139,18 +133,11 @@ Aufführungen, Helferpläne, Räume, Ressourcen und wiederkehrende Abläufe für
 
 ## Alternativen
 - Schichtplanung in externem Tool.
-- Nur Aufführungszeiten ohne Ressourcen-/Schichtlogik.
-```
+- Nur Aufführungszeiten ohne Ressourcen-/Schichtlogik."
 
----
-
-## Issue 2.1: Aufführungen mit Zeitblöcken planen
-
-**Title:** `Aufführungen mit Zeitblöcken planen`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Aufführungen mit Zeitblöcken planen" \
+  "## Ziel
 Aufführungen inklusive Zeitblöcken und Schichten planbar machen.
 
 ## Nutzen/ User Storys
@@ -164,18 +151,11 @@ Aufführungen inklusive Zeitblöcken und Schichten planbar machen.
 
 ## Alternativen
 - Nur fixe Aufführungszeiten ohne Schichtplanung.
-- Schichten in externem Tool verwalten.
-```
+- Schichten in externem Tool verwalten."
 
----
-
-## Issue 2.2: Ressourcen & Räume verwalten
-
-**Title:** `Ressourcen & Räume verwalten`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Ressourcen & Räume verwalten" \
+  "## Ziel
 Räume und Ressourcen (Technik/Material) für Aufführungen planen.
 
 ## Nutzen/ User Storys
@@ -189,18 +169,11 @@ Räume und Ressourcen (Technik/Material) für Aufführungen planen.
 
 ## Alternativen
 - Ressourcen nur in Freitext.
-- Raumplanung getrennt von Aufführungen.
-```
+- Raumplanung getrennt von Aufführungen."
 
----
-
-## Issue 2.3: Einsatz-Templates für wiederkehrende Abläufe
-
-**Title:** `Einsatz-Templates für wiederkehrende Abläufe`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Einsatz-Templates für wiederkehrende Abläufe" \
+  "## Ziel
 Wiederkehrende Abläufe als Templates für Schichtplanung abbilden.
 
 ## Nutzen/ User Storys
@@ -214,18 +187,11 @@ Wiederkehrende Abläufe als Templates für Schichtplanung abbilden.
 
 ## Alternativen
 - Manuelle Schichtplanung ohne Vorlagen.
-- Nur Rollen-Templates, keine Zeitblöcke.
-```
+- Nur Rollen-Templates, keine Zeitblöcke."
 
----
-
-## Epic 3: Künstlerische Planung vom Stück bis zur Probe strukturieren
-
-**Title:** `Epic: Künstlerische Planung vom Stück bis zur Probe strukturieren`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Epic: Künstlerische Planung vom Stück bis zur Probe strukturieren" \
+  "## Ziel
 Stückentwicklung, Rollen-/Szenenstruktur, Besetzung und Probenplanung zentral steuern.
 
 ## Nutzen/ User Storys
@@ -238,18 +204,11 @@ Stückentwicklung, Rollen-/Szenenstruktur, Besetzung und Probenplanung zentral s
 
 ## Alternativen
 - Planung in separaten Dokumenten ohne Verknüpfung.
-- Proben nur als Freitext ohne Funktionen.
-```
+- Proben nur als Freitext ohne Funktionen."
 
----
-
-## Issue 3.1: Stück, Szenen und Rollen strukturieren
-
-**Title:** `Stück, Szenen und Rollen strukturieren`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Stück, Szenen und Rollen strukturieren" \
+  "## Ziel
 Stück, Szenen und Rollen strukturiert erfassen und verknüpfen.
 
 ## Nutzen/ User Storys
@@ -263,18 +222,11 @@ Stück, Szenen und Rollen strukturiert erfassen und verknüpfen.
 
 ## Alternativen
 - Nur Szenenliste ohne Rollenbezug.
-- Rollen nur als Freitext.
-```
+- Rollen nur als Freitext."
 
----
-
-## Issue 3.2: Besetzung verwalten
-
-**Title:** `Besetzung verwalten`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Besetzung verwalten" \
+  "## Ziel
 Besetzungen für Rollen erfassen und nachvollziehbar machen.
 
 ## Nutzen/ User Storys
@@ -288,18 +240,11 @@ Besetzungen für Rollen erfassen und nachvollziehbar machen.
 
 ## Alternativen
 - Besetzungen nur in externen Dokumenten.
-- Keine Besetzungshistorie.
-```
+- Keine Besetzungshistorie."
 
----
-
-## Issue 3.3: Probenplanung mit künstlerischen Funktionen
-
-**Title:** `Probenplanung mit künstlerischen Funktionen`
-
-**Body:**
-```markdown
-## Ziel
+create_issue \
+  "Probenplanung mit künstlerischen Funktionen" \
+  "## Ziel
 Probenplanung inklusive künstlerischer Funktionen (Regie, Regieassistenz, Bühnenbau, Maske, Technik) ermöglichen.
 
 ## Nutzen/ User Storys
@@ -313,5 +258,4 @@ Probenplanung inklusive künstlerischer Funktionen (Regie, Regieassistenz, Bühn
 
 ## Alternativen
 - Proben ohne Funktionszuordnung.
-- Funktionen nur als Freitext pro Probe.
-```
+- Funktionen nur als Freitext pro Probe."
