@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation'
-import { getUser, getUserProfile } from '@/lib/supabase/server'
+import { getUser } from '@/lib/supabase/server'
 import { getAllUsers } from '@/app/actions/profile'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
 import { UserRoleSelect } from '@/components/admin/UserRoleSelect'
@@ -11,17 +10,6 @@ export const metadata = {
 
 export default async function AdminUsersPage() {
   const user = await getUser()
-  const profile = await getUserProfile()
-
-  if (!user) {
-    redirect('/login')
-  }
-
-  // Only admins can access this page
-  if (profile?.role !== 'ADMIN') {
-    redirect('/dashboard')
-  }
-
   const users = await getAllUsers()
 
   return (
@@ -70,7 +58,7 @@ export default async function AdminUsersPage() {
                       <UserRoleSelect
                         userId={u.id}
                         currentRole={u.role}
-                        disabled={u.id === user.id}
+                        disabled={u.id === user?.id}
                       />
                     </td>
                     <td className="py-3 text-sm text-neutral-500">

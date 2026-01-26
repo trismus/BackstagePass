@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
-import { getUser, getUserProfile } from '@/lib/supabase/server'
 import { getAuditLogs } from '@/lib/audit'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
 
@@ -42,18 +40,6 @@ function formatDetails(details: Record<string, unknown>): string {
 }
 
 export default async function AuditLogPage() {
-  const user = await getUser()
-  const profile = await getUserProfile()
-
-  if (!user) {
-    redirect('/login')
-  }
-
-  // Only admins can access this page
-  if (profile?.role !== 'ADMIN') {
-    redirect('/dashboard')
-  }
-
   const { data: logs, count } = await getAuditLogs({ limit: 100 })
 
   return (
