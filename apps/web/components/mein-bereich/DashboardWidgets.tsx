@@ -123,29 +123,40 @@ export function StundenWidget({ total, thisYear, lastEntries }: StundenWidgetPro
 }
 
 export function QuickLinksWidget() {
-  const links = [
-    { href: '/veranstaltungen', label: 'Veranstaltungen', icon: '📅' },
-    { href: '/helfereinsaetze', label: 'Helfereinsätze', icon: '🤝' },
-    { href: '/mitglieder', label: 'Mitglieder', icon: '👥' },
-    { href: '/profile', label: 'Mein Profil', icon: '⚙️' },
-  ]
-
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="px-4 py-3 bg-gray-50 border-b">
         <h3 className="font-medium text-gray-900">Schnellzugriff</h3>
       </div>
       <div className="grid grid-cols-2 gap-2 p-3">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-xl">{link.icon}</span>
-            <span className="text-sm font-medium text-gray-700">{link.label}</span>
-          </Link>
-        ))}
+        <Link
+          href="/veranstaltungen"
+          className="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-xl">📅</span>
+          <span className="text-sm font-medium text-gray-700">Veranstaltungen</span>
+        </Link>
+        <Link
+          href="/helfereinsaetze"
+          className="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-xl">🤝</span>
+          <span className="text-sm font-medium text-gray-700">Helfereinsätze</span>
+        </Link>
+        <Link
+          href="/mitglieder"
+          className="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-xl">👥</span>
+          <span className="text-sm font-medium text-gray-700">Mitglieder</span>
+        </Link>
+        <Link
+          href="/profile"
+          className="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-xl">⚙️</span>
+          <span className="text-sm font-medium text-gray-700">Mein Profil</span>
+        </Link>
       </div>
     </div>
   )
