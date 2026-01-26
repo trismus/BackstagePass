@@ -8,6 +8,7 @@ Dieses Repository enthält den Quellcode für **BackstagePass**, eine Web-Applik
 
 BackstagePass ist der digitale Backstage-Bereich für die Theatergruppe Widen – ein zentraler Ort für:
 - Benutzerverwaltung und Profile
+- Rollenmanagement
 - Probenplanung und Terminkoordination
 - Kommunikation zwischen Ensemble und Crew
 - Dokumentation und Ressourcenverwaltung
