@@ -1,10 +1,10 @@
 # 🎨 Issue 0.0: UI/UX Design-Vorgaben & Component Style Guide (Modul 0)
 
-**Status:** ✅ Erstellt
-**GitHub:** https://github.com/trismus/BackstagePass/issues/[TBD - neueste Issue]
+**Status:** 🟡 In Progress
+**GitHub:** https://github.com/trismus/BackstagePass/issues/104
 **Milestone:** Modul 0
 **Priority:** 🔴 CRITICAL (Blocking)
-**Zugewiesen:** Maler (UI/UX Designer)
+**Zugewiesen:** Kim (Maler/UI/UX Designer)
 
 ---
 
@@ -12,42 +12,135 @@
 
 Sicherstellen, dass **alle UI/UX Design-Vorgaben komplett in die Implementierung von Modul 0 eingenommen werden**. Klare, wiederverwendbare Design-Leitlinien für Konsistenz über alle Components.
 
+**KIM's ANMERKUNGEN (26.01.2026):**
+> Issue ist gut strukturiert, aber zu ambitioniert für Modul 0 Auth-Only.
+> **Empfehlung:** Fokussieren auf Auth-Module (Login/Register), later expandieren.
+> Phase 1 (DIESE SPRINT): Essentiell (Farben, Typografie, Spacing, Responsive)
+> Phase 2 (NÄCHSTER SPRINT): Polish (Breakpoints, Storybook, Dark Mode Foundation)
+
 ---
 
-## 📋 Aufgaben
+## 📋 Aufgaben - PRIORISIERT
 
-### 1️⃣ Design System Definition
-- [ ] **Farb-Palette** definieren
-  - Primary, Secondary, Accent
-  - Neutral (Gray Scale)
-  - Status Colors (Success, Error, Warning, Info)
-  - Hex-Codes + Tailwind Class Names
+### Phase 1️⃣ (MODUL 0 AUTH - DIESE SPRINT)
+
+#### 1A. Design System Essentiell
+- [ ] **Farb-Palette** definieren (MINIMAL)
+  - ✅ Primary: #111111 (existiert already - siehe tailwind.config.ts)
+  - ✅ Secondary: #2EBD85 (existiert - Accent)
+  - ✅ Neutral (Gray Scale) - 5-7 Grau-Stufen
+  - ✅ Status Colors: Success (Green), Error (Red), Warning (Orange), Info (Blue)
+  - 📝 Hex-Codes dokumentieren + Tailwind Class Names
   
-- [ ] **Typografie** dokumentieren
-  - Font-Familie (z.B. Inter, Roboto, etc.)
-  - Font-Größen (14px, 16px, 18px, 20px, 24px, 32px, etc.)
-  - Font-Gewichte (Regular, Medium, Bold)
-  - Line-Height Standards
+- [ ] **Typografie** dokumentieren (STARTER-SET)
+  - ✅ Font-Familie: Inter (existiert)
+  - ✅ Font-Größen: 14px (Body), 16px (Input), 18px (Heading), 24px (Page Title), 32px (Hero)
+  - ✅ Font-Gewichte: Regular (400), Medium (500), Bold (700)
+  - ✅ Line-Height: 1.5 (Body), 1.3 (Heading)
   
-- [ ] **Spacing/Grid** definieren
-  - Base Unit (z.B. 4px, 8px)
-  - Margin/Padding Scale (0.5rem, 1rem, 1.5rem, 2rem, etc.)
-  - Gap Standards für Flex/Grid
+- [ ] **Spacing/Grid** definieren (4px Base)
+  - ✅ Base Unit: 4px (Tailwind Default)
+  - ✅ Scale: 4, 8, 12, 16, 24, 32, 48px
+  - ✅ Gap Standards: `gap-2` (8px), `gap-4` (16px), `gap-6` (24px)
   
-- [ ] **Breakpoints** festlegen
-  - Mobile (320px-480px)
-  - Tablet (481px-768px)
-  - Desktop (769px-1024px)
-  - Extra-Large (1025px+)
+- [ ] **Breakpoints** für Auth (MOBILE-FIRST)
+  - ✅ Mobile: 320px (default)
+  - ✅ Desktop: 1024px (md breakpoint)
+  - ⏳ Tablet: later (768px)
+  - ⏳ Extra-Large: later (1920px)
   
-- [ ] **Border-Radius** Standards
-  - Keine (0)
-  - Small (2px-4px)
-  - Medium (8px)
-  - Large (12px-16px)
-  - Full (9999px für Pills/Circles)
+- [ ] **Border-Radius** Standards (SIMPLE)
+  - ✅ Small: 4px (inputs)
+  - ✅ Medium: 8px (cards)
+  - ✅ Large: 16px (buttons)
+  - ✅ Full: 9999px (pills/circles)
   
-- [ ] **Shadow/Elevation** System
+- [ ] **Shadow** System (2 STUFEN)
+  - ✅ Small: Für Cards (0 2px 4px rgba...)
+  - ✅ Medium: Für Modals (0 10px 25px rgba...)
+
+#### 1B. Auth-Components (KERNEL)
+- [ ] **Button** Komponenten (4 Varianten)
+  - Primary, Secondary, Danger, Disabled
+  - ✅ States: Normal, Hover, Focused, Loading
+  - ❌ Nicht mehr: Multiple variants
+  
+- [ ] **Input-Felder** (ESSENTIELL)
+  - Text, Email, Password
+  - ✅ States: Default, Focused, Error, Disabled
+  - ❌ Nicht: Multiple size variants für Phase 1
+  
+- [ ] **Form Layouts** (SIMPLE)
+  - Label placement
+  - Error Messages (clear + red)
+  - Success States
+  
+- [ ] **Cards** (FÜR PROFILE)
+  - Minimal styling
+  - Hover state
+  
+- [ ] **Modal/Dialog** (LOGIN CONFIRMATION)
+  - Header, Body, Footer
+  - Close Button
+  - Dark Overlay
+  
+- [ ] **Toast/Alerts** (SUCCESS + ERROR)
+  - Success (Green), Error (Red), Info (Blue)
+  - Auto-Close nach 5s
+  - ❌ Nicht: Warning variant für Phase 1
+
+#### 1C. Design Dokumentation (ESSENTIELL)
+- [ ] **Tailwind CSS Config aktualisieren**
+  - `tailwind.config.ts` mit Design-Tokens
+  - ✅ Colors (Primary, Secondary, Neutral, Status)
+  - ✅ Typography Scales
+  - ✅ Spacing Utilities
+  
+- [ ] **Komponenten-Specs dokumentieren**
+  - `docs/design-system.md` (oder direkt in Codebase)
+  - Farb-Codes (Hex + Tailwind Class)
+  - Typografie-Skala (Größen, Gewichte)
+  - Spacing Rules
+  - Component Sizes & Padding
+  
+- [ ] **Accessibility Checklist (WCAG 2.1 AA)**
+  - Color Contrast ≥ 4.5:1 für Text
+  - Focus States sichtbar (Ring/Outline)
+  - Keyboard Navigation (Tab, Enter, Escape)
+  - Form Labels mit Input verbunden
+  - Error Messages deutlich & beschreibend
+
+#### 1D. Reference Assets (VISUAL)
+- [ ] **Logo/Branding**
+  - Logo in 32px, 48px, 64px
+  - Favicon
+  
+- [ ] **Icon Set**
+  - Tabler Icons oder Heroicons
+  - Für Auth: 16px, 20px, 24px
+  - Icons: user, mail, lock, eye, check, x, alert
+  
+- [ ] **Screenshots (Mobile + Desktop)**
+  - Login Page
+  - Signup Page
+  - Error States
+  - Mobile Responsive Check (375px)
+
+---
+
+### Phase 2️⃣ (LATER - NÄCHSTER SPRINT)
+
+**Nicht für Modul 0, aber planen:**
+- [ ] Storybook Setup (Component Gallery)
+- [ ] Breakpoints verfeinern (Tablet)
+- [ ] Dark Mode Foundation (CSS Vars)
+- [ ] Navigation Components (Sidebar, Header)
+- [ ] Table Component für Admin
+- [ ] More Icon Variants
+
+---
+
+## ✅ Akzeptanzkriterien (FÜR PHASE 1)
   - Keine
   - Small Shadow (für Cards)
   - Medium Shadow (für Modals)
@@ -155,16 +248,183 @@ Sicherstellen, dass **alle UI/UX Design-Vorgaben komplett in die Implementierung
 
 ---
 
-## ✅ Akzeptanzkriterien
+## ✅ Akzeptanzkriterien (FÜR PHASE 1)
 
-- [ ] **Design System** ist vollständig dokumentiert
-- [ ] **Tailwind Config** ist mit Design-Tokens aktualisiert
-- [ ] **Alle Auth-Components** folgen konsistent der Design-Palette
-- [ ] **Spacing & Typografie** ist einheitlich über alle Pages
-- [ ] **Responsive Design** getestet auf Mobile (375px), Tablet (768px), Desktop (1920px)
-- [ ] **Accessibility**:
-  - [ ] Color Contrast ≥ 4.5:1 für Text
-  - [ ] Focus States sichtbar
+**ALLE PUNKTE MÜSSEN ERFÜLLT SEIN:**
+
+- [ ] **Design System dokumentiert**
+  - Farb-Codes (Hex + Tailwind Classes)
+  - Typografie-Skala (mit Beispielen)
+  - Spacing Rules
+  - Component Sizes & Padding
+
+- [ ] **Tailwind Config aktualisiert**
+  - `tailwind.config.ts` hat Design-Tokens
+  - Neue Colors defined (Primary, Secondary, Status)
+  - Typography Scales ready
+  
+- [ ] **Auth-Components standardisiert**
+  - Button (4 Varianten): Primary, Secondary, Danger, Disabled
+  - Input (3 Typen): Text, Email, Password
+  - Form Layouts (Label, Error, Success)
+  - Modal (Login Modal)
+  - Toast (Success, Error nur)
+  - ✅ All follow same design palette
+
+- [ ] **Spacing & Typografie konsistent**
+  - Alle Buttons nutzen same Padding
+  - Alle Inputs nutzen same Font-Size
+  - Gap Standards eingehalten (4, 8, 16, 24px)
+
+- [ ] **Responsive Design getestet**
+  - ✅ Mobile (320px - Login/Signup lesbar)
+  - ✅ Desktop (1024px - Scales up sauber)
+  - ⏳ Tablet (768px) → Phase 2
+
+- [ ] **Accessibility erfüllt (WCAG 2.1 AA)**
+  - Color Contrast ≥ 4.5:1 (getestet mit WebAIM)
+  - Focus States sichtbar (Outline Ring mindestens 2px)
+  - Keyboard Navigation (Tab, Enter, Escape funktioniert)
+  - Form Labels korrekt mit Inputs verbunden
+  - Error Messages klar & rot + beschreibend
+  - ✅ Getestet im Browser Devtools (Lighthouse a11y)
+
+- [ ] **Design-Referenz für Peter bereit**
+  - Screenshots (Login, Signup, Error States)
+  - Figma Link oder Storybook Link
+  - Component Specs dokumentiert
+  - Color Codes zum copy-pasten
+
+- [ ] **Ioannis kann Design-Compliance checken**
+  - PR Review Template mit Design-Checks
+  - "Does this match the design system?" Frage beantwortbar
+
+---
+
+## 📊 Timeline & Abhängigkeiten
+
+**Dauer:** 3-5 Tage (mit parallel Peter Input)
+
+**Workflow:**
+```
+Tag 1: Design System def. + Tailwind Config
+  ↓
+Tag 2: Auth-Components + Screenshots
+  ↓
+Tag 3: Accessibility Audit + Peter Feedback
+  ↓
+Tag 4: Refinements
+  ↓
+Tag 5: Final Doku + PR Ready
+```
+
+**BLOCKING für:**
+- Peter (Kulissenbauer) - braucht Design-Referenz für Implementation
+- Ioannis (Kritiker) - braucht Compliance Checklist für Reviews
+
+**Sollte VOR oder PARALLEL erfolgen:**
+- Christian's User Stories (Modul 0 Auth Flow)
+- Martin's Tech Plan (Database + Auth API)
+
+**Optional:** 
+- Kim + Peter Daily Sync (30min) für Early Feedback
+
+---
+
+## 🤝 Zusammenarbeit
+
+**Kim ↔ Peter (CRITICAL):**
+- Peter braucht visuelle Referenz, nicht nur Text
+- Early Screenshot-Review (50% done)
+- Component Implementation Feedback Loop
+
+**Kim ↔ Ioannis (IMPORTANT):**
+- Design Compliance Checklist für PR Reviews
+- a11y Audit von Ioannis
+- Color Contrast Validation
+
+**Kim ↔ Christian & Greg:**
+- Modul 0 Scope Klarheit (nur Auth? oder Dashboard?)
+- Design Budget (wie viel Zeit pro Component?)
+
+---
+
+## 📚 Bestehende Design-Dokumentation
+
+✅ **Bereits vorhanden:**
+
+1. **tailwind.config.ts** - Farb-Palette already defined
+   - `stage` (Rot/Orange für Theater)
+   - `curtain` (Lila)
+   - `spotlight` (Gelb)
+   - Neutral colors
+   
+2. **globals.css** - Component Classes
+   - `.btn-primary`, `.btn-secondary`
+   - `.card` class
+   - Base Styling
+
+3. **page.tsx (Home)** - Design Tokens Preview
+   ```
+   Design-Token: Primary #111111 · Accent #2EBD85 · Radius 24px
+   ```
+
+4. **RolleBadge.tsx** - Color-coded Components
+   - Beispiel für Status-Farben
+   - Tailwind Class Pattern
+
+**KIM's PLAN:**
+1. Consolidate all bestehende Styling
+2. Document it properly
+3. Extend für Auth-Components
+4. Create Single Source of Truth (`docs/design-system.md`)
+
+---
+
+## 💭 KIM's Notes & Bedenken
+
+### Was gut läuft:
+✅ Tailwind schon configured  
+✅ Color Palette already existiert  
+✅ Components partially styled  
+
+### Was braucht Attention:
+⚠️ Keine zentrale Design-Dokumentation (alles verteilt in Code)  
+⚠️ Keine Component Gallery / Storybook (Peter muss Code lesen)  
+⚠️ Responsive nicht konsistent getestet  
+⚠️ a11y Checklist fehlt (Ioannis braucht das!)  
+
+### KIM's Ask:
+1. **Modul 0 Scope**: Klare Definition (nur Auth oder Auth + Dashboard?)
+2. **Peter's Time**: Für Code Review Mid-Sprint (nicht erst am Ende)
+3. **Ioannis' Support**: Für a11y Audit (nicht optional!)
+
+---
+
+## 🎨 VISION (Post-Modul 0)
+
+Langfristig (Modul 1+):
+- Storybook für Component Gallery
+- Design Tokens als JSON
+- Dark Mode Support
+- Multiple Themes?
+- Brand Guidelines Document
+
+---
+
+## 📝 Status Tracking
+
+**Erstellt:** 2026-01-25 (Initial)  
+**Updated:** 2026-01-26 (Kim's Review & Prioritization)  
+**Next Review:** Nach Phase 1 Completion
+
+**Aktuelle Owner:** Kim (UI/UX Designer)  
+**Collaborators:** Peter (Kulissenbauer), Ioannis (Kritiker), Christian (Regisseur)
+
+---
+
+*Last updated by Kim (Maler)*  
+*Next: Peter starts Implementation basierend auf these Specs*
   - [ ] Keyboard Navigation funktioniert
   - [ ] Form Labels verbunden mit Inputs
   - [ ] Error Messages deutlich
