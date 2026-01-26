@@ -1,0 +1,60 @@
+[
+  {
+    "key": "ctrl+shift+1",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "🎭 Christian - Regisseur (Claude)"
+  },
+  {
+    "key": "ctrl+shift+2",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "🤸 Greg - Springer (ChatGPT)"
+  },
+  {
+    "key": "ctrl+shift+3",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "🔨 Martin - Bühnenmeister (Gemini+Claude)"
+  },
+  {
+    "key": "ctrl+shift+4",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "🎨 Peter - Kulissenbauer (Claude)"
+  },
+  {
+    "key": "ctrl+shift+5",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "🖌️ Kim - Maler (Claude Vision)"
+  },
+  {
+    "key": "ctrl+shift+6",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "👓 Ioannis - Kritiker (Claude)"
+  },
+  {
+    "key": "ctrl+shift+7",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "📝 Melanie - Redakteur (Claude+ChatGPT)"
+  },
+  {
+    "key": "ctrl+shift+8",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "📚 Johannes - Chronist (Claude)"
+  },
+  {
+    "key": "ctrl+shift+a",
+    "command": "workbench.action.openGlobalCommandPalette",
+    "args": "All AI Team Agents"
+  },
+  {
+    "key": "ctrl+k ctrl+a",
+    "command": "workbench.action.openCommandPalette",
+    "args": "@tag:backstage"
+  },
+  {
+    "key": "alt+g",
+    "command": "github.copilot.generateCommitMessage"
+  },
+  {
+    "key": "alt+r",
+    "command": "editor.action.refactor"
+  }
+]

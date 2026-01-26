@@ -1,0 +1,107 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "&\"C:\\Program": true
+  },
+  "editor.defaultFormatter": "prettier.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.rulers": [80, 120],
+  "editor.wordWrap": "on",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.formatOnSave": false
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    ".next": true,
+    ".git": true,
+    ".supabase": true,
+    "dist": true,
+    "build": true
+  },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/.env.local": true,
+    "**/.env.*.local": true,
+    "**/node_modules": true,
+    ".next": true,
+    "dist": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules": true,
+    ".next": true,
+    "**/.git": true
+  },
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": false,
+    "plaintext": false
+  },
+  "github.copilot.chat.enabled": true,
+  "gitlens.currentLine.enabled": false,
+  "gitlens.codeLens.enabled": false,
+
+  "// ===== AI TEAM INTEGRATION ===== //": "BackstagePass AI Team Configuration",
+  
+  "github.copilot.advanced": {
+    "debug.overrideChatModel": "claude-3-5-sonnet",
+    "inlineSuggestCount": 3,
+    "listCount": 10,
+    "panelSelectionMode": "entityFullyEnclosedByRegion"
+  },
+
+  "openaiApi.apiKey": "${env:OPENAI_API_KEY}",
+  "openaiApi.model": "gpt-4-turbo",
+  "openaiApi.temperature": 0.7,
+
+  "google.gemini.apiKey": "${env:GOOGLE_GEMINI_API_KEY}",
+  "google.gemini.model": "gemini-2.0-pro",
+
+  "// === AI Team Agent Quick Access === //": "Use keyboard shortcuts for fast agent activation",
+  
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {}
+  },
+
+  "// === Anthropic Claude Settings === //": "For Christian, Peter, Kim, Ioannis, Melanie, Johannes",
+  "anthropic.apiKey": "${env:ANTHROPIC_API_KEY}",
+  "anthropic.model": "claude-3-5-sonnet-20241022",
+
+  "// === Terminal Integration === //": "For smooth Git and Build workflows",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.shellArgs.windows": ["-NoExit", "-Command", "cd $PROFILE"],
+  "terminal.integrated.env.windows": {
+    "CLAUDE_API_KEY": "${env:ANTHROPIC_API_KEY}",
+    "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
+    "GEMINI_API_KEY": "${env:GOOGLE_GEMINI_API_KEY}"
+  }
+}

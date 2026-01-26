@@ -14,6 +14,9 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/keybindings.json
+!.vscode/ai-team-agents.md
+!.vscode/VS-CODE-AI-SETUP.md
 
 # Logs
 *.log
