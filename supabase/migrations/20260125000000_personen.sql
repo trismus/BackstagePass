@@ -51,8 +51,8 @@ CREATE TRIGGER personen_updated_at
 
 -- Seed data: 5 demo members with addresses
 INSERT INTO personen (vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen) VALUES
-  ('Anna', 'Müller', 'Theaterstraße 12', '80331', 'München', '1985-03-15', 'anna.mueller@theater.de', '+49 171 1234567', 'vorstand', true, 'Erste Vorsitzende seit 2020'),
-  ('Max', 'Schmidt', 'Bühnenweg 5', '80333', 'München', '1978-07-22', 'max.schmidt@theater.de', '+49 172 2345678', 'regie', true, 'Hauptregisseur'),
-  ('Lisa', 'Weber', 'Kulissenplatz 8', '80335', 'München', '1992-11-08', 'lisa.weber@theater.de', '+49 173 3456789', 'mitglied', true, 'Schauspielerin'),
-  ('Tom', 'Fischer', 'Scheinwerferstr. 23', '80337', 'München', '1988-01-30', 'tom.fischer@theater.de', '+49 174 4567890', 'technik', true, 'Licht und Ton'),
-  ('Sarah', 'Wagner', 'Maskenbildnerallee 7', '80339', 'München', '1995-06-12', 'sarah.wagner@theater.de', '+49 175 5678901', 'mitglied', true, 'Kostüm und Maske');
+  ('Anna', 'Müller', 'Theaterstraße 12', '8967', 'Widen', '1985-03-15', 'anna.mueller@theater.de', '+49 171 1234567', 'vorstand', true, 'Erste Vorsitzende seit 2020'),
+  ('Max', 'Schmidt', 'Bühnenweg 5', '8967', 'Widen', '1978-07-22', 'max.schmidt@theater.de', '+49 172 2345678', 'regie', true, 'Hauptregisseur'),
+  ('Lisa', 'Weber', 'Kulissenplatz 8', '8966', 'Oberwil- Lieli', '1992-11-08', 'lisa.weber@theater.de', '+49 173 3456789', 'mitglied', true, 'Schauspielerin'),
+  ('Tom', 'Fischer', 'Scheinwerferstr. 23', '8966', 'Oberwil- Lieli', '1988-01-30', 'tom.fischer@theater.de', '+49 174 4567890', 'technik', true, 'Licht und Ton'),
+  ('Sarah', 'Wagner', 'Maskenbildnerallee 7', '8965', 'Berikon', '1995-06-12', 'sarah.wagner@theater.de', '+49 175 5678901', 'mitglied', true, 'Kostüm und Maske');
