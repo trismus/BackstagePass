@@ -69,7 +69,7 @@
   "gitlens.codeLens.enabled": false,
 
   "// ===== AI TEAM INTEGRATION ===== //": "BackstagePass AI Team Configuration",
-  
+
   "github.copilot.advanced": {
     "debug.overrideChatModel": "claude-3-5-sonnet",
     "inlineSuggestCount": 3,
@@ -85,7 +85,7 @@
   "google.gemini.model": "gemini-2.0-pro",
 
   "// === AI Team Agent Quick Access === //": "Use keyboard shortcuts for fast agent activation",
-  
+
   "[markdown]": {
     "editor.wordWrap": "on",
     "editor.formatOnSave": false,

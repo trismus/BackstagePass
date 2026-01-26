@@ -1,6 +1,6 @@
 # Daily Report: Team Setup & AI Integration
-**Datum:** 26. Januar 2026  
-**Autor:** Greg (Springer / Project Manager)  
+**Datum:** 26. Januar 2026
+**Autor:** Greg (Springer / Project Manager)
 **Status:** ✅ Abgeschlossen
 
 ---
@@ -307,6 +307,6 @@ c:\Repos\Argus
 
 ---
 
-*Report erstellt: 2026-01-26 14:30 UTC*  
-*Nächster Report: 2026-01-27*  
+*Report erstellt: 2026-01-26 14:30 UTC*
+*Nächster Report: 2026-01-27*
 *Slack/Team Notification: Greg*
