@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type {
-  Helfereinsatz,
   HelfereinsatzInsert,
   HelfereinsatzUpdate,
   HelfereinsatzMitPartner,

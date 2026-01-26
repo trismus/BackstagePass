@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import type {
   AnmeldungMitVeranstaltung,
-  Helferschicht,
   StundenkontoEintrag,
 } from '@/lib/supabase/types'
 
@@ -123,9 +122,7 @@ export function StundenWidget({ total, thisYear, lastEntries }: StundenWidgetPro
   )
 }
 
-interface QuickLinksWidgetProps {}
-
-export function QuickLinksWidget({}: QuickLinksWidgetProps) {
+export function QuickLinksWidget() {
   const links = [
     { href: '/veranstaltungen', label: 'Veranstaltungen', icon: '📅' },
     { href: '/helfereinsaetze', label: 'Helfereinsätze', icon: '🤝' },
