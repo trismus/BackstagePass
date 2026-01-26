@@ -31,7 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ${
               error
                 ? 'border-error-500 focus:border-error-500 focus:ring-error-500'
-                : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500'
+                : 'border-neutral-300 focus:border-black focus:ring-black'
             }
             ${className}
           `}

@@ -8,13 +8,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles = {
   primary:
-    'bg-primary text-white hover:bg-primary-700 focus:ring-primary-500 disabled:bg-primary-300',
+    'bg-black text-white hover:bg-neutral-800 focus:ring-black disabled:bg-neutral-400',
   secondary:
-    'bg-white text-neutral-900 border border-neutral-300 hover:bg-neutral-50 focus:ring-primary-500',
+    'bg-white text-black border border-neutral-300 hover:bg-neutral-50 focus:ring-black',
   danger:
     'bg-error text-white hover:bg-error-700 focus:ring-error-500 disabled:bg-error-300',
   ghost:
-    'bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-primary-500',
+    'bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-black',
 }
 
 const sizeStyles = {
