@@ -75,7 +75,7 @@ export function ProfileEditForm({
         </div>
       </div>
 
-      <Button type="submit" isLoading={isPending} disabled={isPending}>
+      <Button type="submit" loading={isPending} disabled={isPending}>
         Speichern
       </Button>
     </form>
