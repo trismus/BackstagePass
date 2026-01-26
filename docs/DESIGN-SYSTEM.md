@@ -1,92 +1,129 @@
 # BackstagePass Design System
 
-Dieses Dokument definiert die UI/UX Standards für BackstagePass.
+Inspiriert von [Uber's Base Design System](https://base.uber.com/) – minimalistisch, kontrastreich und accessibility-first.
 
-## Farbpalette
+## Prinzipien
 
-### Primary (Theater-Rot)
-Hauptfarbe für Buttons, Links und Fokus-States.
+1. **Schwarz & Weiß zuerst** – Hoher Kontrast, klare Hierarchie
+2. **Eine Akzentfarbe** – Theater-Rot für CTAs und wichtige Aktionen
+3. **4px Grid** – Konsistentes Spacing überall
+4. **Dead Simple** – Weniger ist mehr
+5. **Accessibility First** – WCAG 2.1 AA minimum
+
+---
+
+## Farben
+
+### Core Colors
+
+| Rolle | Wert | Tailwind | Verwendung |
+|-------|------|----------|------------|
+| **Black** | `#000000` | `text-black`, `bg-black` | Primary Text, Buttons |
+| **White** | `#FFFFFF` | `text-white`, `bg-white` | Backgrounds |
+| **Accent** | `#dc2626` | `text-primary`, `bg-primary` | CTAs, Links, Focus |
+
+### Neutral Scale
 
 | Name | Hex | Tailwind |
 |------|-----|----------|
-| primary-50 | `#fef3f2` | `bg-primary-50` |
-| primary-100 | `#fee4e2` | `bg-primary-100` |
-| primary-500 | `#ef4444` | `bg-primary-500` |
-| **primary-600** | `#dc2626` | `bg-primary` |
-| primary-700 | `#b91c1c` | `bg-primary-700` |
+| 50 | `#fafafa` | `bg-neutral-50` |
+| 100 | `#f5f5f5` | `bg-neutral-100` |
+| 200 | `#e5e5e5` | `border-neutral-200` |
+| 300 | `#d4d4d4` | `border-neutral-300` |
+| 500 | `#737373` | `text-neutral-500` |
+| 600 | `#525252` | `text-neutral-600` |
+| 900 | `#171717` | `text-neutral-900` |
 
-### Secondary (Vorhang-Lila)
-Sekundäre Aktionen und Akzente.
+### Status Colors (sparsam verwenden)
 
-| Name | Hex | Tailwind |
-|------|-----|----------|
-| secondary-50 | `#fdf4ff` | `bg-secondary-50` |
-| secondary-500 | `#d946ef` | `bg-secondary-500` |
-| **secondary-600** | `#c026d3` | `bg-secondary` |
-| secondary-700 | `#a21caf` | `bg-secondary-700` |
-
-### Status-Farben
-
-| Status | Hex | Tailwind | Verwendung |
-|--------|-----|----------|------------|
-| Success | `#16a34a` | `text-success` | Erfolgsmeldungen |
-| Error | `#dc2626` | `text-error` | Fehlermeldungen |
-| Warning | `#f59e0b` | `text-warning` | Warnungen |
-| Info | `#3b82f6` | `text-info` | Informationen |
-
-### Neutral (Graustufen)
-Standard Tailwind `neutral-*` Palette für Text, Borders und Backgrounds.
+| Status | Hex | Tailwind |
+|--------|-----|----------|
+| Success | `#16a34a` | `text-success` |
+| Error | `#dc2626` | `text-error` |
+| Warning | `#f59e0b` | `text-warning` |
+| Info | `#3b82f6` | `text-info` |
 
 ---
 
 ## Typografie
 
-**Font-Familie:** Inter (via `font-sans`)
+**Font:** Inter (System-fallback: -apple-system, sans-serif)
 
-### Schriftgrößen
+### Type Scale (4px Grid)
 
-| Größe | Tailwind | Verwendung |
-|-------|----------|------------|
-| 12px | `text-xs` | Badges, Meta-Text |
-| 14px | `text-sm` | Labels, Buttons, Body |
-| 16px | `text-base` | Body Text |
-| 18px | `text-lg` | Section Headings |
-| 24px | `text-2xl` | Page Titles |
+| Größe | px | Tailwind | Verwendung |
+|-------|-----|----------|------------|
+| Display | 48px | `text-5xl` | Hero Headlines |
+| Heading 1 | 32px | `text-3xl` | Page Titles |
+| Heading 2 | 24px | `text-2xl` | Section Headers |
+| Heading 3 | 20px | `text-xl` | Card Titles |
+| Body | 16px | `text-base` | Paragraphs |
+| Label | 14px | `text-sm` | Labels, Buttons |
+| Caption | 12px | `text-xs` | Meta, Badges |
 
-### Schriftgewichte
+### Gewichte
 
 | Gewicht | Tailwind | Verwendung |
 |---------|----------|------------|
-| 400 | `font-normal` | Body Text |
-| 500 | `font-medium` | Labels, Buttons |
-| 600 | `font-semibold` | Headings |
+| Regular (400) | `font-normal` | Body Text |
+| Medium (500) | `font-medium` | Labels, UI |
+| Semibold (600) | `font-semibold` | Headings |
+| Bold (700) | `font-bold` | Emphasis |
+
+### Line Height
+
+- **Headings:** 1.2 (`leading-tight`)
+- **Body:** 1.5 (`leading-normal`)
 
 ---
 
-## Spacing
+## Spacing (4px Grid)
 
-**Base Unit:** 4px (Tailwind Standard)
+Alle Abstände basieren auf 4px:
 
-| Wert | Tailwind | Verwendung |
-|------|----------|------------|
-| 4px | `gap-1`, `p-1` | Tight |
-| 8px | `gap-2`, `p-2` | Compact |
-| 16px | `gap-4`, `p-4` | Standard |
-| 24px | `gap-6`, `p-6` | Relaxed |
-| 32px | `gap-8`, `p-8` | Spacious |
+| Token | px | Tailwind |
+|-------|-----|----------|
+| 1 | 4px | `p-1`, `gap-1` |
+| 2 | 8px | `p-2`, `gap-2` |
+| 3 | 12px | `p-3`, `gap-3` |
+| 4 | 16px | `p-4`, `gap-4` |
+| 6 | 24px | `p-6`, `gap-6` |
+| 8 | 32px | `p-8`, `gap-8` |
+| 12 | 48px | `p-12`, `gap-12` |
+| 16 | 64px | `p-16`, `gap-16` |
+
+**Empfohlene Abstände:**
+- Zwischen Formfeldern: `gap-4` (16px)
+- Zwischen Sections: `gap-8` oder `gap-12`
+- Card Padding: `p-6` (24px)
+- Button Padding: `px-4 py-2`
 
 ---
 
 ## Border Radius
 
-| Größe | Wert | Tailwind | Verwendung |
+Uber-Style: Eher subtil, nicht zu rund.
+
+| Token | Wert | Tailwind | Verwendung |
 |-------|------|----------|------------|
-| Small | 4px | `rounded-sm` | Inputs |
-| Default | 8px | `rounded` | Buttons, Cards |
-| Large | 12px | `rounded-lg` | Modals |
-| XL | 16px | `rounded-xl` | Hero Cards |
-| 2XL | 24px | `rounded-2xl` | Large Cards |
-| Full | 9999px | `rounded-full` | Badges, Pills |
+| None | 0 | `rounded-none` | Sharp edges |
+| Small | 4px | `rounded` | Inputs, small buttons |
+| Medium | 8px | `rounded-lg` | Cards, buttons |
+| Large | 12px | `rounded-xl` | Modals, large cards |
+| Full | 9999px | `rounded-full` | Pills, avatars |
+
+---
+
+## Shadows
+
+Subtil und funktional:
+
+| Level | Tailwind | Verwendung |
+|-------|----------|------------|
+| None | `shadow-none` | Flat UI |
+| Small | `shadow-sm` | Cards, elevated content |
+| Medium | `shadow-md` | Dropdowns, popovers |
+| Large | `shadow-lg` | Modals |
 
 ---
 
@@ -94,123 +131,163 @@ Standard Tailwind `neutral-*` Palette für Text, Borders und Backgrounds.
 
 ### Button
 
-Import: `import { Button } from '@/components/ui'`
-
 ```tsx
-<Button variant="primary">Speichern</Button>
+import { Button } from '@/components/ui'
+
+// Primary (Schwarz) – Hauptaktion
+<Button>Speichern</Button>
+
+// Secondary (Weiß mit Border) – Alternative
 <Button variant="secondary">Abbrechen</Button>
+
+// Danger (Rot) – Destruktiv
 <Button variant="danger">Löschen</Button>
+
+// Ghost (Transparent) – Tertiär
 <Button variant="ghost">Mehr</Button>
+
+// Loading State
 <Button loading>Laden...</Button>
+
+// Sizes
 <Button size="sm">Klein</Button>
 <Button size="lg">Groß</Button>
 ```
 
-**Varianten:**
-- `primary` - Hauptaktion (Theater-Rot)
-- `secondary` - Sekundäre Aktion (Weiß mit Border)
-- `danger` - Destruktive Aktion (Rot)
-- `ghost` - Transparenter Button
-
-**Größen:** `sm`, `md` (default), `lg`
-
 ### Input
 
-Import: `import { Input } from '@/components/ui'`
-
 ```tsx
-<Input label="E-Mail" type="email" placeholder="name@beispiel.de" />
-<Input label="Passwort" type="password" error="Pflichtfeld" />
-<Input label="Name" helperText="Wie sollen wir dich nennen?" />
-```
+import { Input } from '@/components/ui'
 
-**Props:**
-- `label` - Label über dem Input
-- `error` - Fehlermeldung (rot)
-- `helperText` - Hilfstext (grau)
+<Input
+  label="E-Mail"
+  type="email"
+  placeholder="name@beispiel.de"
+/>
+
+<Input
+  label="Passwort"
+  type="password"
+  error="Pflichtfeld"
+/>
+
+<Input
+  label="Name"
+  helperText="Wird öffentlich angezeigt"
+/>
+```
 
 ### Card
 
-Import: `import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui'`
-
 ```tsx
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
+
 <Card>
   <CardHeader>
     <CardTitle>Titel</CardTitle>
-    <CardDescription>Beschreibung</CardDescription>
+    <CardDescription>Kurze Beschreibung</CardDescription>
   </CardHeader>
-  <CardContent>Inhalt</CardContent>
-  <CardFooter>
-    <Button>Aktion</Button>
-  </CardFooter>
+  <CardContent>
+    Inhalt hier...
+  </CardContent>
 </Card>
 ```
 
-**Props:**
-- `padding` - `none`, `sm`, `md` (default), `lg`
-- `hover` - Hover-Effekt aktivieren
-
 ### Alert
 
-Import: `import { Alert } from '@/components/ui'`
-
 ```tsx
-<Alert variant="success">Erfolgreich gespeichert!</Alert>
-<Alert variant="error">Ein Fehler ist aufgetreten.</Alert>
-<Alert variant="warning">Achtung: Ungespeicherte Änderungen.</Alert>
-<Alert variant="info">Tipp: Nutze Tastenkürzel für schnelleres Arbeiten.</Alert>
-```
+import { Alert } from '@/components/ui'
 
-**Varianten:** `success`, `error`, `warning`, `info`
+<Alert variant="success">Gespeichert!</Alert>
+<Alert variant="error">Fehler aufgetreten</Alert>
+<Alert variant="warning">Achtung!</Alert>
+<Alert variant="info">Hinweis</Alert>
+```
 
 ---
 
-## Accessibility (WCAG 2.1 AA)
+## Layout
 
-### Farbkontrast
-- Text auf Hintergrund: mindestens 4.5:1
-- Große Text (18px+): mindestens 3:1
-- UI-Komponenten: mindestens 3:1
+### Container
 
-### Focus States
-Alle interaktiven Elemente haben sichtbare Focus-Ringe:
-```css
-focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-```
-
-### Keyboard Navigation
-- `Tab` - Navigation zwischen Elementen
-- `Enter` / `Space` - Aktivierung
-- `Escape` - Schließen von Modals/Dropdowns
-
-### Form Labels
-Alle Inputs müssen mit Labels verbunden sein:
 ```tsx
-<label htmlFor="email">E-Mail</label>
-<input id="email" type="email" />
+<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  {/* Content */}
+</div>
 ```
 
-Die `<Input>` Komponente macht das automatisch.
+### Grid
+
+```tsx
+// 2 Spalten auf Desktop
+<div className="grid gap-6 lg:grid-cols-2">
+
+// 3 Spalten auf Desktop
+<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+```
 
 ---
 
 ## Responsive Breakpoints
 
-| Name | Breite | Tailwind |
-|------|--------|----------|
+Mobile-First Approach:
+
+| Breakpoint | Breite | Tailwind |
+|------------|--------|----------|
 | Mobile | < 640px | Default |
 | Tablet | ≥ 640px | `sm:` |
 | Desktop | ≥ 1024px | `lg:` |
 | Wide | ≥ 1280px | `xl:` |
 
-**Ansatz:** Mobile-First. Styles ohne Prefix gelten für Mobile.
+---
+
+## Accessibility
+
+### Kontrast
+- Text: mindestens **4.5:1** auf Hintergrund
+- Große Text (24px+): mindestens **3:1**
+- Schwarz auf Weiß: **21:1** ✓
+
+### Focus States
+Immer sichtbar, nie entfernen:
+```css
+focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2
+```
+
+### Keyboard
+- `Tab` – Navigation
+- `Enter` / `Space` – Aktivierung
+- `Escape` – Schließen
+
+### ARIA
+- Labels für alle Inputs
+- Rollen für interaktive Elemente
+- Live Regions für dynamische Inhalte
 
 ---
 
-## Best Practices
+## Do's & Don'ts
 
-1. **Konsistenz:** Nutze immer die definierten Komponenten
-2. **Semantic Colors:** Nutze `primary`, `error`, etc. statt `stage-600`, `red-600`
-3. **Spacing Scale:** Halte dich an die 4px-Einheiten (gap-2, gap-4, gap-6)
-4. **Focus States:** Nie `outline-none` ohne `focus:ring-*`
-5. **Mobile First:** Schreibe Mobile-Styles zuerst, dann `sm:`, `lg:`
+### ✅ Do
+
+- Schwarz für primäre Aktionen
+- Viel Weißraum lassen
+- 4px Grid einhalten
+- Kontrast prüfen
+- Focus States sichtbar
+
+### ❌ Don't
+
+- Zu viele Farben mischen
+- Kleine Schrift (< 12px)
+- Schatten übertreiben
+- Focus States entfernen
+- Inkonsistente Abstände
+
+---
+
+## Referenzen
+
+- [Uber Base Design System](https://base.uber.com/)
+- [Base Web Components](https://baseweb.design/)
+- [Tailwind CSS](https://tailwindcss.com/)
