@@ -3,14 +3,25 @@
 Thumbs.db
 
 # Editors
-.vscode/
 .idea/
+.vscode/secrets.json
+.vscode/settings.json.local
+.vscode/*.log
+
+# Keep .vscode/ for shared config, ignore only local overrides
+!.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 
 # Logs
 *.log
+logs/
 
 # Dependencies
 node_modules/
+pnpm-lock.yaml
 
 # Next.js
 .next/
@@ -20,12 +31,18 @@ out/
 dist/
 build/
 
-# Environment
+# Environment - CRITICAL: Never commit secrets!
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
+
+# API Keys (double-safety)
+.api-keys*
+*.key
+*.pem
 
 # Vercel
 .vercel
@@ -35,4 +52,22 @@ build/
 
 # Testing
 coverage/
-.env*.local
+.nyc_output/
+
+# IDEs
+.DS_Store
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+
+# VS Code
+.vscode/
+
+# IDE Extensions local config
+.vscode-remote/
+.vscode-server/
