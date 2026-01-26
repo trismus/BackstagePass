@@ -68,7 +68,7 @@ git clone https://github.com/trismus/Argus.git
 cd Argus
 ```
 
-**Überprüfung:** 
+**Überprüfung:**
 ```bash
 ls -la
 # Sollte sichtbar sein: .vscode/, docs/, apps/, etc.
@@ -84,7 +84,7 @@ code .
 
 VS Code öffnet sich mit dem `Argus` Projekt.
 
-**Überprüfung:** 
+**Überprüfung:**
 - Du siehst den File Explorer links
 - Es sagt "Argus" oben im Tab
 
@@ -394,6 +394,6 @@ Wir freuen uns, dich im BackstagePass Team zu haben!
 
 ---
 
-*Zuletzt aktualisiert: 2026-01-26*  
-*Verfasser: Springer (Project Manager)*  
+*Zuletzt aktualisiert: 2026-01-26*
+*Verfasser: Springer (Project Manager)*
 *Status: ✅ Production Ready*

@@ -1,7 +1,7 @@
 # 🔐 VS Code Secrets Setup – API Keys Management
 
-**Erstellt:** 2026-01-26  
-**Ziel:** Sicheres Management von API Keys für AI Extensions  
+**Erstellt:** 2026-01-26
+**Ziel:** Sicheres Management von API Keys für AI Extensions
 
 ---
 
@@ -172,7 +172,7 @@ GitHub Copilot authentifiziert sich automatisch via GitHub:
 # Claude
 echo "Claude API Key konfiguriert:" $env:CLAUDE_API_KEY
 
-# Gemini  
+# Gemini
 echo "Gemini API Key konfiguriert:" $env:GEMINI_API_KEY
 
 # OpenAI
@@ -270,6 +270,6 @@ Falls verloren gegangen:
 
 ---
 
-**Verfasser:** Springer (Project Manager)  
-**Datum:** 2026-01-26  
+**Verfasser:** Springer (Project Manager)
+**Datum:** 2026-01-26
 **Status:** ✅ Production Ready

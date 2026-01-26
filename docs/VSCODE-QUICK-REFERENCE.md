@@ -185,6 +185,6 @@ In `.vscode/settings.json`:
 
 ---
 
-**Zuletzt aktualisiert:** 2026-01-26  
-**Version:** 1.0  
+**Zuletzt aktualisiert:** 2026-01-26
+**Version:** 1.0
 **Status:** ✅ Ready for Team

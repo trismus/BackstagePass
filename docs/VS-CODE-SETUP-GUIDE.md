@@ -43,13 +43,13 @@ Klick Extensions (Ctrl+Shift+X)
 
 1. GitHub Copilot
    ID: github.copilot
-   
+
 2. Claude (Anthropic)
    ID: anthropic.claude
-   
+
 3. Google Gemini
    ID: google.makersuite-gemini-api
-   
+
 4. ChatGPT / OpenAI
    ID: openai.openai-gpt-4
 ```

@@ -8,26 +8,26 @@
 
 Alle Team-Members haben **exakt gleiche VS Code Konfiguration** auf verschiedenen Geräten:
 
-✅ Gleiche Extensions (Claude, Gemini, ChatGPT, etc.)  
-✅ Gleiche Settings (Formatter, Linter, Themes)  
-✅ Gleiche Keybindings  
-✅ Gleiche IDE-Konfiguration (Tasks, Debug, etc.)  
-✅ Alle AI Tools mit korrekten Credentials  
-✅ Automatische Synchronisierung zwischen Devices  
+✅ Gleiche Extensions (Claude, Gemini, ChatGPT, etc.)
+✅ Gleiche Settings (Formatter, Linter, Themes)
+✅ Gleiche Keybindings
+✅ Gleiche IDE-Konfiguration (Tasks, Debug, etc.)
+✅ Alle AI Tools mit korrekten Credentials
+✅ Automatische Synchronisierung zwischen Devices
 
 ---
 
 ## 📚 Dokumentationen (in Reihenfolge lesen)
 
 ### 1. **[TEAM-ONBOARDING-VSCODE.md](TEAM-ONBOARDING-VSCODE.md)** ← **START HIER!**
-**Für:** Neue Team-Members, Quick Start  
-**Inhalt:** Step-by-Step Setup (20 Min), Checklist, Troubleshooting  
+**Für:** Neue Team-Members, Quick Start
+**Inhalt:** Step-by-Step Setup (20 Min), Checklist, Troubleshooting
 **Lesen:** Immer zuerst! Alle anderen Docs sind Referenzen.
 
 ---
 
 ### 2. [VS-CODE-SETUP-GUIDE.md](VS-CODE-SETUP-GUIDE.md)
-**Für:** Detaillierte Erklärung & Administration  
+**Für:** Detaillierte Erklärung & Administration
 **Inhalt:**
 - Settings Sync (Auto-Synchronisierung)
 - AI Extension Konfiguration (Claude, Gemini, ChatGPT, Copilot)
@@ -41,7 +41,7 @@ Alle Team-Members haben **exakt gleiche VS Code Konfiguration** auf verschiedene
 ---
 
 ### 3. [VSCODE-SECRETS-SETUP.md](VSCODE-SECRETS-SETUP.md)
-**Für:** API Key Management & Security  
+**Für:** API Key Management & Security
 **Inhalt:**
 - Wo man API Keys bekommt (4 Services)
 - Sicheres Speichern (VS Code Secrets vs Environment Variables)
@@ -54,7 +54,7 @@ Alle Team-Members haben **exakt gleiche VS Code Konfiguration** auf verschiedene
 ---
 
 ### 4. [VSCODE-QUICK-REFERENCE.md](VSCODE-QUICK-REFERENCE.md)
-**Für:** Schnelle Nachschlag-Reference  
+**Für:** Schnelle Nachschlag-Reference
 **Inhalt:**
 - 5-Min Setup Flow
 - Critical Commands (Shortcuts)
@@ -269,20 +269,20 @@ Git Repository (Shared)
 
 ## ❓ FAQs
 
-**Q: Was wenn ich Settings ändern will?**  
-A: Persönliche Settings → User Settings (sync'd across devices)  
+**Q: Was wenn ich Settings ändern will?**
+A: Persönliche Settings → User Settings (sync'd across devices)
 Team-Settings → `.vscode/settings.json` (git-tracked)
 
-**Q: Werden meine API Keys verloren wenn ich Gerät wechsle?**  
+**Q: Werden meine API Keys verloren wenn ich Gerät wechsle?**
 A: Nein! Aber sie sind nicht auto-sync'd. Du musst deine Keys auf jedem Gerät selbst speichern.
 
-**Q: Kann ich ein Extension ignorieren?**  
+**Q: Kann ich ein Extension ignorieren?**
 A: Ja! Extensions in `recommendations` sind optional. Ignore wenn du es nicht nutzt.
 
-**Q: Was wenn Settings Sync bricht?**  
+**Q: Was wenn Settings Sync bricht?**
 A: `Ctrl+Shift+P` → "Settings Sync: Reset"
 
-**Q: Kann ich eigene VS Code Snippets hinzufügen?**  
+**Q: Kann ich eigene VS Code Snippets hinzufügen?**
 A: Ja! Sie werden auto-sync'd. Siehe [VS-CODE-SETUP-GUIDE.md](VS-CODE-SETUP-GUIDE.md)
 
 ---
@@ -290,18 +290,18 @@ A: Ja! Sie werden auto-sync'd. Siehe [VS-CODE-SETUP-GUIDE.md](VS-CODE-SETUP-GUID
 ## 🚨 Häufige Fehler
 
 ### ❌ Fehler 1: "API Keys nicht konfiguriert"
-**Grund:** Keys nicht in VS Code Secrets gespeichert  
-**Fix:** `Ctrl+Shift+P` → "Open User Secrets" → Key eintragen  
+**Grund:** Keys nicht in VS Code Secrets gespeichert
+**Fix:** `Ctrl+Shift+P` → "Open User Secrets" → Key eintragen
 **Siehe:** [VSCODE-SECRETS-SETUP.md](VSCODE-SECRETS-SETUP.md)
 
 ### ❌ Fehler 2: "Extensions werden nicht synchronisiert"
-**Grund:** Settings Sync nicht aktiviert  
-**Fix:** `Ctrl+Shift+P` → "Settings Sync: Turn On"  
+**Grund:** Settings Sync nicht aktiviert
+**Fix:** `Ctrl+Shift+P` → "Settings Sync: Turn On"
 **Siehe:** [VS-CODE-SETUP-GUIDE.md](VS-CODE-SETUP-GUIDE.md)
 
 ### ❌ Fehler 3: "Different Settings on Device 1 vs Device 2"
-**Grund:** Du hast User Settings überschrieben (sollte nicht sein!)  
-**Fix:** Stelle sicher `.vscode/settings.json` ist in Git  
+**Grund:** Du hast User Settings überschrieben (sollte nicht sein!)
+**Fix:** Stelle sicher `.vscode/settings.json` ist in Git
 **Siehe:** [VS-CODE-SETUP-GUIDE.md](VS-CODE-SETUP-GUIDE.md)
 
 ---
@@ -328,7 +328,7 @@ Ctrl+Shift+P → "Developer: Reload Window"  # Reload VS Code
 | "Welcher Hotkey war das?" | [VSCODE-QUICK-REFERENCE.md](VSCODE-QUICK-REFERENCE.md) |
 | "Ich will Technologie verstehen" | [VS-CODE-SETUP-GUIDE.md](VS-CODE-SETUP-GUIDE.md) |
 
-**Slack:** #dev-setup-help  
+**Slack:** #dev-setup-help
 **Email:** springer@backstagepass.dev (Project Manager)
 
 ---
@@ -350,9 +350,9 @@ Nach dem du diesen Index gelesen hast:
 
 ---
 
-**Erstellt durch:** Springer (Project Manager)  
-**Datum:** 2026-01-26  
-**Status:** ✅ Production Ready  
+**Erstellt durch:** Springer (Project Manager)
+**Datum:** 2026-01-26
+**Status:** ✅ Production Ready
 **Version:** 1.0
 
 ---
