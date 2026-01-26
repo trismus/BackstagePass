@@ -1,6 +1,7 @@
 -- Migration: Create profiles table for RBAC
 -- Created: 2026-01-26
 -- Description: User profiles with role-based access control
+-- Note: This migration is idempotent (can be run multiple times safely)
 
 -- Create profiles table
 CREATE TABLE IF NOT EXISTS profiles (
@@ -14,6 +15,12 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "profiles_select_own" ON profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON profiles;
+DROP POLICY IF EXISTS "profiles_insert_service" ON profiles;
+DROP POLICY IF EXISTS "profiles_select_admin" ON profiles;
 
 -- Policy: Users can read their own profile
 CREATE POLICY "profiles_select_own"
@@ -55,6 +62,7 @@ END;
 $$ language 'plpgsql';
 
 -- Trigger to auto-update updated_at
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON profiles
   FOR EACH ROW
@@ -76,6 +84,7 @@ END;
 $$ language 'plpgsql' SECURITY DEFINER;
 
 -- Trigger to auto-create profile on signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
