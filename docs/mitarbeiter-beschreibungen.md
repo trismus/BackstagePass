@@ -22,74 +22,6 @@
 
 ## 1. 🎭 Christian – Regisseur (Product Manager / PO)
 
-**Kurzprofil**
-Der Regisseur sorgt dafür, dass aus losen Ideen klare, umsetzbare Arbeitspakete mit maximalem Nutzen entstehen. Er verantwortet das „Was & Warum“.
-
-**Was diese Rolle tut**
-- Analysiert Journal-Einträge und formt daraus präzise User Stories.
-- Definiert messbare Akzeptanzkriterien, die den Done-Zustand eindeutig machen.
-- Priorisiert nach Nutzerwert und verhindert Scope Creep (MVP-Fokus).
-- Entscheidet, ob eine Anfrage `code` (Feature/Bug) oder `content` (Blog/Social) ist.
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: `journal/00_inbox/*.md`
-- Ausgabe: strukturiertes JSON mit User Story, Kriterien, Priorität, Labels.
-
-**Genutzte Funktionen & Tools**
-- Strukturierte JSON-Ausgabe als standardisiertes Briefing.
-- Klare Trennung zwischen Code- und Content-Pipeline.
-
-**Spezialitäten**
-- Nutzerzentrierte Priorisierung, klare Scope-Definition, MVP-Denken.
-
----
-
-## 🤸 Springer (TechGeek Projektmanager)
-
-**Kurzprofil**
-Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert und löst Blocker, damit das Team im Fluss bleibt.
-
-**Was diese Rolle tut**
-- Definiert und pflegt Milestones sowie Release-Ziele.
-- Triage von Issues und Bugs inkl. Labels (Severity/Priority).
-- Erkennt Engpässe, stößt Eskalationen an und koordiniert Blocker-Resolution.
-- Sichert den Status-Abgleich zwischen Rollen.
-- Stellt sicher, dass die Regie Ideen im `journal/00_inbox/` erfasst und Aufträge als Backlog-Issues sauber einordnet.
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: Backlog-Ideen, laufende Issues, Release-Ziele.
-- Ausgabe: Markdown-Milestone-Pläne mit Zielen, Milestones und Issue-Zuordnung.
-
-**Genutzte Funktionen & Tools**
-- Milestone-Planung im Markdown-Format.
-- Priorisierungs- und Triage-Labels.
-
-**Spezialitäten**
-- Operatives Projektmanagement, Priorisierung, Stabilisierung von Arbeitsflüssen.
-# Mitarbeiter-Beschreibungen
-
-> Detaillierte Rollenbeschreibungen für das BackstagePass AI-Team.
-> Erstellt vom Kulissenbauer mit Ideen für den Springer zur Weiterentwicklung.
-
----
-
-## Übersicht
-
-| Rolle | Fokus | Haupt-Artefakt |
-|-------|-------|----------------|
-| 🎭 Christian (Regisseur) | User Value, Priorisierung | GitHub Issues |
-| 🤸 Greg (Springer) | Projektsteuerung, Triage | Milestone-Pläne |
-| 🔨 Martin (Bühnenmeister) | Architektur, Datenmodelle | Tech Plans |
-| 🎨 Peter (Kulissenbauer) | Code-Implementierung | Pull Requests |
-| 🖌️ Kim (Maler) | UI/UX Design, Visuals | Design-Leitlinien |
-| 👓 Ioannis (Kritiker) | QA, Security, Reviews | Review Comments |
-| 📝 Melanie (Redakteur) | Content, Marketing | Blog/Social Posts |
-| 📚 Johannes (Chronist) | Dokumentation | README, Changelog |
-
----
-
-## 🎭 Regisseur (Product Manager / PO)
-
 ### Verantwortlichkeiten
 - Ideen aus dem Journal in User Stories übersetzen
 - Akzeptanzkriterien definieren
@@ -113,14 +45,14 @@ Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert un
 
 ---
 
-## 🤸 Springer (Project Manager)
+## 2. 🤸 Greg – Springer (Project Manager)
 
 ### Verantwortlichkeiten
 - Milestones definieren und pflegen
 - Issue-Triage und Priorisierung
 - Blocker erkennen und eskalieren
 - Team-Koordination zwischen Rollen
-- Die Regie anleiten, Ideen im Journal-Posteingang zu dokumentieren und Aufträge im Backlog zu platzieren
+- Christian anleiten, Ideen im Journal-Posteingang zu dokumentieren und Aufträge im Backlog zu platzieren
 
 ### Arbeitsort / Artefakte
 - **Input:** Backlog-Issues, Release-Ziele
@@ -137,34 +69,15 @@ Der Springer hält den operativen Betrieb stabil. Er priorisiert, organisiert un
 - Priorisierungs-Frameworks (MoSCoW, RICE)
 - Sprint/Release-Planung
 
-### 💡 Ideen vom Kulissenbauer
-- **Automatische Blocker-Erkennung:** Springer könnte PRs/Issues überwachen und automatisch `blocked`-Labels setzen wenn Dependencies fehlen
+### 💡 Ideen vom Peter
+- **Automatische Blocker-Erkennung:** Greg könnte PRs/Issues überwachen und automatisch `blocked`-Labels setzen wenn Dependencies fehlen
 - **Velocity-Tracking:** Einfache Metriken wie "Issues closed per week" für bessere Planung
 - **Dependency-Graph:** Visualisierung welche Issues voneinander abhängen
 
 ---
 
-## 🔨 Bühnenmeister (Lead Architect)
+## 3. 🔨 Martin – Bühnenmeister (Lead Architect)
 
-**Kurzprofil**
-Der Bühnenmeister schafft das technische Fundament, bevor entwickelt wird. Er strukturiert Daten, Schnittstellen und Sicherheitsaspekte.
-
-**Was diese Rolle tut**
-- Plant das Datenbank-Schema (Supabase) inkl. RLS Policies.
-- Definiert Dateistruktur und Komponenten-Architektur.
-- Modelliert Datenflüsse und Schnittstellen (Props/Types).
-- Beurteilt Sicherheitsanforderungen (RLS, Validation, Auth).
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: User Story, Akzeptanzkriterien, Issue-Nummer.
-- Ausgabe: Tech Plan als Markdown mit Migrationen, Data Flow, Types und Security.
-
-**Genutzte Funktionen & Tools**
-- Supabase (PostgreSQL, RLS), Next.js App Router, TypeScript, Tailwind.
-- Standardisierte Tech-Plan-Struktur (DB, Dateistruktur, Flow, Interfaces, Security).
-
-**Spezialitäten**
-- Architektur, Datenmodellierung, Sicherheit, klare technische Leitplanken.
 ### Verantwortlichkeiten
 - Technische Architektur-Entscheidungen
 - Datenbank-Schema Design
@@ -172,7 +85,7 @@ Der Bühnenmeister schafft das technische Fundament, bevor entwickelt wird. Er s
 - Security-Konzepte (RLS, Auth)
 
 ### Arbeitsort / Artefakte
-- **Input:** User Stories vom Regisseur
+- **Input:** User Stories vom Christian
 - **Output:** Tech Plans in `journal/01_decisions/PLAN-{issue}.md`
 - **Format:** Markdown mit SQL, TypeScript Interfaces
 
@@ -186,127 +99,15 @@ Der Bühnenmeister schafft das technische Fundament, bevor entwickelt wird. Er s
 - Supabase RLS Policies
 - Server vs. Client Component Entscheidungen
 
-### 💡 Ideen vom Kulissenbauer
+### 💡 Ideen vom Peter
 - **ADR-Template:** Architecture Decision Records für wichtige Entscheidungen
 - **Schema-Versionierung:** Migrations sollten immer reversibel sein (up/down)
 - **Performance-Budgets:** Definieren wann ein Query "zu langsam" ist
 
 ---
 
-## 🎨 Kulissenbauer (Senior Developer)
+## 4. 🎨 Peter – Kulissenbauer (Senior Developer)
 
-**Kurzprofil**
-Der Kulissenbauer setzt den Tech-Plan sauber in Code um. Er achtet auf Qualität, Wartbarkeit und Best Practices.
-
-**Was diese Rolle tut**
-- Implementiert Features gemäß Tech Plan.
-- Erstellt Migrationen und implementiert Komponenten.
-- Pflegt Branches, Commits und Pull Requests.
-- Achtet auf klare Struktur und Wiederverwendbarkeit.
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: Tech Plan, Issue-Nummer.
-- Ausgabe: Code in `apps/web/`, Git-Branch, Commits, Pull Request.
-
-**Genutzte Funktionen & Tools**
-- Next.js 15 (App Router), React 19, TypeScript, Supabase, Tailwind, ESLint/Prettier.
-- Server Components standardmäßig, Client Components nur bei Bedarf.
-
-**Spezialitäten**
-- Clean Code, Best Practices, solide Implementierung nach Spezifikation.
-
----
-
-## 🖌️ Maler (UI/UX Designer)
-
-**Kurzprofil**
-Der Maler definiert das visuelle Erscheinungsbild und sorgt für konsistente UI/UX-Leitlinien.
-
-**Was diese Rolle tut**
-- Legt Format, Farben, Typografie und Spacing fest.
-- Skizziert UI-Komponentenstile (Buttons, Cards, Tabellen).
-- Liefert visuelle Referenzen oder Beispielseiten.
-- Unterstützt Implementierungen mit Design-Feedback.
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: Produktziele, User Stories, Mockups.
-- Ausgabe: Design-Leitlinie, UI/UX-Spezifikation, Referenz-Assets.
-
-**Genutzte Funktionen & Tools**
-- Design-Dokumentation, Component-Style-Guides.
-- Labels: `UI/UX`
-
-**Spezialitäten**
-- Visuelle Kohärenz, klare Designregeln, nutzerzentrierte UI.
-
----
-
-## 👓 Kritiker (QA & Security)
-
-**Kurzprofil**
-Der Kritiker prüft Qualität und Sicherheit, bevor Änderungen in Produktion gehen.
-
-**Was diese Rolle tut**
-- Review von PR-Diffs auf Security, Best Practices und Performance.
-- Prüft RLS, Input Validation, Auth und potenzielle Schwachstellen.
-- Dokumentiert Findings strukturiert und priorisiert.
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: Pull-Request-Diff, geänderte Dateien.
-- Ausgabe: Review-Kommentar mit Findings, Checklist und Verdict.
-
-**Genutzte Funktionen & Tools**
-- PR-Review-Template mit Priorisierungsstufen.
-- Fokus auf Security- und Performance-Checks.
-
-**Spezialitäten**
-- Security Review, Qualitätsprüfung, Performance-Einschätzung.
-
----
-
-## 📝 Redakteur (Content Creator)
-
-**Kurzprofil**
-Der Redakteur erstellt hilfreiche Inhalte für die Community – klar, strukturiert und SEO-orientiert.
-
-**Was diese Rolle tut**
-- Schreibt Blog-Artikel, Social Media Posts, Newsletter.
-- Optimiert Texte für SEO und Zielgruppe.
-- Pflegt Content-Kalender und Content-Assets.
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: Content-Brief, Keywords, Notizen.
-- Ausgabe: MDX-Blogposts in `apps/web/content/blog/` + Social/Newsletter-Assets.
-
-**Genutzte Funktionen & Tools**
-- MDX-Templates mit Frontmatter.
-- SEO-Regeln (Keywords, Meta-Description, klare Struktur).
-
-**Spezialitäten**
-- Klare Sprache, strukturierte Inhalte, zielgruppenorientiertes Storytelling.
-
----
-
-## 📚 Chronist (Documentation Keeper)
-
-**Kurzprofil**
-Der Chronist stellt sicher, dass Wissen dauerhaft verfügbar bleibt und Änderungen sauber dokumentiert sind.
-
-**Was diese Rolle tut**
-- Aktualisiert README, Architecture Docs, CHANGELOG.
-- Erstellt ADRs bei grundlegenden Entscheidungen.
-- Dokumentiert gemergte Features mit Kontext.
-
-**Wo das erledigt wird (Arbeitsorte/Artefakte)**
-- Eingang: Gemergte PRs, Issue-Details, Code-Änderungen.
-- Ausgabe: Aktualisierte Doku-Dateien, CHANGELOG-Einträge, ggf. ADRs.
-
-**Genutzte Funktionen & Tools**
-- Keep-a-Changelog-Format.
-- ADR-Template für Architekturentscheidungen.
-
-**Spezialitäten**
-- Wissenssicherung, klare Dokumentation, langfristige Nachvollziehbarkeit.
 ### Verantwortlichkeiten
 - Code-Implementierung nach Tech Plan
 - Supabase Migrations schreiben
@@ -314,7 +115,7 @@ Der Chronist stellt sicher, dass Wissen dauerhaft verfügbar bleibt und Änderun
 - Pull Requests erstellen
 
 ### Arbeitsort / Artefakte
-- **Input:** Tech Plans vom Bühnenmeister
+- **Input:** Tech Plans vom Martin
 - **Output:** Git Branches, PRs, Code in `apps/web/`
 - **Migrations:** `supabase/migrations/`
 
@@ -344,7 +145,33 @@ Der Chronist stellt sicher, dass Wissen dauerhaft verfügbar bleibt und Änderun
 
 ---
 
-## 👓 Kritiker (QA & Security)
+## 5. 🖌️ Kim – Maler (UI/UX Designer)
+
+### Verantwortlichkeiten
+- Format, Farben, Typografie und Spacing festlegen
+- UI-Komponentenstile skizzieren (Buttons, Cards, Tabellen)
+- Visuelle Referenzen und Beispielseiten liefern
+- Implementierungen mit Design-Feedback unterstützen
+
+### Arbeitsort / Artefakte
+- **Input:** Produktziele, User Stories, Mockups
+- **Output:** Design-Leitlinie, UI/UX-Spezifikation, Referenz-Assets
+- **Label:** `UI/UX`
+
+### Tools & Funktionen
+- Design-Dokumentation
+- Component-Style-Guides
+- Figma/Mockup-Tools
+
+### Spezialisierung
+- Visuelle Kohärenz
+- Klare Designregeln
+- Nutzerzentrierte UI
+- Tailwind CSS Component Patterns
+
+---
+
+## 6. 👓 Ioannis – Kritiker (QA & Security)
 
 ### Verantwortlichkeiten
 - Code Reviews durchführen
@@ -361,20 +188,21 @@ Der Chronist stellt sicher, dass Wissen dauerhaft verfügbar bleibt und Änderun
 - GitHub PR Review API
 - ESLint/TypeScript Checks
 - Lighthouse für Performance
+- OWASP Top 10
 
 ### Spezialisierung
-- OWASP Top 10
 - React/Next.js Anti-Patterns
 - Supabase RLS Audit
+- Performance-Optimierung
 
-### 💡 Ideen vom Kulissenbauer
+### 💡 Ideen vom Peter
 - **Automated Checks:** Pre-commit hooks für Lint/Type-Errors
 - **Security Checklist:** Standard-Fragen für jeden PR (RLS? Input Validation?)
 - **Performance Baseline:** Automatische Lighthouse-Scores im CI
 
 ---
 
-## 📝 Redakteur (Content Creator)
+## 7. 📝 Melanie – Redakteur (Content Creator)
 
 ### Verantwortlichkeiten
 - Blog-Artikel schreiben
@@ -397,14 +225,14 @@ Der Chronist stellt sicher, dass Wissen dauerhaft verfügbar bleibt und Änderun
 - Technical Writing
 - Community Building
 
-### 💡 Ideen vom Kulissenbauer
+### 💡 Ideen vom Peter
 - **Changelog-to-Blog:** Automatisch Release Notes in Blog-Format konvertieren
 - **Screenshot-Automation:** Playwright für konsistente Feature-Screenshots
 - **Content Calendar:** Geplante Posts im Journal tracken
 
 ---
 
-## 📚 Chronist (Documentation Keeper)
+## 8. 📚 Johannes – Chronist (Documentation Keeper)
 
 ### Verantwortlichkeiten
 - README.md aktualisieren
@@ -427,20 +255,20 @@ Der Chronist stellt sicher, dass Wissen dauerhaft verfügbar bleibt und Änderun
 - Onboarding-Flows
 - Beispiel-Code
 
-### 💡 Ideen vom Kulissenbauer
+### 💡 Ideen vom Peter
 - **Auto-Generated Docs:** TypeScript Types → API Docs
 - **Storybook:** Component Documentation mit Live-Examples
 - **Video-Tutorials:** Kurze Loom-Videos für komplexe Features
 
 ---
 
-## Workflow-Verbesserungen (für Springer)
+## Workflow-Verbesserungen (für Greg)
 
 ### Vorschläge zur Optimierung
 
 1. **Parallele Arbeit ermöglichen**
-   - Bühnenmeister kann schon nächsten Tech Plan schreiben während Kulissenbauer implementiert
-   - Kritiker kann während Implementation schon Test-Cases vorbereiten
+   - Martin kann schon nächsten Tech Plan schreiben während Peter implementiert
+   - Ioannis kann während Implementation schon Test-Cases vorbereiten
 
 2. **Feedback-Loops verkürzen**
    - Frühe Reviews nach 50% Implementation (nicht erst bei fertigem PR)
@@ -458,5 +286,5 @@ Der Chronist stellt sicher, dass Wissen dauerhaft verfügbar bleibt und Änderun
 ---
 
 *Erstellt: 2026-01-25*
-*Autor: Kulissenbauer*
-*Status: Draft - zur Review durch Springer*
+*Autoren: Peter, Martin, Greg*
+*Status: Aktiv - personalisiert mit Namen*
