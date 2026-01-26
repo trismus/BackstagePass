@@ -40,8 +40,32 @@ export default async function ProtectedLayout({
               >
                 Mitglieder
               </Link>
+              <Link
+                href="/veranstaltungen"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+              >
+                Veranstaltungen
+              </Link>
+              <Link
+                href="/helfereinsaetze"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+              >
+                Helfereinsätze
+              </Link>
+              <Link
+                href="/mein-bereich"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+              >
+                Mein Bereich
+              </Link>
               {isAdmin && (
                 <>
+                  <Link
+                    href="/partner"
+                    className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+                  >
+                    Partner
+                  </Link>
                   <Link
                     href="/admin/users"
                     className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
