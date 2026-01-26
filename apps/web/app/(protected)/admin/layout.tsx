@@ -10,12 +10,17 @@ export default async function AdminLayout({
   const user = await getUser()
   const profile = await getUserProfile()
 
+  console.warn('[AdminLayout] user:', user?.email)
+  console.warn('[AdminLayout] profile:', profile)
+  console.warn('[AdminLayout] role:', profile?.role)
+
   if (!user) {
     redirect('/login')
   }
 
   // Only admins can access the admin area
   if (profile?.role !== 'ADMIN') {
+    console.warn('[AdminLayout] Redirecting - role is not ADMIN:', profile?.role)
     redirect('/dashboard')
   }
 
