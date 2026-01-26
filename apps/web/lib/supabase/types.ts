@@ -26,6 +26,21 @@ export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at'>
 
 export type PersonUpdate = Partial<PersonInsert>
 
+export type UserRole = 'ADMIN' | 'EDITOR' | 'VIEWER'
+
+export type Profile = {
+  id: string
+  email: string
+  display_name: string | null
+  role: UserRole
+  created_at: string
+  updated_at: string
+}
+
+export type ProfileInsert = Omit<Profile, 'created_at' | 'updated_at'>
+
+export type ProfileUpdate = Partial<Omit<Profile, 'id'>>
+
 export type Database = {
   public: {
     Tables: {
@@ -33,6 +48,11 @@ export type Database = {
         Row: Person
         Insert: PersonInsert
         Update: PersonUpdate
+      }
+      profiles: {
+        Row: Profile
+        Insert: ProfileInsert
+        Update: ProfileUpdate
       }
     }
   }
