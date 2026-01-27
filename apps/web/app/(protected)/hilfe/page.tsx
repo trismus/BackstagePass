@@ -7,6 +7,9 @@ export const metadata = {
   description: 'Hilfe und Dokumentation für BackstagePass',
 }
 
+// Force dynamic rendering since getHelpTopics uses cookies for auth
+export const dynamic = 'force-dynamic'
+
 // Section order for display
 const SECTION_ORDER = [
   'Erste Schritte',

@@ -37,7 +37,7 @@ export default async function HomePage() {
 
     // Get assignment counts
     const schichtIds = schichten?.map((s) => s.id) || []
-    let zuweisungCounts: Record<string, number> = {}
+    const zuweisungCounts: Record<string, number> = {}
 
     if (schichtIds.length > 0) {
       const { data: zuweisungen } = await supabase

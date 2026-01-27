@@ -24,12 +24,8 @@ export async function generateMetadata({ params }: PageProps) {
   }
 }
 
-// Generate static params for all help topics
-export async function generateStaticParams() {
-  return Object.keys(HELP_TOPICS).map((key) => ({
-    slug: key,
-  }))
-}
+// Force dynamic rendering since getHelpContent uses cookies for auth
+export const dynamic = 'force-dynamic'
 
 export default async function HilfeTopicPage({ params }: PageProps) {
   const { slug } = await params
