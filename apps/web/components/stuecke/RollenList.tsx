@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import type { StueckRolle, StueckRolleInsert, RollenTyp } from '@/lib/supabase/types'
 import { createRolle, updateRolle, deleteRolle } from '@/lib/actions/stuecke'
-import { RollenTypBadge } from './StatusBadge'
 
 interface RollenListProps {
   stueckId: string

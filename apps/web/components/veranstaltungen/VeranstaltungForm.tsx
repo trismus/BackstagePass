@@ -16,6 +16,8 @@ import type {
 interface VeranstaltungFormProps {
   veranstaltung?: Veranstaltung
   mode: 'create' | 'edit'
+  fixedTyp?: VeranstaltungTyp
+  returnUrl?: string
 }
 
 const typOptions: { value: VeranstaltungTyp; label: string }[] = [
@@ -32,7 +34,7 @@ const statusOptions: { value: VeranstaltungStatus; label: string }[] = [
   { value: 'abgeschlossen', label: 'Abgeschlossen' },
 ]
 
-export function VeranstaltungForm({ veranstaltung, mode }: VeranstaltungFormProps) {
+export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '/veranstaltungen' }: VeranstaltungFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +51,7 @@ export function VeranstaltungForm({ veranstaltung, mode }: VeranstaltungFormProp
   const [wartelisteAktiv, setWartelisteAktiv] = useState(
     veranstaltung?.warteliste_aktiv ?? true
   )
-  const [typ, setTyp] = useState<VeranstaltungTyp>(veranstaltung?.typ || 'vereinsevent')
+  const [typ, setTyp] = useState<VeranstaltungTyp>(fixedTyp || veranstaltung?.typ || 'vereinsevent')
   const [status, setStatus] = useState<VeranstaltungStatus>(
     veranstaltung?.status || 'geplant'
   )
@@ -79,7 +81,7 @@ export function VeranstaltungForm({ veranstaltung, mode }: VeranstaltungFormProp
         : await updateVeranstaltung(veranstaltung!.id, data)
 
     if (result.success) {
-      router.push('/veranstaltungen')
+      router.push(returnUrl as never)
     } else {
       setError(result.error || 'Ein Fehler ist aufgetreten')
       setLoading(false)
@@ -94,7 +96,7 @@ export function VeranstaltungForm({ veranstaltung, mode }: VeranstaltungFormProp
     const result = await deleteVeranstaltung(veranstaltung.id)
 
     if (result.success) {
-      router.push('/veranstaltungen')
+      router.push(returnUrl as never)
     } else {
       setError(result.error || 'Ein Fehler ist aufgetreten')
       setLoading(false)
@@ -130,23 +132,25 @@ export function VeranstaltungForm({ veranstaltung, mode }: VeranstaltungFormProp
           </div>
 
           {/* Typ */}
-          <div>
-            <label htmlFor="typ" className="block text-sm font-medium text-gray-700 mb-1">
-              Typ
-            </label>
-            <select
-              id="typ"
-              value={typ}
-              onChange={(e) => setTyp(e.target.value as VeranstaltungTyp)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {typOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!fixedTyp && (
+            <div>
+              <label htmlFor="typ" className="block text-sm font-medium text-gray-700 mb-1">
+                Typ
+              </label>
+              <select
+                id="typ"
+                value={typ}
+                onChange={(e) => setTyp(e.target.value as VeranstaltungTyp)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {typOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Status */}
           <div>
@@ -307,7 +311,7 @@ export function VeranstaltungForm({ veranstaltung, mode }: VeranstaltungFormProp
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => router.push('/veranstaltungen')}
+            onClick={() => router.push(returnUrl as never)}
             className="px-4 py-2 text-gray-700 hover:text-gray-900"
           >
             Abbrechen
