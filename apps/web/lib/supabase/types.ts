@@ -79,6 +79,10 @@ export type Permission =
   | 'helfereinsaetze:write'
   | 'helfereinsaetze:delete'
   | 'helfereinsaetze:register'
+  | 'helferliste:read'
+  | 'helferliste:write'
+  | 'helferliste:delete'
+  | 'helferliste:register'
   | 'stundenkonto:read'
   | 'stundenkonto:read_own'
   | 'stundenkonto:write'
@@ -110,8 +114,16 @@ export type ProfileUpdate = Partial<Omit<Profile, 'id'>>
 // Veranstaltungen (Club Events) - Issue #93
 // =============================================================================
 
-export type VeranstaltungTyp = 'vereinsevent' | 'probe' | 'auffuehrung' | 'sonstiges'
-export type VeranstaltungStatus = 'geplant' | 'bestaetigt' | 'abgesagt' | 'abgeschlossen'
+export type VeranstaltungTyp =
+  | 'vereinsevent'
+  | 'probe'
+  | 'auffuehrung'
+  | 'sonstiges'
+export type VeranstaltungStatus =
+  | 'geplant'
+  | 'bestaetigt'
+  | 'abgesagt'
+  | 'abgeschlossen'
 
 export type Veranstaltung = {
   id: string
@@ -130,10 +142,17 @@ export type Veranstaltung = {
   updated_at: string
 }
 
-export type VeranstaltungInsert = Omit<Veranstaltung, 'id' | 'created_at' | 'updated_at'>
+export type VeranstaltungInsert = Omit<
+  Veranstaltung,
+  'id' | 'created_at' | 'updated_at'
+>
 export type VeranstaltungUpdate = Partial<VeranstaltungInsert>
 
-export type AnmeldungStatus = 'angemeldet' | 'warteliste' | 'abgemeldet' | 'teilgenommen'
+export type AnmeldungStatus =
+  | 'angemeldet'
+  | 'warteliste'
+  | 'abgemeldet'
+  | 'teilgenommen'
 
 export type Anmeldung = {
   id: string
@@ -146,7 +165,10 @@ export type Anmeldung = {
   updated_at: string
 }
 
-export type AnmeldungInsert = Omit<Anmeldung, 'id' | 'created_at' | 'updated_at' | 'anmeldedatum'>
+export type AnmeldungInsert = Omit<
+  Anmeldung,
+  'id' | 'created_at' | 'updated_at' | 'anmeldedatum'
+>
 export type AnmeldungUpdate = Partial<AnmeldungInsert>
 
 // Extended type with person details for participant lists
@@ -179,7 +201,11 @@ export type Partner = {
 export type PartnerInsert = Omit<Partner, 'id' | 'created_at' | 'updated_at'>
 export type PartnerUpdate = Partial<PartnerInsert>
 
-export type HelfereinsatzStatus = 'offen' | 'bestaetigt' | 'abgeschlossen' | 'abgesagt'
+export type HelfereinsatzStatus =
+  | 'offen'
+  | 'bestaetigt'
+  | 'abgeschlossen'
+  | 'abgesagt'
 
 export type Helfereinsatz = {
   id: string
@@ -196,7 +222,10 @@ export type Helfereinsatz = {
   updated_at: string
 }
 
-export type HelfereinsatzInsert = Omit<Helfereinsatz, 'id' | 'created_at' | 'updated_at'>
+export type HelfereinsatzInsert = Omit<
+  Helfereinsatz,
+  'id' | 'created_at' | 'updated_at'
+>
 export type HelfereinsatzUpdate = Partial<HelfereinsatzInsert>
 
 // Extended type with partner details
@@ -215,7 +244,11 @@ export type Helferrolle = {
 export type HelferrolleInsert = Omit<Helferrolle, 'id' | 'created_at'>
 export type HelferrolleUpdate = Partial<HelferrolleInsert>
 
-export type HelferschichtStatus = 'zugesagt' | 'abgesagt' | 'erschienen' | 'nicht_erschienen'
+export type HelferschichtStatus =
+  | 'zugesagt'
+  | 'abgesagt'
+  | 'erschienen'
+  | 'nicht_erschienen'
 
 export type Helferschicht = {
   id: string
@@ -231,7 +264,10 @@ export type Helferschicht = {
   updated_at: string
 }
 
-export type HelferschichtInsert = Omit<Helferschicht, 'id' | 'created_at' | 'updated_at'>
+export type HelferschichtInsert = Omit<
+  Helferschicht,
+  'id' | 'created_at' | 'updated_at'
+>
 export type HelferschichtUpdate = Partial<HelferschichtInsert>
 
 // Extended type with person and role details
@@ -244,7 +280,11 @@ export type HelferschichtMitDetails = Helferschicht & {
 // Stundenkonto (Hours Ledger) - Issue #95
 // =============================================================================
 
-export type StundenTyp = 'helfereinsatz' | 'vereinsevent' | 'sonstiges' | 'korrektur'
+export type StundenTyp =
+  | 'helfereinsatz'
+  | 'vereinsevent'
+  | 'sonstiges'
+  | 'korrektur'
 
 export type StundenkontoEintrag = {
   id: string
@@ -268,7 +308,13 @@ export type StundenkontoMitPerson = StundenkontoEintrag & {
 // Räume (Rooms) - Issue #98
 // =============================================================================
 
-export type RaumTyp = 'buehne' | 'foyer' | 'lager' | 'garderobe' | 'technik' | 'sonstiges'
+export type RaumTyp =
+  | 'buehne'
+  | 'foyer'
+  | 'lager'
+  | 'garderobe'
+  | 'technik'
+  | 'sonstiges'
 
 export type Raum = {
   id: string
@@ -288,7 +334,13 @@ export type RaumUpdate = Partial<RaumInsert>
 // Ressourcen (Equipment) - Issue #98
 // =============================================================================
 
-export type RessourceKategorie = 'licht' | 'ton' | 'requisite' | 'kostuem' | 'buehne' | 'sonstiges'
+export type RessourceKategorie =
+  | 'licht'
+  | 'ton'
+  | 'requisite'
+  | 'kostuem'
+  | 'buehne'
+  | 'sonstiges'
 
 export type Ressource = {
   id: string
@@ -301,14 +353,23 @@ export type Ressource = {
   updated_at: string
 }
 
-export type RessourceInsert = Omit<Ressource, 'id' | 'created_at' | 'updated_at'>
+export type RessourceInsert = Omit<
+  Ressource,
+  'id' | 'created_at' | 'updated_at'
+>
 export type RessourceUpdate = Partial<RessourceInsert>
 
 // =============================================================================
 // Zeitblöcke (Time Blocks) - Issue #97
 // =============================================================================
 
-export type ZeitblockTyp = 'aufbau' | 'einlass' | 'vorfuehrung' | 'pause' | 'abbau' | 'standard'
+export type ZeitblockTyp =
+  | 'aufbau'
+  | 'einlass'
+  | 'vorfuehrung'
+  | 'pause'
+  | 'abbau'
+  | 'standard'
 
 export type Zeitblock = {
   id: string
@@ -337,19 +398,29 @@ export type AuffuehrungSchicht = {
   created_at: string
 }
 
-export type AuffuehrungSchichtInsert = Omit<AuffuehrungSchicht, 'id' | 'created_at'>
+export type AuffuehrungSchichtInsert = Omit<
+  AuffuehrungSchicht,
+  'id' | 'created_at'
+>
 export type AuffuehrungSchichtUpdate = Partial<AuffuehrungSchichtInsert>
 
 // Extended type with time block details
 export type SchichtMitZeitblock = AuffuehrungSchicht & {
-  zeitblock: Pick<Zeitblock, 'id' | 'name' | 'startzeit' | 'endzeit' | 'typ'> | null
+  zeitblock: Pick<
+    Zeitblock,
+    'id' | 'name' | 'startzeit' | 'endzeit' | 'typ'
+  > | null
 }
 
 // =============================================================================
 // Aufführung Zuweisungen (Performance Assignments) - Issue #97
 // =============================================================================
 
-export type ZuweisungStatus = 'zugesagt' | 'abgesagt' | 'erschienen' | 'nicht_erschienen'
+export type ZuweisungStatus =
+  | 'zugesagt'
+  | 'abgesagt'
+  | 'erschienen'
+  | 'nicht_erschienen'
 
 export type AuffuehrungZuweisung = {
   id: string
@@ -360,7 +431,10 @@ export type AuffuehrungZuweisung = {
   created_at: string
 }
 
-export type AuffuehrungZuweisungInsert = Omit<AuffuehrungZuweisung, 'id' | 'created_at'>
+export type AuffuehrungZuweisungInsert = Omit<
+  AuffuehrungZuweisung,
+  'id' | 'created_at'
+>
 export type AuffuehrungZuweisungUpdate = Partial<AuffuehrungZuweisungInsert>
 
 // Extended type with person details
@@ -402,7 +476,10 @@ export type RessourcenReservierung = {
   created_at: string
 }
 
-export type RessourcenReservierungInsert = Omit<RessourcenReservierung, 'id' | 'created_at'>
+export type RessourcenReservierungInsert = Omit<
+  RessourcenReservierung,
+  'id' | 'created_at'
+>
 export type RessourcenReservierungUpdate = Partial<RessourcenReservierungInsert>
 
 // Extended type with resource details
@@ -423,7 +500,10 @@ export type AuffuehrungTemplate = {
   updated_at: string
 }
 
-export type AuffuehrungTemplateInsert = Omit<AuffuehrungTemplate, 'id' | 'created_at' | 'updated_at'>
+export type AuffuehrungTemplateInsert = Omit<
+  AuffuehrungTemplate,
+  'id' | 'created_at' | 'updated_at'
+>
 export type AuffuehrungTemplateUpdate = Partial<AuffuehrungTemplateInsert>
 
 export type TemplateZeitblock = {
@@ -464,7 +544,9 @@ export type TemplateRessourceUpdate = Partial<TemplateRessourceInsert>
 export type TemplateMitDetails = AuffuehrungTemplate & {
   zeitbloecke: TemplateZeitblock[]
   schichten: TemplateSchicht[]
-  ressourcen: (TemplateRessource & { ressource: Pick<Ressource, 'id' | 'name'> | null })[]
+  ressourcen: (TemplateRessource & {
+    ressource: Pick<Ressource, 'id' | 'name'> | null
+  })[]
 }
 
 // =============================================================================
@@ -483,7 +565,12 @@ export type BedarfStatus = {
 // Stücke, Szenen und Rollen (Issue #101)
 // =============================================================================
 
-export type StueckStatus = 'in_planung' | 'in_proben' | 'aktiv' | 'abgeschlossen' | 'archiviert'
+export type StueckStatus =
+  | 'in_planung'
+  | 'in_proben'
+  | 'aktiv'
+  | 'abgeschlossen'
+  | 'archiviert'
 export type RollenTyp = 'hauptrolle' | 'nebenrolle' | 'ensemble' | 'statisterie'
 
 export type Stueck = {
@@ -525,7 +612,10 @@ export type StueckRolle = {
   updated_at: string
 }
 
-export type StueckRolleInsert = Omit<StueckRolle, 'id' | 'created_at' | 'updated_at'>
+export type StueckRolleInsert = Omit<
+  StueckRolle,
+  'id' | 'created_at' | 'updated_at'
+>
 export type StueckRolleUpdate = Partial<StueckRolleInsert>
 
 // Verknüpfung: welche Rollen in welchen Szenen auftreten
@@ -571,7 +661,10 @@ export type Besetzung = {
   updated_at: string
 }
 
-export type BesetzungInsert = Omit<Besetzung, 'id' | 'created_at' | 'updated_at'>
+export type BesetzungInsert = Omit<
+  Besetzung,
+  'id' | 'created_at' | 'updated_at'
+>
 export type BesetzungUpdate = Partial<BesetzungInsert>
 
 export type BesetzungHistorieAktion = 'erstellt' | 'geaendert' | 'entfernt'
@@ -618,8 +711,18 @@ export type UnbesetzteRolle = StueckRolle & {
 // Proben (Issue #103)
 // =============================================================================
 
-export type ProbeStatus = 'geplant' | 'bestaetigt' | 'abgesagt' | 'verschoben' | 'abgeschlossen'
-export type TeilnehmerStatus = 'eingeladen' | 'zugesagt' | 'abgesagt' | 'erschienen' | 'nicht_erschienen'
+export type ProbeStatus =
+  | 'geplant'
+  | 'bestaetigt'
+  | 'abgesagt'
+  | 'verschoben'
+  | 'abgeschlossen'
+export type TeilnehmerStatus =
+  | 'eingeladen'
+  | 'zugesagt'
+  | 'abgesagt'
+  | 'erschienen'
+  | 'nicht_erschienen'
 
 export type Probe = {
   id: string
@@ -660,14 +763,19 @@ export type ProbeTeilnehmer = {
   updated_at: string
 }
 
-export type ProbeTeilnehmerInsert = Omit<ProbeTeilnehmer, 'id' | 'created_at' | 'updated_at'>
+export type ProbeTeilnehmerInsert = Omit<
+  ProbeTeilnehmer,
+  'id' | 'created_at' | 'updated_at'
+>
 export type ProbeTeilnehmerUpdate = Partial<ProbeTeilnehmerInsert>
 
 // Extended types
 export type ProbeMitDetails = Probe & {
   stueck: Pick<Stueck, 'id' | 'titel'>
   szenen: (ProbeSzene & { szene: Pick<Szene, 'id' | 'nummer' | 'titel'> })[]
-  teilnehmer: (ProbeTeilnehmer & { person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'> })[]
+  teilnehmer: (ProbeTeilnehmer & {
+    person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
+  })[]
 }
 
 export type KommendeProbe = Probe & {
@@ -675,6 +783,134 @@ export type KommendeProbe = Probe & {
   szenen_count: number
   teilnehmer_count: number
   zusagen_count: number
+}
+
+// =============================================================================
+// Helferliste (Helper List Feature) - Issues #115-134
+// =============================================================================
+
+export type HelferEventTyp = 'auffuehrung' | 'helfereinsatz'
+export type RollenSichtbarkeit = 'intern' | 'public'
+export type HelferAnmeldungStatus =
+  | 'angemeldet'
+  | 'bestaetigt'
+  | 'abgelehnt'
+  | 'warteliste'
+
+export const HELFER_ANMELDUNG_STATUS_LABELS: Record<
+  HelferAnmeldungStatus,
+  string
+> = {
+  angemeldet: 'Angemeldet',
+  bestaetigt: 'Bestätigt',
+  abgelehnt: 'Abgelehnt',
+  warteliste: 'Warteliste',
+}
+
+export const ROLLEN_SICHTBARKEIT_LABELS: Record<RollenSichtbarkeit, string> = {
+  intern: 'Intern (nur Mitglieder)',
+  public: 'Öffentlich (mit Link)',
+}
+
+export type HelferEvent = {
+  id: string
+  typ: HelferEventTyp
+  veranstaltung_id: string | null
+  name: string
+  beschreibung: string | null
+  datum_start: string
+  datum_end: string
+  ort: string | null
+  public_token: string
+  created_at: string
+  updated_at: string
+}
+
+export type HelferEventInsert = Omit<
+  HelferEvent,
+  'id' | 'public_token' | 'created_at' | 'updated_at'
+>
+export type HelferEventUpdate = Partial<HelferEventInsert>
+
+export type HelferRollenTemplate = {
+  id: string
+  name: string
+  beschreibung: string | null
+  default_anzahl: number
+  created_at: string
+  updated_at: string
+}
+
+export type HelferRollenTemplateInsert = Omit<
+  HelferRollenTemplate,
+  'id' | 'created_at' | 'updated_at'
+>
+export type HelferRollenTemplateUpdate = Partial<HelferRollenTemplateInsert>
+
+export type HelferRollenInstanz = {
+  id: string
+  helfer_event_id: string
+  template_id: string | null
+  custom_name: string | null
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  anzahl_benoetigt: number
+  sichtbarkeit: RollenSichtbarkeit
+  created_at: string
+  updated_at: string
+}
+
+export type HelferRollenInstanzInsert = Omit<
+  HelferRollenInstanz,
+  'id' | 'created_at' | 'updated_at'
+>
+export type HelferRollenInstanzUpdate = Partial<HelferRollenInstanzInsert>
+
+export type HelferAnmeldung = {
+  id: string
+  rollen_instanz_id: string
+  profile_id: string | null
+  external_name: string | null
+  external_email: string | null
+  external_telefon: string | null
+  status: HelferAnmeldungStatus
+  created_at: string
+}
+
+export type HelferAnmeldungInsert = Omit<HelferAnmeldung, 'id' | 'created_at'>
+export type HelferAnmeldungUpdate = Partial<
+  Omit<HelferAnmeldungInsert, 'rollen_instanz_id'>
+>
+
+// Extended types with joins
+export type HelferEventMitDetails = HelferEvent & {
+  veranstaltung: Pick<Veranstaltung, 'id' | 'titel'> | null
+  rollen_count: number
+  anmeldungen_count: number
+}
+
+export type RollenInstanzMitAnmeldungen = HelferRollenInstanz & {
+  template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
+  anmeldungen: (HelferAnmeldung & {
+    profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
+  })[]
+  angemeldet_count: number
+}
+
+export type HelferEventMitRollen = HelferEvent & {
+  veranstaltung: Pick<Veranstaltung, 'id' | 'titel'> | null
+  rollen: RollenInstanzMitAnmeldungen[]
+}
+
+export type HelferAnmeldungMitDetails = HelferAnmeldung & {
+  rollen_instanz: HelferRollenInstanz & {
+    template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
+    helfer_event: Pick<
+      HelferEvent,
+      'id' | 'name' | 'datum_start' | 'datum_end' | 'ort'
+    >
+  }
+  profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
 }
 
 // =============================================================================
@@ -828,6 +1064,26 @@ export type Database = {
         Row: TemplateRessource
         Insert: TemplateRessourceInsert
         Update: TemplateRessourceUpdate
+      }
+      helfer_events: {
+        Row: HelferEvent
+        Insert: HelferEventInsert
+        Update: HelferEventUpdate
+      }
+      helfer_rollen_templates: {
+        Row: HelferRollenTemplate
+        Insert: HelferRollenTemplateInsert
+        Update: HelferRollenTemplateUpdate
+      }
+      helfer_rollen_instanzen: {
+        Row: HelferRollenInstanz
+        Insert: HelferRollenInstanzInsert
+        Update: HelferRollenInstanzUpdate
+      }
+      helfer_anmeldungen: {
+        Row: HelferAnmeldung
+        Insert: HelferAnmeldungInsert
+        Update: HelferAnmeldungUpdate
       }
     }
   }

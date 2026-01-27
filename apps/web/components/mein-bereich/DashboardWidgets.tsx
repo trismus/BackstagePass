@@ -8,7 +8,9 @@ interface UpcomingEventsWidgetProps {
   anmeldungen: AnmeldungMitVeranstaltung[]
 }
 
-export function UpcomingEventsWidget({ anmeldungen }: UpcomingEventsWidgetProps) {
+export function UpcomingEventsWidget({
+  anmeldungen,
+}: UpcomingEventsWidgetProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
       weekday: 'short',
@@ -18,8 +20,8 @@ export function UpcomingEventsWidget({ anmeldungen }: UpcomingEventsWidgetProps)
   }
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-      <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
+    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="border-b border-blue-100 bg-blue-50 px-4 py-3">
         <h3 className="font-medium text-blue-900">Meine Veranstaltungen</h3>
       </div>
       {anmeldungen.length > 0 ? (
@@ -28,11 +30,11 @@ export function UpcomingEventsWidget({ anmeldungen }: UpcomingEventsWidgetProps)
             <Link
               key={a.id}
               href={`/veranstaltungen/${a.veranstaltung.id}` as never}
-              className="block p-3 hover:bg-neutral-50 transition-colors"
+              className="block p-3 transition-colors hover:bg-neutral-50"
             >
-              <div className="flex justify-between items-start">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-medium text-neutral-900 text-sm">
+                  <p className="text-sm font-medium text-neutral-900">
                     {a.veranstaltung.titel}
                   </p>
                   <p className="text-xs text-neutral-500">
@@ -47,14 +49,14 @@ export function UpcomingEventsWidget({ anmeldungen }: UpcomingEventsWidgetProps)
           ))}
         </div>
       ) : (
-        <div className="p-4 text-center text-neutral-500 text-sm">
+        <div className="p-4 text-center text-sm text-neutral-500">
           Keine anstehenden Veranstaltungen
         </div>
       )}
-      <div className="px-4 py-2 bg-neutral-50 border-t border-neutral-100">
+      <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
         <Link
           href="/veranstaltungen"
-          className="text-blue-600 hover:text-blue-800 text-sm"
+          className="text-sm text-blue-600 hover:text-blue-800"
         >
           Alle Veranstaltungen &rarr;
         </Link>
@@ -69,36 +71,44 @@ interface StundenWidgetProps {
   lastEntries: StundenkontoEintrag[]
 }
 
-export function StundenWidget({ total, thisYear, lastEntries }: StundenWidgetProps) {
+export function StundenWidget({
+  total,
+  thisYear,
+  lastEntries,
+}: StundenWidgetProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-      <div className="px-4 py-3 bg-green-50 border-b border-green-100">
+    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="border-b border-green-100 bg-green-50 px-4 py-3">
         <h3 className="font-medium text-green-900">Mein Stundenkonto</h3>
       </div>
       <div className="p-4">
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-2 gap-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-neutral-900">{total.toFixed(1)}</p>
+            <p className="text-2xl font-bold text-neutral-900">
+              {total.toFixed(1)}
+            </p>
             <p className="text-xs text-neutral-500">Stunden gesamt</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{thisYear.toFixed(1)}</p>
+            <p className="text-2xl font-bold text-green-600">
+              {thisYear.toFixed(1)}
+            </p>
             <p className="text-xs text-neutral-500">{currentYear}</p>
           </div>
         </div>
 
         {lastEntries.length > 0 && (
           <div className="border-t border-neutral-100 pt-3">
-            <p className="text-xs text-neutral-500 mb-2">Letzte Einträge:</p>
+            <p className="mb-2 text-xs text-neutral-500">Letzte Einträge:</p>
             {lastEntries.slice(0, 3).map((e) => (
-              <div key={e.id} className="flex justify-between text-sm py-1">
-                <span className="text-neutral-600 truncate flex-1">
+              <div key={e.id} className="flex justify-between py-1 text-sm">
+                <span className="flex-1 truncate text-neutral-600">
                   {e.beschreibung || e.typ}
                 </span>
                 <span
-                  className={`font-medium ml-2 ${
+                  className={`ml-2 font-medium ${
                     e.stunden >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}
                 >
@@ -110,10 +120,10 @@ export function StundenWidget({ total, thisYear, lastEntries }: StundenWidgetPro
           </div>
         )}
       </div>
-      <div className="px-4 py-2 bg-neutral-50 border-t border-neutral-100">
+      <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
         <Link
           href="/mein-bereich/stundenkonto"
-          className="text-green-600 hover:text-green-800 text-sm"
+          className="text-sm text-green-600 hover:text-green-800"
         >
           Details anzeigen &rarr;
         </Link>
@@ -136,7 +146,9 @@ interface HelferEinsaetzeWidgetProps {
   einsaetze: HelferEinsatz[]
 }
 
-export function HelferEinsaetzeWidget({ einsaetze }: HelferEinsaetzeWidgetProps) {
+export function HelferEinsaetzeWidget({
+  einsaetze,
+}: HelferEinsaetzeWidgetProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
       weekday: 'short',
@@ -146,31 +158,34 @@ export function HelferEinsaetzeWidget({ einsaetze }: HelferEinsaetzeWidgetProps)
   }
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-      <div className="px-4 py-3 bg-amber-50 border-b border-amber-100">
+    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="border-b border-amber-100 bg-amber-50 px-4 py-3">
         <h3 className="font-medium text-amber-900">Offene Helfereinsätze</h3>
       </div>
       {einsaetze.length > 0 ? (
         <div className="divide-y divide-neutral-100">
           {einsaetze.map((e) => {
-            const schichtenArray = e.helferschichten as unknown as { id: string }[] | null
+            const schichtenArray = e.helferschichten as unknown as
+              | { id: string }[]
+              | null
             const currentHelpers = schichtenArray?.length ?? 0
-            const spotsLeft = e.helfer_max ? e.helfer_max - currentHelpers : null
+            const spotsLeft = e.helfer_max
+              ? e.helfer_max - currentHelpers
+              : null
 
             return (
               <Link
                 key={e.id}
                 href={`/helfereinsaetze/${e.id}` as never}
-                className="block p-3 hover:bg-neutral-50 transition-colors"
+                className="block p-3 transition-colors hover:bg-neutral-50"
               >
-                <div className="flex justify-between items-start">
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium text-neutral-900 text-sm">
+                    <p className="text-sm font-medium text-neutral-900">
                       {e.titel}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      {e.ort || 'Kein Ort'}{' '}
-                      {e.startzeit && `• ${e.startzeit}`}
+                      {e.ort || 'Kein Ort'} {e.startzeit && `• ${e.startzeit}`}
                     </p>
                   </div>
                   <div className="text-right">
@@ -179,7 +194,7 @@ export function HelferEinsaetzeWidget({ einsaetze }: HelferEinsaetzeWidgetProps)
                     </span>
                     {spotsLeft !== null && (
                       <p
-                        className={`text-xs mt-1 ${
+                        className={`mt-1 text-xs ${
                           spotsLeft > 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
@@ -193,14 +208,14 @@ export function HelferEinsaetzeWidget({ einsaetze }: HelferEinsaetzeWidgetProps)
           })}
         </div>
       ) : (
-        <div className="p-4 text-center text-neutral-500 text-sm">
+        <div className="p-4 text-center text-sm text-neutral-500">
           Keine offenen Einsätze
         </div>
       )}
-      <div className="px-4 py-2 bg-neutral-50 border-t border-neutral-100">
+      <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
         <Link
           href="/helfereinsaetze"
-          className="text-amber-600 hover:text-amber-800 text-sm"
+          className="text-sm text-amber-600 hover:text-amber-800"
         >
           Alle Einsätze &rarr;
         </Link>
@@ -213,7 +228,9 @@ interface QuickLinksWidgetProps {
   variant?: 'active' | 'passive'
 }
 
-export function QuickLinksWidget({ variant = 'active' }: QuickLinksWidgetProps) {
+export function QuickLinksWidget({
+  variant = 'active',
+}: QuickLinksWidgetProps) {
   const activeLinks = [
     { href: '/veranstaltungen', icon: '📅', label: 'Veranstaltungen' },
     { href: '/helfereinsaetze', icon: '🤝', label: 'Helfereinsätze' },
@@ -231,8 +248,8 @@ export function QuickLinksWidget({ variant = 'active' }: QuickLinksWidgetProps) 
   const links = variant === 'passive' ? passiveLinks : activeLinks
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-      <div className="px-4 py-3 bg-neutral-50 border-b border-neutral-100">
+    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="border-b border-neutral-100 bg-neutral-50 px-4 py-3">
         <h3 className="font-medium text-neutral-900">Schnellzugriff</h3>
       </div>
       <div className="grid grid-cols-2 gap-2 p-3">
@@ -240,7 +257,7 @@ export function QuickLinksWidget({ variant = 'active' }: QuickLinksWidgetProps) 
           <Link
             key={link.href}
             href={link.href as never}
-            className="flex items-center gap-2 p-3 rounded-lg hover:bg-neutral-50 transition-colors"
+            className="flex items-center gap-2 rounded-lg p-3 transition-colors hover:bg-neutral-50"
           >
             <span className="text-xl">{link.icon}</span>
             <span className="text-sm font-medium text-neutral-700">

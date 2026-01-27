@@ -66,7 +66,10 @@ export async function GET() {
       const supabase = await createClient()
 
       // Simple query to test connection
-      const { error } = await supabase.from('_health_check').select('*').limit(1)
+      const { error } = await supabase
+        .from('_health_check')
+        .select('*')
+        .limit(1)
 
       // Table doesn't exist is fine - we just want to test the connection
       if (error && !error.message.includes('does not exist')) {
@@ -100,7 +103,10 @@ export async function GET() {
 
   // Build response
   const health: HealthCheck = {
-    status: envCheck.status === 'ok' && supabaseCheck.status === 'ok' ? 'ok' : 'error',
+    status:
+      envCheck.status === 'ok' && supabaseCheck.status === 'ok'
+        ? 'ok'
+        : 'error',
     timestamp: new Date().toISOString(),
     checks: {
       env: envCheck,

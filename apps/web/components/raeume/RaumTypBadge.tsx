@@ -15,13 +15,15 @@ interface RaumTypBadgeProps {
 
 export function RaumTypBadge({ typ }: RaumTypBadgeProps) {
   if (!typ) {
-    return <span className="text-gray-400 text-sm">-</span>
+    return <span className="text-sm text-gray-400">-</span>
   }
 
   const config = typConfig[typ]
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config.color}`}
+    >
       {config.label}
     </span>
   )

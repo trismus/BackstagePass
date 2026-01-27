@@ -65,7 +65,11 @@ function formatDetails(details: Record<string, unknown>): string {
   return parts.length > 0 ? parts.join(' ') : JSON.stringify(details)
 }
 
-export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTableProps) {
+export function AuditLogTable({
+  logs,
+  count,
+  initialFilters = {},
+}: AuditLogTableProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [action, setAction] = useState(initialFilters.action || '')
@@ -79,7 +83,9 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
       if (action) params.set('action', action)
       if (startDate) params.set('startDate', startDate)
       if (endDate) params.set('endDate', endDate)
-      router.push(`/admin/audit${params.toString() ? `?${params.toString()}` : ''}` as never)
+      router.push(
+        `/admin/audit${params.toString() ? `?${params.toString()}` : ''}` as never
+      )
     })
   }
 
@@ -120,13 +126,13 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <form onSubmit={handleFilter} className="flex flex-wrap gap-3 items-end">
+      <form onSubmit={handleFilter} className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">Aktion</label>
+          <label className="mb-1 block text-xs text-neutral-500">Aktion</label>
           <select
             value={action}
             onChange={(e) => setAction(e.target.value)}
-            className="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {actionOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -136,27 +142,27 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
           </select>
         </div>
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">Von</label>
+          <label className="mb-1 block text-xs text-neutral-500">Von</label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">Bis</label>
+          <label className="mb-1 block text-xs text-neutral-500">Bis</label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50"
+          className="rounded-lg bg-primary-600 px-4 py-2 text-sm text-white hover:bg-primary-700 disabled:opacity-50"
         >
           {isPending ? 'Filtern...' : 'Filtern'}
         </button>
@@ -164,7 +170,7 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
           <button
             type="button"
             onClick={handleReset}
-            className="px-4 py-2 text-neutral-600 text-sm hover:text-neutral-800"
+            className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800"
           >
             Zurücksetzen
           </button>
@@ -173,7 +179,7 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
         <button
           type="button"
           onClick={handleExport}
-          className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg text-sm hover:bg-neutral-50"
+          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
         >
           CSV Export
         </button>
@@ -181,7 +187,7 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
 
       {/* Table */}
       {logs.length === 0 ? (
-        <p className="text-sm text-neutral-500 py-8 text-center">
+        <p className="py-8 text-center text-sm text-neutral-500">
           Keine Aktivitäten gefunden.
         </p>
       ) : (
@@ -189,10 +195,18 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
           <table className="w-full">
             <thead>
               <tr className="border-b border-neutral-200">
-                <th className="pb-3 text-left text-sm font-medium text-neutral-600">Zeitpunkt</th>
-                <th className="pb-3 text-left text-sm font-medium text-neutral-600">Benutzer</th>
-                <th className="pb-3 text-left text-sm font-medium text-neutral-600">Aktion</th>
-                <th className="pb-3 text-left text-sm font-medium text-neutral-600">Details</th>
+                <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                  Zeitpunkt
+                </th>
+                <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                  Benutzer
+                </th>
+                <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                  Aktion
+                </th>
+                <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                  Details
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
@@ -207,13 +221,17 @@ export function AuditLogTable({ logs, count, initialFilters = {} }: AuditLogTabl
                       minute: '2-digit',
                     })}
                   </td>
-                  <td className="py-3 text-sm text-neutral-600">{log.user_email || '-'}</td>
+                  <td className="py-3 text-sm text-neutral-600">
+                    {log.user_email || '-'}
+                  </td>
                   <td className="py-3">
                     <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-800">
                       {getActionLabel(log.action)}
                     </span>
                   </td>
-                  <td className="py-3 text-sm text-neutral-600">{formatDetails(log.details)}</td>
+                  <td className="py-3 text-sm text-neutral-600">
+                    {formatDetails(log.details)}
+                  </td>
                 </tr>
               ))}
             </tbody>

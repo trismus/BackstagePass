@@ -8,7 +8,9 @@ import type { UserRole } from '@/lib/supabase/types'
 export async function updateProfile(displayName: string) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     return { error: 'Nicht angemeldet' }
@@ -34,7 +36,9 @@ export async function updateProfile(displayName: string) {
 export async function getProfile() {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     return null
@@ -60,7 +64,9 @@ export async function getAllUsers(search?: string) {
 
   if (search && search.trim()) {
     const searchTerm = `%${search.trim()}%`
-    query = query.or(`display_name.ilike.${searchTerm},email.ilike.${searchTerm}`)
+    query = query.or(
+      `display_name.ilike.${searchTerm},email.ilike.${searchTerm}`
+    )
   }
 
   const { data: profiles, error } = await query
@@ -77,7 +83,9 @@ export async function toggleUserActive(userId: string) {
   const supabase = await createClient()
 
   // Check if current user is admin
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     return { error: 'Nicht angemeldet' }
   }
@@ -131,7 +139,9 @@ export async function updateUserRole(userId: string, role: UserRole) {
   const supabase = await createClient()
 
   // Check if current user is admin
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) {
     return { error: 'Nicht angemeldet' }
   }

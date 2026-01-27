@@ -49,7 +49,10 @@ function ProfileDropdown({
   // Close on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setOpen(false)
       }
     }
@@ -75,7 +78,7 @@ function ProfileDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
       >
         {/* Avatar */}
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-neutral-600">
@@ -85,7 +88,7 @@ function ProfileDropdown({
         </div>
 
         {/* Name (hidden on mobile) */}
-        <span className="hidden sm:inline max-w-[150px] truncate">
+        <span className="hidden max-w-[150px] truncate sm:inline">
           {displayText}
         </span>
 
@@ -96,20 +99,25 @@ function ProfileDropdown({
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="absolute right-0 mt-2 w-56 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg z-50">
+        <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg">
           {/* User Info */}
           <div className="border-b border-neutral-200 px-4 py-3">
-            <p className="text-sm font-medium text-neutral-900 truncate">
+            <p className="truncate text-sm font-medium text-neutral-900">
               {displayText}
             </p>
             {userEmail && displayName && (
-              <p className="text-xs text-neutral-500 truncate">{userEmail}</p>
+              <p className="truncate text-xs text-neutral-500">{userEmail}</p>
             )}
             {roleLabel && (
               <p className="mt-1 text-xs text-neutral-500">
@@ -174,7 +182,7 @@ export function Header({
           {onMobileMenuClick && (
             <button
               onClick={onMobileMenuClick}
-              className="lg:hidden rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
+              className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 lg:hidden"
               aria-label="Menü öffnen"
             >
               <MenuIcon className="h-6 w-6" />

@@ -4,7 +4,10 @@ import { useState, useCallback, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import type { UserRole } from '@/lib/supabase/types'
 import type { NavSection } from '@/lib/navigation'
-import { getFilteredNavigationForRole, generateBreadcrumbs } from '@/lib/navigation'
+import {
+  getFilteredNavigationForRole,
+  generateBreadcrumbs,
+} from '@/lib/navigation'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 
@@ -71,9 +74,7 @@ export function AppLayout({
   return (
     <div className="flex h-screen bg-neutral-50">
       {/* Sidebar */}
-      {!hideSidebar && (
-        <Sidebar sections={sections} />
-      )}
+      {!hideSidebar && <Sidebar sections={sections} />}
 
       {/* Mobile Sidebar Overlay */}
       {!hideSidebar && mobileMenuOpen && (
@@ -97,9 +98,7 @@ export function AppLayout({
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">
-            {children}
-          </div>
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
     </div>
@@ -166,20 +165,19 @@ function MobileSidebarOverlay({
                   )}
                   <nav className="space-y-1">
                     {section.items.map((item) => {
-                      const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                      const isActive =
+                        pathname === item.href ||
+                        pathname.startsWith(item.href + '/')
                       return (
                         <Link
                           key={item.href}
                           href={item.href as never}
                           onClick={onClose}
-                          className={`
-                            flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all
-                            ${
-                              isActive
-                                ? 'bg-neutral-900 text-white'
-                                : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
-                            }
-                          `}
+                          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                            isActive
+                              ? 'bg-neutral-900 text-white'
+                              : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+                          } `}
                         >
                           <NavIconComponent
                             name={item.icon}

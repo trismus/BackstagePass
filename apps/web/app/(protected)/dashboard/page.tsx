@@ -22,7 +22,7 @@ function StatCard({
   trend?: { value: number; label: string }
 }) {
   const content = (
-    <div className="rounded-xl border border-neutral-200 bg-white p-6 hover:border-neutral-300 transition-colors">
+    <div className="rounded-xl border border-neutral-200 bg-white p-6 transition-colors hover:border-neutral-300">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-neutral-500">{title}</h3>
         {trend && (
@@ -60,7 +60,7 @@ function QuickAction({
   return (
     <Link
       href={href as never}
-      className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 hover:border-neutral-300 hover:bg-neutral-50 transition-colors"
+      className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 transition-colors hover:border-neutral-300 hover:bg-neutral-50"
     >
       <span className="text-neutral-500">{icon}</span>
       <span className="text-sm font-medium text-neutral-900">{label}</span>
@@ -90,14 +90,14 @@ function EventRow({
   return (
     <Link
       href={href as never}
-      className="flex items-center justify-between py-3 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 -mx-2 px-2 rounded transition-colors"
+      className="-mx-2 flex items-center justify-between rounded border-b border-neutral-100 px-2 py-3 transition-colors last:border-0 hover:bg-neutral-50"
     >
       <div>
         <p className="font-medium text-neutral-900">{title}</p>
         <p className="text-sm text-neutral-500">{date}</p>
       </div>
       <span
-        className={`px-2 py-1 text-xs font-medium rounded ${
+        className={`rounded px-2 py-1 text-xs font-medium ${
           typeColors[type] || 'bg-neutral-100 text-neutral-700'
         }`}
       >
@@ -200,8 +200,8 @@ export default async function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Upcoming Events - Takes 2 columns */}
-        <div className="lg:col-span-2 rounded-xl border border-neutral-200 bg-white p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="font-semibold text-neutral-900">
               Anstehende Veranstaltungen
             </h2>
@@ -225,7 +225,7 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="text-neutral-500 py-4">
+            <p className="py-4 text-neutral-500">
               Keine Veranstaltungen in den nächsten 7 Tagen.
             </p>
           )}
@@ -233,7 +233,7 @@ export default async function DashboardPage() {
 
         {/* Quick Actions - Takes 1 column */}
         <div className="rounded-xl border border-neutral-200 bg-white p-6">
-          <h2 className="font-semibold text-neutral-900 mb-4">
+          <h2 className="mb-4 font-semibold text-neutral-900">
             Schnellaktionen
           </h2>
           <div className="space-y-3">
@@ -241,7 +241,7 @@ export default async function DashboardPage() {
               href="/veranstaltungen/neu"
               icon={
                 <svg
-                  className="w-5 h-5"
+                  className="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
               href="/mitglieder/neu"
               icon={
                 <svg
-                  className="w-5 h-5"
+                  className="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -279,7 +279,7 @@ export default async function DashboardPage() {
               href="/helfereinsaetze/neu"
               icon={
                 <svg
-                  className="w-5 h-5"
+                  className="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -298,7 +298,7 @@ export default async function DashboardPage() {
               href="/stuecke/neu"
               icon={
                 <svg
-                  className="w-5 h-5"
+                  className="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -319,7 +319,7 @@ export default async function DashboardPage() {
 
       {/* Profile Summary */}
       <div className="rounded-xl border border-neutral-200 bg-white p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Dein Profil</h2>
           <Link
             href="/profile"
@@ -328,22 +328,22 @@ export default async function DashboardPage() {
             Bearbeiten &rarr;
           </Link>
         </div>
-        <dl className="grid gap-4 sm:grid-cols-3 text-sm">
+        <dl className="grid gap-4 text-sm sm:grid-cols-3">
           <div>
             <dt className="text-neutral-500">E-Mail</dt>
-            <dd className="font-medium text-neutral-900 mt-1">{user?.email}</dd>
+            <dd className="mt-1 font-medium text-neutral-900">{user?.email}</dd>
           </div>
           {profile && (
             <>
               <div>
                 <dt className="text-neutral-500">Name</dt>
-                <dd className="font-medium text-neutral-900 mt-1">
+                <dd className="mt-1 font-medium text-neutral-900">
                   {profile.display_name || '-'}
                 </dd>
               </div>
               <div>
                 <dt className="text-neutral-500">Rolle</dt>
-                <dd className="font-medium text-neutral-900 mt-1">
+                <dd className="mt-1 font-medium text-neutral-900">
                   {profile.role}
                 </dd>
               </div>

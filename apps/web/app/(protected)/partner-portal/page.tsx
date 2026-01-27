@@ -15,11 +15,11 @@ export default async function PartnerPortalPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Partner-Portal</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             {partner
               ? `Willkommen, ${partner.name}!`
               : 'Ihr Zugang zu den TGW-Partnerinformationen'}
@@ -27,7 +27,7 @@ export default async function PartnerPortalPage() {
         </div>
 
         {!partner && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <p className="text-yellow-800">
               Ihr Account ist noch nicht mit einer Partnerorganisation
               verknüpft. Bitte wenden Sie sich an die Theatergruppe Widen.
@@ -38,11 +38,11 @@ export default async function PartnerPortalPage() {
         {partner && (
           <>
             {/* Partner Info Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Ihre Partnerdaten
               </h2>
-              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
                     Organisation
@@ -51,7 +51,7 @@ export default async function PartnerPortalPage() {
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Typ</dt>
-                  <dd className="text-gray-900 capitalize">{partner.typ}</dd>
+                  <dd className="capitalize text-gray-900">{partner.typ}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
@@ -65,33 +65,35 @@ export default async function PartnerPortalPage() {
         )}
 
         {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Link
             href={'/partner-portal/daten' as never}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:border-gray-300 transition-colors"
+            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-gray-300"
           >
-            <h3 className="font-semibold text-gray-900 mb-2">Meine Daten</h3>
-            <p className="text-gray-600 text-sm">
+            <h3 className="mb-2 font-semibold text-gray-900">Meine Daten</h3>
+            <p className="text-sm text-gray-600">
               Ihre Kontakt- und Organisationsdaten bearbeiten
             </p>
           </Link>
 
           <Link
             href="/veranstaltungen"
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:border-gray-300 transition-colors"
+            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-gray-300"
           >
-            <h3 className="font-semibold text-gray-900 mb-2">Veranstaltungen</h3>
-            <p className="text-gray-600 text-sm">
+            <h3 className="mb-2 font-semibold text-gray-900">
+              Veranstaltungen
+            </h3>
+            <p className="text-sm text-gray-600">
               Aktuelle und kommende Veranstaltungen der TGW
             </p>
           </Link>
 
           <Link
             href={'/partner-portal/kontakt' as never}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:border-gray-300 transition-colors"
+            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:border-gray-300"
           >
-            <h3 className="font-semibold text-gray-900 mb-2">Kontakt</h3>
-            <p className="text-gray-600 text-sm">
+            <h3 className="mb-2 font-semibold text-gray-900">Kontakt</h3>
+            <p className="text-sm text-gray-600">
               Kontaktieren Sie die Theatergruppe Widen
             </p>
           </Link>
@@ -99,10 +101,7 @@ export default async function PartnerPortalPage() {
 
         {/* Profile Link */}
         <div className="mt-8">
-          <Link
-            href="/profile"
-            className="text-blue-600 hover:text-blue-800"
-          >
+          <Link href="/profile" className="text-blue-600 hover:text-blue-800">
             Ihr Benutzerprofil bearbeiten &rarr;
           </Link>
         </div>

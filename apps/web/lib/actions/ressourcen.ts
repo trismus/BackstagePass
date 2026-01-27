@@ -2,8 +2,16 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
-import type { Ressource, RessourceInsert, RessourceUpdate } from '../supabase/types'
-import { ressourceSchema, ressourceUpdateSchema, validateInput } from '../validations/modul2'
+import type {
+  Ressource,
+  RessourceInsert,
+  RessourceUpdate,
+} from '../supabase/types'
+import {
+  ressourceSchema,
+  ressourceUpdateSchema,
+  validateInput,
+} from '../validations/modul2'
 
 /**
  * Get all resources

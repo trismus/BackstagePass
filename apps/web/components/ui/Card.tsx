@@ -22,12 +22,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`
-        rounded-2xl border border-neutral-200 bg-white shadow-sm
-        ${paddingStyles[padding]}
-        ${hover ? 'transition-shadow hover:shadow-md' : ''}
-        ${className}
-      `}
+      className={`rounded-2xl border border-neutral-200 bg-white shadow-sm ${paddingStyles[padding]} ${hover ? 'transition-shadow hover:shadow-md' : ''} ${className} `}
       {...props}
     >
       {children}
@@ -39,7 +34,11 @@ export interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
 }
 
-export function CardHeader({ children, className = '', ...props }: CardHeaderProps) {
+export function CardHeader({
+  children,
+  className = '',
+  ...props
+}: CardHeaderProps) {
   return (
     <div className={`mb-4 ${className}`} {...props}>
       {children}
@@ -88,7 +87,11 @@ export interface CardContentProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
 }
 
-export function CardContent({ children, className = '', ...props }: CardContentProps) {
+export function CardContent({
+  children,
+  className = '',
+  ...props
+}: CardContentProps) {
   return (
     <div className={className} {...props}>
       {children}
@@ -100,7 +103,11 @@ export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
 }
 
-export function CardFooter({ children, className = '', ...props }: CardFooterProps) {
+export function CardFooter({
+  children,
+  className = '',
+  ...props
+}: CardFooterProps) {
   return (
     <div className={`mt-4 flex items-center gap-2 ${className}`} {...props}>
       {children}

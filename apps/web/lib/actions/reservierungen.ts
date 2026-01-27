@@ -65,7 +65,10 @@ export async function createRaumReservierung(
 
   if (error) {
     console.error('Error creating raum reservierung:', error)
-    return { success: false, error: 'Fehler beim Erstellen der Raumreservierung' }
+    return {
+      success: false,
+      error: 'Fehler beim Erstellen der Raumreservierung',
+    }
   }
 
   revalidatePath(`/auffuehrungen/${data.veranstaltung_id}`)
@@ -81,7 +84,10 @@ export async function deleteRaumReservierung(
   veranstaltungId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('raum_reservierungen').delete().eq('id', id)
+  const { error } = await supabase
+    .from('raum_reservierungen')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error deleting raum reservierung:', error)
@@ -195,7 +201,10 @@ export async function createRessourcenReservierung(
 
   if (error) {
     console.error('Error creating ressourcen reservierung:', error)
-    return { success: false, error: 'Fehler beim Erstellen der Ressourcenreservierung' }
+    return {
+      success: false,
+      error: 'Fehler beim Erstellen der Ressourcenreservierung',
+    }
   }
 
   revalidatePath(`/auffuehrungen/${data.veranstaltung_id}`)
@@ -234,7 +243,10 @@ export async function deleteRessourcenReservierung(
   veranstaltungId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('ressourcen_reservierungen').delete().eq('id', id)
+  const { error } = await supabase
+    .from('ressourcen_reservierungen')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error deleting ressourcen reservierung:', error)
@@ -293,7 +305,8 @@ export async function checkRessourceVerfuegbarkeit(
     .eq('ressource_id', ressourceId)
     .in('veranstaltung_id', veranstaltungIds)
 
-  const reserved = reservierungen?.reduce((sum, r) => sum + (r.menge || 0), 0) || 0
+  const reserved =
+    reservierungen?.reduce((sum, r) => sum + (r.menge || 0), 0) || 0
 
   return {
     total: ressource.menge,

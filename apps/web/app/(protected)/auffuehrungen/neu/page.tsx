@@ -22,11 +22,11 @@ export default async function NeueAuffuehrungPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-2xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Neue Aufführung</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Erstelle eine neue Aufführung mit Zeitblöcken und Schichten
           </p>
         </div>
@@ -39,13 +39,20 @@ export default async function NeueAuffuehrungPage() {
         )}
 
         {/* Form */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <VeranstaltungForm mode="create" fixedTyp="auffuehrung" returnUrl="/auffuehrungen" />
+        <div className="rounded-lg bg-white p-6 shadow">
+          <VeranstaltungForm
+            mode="create"
+            fixedTyp="auffuehrung"
+            returnUrl="/auffuehrungen"
+          />
         </div>
 
         {/* Back Link */}
         <div className="mt-8">
-          <Link href="/auffuehrungen" className="text-blue-600 hover:text-blue-800">
+          <Link
+            href="/auffuehrungen"
+            className="text-blue-600 hover:text-blue-800"
+          >
             &larr; Zurück zu Aufführungen
           </Link>
         </div>

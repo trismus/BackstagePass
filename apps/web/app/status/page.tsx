@@ -25,7 +25,11 @@ interface HealthCheck {
   }
 }
 
-function StatusBadge({ status }: { status: 'ok' | 'error' | 'skipped' | 'unknown' }) {
+function StatusBadge({
+  status,
+}: {
+  status: 'ok' | 'error' | 'skipped' | 'unknown'
+}) {
   const styles = {
     ok: 'bg-green-100 text-green-800 border-green-200',
     error: 'bg-red-100 text-red-800 border-red-200',
@@ -110,7 +114,10 @@ export default function StatusPage() {
           </div>
           <h1 className="text-xl font-bold text-gray-900">Verbindungsfehler</h1>
           <p className="mt-2 text-gray-600">{error}</p>
-          <Link href="/" className="mt-4 inline-block text-blue-600 hover:underline">
+          <Link
+            href="/"
+            className="mt-4 inline-block text-blue-600 hover:underline"
+          >
             Zurück zur Startseite
           </Link>
         </div>
@@ -119,10 +126,13 @@ export default function StatusPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <nav className="mb-8">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+          >
             <span>&larr;</span>
             <span>Zurück zur Startseite</span>
           </Link>
@@ -134,7 +144,9 @@ export default function StatusPage() {
               health?.status === 'ok' ? 'bg-green-100' : 'bg-red-100'
             }`}
           >
-            <span className="text-4xl">{health?.status === 'ok' ? '✓' : '!'}</span>
+            <span className="text-4xl">
+              {health?.status === 'ok' ? '✓' : '!'}
+            </span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">System Status</h1>
           <p className="mt-2 text-gray-600">
@@ -144,14 +156,18 @@ export default function StatusPage() {
           </p>
           {health?.timestamp && (
             <p className="mt-1 text-xs text-gray-400">
-              Zuletzt geprüft: {new Date(health.timestamp).toLocaleString('de-DE')}
+              Zuletzt geprüft:{' '}
+              {new Date(health.timestamp).toLocaleString('de-DE')}
             </p>
           )}
         </div>
 
         <div className="grid gap-6">
           {/* Environment Variables */}
-          <CheckCard title="Environment Variables" status={health?.checks.env.status || 'unknown'}>
+          <CheckCard
+            title="Environment Variables"
+            status={health?.checks.env.status || 'unknown'}
+          >
             {health?.checks.env.present.map((v) => (
               <div key={v} className="flex items-center gap-2">
                 <span className="text-green-600">✓</span>
@@ -168,15 +184,23 @@ export default function StatusPage() {
           </CheckCard>
 
           {/* Supabase */}
-          <CheckCard title="Supabase Datenbank" status={health?.checks.supabase.status || 'unknown'}>
+          <CheckCard
+            title="Supabase Datenbank"
+            status={health?.checks.supabase.status || 'unknown'}
+          >
             <p>{health?.checks.supabase.message}</p>
             {health?.checks.supabase.latency !== undefined && (
-              <p className="text-gray-400">Latenz: {health.checks.supabase.latency}ms</p>
+              <p className="text-gray-400">
+                Latenz: {health.checks.supabase.latency}ms
+              </p>
             )}
           </CheckCard>
 
           {/* Vercel */}
-          <CheckCard title="Vercel Deployment" status={health?.checks.vercel.status || 'unknown'}>
+          <CheckCard
+            title="Vercel Deployment"
+            status={health?.checks.vercel.status || 'unknown'}
+          >
             {health?.checks.vercel.environment ? (
               <>
                 <p>
@@ -188,7 +212,9 @@ export default function StatusPage() {
                 {health.checks.vercel.region && (
                   <p>
                     Region:{' '}
-                    <code className="rounded bg-gray-100 px-1">{health.checks.vercel.region}</code>
+                    <code className="rounded bg-gray-100 px-1">
+                      {health.checks.vercel.region}
+                    </code>
                   </p>
                 )}
               </>

@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getMockupPage, getAllMockupPages } from '../../../lib/mockup/data'
 
-
 export async function generateStaticParams() {
   const pages = getAllMockupPages()
   return pages.map((page) => ({ slug: page.slug }))
@@ -21,20 +20,20 @@ export default async function MockupDetailPage({ params }: MockupPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+    <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
         <nav className="mb-8">
           <Link
             href="/mockup"
-            className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
           >
             <span>&larr;</span>
             <span>Zurück zur Übersicht</span>
           </Link>
         </nav>
 
-        <article className="bg-white rounded-lg shadow p-8 border border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+        <article className="rounded-lg border border-gray-200 bg-white p-8 shadow">
+          <h1 className="mb-6 text-3xl font-bold text-gray-900">
             {page.title}
           </h1>
 
@@ -44,10 +43,10 @@ export default async function MockupDetailPage({ params }: MockupPageProps) {
           />
         </article>
 
-        <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mt-8 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <p className="text-sm text-yellow-800">
-            <strong>Mockup-Hinweis:</strong> Dies ist eine Vorschau-Seite für Design-Feedback.
-            Die Inhalte sind Platzhalter.
+            <strong>Mockup-Hinweis:</strong> Dies ist eine Vorschau-Seite für
+            Design-Feedback. Die Inhalte sind Platzhalter.
           </p>
         </div>
 

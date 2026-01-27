@@ -2,9 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { HelferschichtMitDetails, HelferschichtStatus } from '@/lib/supabase/types'
+import type {
+  HelferschichtMitDetails,
+  HelferschichtStatus,
+} from '@/lib/supabase/types'
 import { HelferschichtStatusBadge } from './HelfereinsatzStatusBadge'
-import { updateHelferschichtStatus, removeHelfer } from '@/lib/actions/helferschichten'
+import {
+  updateHelferschichtStatus,
+  removeHelfer,
+} from '@/lib/actions/helferschichten'
 
 interface HelferschichtenListeProps {
   schichten: HelferschichtMitDetails[]
@@ -18,7 +24,10 @@ export function HelferschichtenListe({
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
 
-  async function handleStatusChange(id: string, newStatus: HelferschichtStatus) {
+  async function handleStatusChange(
+    id: string,
+    newStatus: HelferschichtStatus
+  ) {
     setLoading(id)
     await updateHelferschichtStatus(id, newStatus)
     setLoading(null)
@@ -53,24 +62,24 @@ export function HelferschichtenListe({
 
       {/* List */}
       {schichten.length > 0 ? (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg bg-white shadow">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Name
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Rolle
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Status
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Stunden
                 </th>
                 {canEdit && (
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-2 text-right text-xs font-medium uppercase text-gray-500">
                     Aktion
                   </th>
                 )}
@@ -79,29 +88,31 @@ export function HelferschichtenListe({
             <tbody className="divide-y divide-gray-200">
               {schichten.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="whitespace-nowrap px-4 py-3">
                     <div className="font-medium text-gray-900">
                       {s.person.vorname} {s.person.nachname}
                     </div>
                     {s.person.email && (
-                      <div className="text-sm text-gray-500">{s.person.email}</div>
+                      <div className="text-sm text-gray-500">
+                        {s.person.email}
+                      </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                     {s.helferrolle?.rolle || '-'}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="whitespace-nowrap px-4 py-3">
                     <HelferschichtStatusBadge status={s.status} />
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                     {s.stunden_gearbeitet?.toFixed(1) || '-'}
                   </td>
                   {canEdit && (
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                    <td className="whitespace-nowrap px-4 py-3 text-right">
                       {loading === s.id ? (
                         <span className="text-sm text-gray-400">...</span>
                       ) : (
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex justify-end gap-2">
                           <select
                             value={s.status}
                             onChange={(e) =>
@@ -110,16 +121,18 @@ export function HelferschichtenListe({
                                 e.target.value as HelferschichtStatus
                               )
                             }
-                            className="text-sm border border-gray-300 rounded px-2 py-1"
+                            className="rounded border border-gray-300 px-2 py-1 text-sm"
                           >
                             <option value="zugesagt">Zugesagt</option>
                             <option value="erschienen">Erschienen</option>
-                            <option value="nicht_erschienen">Nicht erschienen</option>
+                            <option value="nicht_erschienen">
+                              Nicht erschienen
+                            </option>
                             <option value="abgesagt">Abgesagt</option>
                           </select>
                           <button
                             onClick={() => handleRemove(s.id)}
-                            className="text-red-600 hover:text-red-800 text-sm"
+                            className="text-sm text-red-600 hover:text-red-800"
                           >
                             Entfernen
                           </button>
@@ -133,7 +146,7 @@ export function HelferschichtenListe({
           </table>
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+        <div className="rounded-lg bg-white p-8 text-center text-gray-500 shadow">
           Noch keine Helfer zugewiesen
         </div>
       )}

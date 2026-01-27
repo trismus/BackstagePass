@@ -23,16 +23,16 @@ export default async function RaeumePage({ searchParams }: PageProps) {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Räume verwalten</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Räume für Aufführungen und Veranstaltungen verwalten
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Room List */}
           <div className="lg:col-span-2">
             <RaeumeTable raeume={raeume} />
@@ -40,8 +40,8 @@ export default async function RaeumePage({ searchParams }: PageProps) {
 
           {/* Form */}
           <div>
-            <div className="bg-white shadow rounded-lg p-4">
-              <h2 className="font-medium text-gray-900 mb-4">
+            <div className="rounded-lg bg-white p-4 shadow">
+              <h2 className="mb-4 font-medium text-gray-900">
                 {editRaum ? 'Raum bearbeiten' : 'Neuer Raum'}
               </h2>
               <RaumForm
@@ -50,7 +50,7 @@ export default async function RaeumePage({ searchParams }: PageProps) {
                 mode={editRaum ? 'edit' : 'create'}
               />
               {editRaum && (
-                <div className="mt-4 pt-4 border-t">
+                <div className="mt-4 border-t pt-4">
                   <Link
                     href="/raeume"
                     className="text-sm text-gray-600 hover:text-gray-800"
@@ -65,7 +65,10 @@ export default async function RaeumePage({ searchParams }: PageProps) {
 
         {/* Back Link */}
         <div className="mt-8">
-          <Link href="/auffuehrungen" className="text-blue-600 hover:text-blue-800">
+          <Link
+            href="/auffuehrungen"
+            className="text-blue-600 hover:text-blue-800"
+          >
             &larr; Zurück zu Aufführungen
           </Link>
         </div>

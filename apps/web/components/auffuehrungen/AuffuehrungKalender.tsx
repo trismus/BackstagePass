@@ -9,7 +9,9 @@ interface AuffuehrungKalenderProps {
   auffuehrungen: Veranstaltung[]
 }
 
-export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps) {
+export function AuffuehrungKalender({
+  auffuehrungen,
+}: AuffuehrungKalenderProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
 
   const year = currentDate.getFullYear()
@@ -47,8 +49,18 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
   }
 
   const monthNames = [
-    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+    'Januar',
+    'Februar',
+    'März',
+    'April',
+    'Mai',
+    'Juni',
+    'Juli',
+    'August',
+    'September',
+    'Oktober',
+    'November',
+    'Dezember',
   ]
 
   const weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
@@ -75,16 +87,26 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
   const todayKey = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="rounded-lg bg-white shadow">
       {/* Calendar Header */}
-      <div className="px-4 py-3 border-b flex justify-between items-center">
+      <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-4">
           <button
             onClick={goToPrevMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
           <h2 className="text-lg font-semibold text-gray-900">
@@ -92,16 +114,26 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
           </h2>
           <button
             onClick={goToNextMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
         <button
           onClick={goToToday}
-          className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          className="rounded-lg px-3 py-1.5 text-sm text-blue-600 transition-colors hover:bg-blue-50"
         >
           Heute
         </button>
@@ -110,9 +142,12 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
       {/* Calendar Grid */}
       <div className="p-4">
         {/* Week Day Headers */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="mb-2 grid grid-cols-7 gap-1">
           {weekDays.map((day) => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+            <div
+              key={day}
+              className="py-2 text-center text-sm font-medium text-gray-500"
+            >
               {day}
             </div>
           ))}
@@ -122,7 +157,12 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
         <div className="grid grid-cols-7 gap-1">
           {calendarDays.map((day, index) => {
             if (day === null) {
-              return <div key={`empty-${index}`} className="min-h-24 bg-gray-50 rounded-lg" />
+              return (
+                <div
+                  key={`empty-${index}`}
+                  className="min-h-24 rounded-lg bg-gray-50"
+                />
+              )
             }
 
             const dateKey = formatDateKey(day)
@@ -132,14 +172,14 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
             return (
               <div
                 key={dateKey}
-                className={`min-h-24 p-2 rounded-lg border ${
+                className={`min-h-24 rounded-lg border p-2 ${
                   isToday
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div
-                  className={`text-sm font-medium mb-1 ${
+                  className={`mb-1 text-sm font-medium ${
                     isToday ? 'text-blue-600' : 'text-gray-700'
                   }`}
                 >
@@ -152,7 +192,7 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
                       <Link
                         key={a.id}
                         href={`/auffuehrungen/${a.id}`}
-                        className="block p-1 text-xs bg-purple-100 text-purple-800 rounded hover:bg-purple-200 truncate"
+                        className="block truncate rounded bg-purple-100 p-1 text-xs text-purple-800 hover:bg-purple-200"
                         title={a.titel}
                       >
                         {a.startzeit && (
@@ -178,7 +218,9 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
 
       {/* Upcoming List */}
       <div className="border-t p-4">
-        <h3 className="font-medium text-gray-900 mb-3">Kommende Aufführungen</h3>
+        <h3 className="mb-3 font-medium text-gray-900">
+          Kommende Aufführungen
+        </h3>
         <div className="space-y-2">
           {auffuehrungen
             .filter((a) => a.datum >= todayKey && a.status !== 'abgesagt')
@@ -187,11 +229,11 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
               <Link
                 key={a.id}
                 href={`/auffuehrungen/${a.id}`}
-                className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg"
+                className="flex items-center justify-between rounded-lg p-2 hover:bg-gray-50"
               >
                 <div>
                   <span className="font-medium text-gray-900">{a.titel}</span>
-                  <span className="text-sm text-gray-500 ml-2">
+                  <span className="ml-2 text-sm text-gray-500">
                     {new Date(a.datum).toLocaleDateString('de-CH', {
                       day: '2-digit',
                       month: '2-digit',
@@ -202,8 +244,12 @@ export function AuffuehrungKalender({ auffuehrungen }: AuffuehrungKalenderProps)
                 <StatusBadge status={a.status} />
               </Link>
             ))}
-          {auffuehrungen.filter((a) => a.datum >= todayKey && a.status !== 'abgesagt').length === 0 && (
-            <p className="text-gray-500 text-sm">Keine kommenden Aufführungen</p>
+          {auffuehrungen.filter(
+            (a) => a.datum >= todayKey && a.status !== 'abgesagt'
+          ).length === 0 && (
+            <p className="text-sm text-gray-500">
+              Keine kommenden Aufführungen
+            </p>
           )}
         </div>
       </div>

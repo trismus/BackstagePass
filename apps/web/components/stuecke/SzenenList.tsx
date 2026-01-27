@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import type { Szene, SzeneInsert } from '@/lib/supabase/types'
-import { createSzene, updateSzene, deleteSzene, getNextSzeneNummer } from '@/lib/actions/stuecke'
+import {
+  createSzene,
+  updateSzene,
+  deleteSzene,
+  getNextSzeneNummer,
+} from '@/lib/actions/stuecke'
 
 interface SzenenListProps {
   stueckId: string
@@ -75,8 +80,8 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div className="rounded-lg bg-white shadow">
+      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
         <h2 className="text-lg font-semibold text-gray-900">Szenen</h2>
         {canEdit && !isAdding && (
           <button
@@ -89,7 +94,7 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
       </div>
 
       {error && (
-        <div className="mx-6 mt-4 bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg text-sm">
+        <div className="border-error-200 mx-6 mt-4 rounded-lg border bg-error-50 px-4 py-3 text-sm text-error-700">
           {error}
         </div>
       )}
@@ -107,17 +112,21 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
             ) : (
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 text-sm font-medium rounded-full mr-3">
+                  <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
                     {szene.nummer}
                   </span>
-                  <span className="font-medium text-gray-900">{szene.titel}</span>
+                  <span className="font-medium text-gray-900">
+                    {szene.titel}
+                  </span>
                   {szene.dauer_minuten && (
-                    <span className="text-sm text-gray-500 ml-2">
+                    <span className="ml-2 text-sm text-gray-500">
                       ({szene.dauer_minuten} Min.)
                     </span>
                   )}
                   {szene.beschreibung && (
-                    <p className="text-sm text-gray-500 mt-1 ml-11">{szene.beschreibung}</p>
+                    <p className="ml-11 mt-1 text-sm text-gray-500">
+                      {szene.beschreibung}
+                    </p>
                   )}
                 </div>
                 {canEdit && (
@@ -130,7 +139,7 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
                     </button>
                     <button
                       onClick={() => handleDelete(szene.id)}
-                      className="text-sm text-error-600 hover:text-error-800"
+                      className="hover:text-error-800 text-sm text-error-600"
                     >
                       Löschen
                     </button>
@@ -142,14 +151,16 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
         ))}
 
         {isAdding && (
-          <li className="px-6 py-4 bg-gray-50">
+          <li className="bg-gray-50 px-6 py-4">
             <div className="space-y-3">
               <input
                 type="text"
                 placeholder="Szenenname"
                 value={newSzene.titel}
-                onChange={(e) => setNewSzene({ ...newSzene, titel: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                onChange={(e) =>
+                  setNewSzene({ ...newSzene, titel: e.target.value })
+                }
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
               />
               <div className="flex gap-3">
                 <input
@@ -159,17 +170,21 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
                   onChange={(e) =>
                     setNewSzene({
                       ...newSzene,
-                      dauer_minuten: e.target.value ? parseInt(e.target.value) : null,
+                      dauer_minuten: e.target.value
+                        ? parseInt(e.target.value)
+                        : null,
                     })
                   }
-                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                  className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="text"
                   placeholder="Beschreibung (optional)"
                   value={newSzene.beschreibung ?? ''}
-                  onChange={(e) => setNewSzene({ ...newSzene, beschreibung: e.target.value })}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                  onChange={(e) =>
+                    setNewSzene({ ...newSzene, beschreibung: e.target.value })
+                  }
+                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -182,7 +197,7 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
                 <button
                   onClick={handleAdd}
                   disabled={isSubmitting || !newSzene.titel}
-                  className="px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-lg"
+                  className="rounded-lg bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700 disabled:bg-gray-400"
                 >
                   {isSubmitting ? 'Speichern...' : 'Hinzufügen'}
                 </button>
@@ -208,7 +223,12 @@ interface SzeneEditRowProps {
   isSubmitting: boolean
 }
 
-function SzeneEditRow({ szene, onSave, onCancel, isSubmitting }: SzeneEditRowProps) {
+function SzeneEditRow({
+  szene,
+  onSave,
+  onCancel,
+  isSubmitting,
+}: SzeneEditRowProps) {
   const [editData, setEditData] = useState(szene)
 
   return (
@@ -217,7 +237,7 @@ function SzeneEditRow({ szene, onSave, onCancel, isSubmitting }: SzeneEditRowPro
         type="text"
         value={editData.titel}
         onChange={(e) => setEditData({ ...editData, titel: e.target.value })}
-        className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+        className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
       />
       <div className="flex gap-3">
         <input
@@ -230,14 +250,16 @@ function SzeneEditRow({ szene, onSave, onCancel, isSubmitting }: SzeneEditRowPro
               dauer_minuten: e.target.value ? parseInt(e.target.value) : null,
             })
           }
-          className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+          className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
         />
         <input
           type="text"
           placeholder="Beschreibung"
           value={editData.beschreibung ?? ''}
-          onChange={(e) => setEditData({ ...editData, beschreibung: e.target.value || null })}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+          onChange={(e) =>
+            setEditData({ ...editData, beschreibung: e.target.value || null })
+          }
+          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
         />
       </div>
       <div className="flex justify-end gap-2">
@@ -250,7 +272,7 @@ function SzeneEditRow({ szene, onSave, onCancel, isSubmitting }: SzeneEditRowPro
         <button
           onClick={() => onSave(editData)}
           disabled={isSubmitting}
-          className="px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-lg"
+          className="rounded-lg bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700 disabled:bg-gray-400"
         >
           {isSubmitting ? 'Speichern...' : 'Speichern'}
         </button>

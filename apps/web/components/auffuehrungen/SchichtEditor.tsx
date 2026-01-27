@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createSchicht, deleteSchicht } from '@/lib/actions/auffuehrung-schichten'
+import {
+  createSchicht,
+  deleteSchicht,
+} from '@/lib/actions/auffuehrung-schichten'
 import type { SchichtMitZeitblock, Zeitblock } from '@/lib/supabase/types'
 
 interface SchichtEditorProps {
@@ -72,9 +75,11 @@ export function SchichtEditor({
   )
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-        <h3 className="font-medium text-gray-900">Schichten ({schichten.length})</h3>
+    <div className="rounded-lg bg-white shadow">
+      <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-3">
+        <h3 className="font-medium text-gray-900">
+          Schichten ({schichten.length})
+        </h3>
         {canEdit && !showForm && (
           <button
             onClick={() => setShowForm(true)}
@@ -86,9 +91,9 @@ export function SchichtEditor({
       </div>
 
       {showForm && canEdit && (
-        <form onSubmit={handleSubmit} className="p-4 border-b bg-blue-50">
+        <form onSubmit={handleSubmit} className="border-b bg-blue-50 p-4">
           {error && (
-            <div className="mb-3 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+            <div className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -100,14 +105,14 @@ export function SchichtEditor({
                 required
                 value={rolle}
                 onChange={(e) => setRolle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
             <div>
               <select
                 value={zeitblockId}
                 onChange={(e) => setZeitblockId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               >
                 <option value="">Kein Zeitblock</option>
                 {zeitbloecke.map((zb) => (
@@ -124,22 +129,22 @@ export function SchichtEditor({
                 placeholder="Anzahl benötigt"
                 value={anzahlBenoetigt}
                 onChange={(e) => setAnzahlBenoetigt(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
           </div>
-          <div className="flex gap-2 mt-3">
+          <div className="mt-3 flex gap-2">
             <button
               type="submit"
               disabled={loading}
-              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm disabled:bg-blue-400"
+              className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white disabled:bg-blue-400"
             >
               {loading ? 'Speichern...' : 'Speichern'}
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-3 py-1.5 text-gray-600 text-sm"
+              className="px-3 py-1.5 text-sm text-gray-600"
             >
               Abbrechen
             </button>
@@ -151,22 +156,25 @@ export function SchichtEditor({
         {/* Schichten without zeitblock */}
         {groupedSchichten['no-zeitblock'] && (
           <div className="border-b">
-            <div className="px-4 py-2 bg-gray-100 text-sm text-gray-600">
+            <div className="bg-gray-100 px-4 py-2 text-sm text-gray-600">
               Ohne Zeitblock
             </div>
             <div className="divide-y divide-gray-100">
               {groupedSchichten['no-zeitblock'].map((s) => (
-                <div key={s.id} className="p-4 flex justify-between items-center">
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between p-4"
+                >
                   <div>
                     <span className="font-medium text-gray-900">{s.rolle}</span>
-                    <span className="text-sm text-gray-500 ml-2">
+                    <span className="ml-2 text-sm text-gray-500">
                       ({s.anzahl_benoetigt} benötigt)
                     </span>
                   </div>
                   {canEdit && (
                     <button
                       onClick={() => handleDelete(s.id, s.rolle)}
-                      className="text-red-600 hover:text-red-800 text-sm"
+                      className="text-sm text-red-600 hover:text-red-800"
                     >
                       Löschen
                     </button>
@@ -184,22 +192,28 @@ export function SchichtEditor({
 
           return (
             <div key={zb.id} className="border-b last:border-b-0">
-              <div className="px-4 py-2 bg-gray-100 text-sm text-gray-600">
-                {zb.name} ({zb.startzeit.slice(0, 5)} - {zb.endzeit.slice(0, 5)})
+              <div className="bg-gray-100 px-4 py-2 text-sm text-gray-600">
+                {zb.name} ({zb.startzeit.slice(0, 5)} - {zb.endzeit.slice(0, 5)}
+                )
               </div>
               <div className="divide-y divide-gray-100">
                 {zbSchichten.map((s) => (
-                  <div key={s.id} className="p-4 flex justify-between items-center">
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between p-4"
+                  >
                     <div>
-                      <span className="font-medium text-gray-900">{s.rolle}</span>
-                      <span className="text-sm text-gray-500 ml-2">
+                      <span className="font-medium text-gray-900">
+                        {s.rolle}
+                      </span>
+                      <span className="ml-2 text-sm text-gray-500">
                         ({s.anzahl_benoetigt} benötigt)
                       </span>
                     </div>
                     {canEdit && (
                       <button
                         onClick={() => handleDelete(s.id, s.rolle)}
-                        className="text-red-600 hover:text-red-800 text-sm"
+                        className="text-sm text-red-600 hover:text-red-800"
                       >
                         Löschen
                       </button>

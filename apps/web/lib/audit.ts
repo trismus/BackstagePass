@@ -33,7 +33,9 @@ export async function logAuditEvent(
 ) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const { error } = await supabase.from('audit_logs').insert({
     user_id: user?.id,
@@ -90,7 +92,10 @@ export async function getAuditLogs(options?: {
   }
 
   if (options?.offset) {
-    query = query.range(options.offset, options.offset + (options.limit || 50) - 1)
+    query = query.range(
+      options.offset,
+      options.offset + (options.limit || 50) - 1
+    )
   }
 
   const { data, count, error } = await query

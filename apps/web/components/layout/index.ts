@@ -15,4 +15,10 @@ export type { HeaderProps } from './Header'
 export { Breadcrumb } from './Breadcrumb'
 export type { BreadcrumbProps } from './Breadcrumb'
 
-export { NavIconComponent, ChevronLeftIcon, ChevronRightIcon, MenuIcon, CloseIcon } from './NavIcons'
+export {
+  NavIconComponent,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MenuIcon,
+  CloseIcon,
+} from './NavIcons'

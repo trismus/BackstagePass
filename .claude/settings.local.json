@@ -25,7 +25,9 @@
       "Bash(gh issue close:*)",
       "Bash(gh label list:*)",
       "Bash(gh issue comment:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(find:*)",
+      "Bash(npm run format:*)"
     ]
   }
 }

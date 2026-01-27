@@ -15,43 +15,43 @@ export default async function PartnerDatenPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href={'/partner-portal' as never}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-block"
+            className="mb-2 inline-block text-sm text-gray-500 hover:text-gray-700"
           >
             &larr; Zurück zur Übersicht
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Meine Daten</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             Ihre Organisations- und Kontaktdaten
           </p>
         </div>
 
         {!partner ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <p className="text-yellow-800">
               Ihr Account ist noch nicht mit einer Partnerorganisation
               verknüpft. Bitte wenden Sie sich an die Theatergruppe Widen.
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             {/* Organization Info */}
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="border-b border-gray-200 p-6">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Organisation
               </h2>
-              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Name</dt>
                   <dd className="text-gray-900">{partner.name}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Typ</dt>
-                  <dd className="text-gray-900 capitalize">{partner.typ}</dd>
+                  <dd className="capitalize text-gray-900">{partner.typ}</dd>
                 </div>
                 {partner.beschreibung && (
                   <div className="md:col-span-2">
@@ -65,11 +65,11 @@ export default async function PartnerDatenPage() {
             </div>
 
             {/* Contact Info */}
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="border-b border-gray-200 p-6">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Kontaktdaten
               </h2>
-              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {partner.kontakt_person && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">
@@ -96,10 +96,10 @@ export default async function PartnerDatenPage() {
             {/* Address */}
             {(partner.strasse || partner.plz || partner.ort) && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                <h2 className="mb-4 text-lg font-semibold text-gray-900">
                   Adresse
                 </h2>
-                <address className="text-gray-900 not-italic">
+                <address className="not-italic text-gray-900">
                   {partner.strasse && <div>{partner.strasse}</div>}
                   {(partner.plz || partner.ort) && (
                     <div>
@@ -114,7 +114,7 @@ export default async function PartnerDatenPage() {
 
         {/* Edit Note */}
         {partner && (
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
             <p className="text-sm text-blue-800">
               Möchten Sie Ihre Daten aktualisieren? Bitte kontaktieren Sie uns
               über die{' '}

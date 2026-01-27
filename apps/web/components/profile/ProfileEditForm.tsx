@@ -40,7 +40,9 @@ export function ProfileEditForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <Alert variant="error">{error}</Alert>}
-      {success && <Alert variant="success">Profil erfolgreich aktualisiert!</Alert>}
+      {success && (
+        <Alert variant="success">Profil erfolgreich aktualisiert!</Alert>
+      )}
 
       <div className="space-y-4">
         <Input

@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getVeranstaltung, getAnmeldungCount } from '@/lib/actions/veranstaltungen'
+import {
+  getVeranstaltung,
+  getAnmeldungCount,
+} from '@/lib/actions/veranstaltungen'
 import { getAnmeldungenForEvent } from '@/lib/actions/anmeldungen'
 import { StatusBadge, TypBadge } from '@/components/veranstaltungen/StatusBadge'
 import { TeilnehmerListe } from '@/components/veranstaltungen/TeilnehmerListe'
@@ -29,7 +32,7 @@ export default async function VeranstaltungDetailPage({
   if (isEditMode) {
     return (
       <main className="min-h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="mx-auto max-w-3xl px-4 py-8">
           {/* Back Link */}
           <div className="mb-6">
             <Link
@@ -48,7 +51,7 @@ export default async function VeranstaltungDetailPage({
           </div>
 
           {/* Form */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="rounded-lg bg-white p-6 shadow">
             <VeranstaltungForm veranstaltung={veranstaltung} mode="edit" />
           </div>
         </div>
@@ -75,7 +78,7 @@ export default async function VeranstaltungDetailPage({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Back Link */}
         <div className="mb-6">
           <Link
@@ -87,10 +90,10 @@ export default async function VeranstaltungDetailPage({
         </div>
 
         {/* Header */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-start mb-4">
+        <div className="mb-6 rounded-lg bg-white p-6 shadow">
+          <div className="mb-4 flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="mb-2 flex items-center gap-3">
                 <TypBadge typ={veranstaltung.typ} />
                 <StatusBadge status={veranstaltung.status} />
               </div>
@@ -100,17 +103,17 @@ export default async function VeranstaltungDetailPage({
             </div>
             <Link
               href={`/veranstaltungen/${id}?edit=true`}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+              className="rounded-lg bg-gray-100 px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-200"
             >
               Bearbeiten
             </Link>
           </div>
 
           {veranstaltung.beschreibung && (
-            <p className="text-gray-600 mb-4">{veranstaltung.beschreibung}</p>
+            <p className="mb-4 text-gray-600">{veranstaltung.beschreibung}</p>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
             <div>
               <span className="text-gray-500">Datum:</span>
               <span className="ml-2 font-medium">
@@ -146,7 +149,7 @@ export default async function VeranstaltungDetailPage({
 
         {/* Teilnehmer */}
         <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Teilnehmer</h2>
+          <h2 className="mb-4 text-lg font-bold text-gray-900">Teilnehmer</h2>
           <TeilnehmerListe
             anmeldungen={anmeldungen}
             maxTeilnehmer={veranstaltung.max_teilnehmer}

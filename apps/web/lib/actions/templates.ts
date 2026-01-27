@@ -64,7 +64,9 @@ export async function getAllTemplates(): Promise<AuffuehrungTemplate[]> {
 /**
  * Get a single template with all details
  */
-export async function getTemplate(id: string): Promise<TemplateMitDetails | null> {
+export async function getTemplate(
+  id: string
+): Promise<TemplateMitDetails | null> {
   const supabase = await createClient()
 
   // Get template
@@ -187,7 +189,10 @@ export async function deleteTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('auffuehrung_templates').delete().eq('id', id)
+  const { error } = await supabase
+    .from('auffuehrung_templates')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error deleting template:', error)
@@ -232,7 +237,10 @@ export async function removeTemplateZeitblock(
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('template_zeitbloecke').delete().eq('id', id)
+  const { error } = await supabase
+    .from('template_zeitbloecke')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error removing template zeitblock:', error)
@@ -277,7 +285,10 @@ export async function removeTemplateSchicht(
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('template_schichten').delete().eq('id', id)
+  const { error } = await supabase
+    .from('template_schichten')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error removing template schicht:', error)
@@ -322,7 +333,10 @@ export async function removeTemplateRessource(
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('template_ressourcen').delete().eq('id', id)
+  const { error } = await supabase
+    .from('template_ressourcen')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error removing template ressource:', error)
@@ -373,14 +387,18 @@ export async function applyTemplate(
   const zeitblockMap: Record<string, string> = {} // name -> id mapping for schichten
 
   if (template.zeitbloecke.length > 0) {
-    const zeitblockInserts: ZeitblockInsert[] = template.zeitbloecke.map((tz) => ({
-      veranstaltung_id: veranstaltungId,
-      name: tz.name,
-      startzeit: minutesToTime(startTotalMinutes + tz.offset_minuten),
-      endzeit: minutesToTime(startTotalMinutes + tz.offset_minuten + tz.dauer_minuten),
-      typ: tz.typ,
-      sortierung: tz.sortierung,
-    }))
+    const zeitblockInserts: ZeitblockInsert[] = template.zeitbloecke.map(
+      (tz) => ({
+        veranstaltung_id: veranstaltungId,
+        name: tz.name,
+        startzeit: minutesToTime(startTotalMinutes + tz.offset_minuten),
+        endzeit: minutesToTime(
+          startTotalMinutes + tz.offset_minuten + tz.dauer_minuten
+        ),
+        typ: tz.typ,
+        sortierung: tz.sortierung,
+      })
+    )
 
     const { data: createdZeitbloecke, error: zeitblockError } = await supabase
       .from('zeitbloecke')
@@ -400,12 +418,16 @@ export async function applyTemplate(
 
   // Create schichten from template
   if (template.schichten.length > 0) {
-    const schichtInserts: AuffuehrungSchichtInsert[] = template.schichten.map((ts) => ({
-      veranstaltung_id: veranstaltungId,
-      zeitblock_id: ts.zeitblock_name ? zeitblockMap[ts.zeitblock_name] || null : null,
-      rolle: ts.rolle,
-      anzahl_benoetigt: ts.anzahl_benoetigt,
-    }))
+    const schichtInserts: AuffuehrungSchichtInsert[] = template.schichten.map(
+      (ts) => ({
+        veranstaltung_id: veranstaltungId,
+        zeitblock_id: ts.zeitblock_name
+          ? zeitblockMap[ts.zeitblock_name] || null
+          : null,
+        rolle: ts.rolle,
+        anzahl_benoetigt: ts.anzahl_benoetigt,
+      })
+    )
 
     const { error: schichtError } = await supabase
       .from('auffuehrung_schichten')
@@ -433,7 +455,10 @@ export async function applyTemplate(
         .insert(ressourcenInserts as never[])
 
       if (ressourcenError) {
-        console.error('Error creating ressourcen reservierungen from template:', ressourcenError)
+        console.error(
+          'Error creating ressourcen reservierungen from template:',
+          ressourcenError
+        )
         // Don't fail the whole operation for resource errors
       }
     }
@@ -466,7 +491,9 @@ export async function createTemplateFromVeranstaltung(
   }
 
   // Parse the start time
-  const [startHours, startMinutes] = veranstaltung.startzeit.split(':').map(Number)
+  const [startHours, startMinutes] = veranstaltung.startzeit
+    .split(':')
+    .map(Number)
   const startTotalMinutes = startHours * 60 + startMinutes
 
   // Create the template
@@ -478,7 +505,10 @@ export async function createTemplateFromVeranstaltung(
 
   if (templateError || !template) {
     console.error('Error creating template:', templateError)
-    return { success: false, error: templateError?.message || 'Fehler beim Erstellen' }
+    return {
+      success: false,
+      error: templateError?.message || 'Fehler beim Erstellen',
+    }
   }
 
   // Get existing zeitbloecke
@@ -497,21 +527,25 @@ export async function createTemplateFromVeranstaltung(
   const timeToDuration = (start: string, end: string): number => {
     const [startH, startM] = start.split(':').map(Number)
     const [endH, endM] = end.split(':').map(Number)
-    return (endH * 60 + endM) - (startH * 60 + startM)
+    return endH * 60 + endM - (startH * 60 + startM)
   }
 
   // Create template zeitbloecke
   if (zeitbloecke && zeitbloecke.length > 0) {
-    const templateZeitbloecke: TemplateZeitblockInsert[] = zeitbloecke.map((zb) => ({
-      template_id: template.id,
-      name: zb.name,
-      offset_minuten: timeToOffset(zb.startzeit),
-      dauer_minuten: timeToDuration(zb.startzeit, zb.endzeit),
-      typ: zb.typ,
-      sortierung: zb.sortierung,
-    }))
+    const templateZeitbloecke: TemplateZeitblockInsert[] = zeitbloecke.map(
+      (zb) => ({
+        template_id: template.id,
+        name: zb.name,
+        offset_minuten: timeToOffset(zb.startzeit),
+        dauer_minuten: timeToDuration(zb.startzeit, zb.endzeit),
+        typ: zb.typ,
+        sortierung: zb.sortierung,
+      })
+    )
 
-    await supabase.from('template_zeitbloecke').insert(templateZeitbloecke as never[])
+    await supabase
+      .from('template_zeitbloecke')
+      .insert(templateZeitbloecke as never[])
   }
 
   // Get existing schichten with zeitblock names
@@ -534,7 +568,9 @@ export async function createTemplateFromVeranstaltung(
       anzahl_benoetigt: s.anzahl_benoetigt,
     }))
 
-    await supabase.from('template_schichten').insert(templateSchichten as never[])
+    await supabase
+      .from('template_schichten')
+      .insert(templateSchichten as never[])
   }
 
   // Get existing ressourcen reservierungen
@@ -545,13 +581,17 @@ export async function createTemplateFromVeranstaltung(
 
   // Create template ressourcen
   if (ressourcen && ressourcen.length > 0) {
-    const templateRessourcen: TemplateRessourceInsert[] = ressourcen.map((r) => ({
-      template_id: template.id,
-      ressource_id: r.ressource_id,
-      menge: r.menge,
-    }))
+    const templateRessourcen: TemplateRessourceInsert[] = ressourcen.map(
+      (r) => ({
+        template_id: template.id,
+        ressource_id: r.ressource_id,
+        menge: r.menge,
+      })
+    )
 
-    await supabase.from('template_ressourcen').insert(templateRessourcen as never[])
+    await supabase
+      .from('template_ressourcen')
+      .insert(templateRessourcen as never[])
   }
 
   revalidatePath('/templates')

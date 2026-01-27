@@ -4,7 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { NavSection, NavItem } from '@/lib/navigation'
-import { NavIconComponent, ChevronLeftIcon, ChevronRightIcon, CloseIcon, MenuIcon } from './NavIcons'
+import {
+  NavIconComponent,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  MenuIcon,
+} from './NavIcons'
 
 // =============================================================================
 // Constants
@@ -41,15 +47,11 @@ function NavLink({
     <Link
       href={item.href as never}
       onClick={onClick}
-      className={`
-        group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all
-        ${collapsed ? 'justify-center' : ''}
-        ${
-          isActive
-            ? 'bg-neutral-900 text-white'
-            : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
-        }
-      `}
+      className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${collapsed ? 'justify-center' : ''} ${
+        isActive
+          ? 'bg-neutral-900 text-white'
+          : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+      } `}
       title={collapsed ? item.label : undefined}
     >
       <NavIconComponent
@@ -92,7 +94,9 @@ function NavSectionComponent({
             key={item.href}
             item={item}
             collapsed={collapsed}
-            isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
+            isActive={
+              pathname === item.href || pathname.startsWith(item.href + '/')
+            }
             onClick={onItemClick}
           />
         ))}
@@ -188,7 +192,7 @@ function CollapseToggle({
   return (
     <button
       onClick={onClick}
-      className="hidden lg:flex items-center justify-center rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+      className="hidden items-center justify-center rounded-lg p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 lg:flex"
       title={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
     >
       {collapsed ? (
@@ -208,7 +212,7 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="lg:hidden rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
+      className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 lg:hidden"
       title="Menü öffnen"
     >
       <MenuIcon className="h-6 w-6" />
@@ -266,7 +270,7 @@ export function Sidebar({ sections, className = '' }: SidebarProps) {
   if (!mounted) {
     return (
       <aside
-        className={`hidden lg:flex flex-col border-r border-neutral-200 bg-white w-64 ${className}`}
+        className={`hidden w-64 flex-col border-r border-neutral-200 bg-white lg:flex ${className}`}
       />
     )
   }
@@ -275,14 +279,12 @@ export function Sidebar({ sections, className = '' }: SidebarProps) {
     <>
       {/* Desktop Sidebar */}
       <aside
-        className={`
-          hidden lg:flex flex-col border-r border-neutral-200 bg-white transition-all duration-300
-          ${collapsed ? 'w-16' : 'w-64'}
-          ${className}
-        `}
+        className={`hidden flex-col border-r border-neutral-200 bg-white transition-all duration-300 lg:flex ${collapsed ? 'w-16' : 'w-64'} ${className} `}
       >
         {/* Toggle Button */}
-        <div className={`flex items-center border-b border-neutral-200 p-2 ${collapsed ? 'justify-center' : 'justify-end'}`}>
+        <div
+          className={`flex items-center border-b border-neutral-200 p-2 ${collapsed ? 'justify-center' : 'justify-end'}`}
+        >
           <CollapseToggle collapsed={collapsed} onClick={toggleCollapsed} />
         </div>
 

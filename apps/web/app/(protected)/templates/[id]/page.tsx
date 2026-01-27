@@ -35,13 +35,15 @@ export default async function TemplateDetailPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-bold text-gray-900">{template.name}</h1>
+          <div className="mb-2 flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {template.name}
+            </h1>
             {template.archiviert && (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
                 Archiviert
               </span>
             )}
@@ -51,11 +53,11 @@ export default async function TemplateDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Basic Info */}
           <div>
-            <div className="bg-white shadow rounded-lg p-4">
-              <h2 className="font-medium text-gray-900 mb-4">Grunddaten</h2>
+            <div className="rounded-lg bg-white p-4 shadow">
+              <h2 className="mb-4 font-medium text-gray-900">Grunddaten</h2>
               <TemplateForm template={template} mode="edit" />
             </div>
           </div>
@@ -68,7 +70,10 @@ export default async function TemplateDetailPage({ params }: PageProps) {
 
         {/* Back Link */}
         <div className="mt-8">
-          <Link href={"/templates" as never} className="text-blue-600 hover:text-blue-800">
+          <Link
+            href={'/templates' as never}
+            className="text-blue-600 hover:text-blue-800"
+          >
             &larr; Zurück zu Vorlagen
           </Link>
         </div>

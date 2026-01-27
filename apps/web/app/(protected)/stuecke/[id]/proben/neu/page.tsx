@@ -10,7 +10,9 @@ interface NeueProbePageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function NeueProbePagePage({ params }: NeueProbePageProps) {
+export default async function NeueProbePagePage({
+  params,
+}: NeueProbePageProps) {
   const { id: stueckId } = await params
   const profile = await getUserProfile()
   const canEdit = profile ? checkCanEdit(profile.role) : false
@@ -28,9 +30,9 @@ export default async function NeueProbePagePage({ params }: NeueProbePageProps) 
   const szenen = await getSzenen(stueckId)
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl">
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="mb-2 flex items-center gap-3">
           <Link
             href={`/stuecke/${stueckId}` as Route}
             className="text-sm text-primary-600 hover:text-primary-800"
@@ -38,18 +40,14 @@ export default async function NeueProbePagePage({ params }: NeueProbePageProps) 
             &larr; Zurück zum Stück
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Neue Probe erstellen</h1>
-        <p className="text-gray-600 mt-1">
-          {stueck.titel}
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Neue Probe erstellen
+        </h1>
+        <p className="mt-1 text-gray-600">{stueck.titel}</p>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6">
-        <ProbeForm
-          mode="create"
-          stueckId={stueckId}
-          szenen={szenen}
-        />
+      <div className="rounded-lg bg-white p-6 shadow">
+        <ProbeForm mode="create" stueckId={stueckId} szenen={szenen} />
       </div>
     </div>
   )

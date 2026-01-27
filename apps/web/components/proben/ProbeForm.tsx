@@ -3,8 +3,17 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
-import type { Probe, ProbeInsert, ProbeStatus, Szene } from '@/lib/supabase/types'
-import { createProbe, updateProbe, updateProbeSzenen } from '@/lib/actions/proben'
+import type {
+  Probe,
+  ProbeInsert,
+  ProbeStatus,
+  Szene,
+} from '@/lib/supabase/types'
+import {
+  createProbe,
+  updateProbe,
+  updateProbeSzenen,
+} from '@/lib/actions/proben'
 
 interface ProbeFormProps {
   mode: 'create' | 'edit'
@@ -22,7 +31,13 @@ const statusOptions: { value: ProbeStatus; label: string }[] = [
   { value: 'abgeschlossen', label: 'Abgeschlossen' },
 ]
 
-export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [] }: ProbeFormProps) {
+export function ProbeForm({
+  mode,
+  stueckId,
+  szenen,
+  probe,
+  selectedSzenenIds = [],
+}: ProbeFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,7 +57,9 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
   const [szenenIds, setSzenenIds] = useState<string[]>(selectedSzenenIds)
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -100,14 +117,17 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
+        <div className="border-error-200 rounded-lg border bg-error-50 px-4 py-3 text-error-700">
           {error}
         </div>
       )}
 
       {/* Titel */}
       <div>
-        <label htmlFor="titel" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="titel"
+          className="block text-sm font-medium text-gray-700"
+        >
           Titel *
         </label>
         <input
@@ -117,15 +137,18 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
           required
           value={formData.titel}
           onChange={handleChange}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           placeholder="z.B. Probe Akt 1"
         />
       </div>
 
       {/* Datum und Zeit */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
-          <label htmlFor="datum" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="datum"
+            className="block text-sm font-medium text-gray-700"
+          >
             Datum *
           </label>
           <input
@@ -135,11 +158,14 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
             required
             value={formData.datum}
             onChange={handleChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div>
-          <label htmlFor="startzeit" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="startzeit"
+            className="block text-sm font-medium text-gray-700"
+          >
             Startzeit
           </label>
           <input
@@ -148,11 +174,14 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
             name="startzeit"
             value={formData.startzeit ?? ''}
             onChange={handleChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div>
-          <label htmlFor="endzeit" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="endzeit"
+            className="block text-sm font-medium text-gray-700"
+          >
             Endzeit
           </label>
           <input
@@ -161,15 +190,18 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
             name="endzeit"
             value={formData.endzeit ?? ''}
             onChange={handleChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </div>
 
       {/* Ort und Status */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="ort" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="ort"
+            className="block text-sm font-medium text-gray-700"
+          >
             Ort
           </label>
           <input
@@ -178,12 +210,15 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
             name="ort"
             value={formData.ort ?? ''}
             onChange={handleChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
             placeholder="z.B. Bühne Gemeindesaal"
           />
         </div>
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-700"
+          >
             Status
           </label>
           <select
@@ -191,7 +226,7 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           >
             {statusOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -205,30 +240,35 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
       {/* Szenen auswählen */}
       {szenen.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-gray-700">
             Zu probende Szenen
           </label>
-          <div className="border border-gray-300 rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
+          <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-gray-300 p-4">
             {szenen.map((szene) => (
-              <label key={szene.id} className="flex items-center gap-3 cursor-pointer">
+              <label
+                key={szene.id}
+                className="flex cursor-pointer items-center gap-3"
+              >
                 <input
                   type="checkbox"
                   checked={szenenIds.includes(szene.id)}
                   onChange={() => toggleSzene(szene.id)}
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600">
                   {szene.nummer}
                 </span>
                 <span className="text-sm text-gray-900">{szene.titel}</span>
                 {szene.dauer_minuten && (
-                  <span className="text-xs text-gray-500">({szene.dauer_minuten} Min.)</span>
+                  <span className="text-xs text-gray-500">
+                    ({szene.dauer_minuten} Min.)
+                  </span>
                 )}
               </label>
             ))}
           </div>
           {szenenIds.length > 0 && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-gray-500">
               {szenenIds.length} Szene{szenenIds.length !== 1 && 'n'} ausgewählt
             </p>
           )}
@@ -237,7 +277,10 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
 
       {/* Beschreibung */}
       <div>
-        <label htmlFor="beschreibung" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="beschreibung"
+          className="block text-sm font-medium text-gray-700"
+        >
           Beschreibung
         </label>
         <textarea
@@ -246,14 +289,17 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
           rows={3}
           value={formData.beschreibung ?? ''}
           onChange={handleChange}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           placeholder="Zusätzliche Informationen zur Probe..."
         />
       </div>
 
       {/* Notizen */}
       <div>
-        <label htmlFor="notizen" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="notizen"
+          className="block text-sm font-medium text-gray-700"
+        >
           Interne Notizen
         </label>
         <textarea
@@ -262,7 +308,7 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
           rows={2}
           value={formData.notizen ?? ''}
           onChange={handleChange}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           placeholder="Interne Notizen (nur für Regie sichtbar)..."
         />
       </div>
@@ -279,7 +325,7 @@ export function ProbeForm({ mode, stueckId, szenen, probe, selectedSzenenIds = [
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
+          className="rounded-lg bg-primary-600 px-6 py-2 font-medium text-white transition-colors hover:bg-primary-700 disabled:bg-gray-400"
         >
           {isSubmitting
             ? 'Wird gespeichert...'

@@ -1,6 +1,14 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Alert } from '@/components/ui'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Button,
+  Alert,
+} from '@/components/ui'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -41,10 +49,11 @@ export default async function HomePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-neutral-600">
-                BackstagePass unterstützt Theatervereine dabei, Mitglieder zu verwalten,
-                Kommunikationswege zu bündeln und Produktionsdaten zentral zu speichern.
-                Das Ziel ist ein übersichtliches Dashboard, das von der Probenplanung bis
-                zur Premiere Klarheit schafft.
+                BackstagePass unterstützt Theatervereine dabei, Mitglieder zu
+                verwalten, Kommunikationswege zu bündeln und Produktionsdaten
+                zentral zu speichern. Das Ziel ist ein übersichtliches
+                Dashboard, das von der Probenplanung bis zur Premiere Klarheit
+                schafft.
               </p>
 
               {/* Supabase Status */}
@@ -58,7 +67,8 @@ export default async function HomePage() {
                       <span className="font-medium">Nicht verbunden</span>
                       <p className="mt-1 text-xs opacity-80">{error.message}</p>
                       <p className="mt-2 text-xs opacity-70">
-                        Hinweis: Die Tabelle &quot;personen&quot; ist per RLS geschützt.
+                        Hinweis: Die Tabelle &quot;personen&quot; ist per RLS
+                        geschützt.
                       </p>
                     </div>
                   </Alert>
@@ -75,7 +85,9 @@ export default async function HomePage() {
           <Card>
             <CardHeader>
               <CardTitle as="h2">Tech Stack</CardTitle>
-              <CardDescription>Moderne Technologien für schnelle Iteration</CardDescription>
+              <CardDescription>
+                Moderne Technologien für schnelle Iteration
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-4">
@@ -123,8 +135,15 @@ export default async function HomePage() {
         {/* Footer */}
         <footer className="border-t border-neutral-200 pt-8 text-center text-sm text-neutral-500">
           <p>
-            Design System: <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-primary">primary</code> (Theater-Rot) ·
-            <code className="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-secondary">secondary</code> (Vorhang-Lila)
+            Design System:{' '}
+            <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-primary">
+              primary
+            </code>{' '}
+            (Theater-Rot) ·
+            <code className="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-secondary">
+              secondary
+            </code>{' '}
+            (Vorhang-Lila)
           </p>
         </footer>
       </div>

@@ -1,5 +1,11 @@
 import { getAuditLogs } from '@/lib/audit'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui'
 import { AuditLogTable } from '@/components/admin/AuditLogTable'
 
 export const metadata = {
@@ -37,9 +43,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
       <Card>
         <CardHeader>
           <CardTitle>Aktivitäten</CardTitle>
-          <CardDescription>
-            {count} Einträge insgesamt
-          </CardDescription>
+          <CardDescription>{count} Einträge insgesamt</CardDescription>
         </CardHeader>
         <CardContent>
           <AuditLogTable

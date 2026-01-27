@@ -26,6 +26,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'helfereinsaetze:write',
     'helfereinsaetze:delete',
     'helfereinsaetze:register',
+    'helferliste:read',
+    'helferliste:write',
+    'helferliste:delete',
+    'helferliste:register',
     'stundenkonto:read',
     'stundenkonto:read_own',
     'stundenkonto:write',
@@ -54,6 +58,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'helfereinsaetze:write',
     'helfereinsaetze:delete',
     'helfereinsaetze:register',
+    'helferliste:read',
+    'helferliste:write',
+    'helferliste:delete',
+    'helferliste:register',
     'stundenkonto:read',
     'stundenkonto:read_own',
     'stundenkonto:write',
@@ -75,6 +83,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'veranstaltungen:register',
     'helfereinsaetze:read',
     'helfereinsaetze:register',
+    'helferliste:read',
+    'helferliste:register',
     'stundenkonto:read_own',
     'stuecke:read',
     'raeume:read',
@@ -87,25 +97,20 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'stuecke:read',
   ],
 
-  HELFER: [
-    'helfereinsaetze:read',
-  ],
+  HELFER: ['helfereinsaetze:read', 'helferliste:read', 'helferliste:register'],
 
-  PARTNER: [
-    'profile:write_own',
-    'veranstaltungen:read',
-    'partner:read',
-  ],
+  PARTNER: ['profile:write_own', 'veranstaltungen:read', 'partner:read'],
 
-  FREUNDE: [
-    'veranstaltungen:read',
-  ],
+  FREUNDE: ['veranstaltungen:read'],
 }
 
 /**
  * Check if a role has a specific permission
  */
-export function hasPermission(userRole: UserRole, permission: Permission): boolean {
+export function hasPermission(
+  userRole: UserRole,
+  permission: Permission
+): boolean {
   const permissions = ROLE_PERMISSIONS[userRole]
   return permissions?.includes(permission) ?? false
 }
@@ -113,21 +118,29 @@ export function hasPermission(userRole: UserRole, permission: Permission): boole
 /**
  * Check if a role has any of the specified permissions
  */
-export function hasAnyPermission(userRole: UserRole, permissions: Permission[]): boolean {
+export function hasAnyPermission(
+  userRole: UserRole,
+  permissions: Permission[]
+): boolean {
   return permissions.some((p) => hasPermission(userRole, p))
 }
 
 /**
  * Check if a role has all of the specified permissions
  */
-export function hasAllPermissions(userRole: UserRole, permissions: Permission[]): boolean {
+export function hasAllPermissions(
+  userRole: UserRole,
+  permissions: Permission[]
+): boolean {
   return permissions.every((p) => hasPermission(userRole, p))
 }
 
 /**
  * Server-side: Require a specific permission, throws if not met
  */
-export async function requirePermission(permission: Permission): Promise<Profile> {
+export async function requirePermission(
+  permission: Permission
+): Promise<Profile> {
   const profile = await getUserProfile()
 
   if (!profile) {
@@ -144,7 +157,9 @@ export async function requirePermission(permission: Permission): Promise<Profile
 /**
  * Server-side: Require any of the specified permissions
  */
-export async function requireAnyPermission(permissions: Permission[]): Promise<Profile> {
+export async function requireAnyPermission(
+  permissions: Permission[]
+): Promise<Profile> {
   const profile = await getUserProfile()
 
   if (!profile) {
@@ -244,7 +259,7 @@ export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
   if (typeof console !== 'undefined') {
     console.warn(
       `[DEPRECATED] hasRole(${userRole}, ${requiredRole}) called. ` +
-      'Use hasPermission() with specific permission instead.'
+        'Use hasPermission() with specific permission instead.'
     )
   }
 

@@ -22,7 +22,10 @@ const typColors: Record<StundenTyp, string> = {
   korrektur: 'bg-yellow-100 text-yellow-800',
 }
 
-export function StundenkontoTable({ entries, personId: _personId }: StundenkontoTableProps) {
+export function StundenkontoTable({
+  entries,
+  personId: _personId,
+}: StundenkontoTableProps) {
   const [filterTyp, setFilterTyp] = useState<StundenTyp | 'all'>('all')
   const [filterYear, setFilterYear] = useState<string>('all')
 
@@ -63,7 +66,9 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
       ...rows.map((row) => row.map((cell) => `"${cell}"`).join(';')),
     ].join('\n')
 
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' })
+    const blob = new Blob(['\ufeff' + csvContent], {
+      type: 'text/csv;charset=utf-8',
+    })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -77,16 +82,18 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="rounded-lg bg-white shadow">
       {/* Filters */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="border-b border-gray-200 p-4">
         <div className="flex flex-wrap gap-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Typ</label>
+            <label className="mb-1 block text-xs text-gray-500">Typ</label>
             <select
               value={filterTyp}
-              onChange={(e) => setFilterTyp(e.target.value as StundenTyp | 'all')}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+              onChange={(e) =>
+                setFilterTyp(e.target.value as StundenTyp | 'all')
+              }
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
             >
               <option value="all">Alle Typen</option>
               {Object.entries(typLabels).map(([value, label]) => (
@@ -97,11 +104,11 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Jahr</label>
+            <label className="mb-1 block text-xs text-gray-500">Jahr</label>
             <select
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
             >
               <option value="all">Alle Jahre</option>
               {years.map((year) => (
@@ -112,11 +119,13 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
             </select>
           </div>
           <div className="flex-1" />
-          <div className="self-end flex items-center gap-4">
+          <div className="flex items-center gap-4 self-end">
             <span className="text-sm text-gray-600">
               Summe:{' '}
               <strong
-                className={totalFiltered >= 0 ? 'text-green-600' : 'text-red-600'}
+                className={
+                  totalFiltered >= 0 ? 'text-green-600' : 'text-red-600'
+                }
               >
                 {totalFiltered >= 0 ? '+' : ''}
                 {totalFiltered.toFixed(1)} Stunden
@@ -124,14 +133,14 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
             </span>
             <button
               onClick={handleExportCSV}
-              className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors print:hidden"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 print:hidden"
               title="Als CSV exportieren"
             >
               CSV
             </button>
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors print:hidden"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 print:hidden"
               title="Drucken"
             >
               PDF
@@ -145,16 +154,16 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
                 Datum
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
                 Typ
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
                 Beschreibung
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+              <th className="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">
                 Stunden
               </th>
             </tr>
@@ -162,12 +171,12 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
           <tbody className="divide-y divide-gray-200">
             {filtered.map((e) => (
               <tr key={e.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                   {formatDate(e.created_at)}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                <td className="whitespace-nowrap px-4 py-3">
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                       typColors[e.typ]
                     }`}
                   >
@@ -177,7 +186,7 @@ export function StundenkontoTable({ entries, personId: _personId }: Stundenkonto
                 <td className="px-4 py-3 text-sm text-gray-900">
                   {e.beschreibung || '-'}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right">
+                <td className="whitespace-nowrap px-4 py-3 text-right">
                   <span
                     className={`font-medium ${
                       e.stunden >= 0 ? 'text-green-600' : 'text-red-600'

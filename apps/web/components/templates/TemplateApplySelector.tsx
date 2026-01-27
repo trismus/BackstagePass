@@ -7,19 +7,22 @@ interface TemplateApplySelectorProps {
   mode: 'create'
 }
 
-export function TemplateApplySelector({ templates }: TemplateApplySelectorProps) {
+export function TemplateApplySelector({
+  templates,
+}: TemplateApplySelectorProps) {
   if (templates.length === 0) {
     return null
   }
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-      <h4 className="font-medium text-gray-900 mb-2">Tipp: Vorlagen nutzen</h4>
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <h4 className="mb-2 font-medium text-gray-900">Tipp: Vorlagen nutzen</h4>
       <p className="text-sm text-gray-600">
-        Nach dem Erstellen der Aufführung kannst du eine Vorlage anwenden, um Zeitblöcke,
-        Schichten und Ressourcen automatisch zu erstellen. Verfügbare Vorlagen:
+        Nach dem Erstellen der Aufführung kannst du eine Vorlage anwenden, um
+        Zeitblöcke, Schichten und Ressourcen automatisch zu erstellen.
+        Verfügbare Vorlagen:
       </p>
-      <ul className="mt-2 text-sm text-gray-600 list-disc list-inside">
+      <ul className="mt-2 list-inside list-disc text-sm text-gray-600">
         {templates.map((t) => (
           <li key={t.id}>
             <span className="font-medium">{t.name}</span>

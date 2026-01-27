@@ -406,10 +406,12 @@ export async function getSzenenRollen(stueckId: string): Promise<SzeneRolle[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('szenen_rollen')
-    .select(`
+    .select(
+      `
       *,
       szene:szenen!inner(stueck_id)
-    `)
+    `
+    )
     .eq('szene.stueck_id', stueckId)
 
   if (error) {
@@ -423,13 +425,17 @@ export async function getSzenenRollen(stueckId: string): Promise<SzeneRolle[]> {
 /**
  * Get Rollen for a specific Szene
  */
-export async function getRollenForSzene(szeneId: string): Promise<StueckRolle[]> {
+export async function getRollenForSzene(
+  szeneId: string
+): Promise<StueckRolle[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('szenen_rollen')
-    .select(`
+    .select(
+      `
       rolle:rollen(*)
-    `)
+    `
+    )
     .eq('szene_id', szeneId)
 
   if (error) {
@@ -448,9 +454,7 @@ export async function addRolleToSzene(
   data: SzeneRolleInsert
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase
-    .from('szenen_rollen')
-    .insert(data as never)
+  const { error } = await supabase.from('szenen_rollen').insert(data as never)
 
   if (error) {
     console.error('Error adding rolle to szene:', error)

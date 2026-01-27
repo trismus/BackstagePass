@@ -8,7 +8,10 @@ import {
   updateRessourcenReservierung,
   checkRessourceVerfuegbarkeit,
 } from '@/lib/actions/reservierungen'
-import type { RessourcenReservierungMitRessource, Ressource } from '@/lib/supabase/types'
+import type {
+  RessourcenReservierungMitRessource,
+  Ressource,
+} from '@/lib/supabase/types'
 import { RessourceKategorieBadge } from '@/components/ressourcen/RessourceKategorieBadge'
 
 interface RessourcenPickerProps {
@@ -36,7 +39,9 @@ export function RessourcenPicker({
 
   // Filter out already reserved resources
   const reservedRessourceIds = reservierungen.map((r) => r.ressource_id)
-  const availableRessourcen = ressourcen.filter((r) => !reservedRessourceIds.includes(r.id))
+  const availableRessourcen = ressourcen.filter(
+    (r) => !reservedRessourceIds.includes(r.id)
+  )
 
   async function handleRessourceSelect(ressourceId: string) {
     setSelectedRessourceId(ressourceId)
@@ -47,7 +52,11 @@ export function RessourcenPicker({
 
     // Check availability
     setCheckingVerfuegbar(true)
-    const result = await checkRessourceVerfuegbarkeit(ressourceId, datum, veranstaltungId)
+    const result = await checkRessourceVerfuegbarkeit(
+      ressourceId,
+      datum,
+      veranstaltungId
+    )
     setVerfuegbar(result.available)
     setMenge(Math.min(1, result.available).toString())
     setCheckingVerfuegbar(false)
@@ -75,7 +84,8 @@ export function RessourcenPicker({
   }
 
   async function handleRemoveReservierung(id: string, ressourceName: string) {
-    if (!confirm(`Reservierung für "${ressourceName}" wirklich entfernen?`)) return
+    if (!confirm(`Reservierung für "${ressourceName}" wirklich entfernen?`))
+      return
 
     await deleteRessourcenReservierung(id, veranstaltungId)
     router.refresh()
@@ -87,9 +97,11 @@ export function RessourcenPicker({
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-        <h3 className="font-medium text-gray-900">Ressourcen ({reservierungen.length})</h3>
+    <div className="rounded-lg bg-white shadow">
+      <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-3">
+        <h3 className="font-medium text-gray-900">
+          Ressourcen ({reservierungen.length})
+        </h3>
         {canEdit && !showForm && availableRessourcen.length > 0 && (
           <button
             onClick={() => setShowForm(true)}
@@ -102,12 +114,12 @@ export function RessourcenPicker({
 
       {/* Add Resource Form */}
       {showForm && canEdit && (
-        <div className="p-4 border-b bg-blue-50">
+        <div className="border-b bg-blue-50 p-4">
           <div className="flex gap-2">
             <select
               value={selectedRessourceId}
               onChange={(e) => handleRessourceSelect(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
               <option value="">Ressource auswählen...</option>
               {availableRessourcen.map((r) => (
@@ -122,13 +134,13 @@ export function RessourcenPicker({
               max={verfuegbar || 999}
               value={menge}
               onChange={(e) => setMenge(e.target.value)}
-              className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm"
               placeholder="Menge"
             />
             <button
               onClick={handleAddReservierung}
               disabled={loading || !selectedRessourceId || checkingVerfuegbar}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:bg-blue-400"
+              className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white disabled:bg-blue-400"
             >
               {loading ? 'Speichern...' : 'Reservieren'}
             </button>
@@ -139,7 +151,7 @@ export function RessourcenPicker({
                 setMenge('1')
                 setVerfuegbar(null)
               }}
-              className="px-3 py-2 text-gray-600 text-sm"
+              className="px-3 py-2 text-sm text-gray-600"
             >
               Abbrechen
             </button>
@@ -147,7 +159,9 @@ export function RessourcenPicker({
 
           {/* Availability Info */}
           {verfuegbar !== null && (
-            <p className={`text-sm mt-2 ${verfuegbar > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p
+              className={`mt-2 text-sm ${verfuegbar > 0 ? 'text-green-600' : 'text-red-600'}`}
+            >
               {verfuegbar > 0
                 ? `${verfuegbar} verfügbar an diesem Tag`
                 : 'Nicht verfügbar an diesem Tag'}
@@ -155,7 +169,7 @@ export function RessourcenPicker({
           )}
 
           {checkingVerfuegbar && (
-            <p className="text-sm text-gray-500 mt-2">Prüfe Verfügbarkeit...</p>
+            <p className="mt-2 text-sm text-gray-500">Prüfe Verfügbarkeit...</p>
           )}
         </div>
       )}
@@ -163,10 +177,12 @@ export function RessourcenPicker({
       {/* Reserved Resources */}
       <div className="divide-y divide-gray-200">
         {reservierungen.map((r) => (
-          <div key={r.id} className="p-4 flex justify-between items-center">
+          <div key={r.id} className="flex items-center justify-between p-4">
             <div>
-              <span className="font-medium text-gray-900">{r.ressource.name}</span>
-              <div className="flex items-center gap-2 mt-1">
+              <span className="font-medium text-gray-900">
+                {r.ressource.name}
+              </span>
+              <div className="mt-1 flex items-center gap-2">
                 <RessourceKategorieBadge kategorie={r.ressource.kategorie} />
                 {canEdit ? (
                   <input
@@ -174,8 +190,10 @@ export function RessourcenPicker({
                     min="1"
                     max={r.ressource.menge}
                     value={r.menge}
-                    onChange={(e) => handleMengeChange(r.id, parseInt(e.target.value, 10))}
-                    className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                    onChange={(e) =>
+                      handleMengeChange(r.id, parseInt(e.target.value, 10))
+                    }
+                    className="w-16 rounded border border-gray-300 px-2 py-1 text-sm"
                   />
                 ) : (
                   <span className="text-sm text-gray-500">{r.menge} Stück</span>
@@ -188,7 +206,7 @@ export function RessourcenPicker({
             {canEdit && (
               <button
                 onClick={() => handleRemoveReservierung(r.id, r.ressource.name)}
-                className="text-red-600 hover:text-red-800 text-sm"
+                className="text-sm text-red-600 hover:text-red-800"
               >
                 Entfernen
               </button>

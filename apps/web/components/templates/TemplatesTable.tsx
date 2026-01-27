@@ -22,10 +22,10 @@ export function TemplatesTable({ templates }: TemplatesTableProps) {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="rounded-lg bg-white shadow">
       {/* Filter Bar */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex justify-between items-center">
+      <div className="border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between">
           <p className="text-sm text-gray-500">
             {filtered.length} von {templates.length} Vorlagen
           </p>
@@ -46,30 +46,33 @@ export function TemplatesTable({ templates }: TemplatesTableProps) {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Beschreibung
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Erstellt
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                 Aktionen
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filtered.map((t) => (
-              <tr key={t.id} className={`hover:bg-gray-50 ${t.archiviert ? 'opacity-60' : ''}`}>
-                <td className="px-6 py-4 whitespace-nowrap">
+              <tr
+                key={t.id}
+                className={`hover:bg-gray-50 ${t.archiviert ? 'opacity-60' : ''}`}
+              >
+                <td className="whitespace-nowrap px-6 py-4">
                   <Link
                     href={`/templates/${t.id}` as never}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="font-medium text-blue-600 hover:text-blue-800"
                   >
                     {t.name}
                   </Link>
@@ -77,9 +80,9 @@ export function TemplatesTable({ templates }: TemplatesTableProps) {
                 <td className="px-6 py-4 text-sm text-gray-500">
                   {t.beschreibung || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap px-6 py-4">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       t.archiviert
                         ? 'bg-gray-100 text-gray-600'
                         : 'bg-green-100 text-green-800'
@@ -88,13 +91,13 @@ export function TemplatesTable({ templates }: TemplatesTableProps) {
                     {t.archiviert ? 'Archiviert' : 'Aktiv'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                   {formatDate(t.created_at)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right">
+                <td className="whitespace-nowrap px-6 py-4 text-right">
                   <Link
                     href={`/templates/${t.id}` as never}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-sm text-blue-600 hover:text-blue-800"
                   >
                     Bearbeiten
                   </Link>

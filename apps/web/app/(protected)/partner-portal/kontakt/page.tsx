@@ -3,24 +3,24 @@ import Link from 'next/link'
 export default function PartnerKontaktPage() {
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href={'/partner-portal' as never}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-block"
+            className="mb-2 inline-block text-sm text-gray-500 hover:text-gray-700"
           >
             &larr; Zurück zur Übersicht
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Kontakt</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="mt-1 text-gray-600">
             So erreichen Sie die Theatergruppe Widen
           </p>
         </div>
 
         {/* Contact Info */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">
             Theatergruppe Widen
           </h2>
           <dl className="space-y-4">
@@ -64,15 +64,15 @@ export default function PartnerKontaktPage() {
         </div>
 
         {/* Contact Form Placeholder */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">
             Nachricht senden
           </h2>
           <form className="space-y-4">
             <div>
               <label
                 htmlFor="betreff"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="mb-1 block text-sm font-medium text-gray-700"
               >
                 Betreff
               </label>
@@ -87,7 +87,7 @@ export default function PartnerKontaktPage() {
             <div>
               <label
                 htmlFor="nachricht"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="mb-1 block text-sm font-medium text-gray-700"
               >
                 Nachricht
               </label>
@@ -103,11 +103,11 @@ export default function PartnerKontaktPage() {
               <button
                 type="submit"
                 disabled
-                className="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"
+                className="cursor-not-allowed rounded-lg bg-gray-300 px-4 py-2 text-gray-500"
               >
                 Senden (Demnächst verfügbar)
               </button>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="mt-2 text-xs text-gray-500">
                 Das Kontaktformular wird in Kürze aktiviert. Bitte nutzen Sie
                 vorerst die E-Mail-Adresse oben.
               </p>

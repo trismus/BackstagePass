@@ -2,7 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createPartner, updatePartner, deletePartner } from '@/lib/actions/partner'
+import {
+  createPartner,
+  updatePartner,
+  deletePartner,
+} from '@/lib/actions/partner'
 import type { Partner } from '@/lib/supabase/types'
 
 interface PartnerFormProps {
@@ -19,7 +23,9 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
   const [name, setName] = useState(partner?.name || '')
   const [kontaktName, setKontaktName] = useState(partner?.kontakt_name || '')
   const [kontaktEmail, setKontaktEmail] = useState(partner?.kontakt_email || '')
-  const [kontaktTelefon, setKontaktTelefon] = useState(partner?.kontakt_telefon || '')
+  const [kontaktTelefon, setKontaktTelefon] = useState(
+    partner?.kontakt_telefon || ''
+  )
   const [adresse, setAdresse] = useState(partner?.adresse || '')
   const [notizen, setNotizen] = useState(partner?.notizen || '')
   const [aktiv, setAktiv] = useState(partner?.aktiv ?? true)
@@ -76,14 +82,17 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
       {/* Name */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="name"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Name *
         </label>
         <input
@@ -92,13 +101,16 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Kontakt Name */}
       <div>
-        <label htmlFor="kontaktName" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="kontaktName"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Ansprechpartner
         </label>
         <input
@@ -106,14 +118,17 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
           type="text"
           value={kontaktName}
           onChange={(e) => setKontaktName(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Kontakt Email & Telefon */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="kontaktEmail" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="kontaktEmail"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             E-Mail
           </label>
           <input
@@ -121,11 +136,14 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
             type="email"
             value={kontaktEmail}
             onChange={(e) => setKontaktEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label htmlFor="kontaktTelefon" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="kontaktTelefon"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             Telefon
           </label>
           <input
@@ -133,14 +151,17 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
             type="tel"
             value={kontaktTelefon}
             onChange={(e) => setKontaktTelefon(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
 
       {/* Adresse */}
       <div>
-        <label htmlFor="adresse" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="adresse"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Adresse
         </label>
         <input
@@ -148,13 +169,16 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
           type="text"
           value={adresse}
           onChange={(e) => setAdresse(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Notizen */}
       <div>
-        <label htmlFor="notizen" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="notizen"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Notizen
         </label>
         <textarea
@@ -162,7 +186,7 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
           rows={2}
           value={notizen}
           onChange={(e) => setNotizen(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -182,14 +206,14 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
       )}
 
       {/* Actions */}
-      <div className="flex justify-between items-center pt-4 border-t">
+      <div className="flex items-center justify-between border-t pt-4">
         <div>
           {mode === 'edit' && partner?.aktiv && (
             <button
               type="button"
               onClick={handleDelete}
               disabled={loading}
-              className="px-3 py-1.5 text-red-600 hover:text-red-800 text-sm disabled:opacity-50"
+              className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
             >
               Deaktivieren
             </button>
@@ -198,7 +222,7 @@ export function PartnerForm({ partner, mode, onSuccess }: PartnerFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
         >
           {loading ? 'Speichern...' : 'Speichern'}
         </button>

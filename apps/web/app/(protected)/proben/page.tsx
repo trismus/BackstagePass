@@ -13,15 +13,29 @@ export default async function ProbenPage() {
   // Hole alle Proben mit Stück-Info
   const { data: proben } = await supabase
     .from('proben')
-    .select(`
+    .select(
+      `
       *,
       stueck:stuecke(id, titel)
-    `)
+    `
+    )
     .order('datum', { ascending: true })
 
   const today = new Date().toISOString().split('T')[0]
-  const kommendeProben = proben?.filter((p) => p.datum >= today && p.status !== 'abgeschlossen' && p.status !== 'abgesagt') ?? []
-  const vergangeneProben = proben?.filter((p) => p.datum < today || p.status === 'abgeschlossen' || p.status === 'abgesagt') ?? []
+  const kommendeProben =
+    proben?.filter(
+      (p) =>
+        p.datum >= today &&
+        p.status !== 'abgeschlossen' &&
+        p.status !== 'abgesagt'
+    ) ?? []
+  const vergangeneProben =
+    proben?.filter(
+      (p) =>
+        p.datum < today ||
+        p.status === 'abgeschlossen' ||
+        p.status === 'abgesagt'
+    ) ?? []
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -42,16 +56,16 @@ export default async function ProbenPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Proben</h1>
-          <p className="text-gray-600 mt-1">
-            Übersicht aller Proben
-          </p>
+          <p className="mt-1 text-gray-600">Übersicht aller Proben</p>
         </div>
       </div>
 
       {/* Kommende Proben */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Kommende Proben</h2>
+      <div className="rounded-lg bg-white shadow">
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Kommende Proben
+          </h2>
           <p className="text-sm text-gray-500">
             {kommendeProben.length} Probe{kommendeProben.length !== 1 && 'n'}
           </p>
@@ -71,27 +85,34 @@ export default async function ProbenPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="text-center min-w-[60px]">
+                      <div className="min-w-[60px] text-center">
                         <div className="text-2xl font-bold text-gray-900">
                           {new Date(probe.datum).getDate()}
                         </div>
-                        <div className="text-xs text-gray-500 uppercase">
-                          {new Date(probe.datum).toLocaleDateString('de-CH', { weekday: 'short' })}
+                        <div className="text-xs uppercase text-gray-500">
+                          {new Date(probe.datum).toLocaleDateString('de-CH', {
+                            weekday: 'short',
+                          })}
                         </div>
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900">{probe.titel}</span>
+                          <span className="font-medium text-gray-900">
+                            {probe.titel}
+                          </span>
                           <ProbeStatusBadge status={probe.status} />
                         </div>
-                        <div className="text-sm text-gray-500 mt-0.5">
+                        <div className="mt-0.5 text-sm text-gray-500">
                           {probe.stueck && (
-                            <span className="text-primary-600">{probe.stueck.titel}</span>
+                            <span className="text-primary-600">
+                              {probe.stueck.titel}
+                            </span>
                           )}
                           {probe.startzeit && (
                             <span className="ml-3">
                               {formatTime(probe.startzeit)}
-                              {probe.endzeit && ` - ${formatTime(probe.endzeit)}`}
+                              {probe.endzeit &&
+                                ` - ${formatTime(probe.endzeit)}`}
                             </span>
                           )}
                           {probe.ort && (
@@ -100,8 +121,18 @@ export default async function ProbenPage() {
                         </div>
                       </div>
                     </div>
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </div>
                 </Link>
@@ -113,11 +144,14 @@ export default async function ProbenPage() {
 
       {/* Vergangene Proben */}
       {vergangeneProben.length > 0 && (
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Vergangene Proben</h2>
+        <div className="rounded-lg bg-white shadow">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Vergangene Proben
+            </h2>
             <p className="text-sm text-gray-500">
-              {vergangeneProben.length} Probe{vergangeneProben.length !== 1 && 'n'}
+              {vergangeneProben.length} Probe
+              {vergangeneProben.length !== 1 && 'n'}
             </p>
           </div>
 
@@ -130,23 +164,37 @@ export default async function ProbenPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="text-center min-w-[60px]">
+                      <div className="min-w-[60px] text-center">
                         <div className="text-lg font-medium text-gray-600">
                           {formatDate(probe.datum).split(',')[0]}
                         </div>
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">{probe.titel}</span>
+                          <span className="font-medium text-gray-700">
+                            {probe.titel}
+                          </span>
                           <ProbeStatusBadge status={probe.status} />
                         </div>
                         {probe.stueck && (
-                          <span className="text-sm text-gray-500">{probe.stueck.titel}</span>
+                          <span className="text-sm text-gray-500">
+                            {probe.stueck.titel}
+                          </span>
                         )}
                       </div>
                     </div>
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </div>
                 </Link>
@@ -154,7 +202,7 @@ export default async function ProbenPage() {
             ))}
           </ul>
           {vergangeneProben.length > 10 && (
-            <div className="px-6 py-3 bg-gray-50 text-center text-sm text-gray-500">
+            <div className="bg-gray-50 px-6 py-3 text-center text-sm text-gray-500">
               + {vergangeneProben.length - 10} weitere vergangene Proben
             </div>
           )}

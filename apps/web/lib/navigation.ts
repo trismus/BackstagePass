@@ -79,15 +79,23 @@ export const ROLE_START_PAGES: Record<UserRole, string> = {
  */
 const MANAGEMENT_NAVIGATION: NavSection[] = [
   {
-    items: [
-      { href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    ],
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' }],
   },
   {
     title: 'Personen',
     items: [
-      { href: '/mitglieder', label: 'Mitglieder', icon: 'users', permission: 'mitglieder:read' },
-      { href: '/partner', label: 'Partner', icon: 'partner', permission: 'partner:read' },
+      {
+        href: '/mitglieder',
+        label: 'Mitglieder',
+        icon: 'users',
+        permission: 'mitglieder:read',
+      },
+      {
+        href: '/partner',
+        label: 'Partner',
+        icon: 'partner',
+        permission: 'partner:read',
+      },
     ],
   },
   {
@@ -95,16 +103,42 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
     items: [
       { href: '/veranstaltungen', label: 'Übersicht', icon: 'calendar' },
       { href: '/auffuehrungen', label: 'Aufführungen', icon: 'theater' },
-      { href: '/stuecke', label: 'Stücke', icon: 'book', permission: 'stuecke:read' },
+      {
+        href: '/stuecke',
+        label: 'Stücke',
+        icon: 'book',
+        permission: 'stuecke:read',
+      },
       { href: '/proben', label: 'Proben', icon: 'rehearsal' },
-      { href: '/helfereinsaetze', label: 'Helfereinsätze', icon: 'helper', permission: 'helfereinsaetze:read' },
+      {
+        href: '/helfereinsaetze',
+        label: 'Helfereinsätze',
+        icon: 'helper',
+        permission: 'helfereinsaetze:read',
+      },
+      {
+        href: '/helferliste',
+        label: 'Helferliste',
+        icon: 'list',
+        permission: 'helferliste:read',
+      },
     ],
   },
   {
     title: 'Ressourcen',
     items: [
-      { href: '/raeume', label: 'Räume', icon: 'room', permission: 'raeume:read' },
-      { href: '/ressourcen', label: 'Ausstattung', icon: 'equipment', permission: 'ressourcen:read' },
+      {
+        href: '/raeume',
+        label: 'Räume',
+        icon: 'room',
+        permission: 'raeume:read',
+      },
+      {
+        href: '/ressourcen',
+        label: 'Ausstattung',
+        icon: 'equipment',
+        permission: 'ressourcen:read',
+      },
       { href: '/templates', label: 'Templates', icon: 'template' },
     ],
   },
@@ -118,8 +152,18 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
   {
     title: 'Admin',
     items: [
-      { href: '/admin/users', label: 'Benutzer', icon: 'user', adminOnly: true },
-      { href: '/admin/audit', label: 'Audit Log', icon: 'audit', adminOnly: true },
+      {
+        href: '/admin/users',
+        label: 'Benutzer',
+        icon: 'user',
+        adminOnly: true,
+      },
+      {
+        href: '/admin/audit',
+        label: 'Audit Log',
+        icon: 'audit',
+        adminOnly: true,
+      },
     ],
   },
 ]
@@ -129,16 +173,26 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
  */
 const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
   {
-    items: [
-      { href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' },
-    ],
+    items: [{ href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' }],
   },
   {
     title: 'Meine Aktivitäten',
     items: [
-      { href: '/mein-bereich/termine', label: 'Meine Termine', icon: 'calendar' },
-      { href: '/mein-bereich/stundenkonto', label: 'Stundenkonto', icon: 'clock' },
-      { href: '/mein-bereich/anmeldungen', label: 'Anmeldungen', icon: 'check' },
+      {
+        href: '/mein-bereich/termine',
+        label: 'Meine Termine',
+        icon: 'calendar',
+      },
+      {
+        href: '/mein-bereich/stundenkonto',
+        label: 'Stundenkonto',
+        icon: 'clock',
+      },
+      {
+        href: '/mein-bereich/anmeldungen',
+        label: 'Anmeldungen',
+        icon: 'check',
+      },
     ],
   },
   {
@@ -153,13 +207,12 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
     title: 'Helfen',
     items: [
       { href: '/helfereinsaetze', label: 'Helfereinsätze', icon: 'helper' },
+      { href: '/helferliste', label: 'Helferliste', icon: 'list' },
     ],
   },
   {
     title: 'Ressourcen',
-    items: [
-      { href: '/raeume', label: 'Räume', icon: 'room' },
-    ],
+    items: [{ href: '/raeume', label: 'Räume', icon: 'room' }],
   },
 ]
 
@@ -168,9 +221,7 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
  */
 const MITGLIED_PASSIV_NAVIGATION: NavSection[] = [
   {
-    items: [
-      { href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' },
-    ],
+    items: [{ href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' }],
   },
   {
     title: 'Theater',
@@ -187,21 +238,21 @@ const MITGLIED_PASSIV_NAVIGATION: NavSection[] = [
  */
 const HELFER_NAVIGATION: NavSection[] = [
   {
-    items: [
-      { href: '/helfer', label: 'Übersicht', icon: 'home' },
-    ],
+    items: [{ href: '/helfer', label: 'Übersicht', icon: 'home' }],
   },
   {
     title: 'Meine Einsätze',
     items: [
       { href: '/helfer/schichten', label: 'Meine Schichten', icon: 'list' },
-      { href: '/helfer/einsaetze', label: 'Verfügbare Einsätze', icon: 'helper' },
+      {
+        href: '/helfer/einsaetze',
+        label: 'Verfügbare Einsätze',
+        icon: 'helper',
+      },
     ],
   },
   {
-    items: [
-      { href: '/profile', label: 'Mein Profil', icon: 'user' },
-    ],
+    items: [{ href: '/profile', label: 'Mein Profil', icon: 'user' }],
   },
 ]
 
@@ -210,9 +261,7 @@ const HELFER_NAVIGATION: NavSection[] = [
  */
 const PARTNER_NAVIGATION: NavSection[] = [
   {
-    items: [
-      { href: '/partner-portal', label: 'Partner-Portal', icon: 'home' },
-    ],
+    items: [{ href: '/partner-portal', label: 'Partner-Portal', icon: 'home' }],
   },
   {
     items: [
@@ -222,9 +271,7 @@ const PARTNER_NAVIGATION: NavSection[] = [
     ],
   },
   {
-    items: [
-      { href: '/profile', label: 'Mein Profil', icon: 'user' },
-    ],
+    items: [{ href: '/profile', label: 'Mein Profil', icon: 'user' }],
   },
 ]
 
@@ -233,9 +280,7 @@ const PARTNER_NAVIGATION: NavSection[] = [
  */
 const FREUNDE_NAVIGATION: NavSection[] = [
   {
-    items: [
-      { href: '/willkommen', label: 'Willkommen', icon: 'home' },
-    ],
+    items: [{ href: '/willkommen', label: 'Willkommen', icon: 'home' }],
   },
   {
     items: [
@@ -316,6 +361,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
     '/partner-portal': ['ADMIN', 'VORSTAND', 'PARTNER'],
     '/admin': ['ADMIN'],
     '/helfereinsaetze': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
+    '/helferliste': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
     '/mein-bereich': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'MITGLIED_PASSIV'],
   }
 
@@ -384,6 +430,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   stuecke: 'Stücke',
   proben: 'Proben',
   helfereinsaetze: 'Helfereinsätze',
+  helferliste: 'Helferliste',
   raeume: 'Räume',
   ressourcen: 'Ausstattung',
   templates: 'Templates',
@@ -436,7 +483,10 @@ export function isManagementRole(role: UserRole): boolean {
 /**
  * Gibt den Redirect-Pfad zurück wenn Benutzer auf falsche Startseite zugreift
  */
-export function getRedirectIfNeeded(role: UserRole, currentPath: string): string | null {
+export function getRedirectIfNeeded(
+  role: UserRole,
+  currentPath: string
+): string | null {
   // Management kann überall hin
   if (isManagementRole(role)) {
     return null

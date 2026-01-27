@@ -21,7 +21,11 @@ const zeitblockTypen: { value: ZeitblockTyp; label: string }[] = [
   { value: 'standard', label: 'Standard' },
 ]
 
-export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: ZeitblockEditorProps) {
+export function ZeitblockEditor({
+  veranstaltungId,
+  zeitbloecke,
+  canEdit,
+}: ZeitblockEditorProps) {
   const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -71,9 +75,11 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
   const formatTime = (timeStr: string) => timeStr.slice(0, 5)
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-        <h3 className="font-medium text-gray-900">Zeitblöcke ({zeitbloecke.length})</h3>
+    <div className="rounded-lg bg-white shadow">
+      <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-3">
+        <h3 className="font-medium text-gray-900">
+          Zeitblöcke ({zeitbloecke.length})
+        </h3>
         {canEdit && !showForm && (
           <button
             onClick={() => setShowForm(true)}
@@ -85,9 +91,9 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
       </div>
 
       {showForm && canEdit && (
-        <form onSubmit={handleSubmit} className="p-4 border-b bg-blue-50">
+        <form onSubmit={handleSubmit} className="border-b bg-blue-50 p-4">
           {error && (
-            <div className="mb-3 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+            <div className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -99,7 +105,7 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
             <div>
@@ -108,7 +114,7 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
                 required
                 value={startzeit}
                 onChange={(e) => setStartzeit(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
             <div>
@@ -117,14 +123,14 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
                 required
                 value={endzeit}
                 onChange={(e) => setEndzeit(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
             <div className="col-span-2">
               <select
                 value={typ}
                 onChange={(e) => setTyp(e.target.value as ZeitblockTyp)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               >
                 {zeitblockTypen.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -134,18 +140,18 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
               </select>
             </div>
           </div>
-          <div className="flex gap-2 mt-3">
+          <div className="mt-3 flex gap-2">
             <button
               type="submit"
               disabled={loading}
-              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm disabled:bg-blue-400"
+              className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white disabled:bg-blue-400"
             >
               {loading ? 'Speichern...' : 'Speichern'}
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-3 py-1.5 text-gray-600 text-sm"
+              className="px-3 py-1.5 text-sm text-gray-600"
             >
               Abbrechen
             </button>
@@ -155,7 +161,7 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
 
       <div className="divide-y divide-gray-200">
         {zeitbloecke.map((zb) => (
-          <div key={zb.id} className="p-4 flex justify-between items-center">
+          <div key={zb.id} className="flex items-center justify-between p-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-medium text-gray-900">{zb.name}</span>
@@ -168,7 +174,7 @@ export function ZeitblockEditor({ veranstaltungId, zeitbloecke, canEdit }: Zeitb
             {canEdit && (
               <button
                 onClick={() => handleDelete(zb.id, zb.name)}
-                className="text-red-600 hover:text-red-800 text-sm"
+                className="text-sm text-red-600 hover:text-red-800"
               >
                 Löschen
               </button>

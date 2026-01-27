@@ -26,7 +26,11 @@ export function TemplateApplyDialog({
     setLoading(true)
     setError(null)
 
-    const result = await applyTemplate(selectedTemplateId, veranstaltungId, startzeit)
+    const result = await applyTemplate(
+      selectedTemplateId,
+      veranstaltungId,
+      startzeit
+    )
 
     if (result.success) {
       setSelectedTemplateId('')
@@ -42,14 +46,15 @@ export function TemplateApplyDialog({
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <h4 className="font-medium text-blue-900 mb-2">Vorlage anwenden</h4>
-      <p className="text-sm text-blue-700 mb-3">
-        Wende eine Vorlage an, um Zeitblöcke, Schichten und Ressourcen automatisch zu erstellen.
+    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+      <h4 className="mb-2 font-medium text-blue-900">Vorlage anwenden</h4>
+      <p className="mb-3 text-sm text-blue-700">
+        Wende eine Vorlage an, um Zeitblöcke, Schichten und Ressourcen
+        automatisch zu erstellen.
       </p>
 
       {error && (
-        <div className="mb-3 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+        <div className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
           {error}
         </div>
       )}
@@ -58,7 +63,7 @@ export function TemplateApplyDialog({
         <select
           value={selectedTemplateId}
           onChange={(e) => setSelectedTemplateId(e.target.value)}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
         >
           <option value="">Vorlage auswählen...</option>
           {templates.map((t) => (
@@ -71,7 +76,7 @@ export function TemplateApplyDialog({
         <button
           onClick={handleApply}
           disabled={loading || !selectedTemplateId}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:bg-blue-400"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white disabled:bg-blue-400"
         >
           {loading ? 'Wird angewendet...' : 'Anwenden'}
         </button>

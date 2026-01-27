@@ -2,8 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createZuweisung, deleteZuweisung, updateZuweisung } from '@/lib/actions/auffuehrung-schichten'
-import type { SchichtMitZeitblock, ZuweisungMitPerson, Person, ZuweisungStatus } from '@/lib/supabase/types'
+import {
+  createZuweisung,
+  deleteZuweisung,
+  updateZuweisung,
+} from '@/lib/actions/auffuehrung-schichten'
+import type {
+  SchichtMitZeitblock,
+  ZuweisungMitPerson,
+  Person,
+  ZuweisungStatus,
+} from '@/lib/supabase/types'
 
 interface SchichtZuweisungListeProps {
   schichten: SchichtMitZeitblock[]
@@ -12,12 +21,16 @@ interface SchichtZuweisungListeProps {
   canEdit: boolean
 }
 
-const statusLabels: Record<ZuweisungStatus, { label: string; color: string }> = {
-  zugesagt: { label: 'Zugesagt', color: 'bg-green-100 text-green-800' },
-  abgesagt: { label: 'Abgesagt', color: 'bg-red-100 text-red-800' },
-  erschienen: { label: 'Erschienen', color: 'bg-blue-100 text-blue-800' },
-  nicht_erschienen: { label: 'Nicht erschienen', color: 'bg-gray-100 text-gray-800' },
-}
+const statusLabels: Record<ZuweisungStatus, { label: string; color: string }> =
+  {
+    zugesagt: { label: 'Zugesagt', color: 'bg-green-100 text-green-800' },
+    abgesagt: { label: 'Abgesagt', color: 'bg-red-100 text-red-800' },
+    erschienen: { label: 'Erschienen', color: 'bg-blue-100 text-blue-800' },
+    nicht_erschienen: {
+      label: 'Nicht erschienen',
+      color: 'bg-gray-100 text-gray-800',
+    },
+  }
 
 export function SchichtZuweisungListe({
   schichten,
@@ -76,8 +89,8 @@ export function SchichtZuweisungListe({
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-3 bg-gray-50 border-b">
+    <div className="rounded-lg bg-white shadow">
+      <div className="border-b bg-gray-50 px-4 py-3">
         <h3 className="font-medium text-gray-900">Zuweisungen verwalten</h3>
       </div>
 
@@ -85,21 +98,25 @@ export function SchichtZuweisungListe({
         {schichten.map((schicht) => {
           const schichtZuweisungen = zuweisungenBySchicht[schicht.id] || []
           const assignedIds = getAssignedPersonIds(schicht.id)
-          const availablePersonen = personen.filter((p) => !assignedIds.includes(p.id))
+          const availablePersonen = personen.filter(
+            (p) => !assignedIds.includes(p.id)
+          )
 
           return (
             <div key={schicht.id} className="p-4">
-              <div className="flex justify-between items-start mb-3">
+              <div className="mb-3 flex items-start justify-between">
                 <div>
                   <h4 className="font-medium text-gray-900">{schicht.rolle}</h4>
                   {schicht.zeitblock && (
                     <p className="text-sm text-gray-500">
-                      {schicht.zeitblock.name} ({schicht.zeitblock.startzeit.slice(0, 5)} -{' '}
+                      {schicht.zeitblock.name} (
+                      {schicht.zeitblock.startzeit.slice(0, 5)} -{' '}
                       {schicht.zeitblock.endzeit.slice(0, 5)})
                     </p>
                   )}
                   <p className="text-sm text-gray-500">
-                    {schichtZuweisungen.length}/{schicht.anzahl_benoetigt} besetzt
+                    {schichtZuweisungen.length}/{schicht.anzahl_benoetigt}{' '}
+                    besetzt
                   </p>
                 </div>
                 {canEdit && addingToSchicht !== schicht.id && (
@@ -118,7 +135,7 @@ export function SchichtZuweisungListe({
                   <select
                     value={selectedPersonId}
                     onChange={(e) => setSelectedPersonId(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
                   >
                     <option value="">Person auswählen...</option>
                     {availablePersonen.map((p) => (
@@ -130,7 +147,7 @@ export function SchichtZuweisungListe({
                   <button
                     onClick={() => handleAddZuweisung(schicht.id)}
                     disabled={loading || !selectedPersonId}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:bg-blue-400"
+                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white disabled:bg-blue-400"
                   >
                     Hinzufügen
                   </button>
@@ -139,7 +156,7 @@ export function SchichtZuweisungListe({
                       setAddingToSchicht(null)
                       setSelectedPersonId('')
                     }}
-                    className="px-3 py-2 text-gray-600 text-sm"
+                    className="px-3 py-2 text-sm text-gray-600"
                   >
                     Abbrechen
                   </button>
@@ -152,7 +169,7 @@ export function SchichtZuweisungListe({
                   {schichtZuweisungen.map((z) => (
                     <div
                       key={z.id}
-                      className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
+                      className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
                     >
                       <span className="text-sm text-gray-900">
                         {z.person.vorname} {z.person.nachname}
@@ -162,19 +179,24 @@ export function SchichtZuweisungListe({
                           <select
                             value={z.status}
                             onChange={(e) =>
-                              handleStatusChange(z.id, e.target.value as ZuweisungStatus)
+                              handleStatusChange(
+                                z.id,
+                                e.target.value as ZuweisungStatus
+                              )
                             }
-                            className={`text-xs px-2 py-1 rounded-full border-0 ${statusLabels[z.status].color}`}
+                            className={`rounded-full border-0 px-2 py-1 text-xs ${statusLabels[z.status].color}`}
                           >
-                            {Object.entries(statusLabels).map(([value, { label }]) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ))}
+                            {Object.entries(statusLabels).map(
+                              ([value, { label }]) => (
+                                <option key={value} value={value}>
+                                  {label}
+                                </option>
+                              )
+                            )}
                           </select>
                         ) : (
                           <span
-                            className={`text-xs px-2 py-1 rounded-full ${statusLabels[z.status].color}`}
+                            className={`rounded-full px-2 py-1 text-xs ${statusLabels[z.status].color}`}
                           >
                             {statusLabels[z.status].label}
                           </span>
@@ -182,7 +204,7 @@ export function SchichtZuweisungListe({
                         {canEdit && (
                           <button
                             onClick={() => handleRemoveZuweisung(z.id)}
-                            className="text-red-600 hover:text-red-800 text-sm"
+                            className="text-sm text-red-600 hover:text-red-800"
                           >
                             &times;
                           </button>

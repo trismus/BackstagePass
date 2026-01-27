@@ -13,17 +13,34 @@ interface UserRoleSelectProps {
 /**
  * Role options with German labels for UI display
  */
-const ROLE_OPTIONS: { value: UserRole; label: string; description: string }[] = [
-  { value: 'ADMIN', label: 'Administrator', description: 'Vollzugriff' },
-  { value: 'VORSTAND', label: 'Vorstand', description: 'Alle operativen Module' },
-  { value: 'MITGLIED_AKTIV', label: 'Aktives Mitglied', description: 'Anmeldungen, Stundenkonto' },
-  { value: 'MITGLIED_PASSIV', label: 'Passives Mitglied', description: 'Nur Profil' },
-  { value: 'HELFER', label: 'Helfer', description: 'Zugewiesene Einsätze' },
-  { value: 'PARTNER', label: 'Partner', description: 'Partnerdaten' },
-  { value: 'FREUNDE', label: 'Freunde', description: 'Nur lesen' },
-]
+const ROLE_OPTIONS: { value: UserRole; label: string; description: string }[] =
+  [
+    { value: 'ADMIN', label: 'Administrator', description: 'Vollzugriff' },
+    {
+      value: 'VORSTAND',
+      label: 'Vorstand',
+      description: 'Alle operativen Module',
+    },
+    {
+      value: 'MITGLIED_AKTIV',
+      label: 'Aktives Mitglied',
+      description: 'Anmeldungen, Stundenkonto',
+    },
+    {
+      value: 'MITGLIED_PASSIV',
+      label: 'Passives Mitglied',
+      description: 'Nur Profil',
+    },
+    { value: 'HELFER', label: 'Helfer', description: 'Zugewiesene Einsätze' },
+    { value: 'PARTNER', label: 'Partner', description: 'Partnerdaten' },
+    { value: 'FREUNDE', label: 'Freunde', description: 'Nur lesen' },
+  ]
 
-export function UserRoleSelect({ userId, currentRole, disabled }: UserRoleSelectProps) {
+export function UserRoleSelect({
+  userId,
+  currentRole,
+  disabled,
+}: UserRoleSelectProps) {
   const [role, setRole] = useState<UserRole>(currentRole)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)

@@ -34,13 +34,20 @@ const statusOptions: { value: VeranstaltungStatus; label: string }[] = [
   { value: 'abgeschlossen', label: 'Abgeschlossen' },
 ]
 
-export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '/veranstaltungen' }: VeranstaltungFormProps) {
+export function VeranstaltungForm({
+  veranstaltung,
+  mode,
+  fixedTyp,
+  returnUrl = '/veranstaltungen',
+}: VeranstaltungFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [titel, setTitel] = useState(veranstaltung?.titel || '')
-  const [beschreibung, setBeschreibung] = useState(veranstaltung?.beschreibung || '')
+  const [beschreibung, setBeschreibung] = useState(
+    veranstaltung?.beschreibung || ''
+  )
   const [datum, setDatum] = useState(veranstaltung?.datum || '')
   const [startzeit, setStartzeit] = useState(veranstaltung?.startzeit || '')
   const [endzeit, setEndzeit] = useState(veranstaltung?.endzeit || '')
@@ -51,7 +58,9 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
   const [wartelisteAktiv, setWartelisteAktiv] = useState(
     veranstaltung?.warteliste_aktiv ?? true
   )
-  const [typ, setTyp] = useState<VeranstaltungTyp>(fixedTyp || veranstaltung?.typ || 'vereinsevent')
+  const [typ, setTyp] = useState<VeranstaltungTyp>(
+    fixedTyp || veranstaltung?.typ || 'vereinsevent'
+  )
   const [status, setStatus] = useState<VeranstaltungStatus>(
     veranstaltung?.status || 'geplant'
   )
@@ -106,18 +115,21 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
           {error}
         </div>
       )}
 
       {/* Grunddaten */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Grunddaten</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Grunddaten</h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Titel */}
           <div className="md:col-span-2">
-            <label htmlFor="titel" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="titel"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Titel *
             </label>
             <input
@@ -126,7 +138,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
               required
               value={titel}
               onChange={(e) => setTitel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="z.B. Generalversammlung 2026"
             />
           </div>
@@ -134,14 +146,17 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
           {/* Typ */}
           {!fixedTyp && (
             <div>
-              <label htmlFor="typ" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="typ"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Typ
               </label>
               <select
                 id="typ"
                 value={typ}
                 onChange={(e) => setTyp(e.target.value as VeranstaltungTyp)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               >
                 {typOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -154,14 +169,17 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
 
           {/* Status */}
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="status"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Status
             </label>
             <select
               id="status"
               value={status}
               onChange={(e) => setStatus(e.target.value as VeranstaltungStatus)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             >
               {statusOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -175,7 +193,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
           <div className="md:col-span-2">
             <label
               htmlFor="beschreibung"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Beschreibung
             </label>
@@ -184,7 +202,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
               rows={3}
               value={beschreibung}
               onChange={(e) => setBeschreibung(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -192,11 +210,14 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
 
       {/* Datum & Zeit */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Datum & Zeit</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Datum & Zeit</h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Datum */}
           <div>
-            <label htmlFor="datum" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="datum"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Datum *
             </label>
             <input
@@ -205,13 +226,16 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
               required
               value={datum}
               onChange={(e) => setDatum(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Startzeit */}
           <div>
-            <label htmlFor="startzeit" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="startzeit"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Startzeit
             </label>
             <input
@@ -219,13 +243,16 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
               type="time"
               value={startzeit}
               onChange={(e) => setStartzeit(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Endzeit */}
           <div>
-            <label htmlFor="endzeit" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="endzeit"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Endzeit
             </label>
             <input
@@ -233,7 +260,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
               type="time"
               value={endzeit}
               onChange={(e) => setEndzeit(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -241,11 +268,16 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
 
       {/* Ort & Kapazität */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Ort & Kapazität</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">
+          Ort & Kapazität
+        </h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Ort */}
           <div>
-            <label htmlFor="ort" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="ort"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Ort
             </label>
             <input
@@ -253,7 +285,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
               type="text"
               value={ort}
               onChange={(e) => setOrt(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="z.B. Vereinslokal"
             />
           </div>
@@ -262,7 +294,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
           <div>
             <label
               htmlFor="maxTeilnehmer"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Max. Teilnehmer
             </label>
@@ -272,7 +304,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
               min="1"
               value={maxTeilnehmer}
               onChange={(e) => setMaxTeilnehmer(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Leer = unbegrenzt"
             />
           </div>
@@ -295,7 +327,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
       </div>
 
       {/* Actions */}
-      <div className="flex justify-between items-center pt-4 border-t">
+      <div className="flex items-center justify-between border-t pt-4">
         <div>
           {mode === 'edit' && (
             <button
@@ -319,7 +351,7 @@ export function VeranstaltungForm({ veranstaltung, mode, fixedTyp, returnUrl = '
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+            className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
           >
             {loading ? 'Speichern...' : 'Speichern'}
           </button>

@@ -11,7 +11,12 @@ interface IconProps {
 
 function DashboardIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -24,7 +29,12 @@ function DashboardIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function UsersIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -37,7 +47,12 @@ function UsersIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function PartnerIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -50,7 +65,12 @@ function PartnerIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function CalendarIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -63,7 +83,12 @@ function CalendarIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function TheaterIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -76,7 +101,12 @@ function TheaterIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function BookIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -89,7 +119,12 @@ function BookIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function RehearsalIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -102,7 +137,12 @@ function RehearsalIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function HelperIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -121,7 +161,12 @@ function HelperIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function RoomIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -134,7 +179,12 @@ function RoomIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function EquipmentIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -147,7 +197,12 @@ function EquipmentIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function TemplateIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -160,7 +215,12 @@ function TemplateIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function UserIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -173,7 +233,12 @@ function UserIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function AuditIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -186,7 +251,12 @@ function AuditIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function HomeIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -199,7 +269,12 @@ function HomeIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function ClockIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -212,7 +287,12 @@ function ClockIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function CheckIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -225,7 +305,12 @@ function CheckIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function ListIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -238,7 +323,12 @@ function ListIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function MailIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -251,7 +341,12 @@ function MailIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function EyeIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -270,32 +365,72 @@ function EyeIcon({ className = 'h-5 w-5' }: IconProps) {
 
 function ChevronLeftIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 19l-7-7 7-7"
+      />
     </svg>
   )
 }
 
 function ChevronRightIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 5l7 7-7 7"
+      />
     </svg>
   )
 }
 
 function MenuIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 6h16M4 12h16M4 18h16"
+      />
     </svg>
   )
 }
 
 function CloseIcon({ className = 'h-5 w-5' }: IconProps) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+      />
     </svg>
   )
 }
@@ -340,9 +475,4 @@ export function NavIconComponent({
 }
 
 // Export einzelne Icons für direkte Verwendung
-export {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MenuIcon,
-  CloseIcon,
-}
+export { ChevronLeftIcon, ChevronRightIcon, MenuIcon, CloseIcon }

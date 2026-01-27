@@ -11,7 +11,9 @@ interface ProbeBearbeitenPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function ProbeBearbeitenPage({ params }: ProbeBearbeitenPageProps) {
+export default async function ProbeBearbeitenPage({
+  params,
+}: ProbeBearbeitenPageProps) {
   const { id } = await params
   const profile = await getUserProfile()
   const canEdit = profile ? checkCanEdit(profile.role) : false
@@ -39,12 +41,14 @@ export default async function ProbeBearbeitenPage({ params }: ProbeBearbeitenPag
 
   // Hole aktuell zugewiesene Szenen
   const probeSzenen = await getProbeSzenen(id)
-  const selectedSzenenIds = probeSzenen.map((ps: { szene_id: string }) => ps.szene_id)
+  const selectedSzenenIds = probeSzenen.map(
+    (ps: { szene_id: string }) => ps.szene_id
+  )
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl">
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="mb-2 flex items-center gap-3">
           <Link
             href={`/proben/${id}` as Route}
             className="text-sm text-primary-600 hover:text-primary-800"
@@ -53,12 +57,12 @@ export default async function ProbeBearbeitenPage({ params }: ProbeBearbeitenPag
           </Link>
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Probe bearbeiten</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="mt-1 text-gray-600">
           {stueck?.titel} - {probe.titel}
         </p>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="rounded-lg bg-white p-6 shadow">
         <ProbeForm
           mode="edit"
           stueckId={probe.stueck_id}

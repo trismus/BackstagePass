@@ -5,12 +5,10 @@ export default function MockupOverviewPage() {
   const pages = getAllMockupPages()
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Mockup-Seiten
-        </h1>
-        <p className="text-gray-600 mb-8">
+    <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <h1 className="mb-8 text-3xl font-bold text-gray-900">Mockup-Seiten</h1>
+        <p className="mb-8 text-gray-600">
           Klickbare Mockups für Design-Feedback. Wähle eine Seite aus:
         </p>
 
@@ -19,14 +17,12 @@ export default function MockupOverviewPage() {
             <Link
               key={page.id}
               href={`/mockup/${page.slug}`}
-              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200"
+              className="block rounded-lg border border-gray-200 bg-white p-6 shadow transition-shadow hover:shadow-md"
             >
               <h2 className="text-xl font-semibold text-gray-900">
                 {page.title}
               </h2>
-              <p className="text-gray-500 mt-1">
-                /mockup/{page.slug}
-              </p>
+              <p className="mt-1 text-gray-500">/mockup/{page.slug}</p>
             </Link>
           ))}
         </div>

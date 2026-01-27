@@ -1,6 +1,12 @@
 import { redirect } from 'next/navigation'
 import { getUser, getUserProfile } from '@/lib/supabase/server'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui'
 import { ProfileEditForm } from '@/components/profile/ProfileEditForm'
 
 export const metadata = {

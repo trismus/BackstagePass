@@ -21,7 +21,11 @@ interface UsersTableProps {
   initialSearch?: string
 }
 
-export function UsersTable({ users, currentUserId, initialSearch = '' }: UsersTableProps) {
+export function UsersTable({
+  users,
+  currentUserId,
+  initialSearch = '',
+}: UsersTableProps) {
   const router = useRouter()
   const [search, setSearch] = useState(initialSearch)
   const [isPending, startTransition] = useTransition()
@@ -33,7 +37,9 @@ export function UsersTable({ users, currentUserId, initialSearch = '' }: UsersTa
       if (search.trim()) {
         params.set('search', search.trim())
       }
-      router.push(`/admin/users${params.toString() ? `?${params.toString()}` : ''}` as never)
+      router.push(
+        `/admin/users${params.toString() ? `?${params.toString()}` : ''}` as never
+      )
     })
   }
 
@@ -53,12 +59,12 @@ export function UsersTable({ users, currentUserId, initialSearch = '' }: UsersTa
           placeholder="Name oder E-Mail suchen..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 disabled:opacity-50"
+          className="rounded-lg bg-primary-600 px-4 py-2 text-sm text-white hover:bg-primary-700 disabled:opacity-50"
         >
           {isPending ? 'Suche...' : 'Suchen'}
         </button>
@@ -69,7 +75,7 @@ export function UsersTable({ users, currentUserId, initialSearch = '' }: UsersTa
               setSearch('')
               router.push('/admin/users' as never)
             }}
-            className="px-4 py-2 text-neutral-600 text-sm hover:text-neutral-800"
+            className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800"
           >
             Zurücksetzen
           </button>
@@ -81,17 +87,32 @@ export function UsersTable({ users, currentUserId, initialSearch = '' }: UsersTa
         <table className="w-full">
           <thead>
             <tr className="border-b border-neutral-200">
-              <th className="pb-3 text-left text-sm font-medium text-neutral-600">Name</th>
-              <th className="pb-3 text-left text-sm font-medium text-neutral-600">E-Mail</th>
-              <th className="pb-3 text-left text-sm font-medium text-neutral-600">Rolle</th>
-              <th className="pb-3 text-left text-sm font-medium text-neutral-600">Status</th>
-              <th className="pb-3 text-left text-sm font-medium text-neutral-600">Registriert</th>
-              <th className="pb-3 text-left text-sm font-medium text-neutral-600">Aktionen</th>
+              <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                Name
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                E-Mail
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                Rolle
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                Status
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                Registriert
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-neutral-600">
+                Aktionen
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100">
             {users.map((u) => (
-              <tr key={u.id} className={u.is_active === false ? 'opacity-50' : ''}>
+              <tr
+                key={u.id}
+                className={u.is_active === false ? 'opacity-50' : ''}
+              >
                 <td className="py-3 text-sm text-neutral-900">
                   {u.display_name || '-'}
                 </td>

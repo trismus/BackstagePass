@@ -1,7 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import type { ProbeTeilnehmer, Person, TeilnehmerStatus } from '@/lib/supabase/types'
+import type {
+  ProbeTeilnehmer,
+  Person,
+  TeilnehmerStatus,
+} from '@/lib/supabase/types'
 import {
   updateTeilnehmerStatus,
   addTeilnehmerToProbe,
@@ -12,7 +16,14 @@ import { TeilnehmerStatusBadge } from './ProbeStatusBadge'
 
 interface TeilnehmerListProps {
   probeId: string
-  teilnehmer: (ProbeTeilnehmer & { person: { id: string; vorname: string; nachname: string; email: string | null } })[]
+  teilnehmer: (ProbeTeilnehmer & {
+    person: {
+      id: string
+      vorname: string
+      nachname: string
+      email: string | null
+    }
+  })[]
   personen: Person[]
   canEdit: boolean
   hasSzenen: boolean
@@ -26,16 +37,27 @@ const statusOptions: { value: TeilnehmerStatus; label: string }[] = [
   { value: 'nicht_erschienen', label: 'Nicht erschienen' },
 ]
 
-export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzenen }: TeilnehmerListProps) {
+export function TeilnehmerList({
+  probeId,
+  teilnehmer,
+  personen,
+  canEdit,
+  hasSzenen,
+}: TeilnehmerListProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState('')
 
   // Personen die noch nicht eingeladen sind
   const teilnehmerIds = teilnehmer.map((t) => t.person_id)
-  const availablePersonen = personen.filter((p) => !teilnehmerIds.includes(p.id) && p.aktiv)
+  const availablePersonen = personen.filter(
+    (p) => !teilnehmerIds.includes(p.id) && p.aktiv
+  )
 
-  const handleStatusChange = async (personId: string, status: TeilnehmerStatus) => {
+  const handleStatusChange = async (
+    personId: string,
+    status: TeilnehmerStatus
+  ) => {
     setIsSubmitting(true)
     try {
       await updateTeilnehmerStatus(probeId, personId, status)
@@ -99,19 +121,31 @@ export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzen
     groupedByStatus[t.status].push(t)
   })
 
-  const zusagenCount = groupedByStatus.zugesagt.length + groupedByStatus.erschienen.length
-  const absagenCount = groupedByStatus.abgesagt.length + groupedByStatus.nicht_erschienen.length
+  const zusagenCount =
+    groupedByStatus.zugesagt.length + groupedByStatus.erschienen.length
+  const absagenCount =
+    groupedByStatus.abgesagt.length + groupedByStatus.nicht_erschienen.length
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200">
+    <div className="rounded-lg bg-white shadow">
+      <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Teilnehmer</h2>
             <p className="text-sm text-gray-500">
               {teilnehmer.length} eingeladen
-              {zusagenCount > 0 && <span className="text-success-600"> · {zusagenCount} zugesagt</span>}
-              {absagenCount > 0 && <span className="text-error-600"> · {absagenCount} abgesagt</span>}
+              {zusagenCount > 0 && (
+                <span className="text-success-600">
+                  {' '}
+                  · {zusagenCount} zugesagt
+                </span>
+              )}
+              {absagenCount > 0 && (
+                <span className="text-error-600">
+                  {' '}
+                  · {absagenCount} abgesagt
+                </span>
+              )}
             </p>
           </div>
           {canEdit && (
@@ -119,8 +153,12 @@ export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzen
               <button
                 onClick={handleGenerateFromBesetzungen}
                 disabled={isSubmitting || !hasSzenen}
-                className="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-50 disabled:opacity-50 rounded-lg"
-                title={hasSzenen ? 'Teilnehmer aus Besetzungen generieren' : 'Zuerst Szenen hinzufügen'}
+                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
+                title={
+                  hasSzenen
+                    ? 'Teilnehmer aus Besetzungen generieren'
+                    : 'Zuerst Szenen hinzufügen'
+                }
               >
                 Aus Besetzungen
               </button>
@@ -137,12 +175,12 @@ export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzen
 
       {/* Add Teilnehmer Form */}
       {isAdding && (
-        <div className="px-6 py-4 bg-blue-50 border-b border-blue-100">
+        <div className="border-b border-blue-100 bg-blue-50 px-6 py-4">
           <div className="flex gap-3">
             <select
               value={selectedPersonId}
               onChange={(e) => setSelectedPersonId(e.target.value)}
-              className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
               <option value="">Person auswählen...</option>
               {availablePersonen.map((p) => (
@@ -154,7 +192,7 @@ export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzen
             <button
               onClick={handleAdd}
               disabled={isSubmitting || !selectedPersonId}
-              className="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-lg"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm text-white hover:bg-primary-700 disabled:bg-gray-400"
             >
               Einladen
             </button>
@@ -176,17 +214,23 @@ export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzen
           </div>
         ) : (
           teilnehmer.map((t) => (
-            <div key={t.id} className="px-6 py-3 flex items-center justify-between">
+            <div
+              key={t.id}
+              className="flex items-center justify-between px-6 py-3"
+            >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-sm font-medium">
-                  {t.person.vorname[0]}{t.person.nachname[0]}
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-700">
+                  {t.person.vorname[0]}
+                  {t.person.nachname[0]}
                 </div>
                 <div>
                   <span className="font-medium text-gray-900">
                     {t.person.vorname} {t.person.nachname}
                   </span>
                   {t.person.email && (
-                    <span className="text-sm text-gray-500 ml-2">{t.person.email}</span>
+                    <span className="ml-2 text-sm text-gray-500">
+                      {t.person.email}
+                    </span>
                   )}
                 </div>
               </div>
@@ -195,9 +239,14 @@ export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzen
                   <>
                     <select
                       value={t.status}
-                      onChange={(e) => handleStatusChange(t.person_id, e.target.value as TeilnehmerStatus)}
+                      onChange={(e) =>
+                        handleStatusChange(
+                          t.person_id,
+                          e.target.value as TeilnehmerStatus
+                        )
+                      }
                       disabled={isSubmitting}
-                      className="text-sm border border-gray-300 rounded px-2 py-1"
+                      className="rounded border border-gray-300 px-2 py-1 text-sm"
                     >
                       {statusOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -207,7 +256,7 @@ export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzen
                     </select>
                     <button
                       onClick={() => handleRemove(t.person_id)}
-                      className="text-error-600 hover:text-error-800 text-sm"
+                      className="hover:text-error-800 text-sm text-error-600"
                     >
                       Entfernen
                     </button>

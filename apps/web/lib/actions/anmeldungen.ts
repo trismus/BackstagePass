@@ -61,7 +61,11 @@ export async function anmelden(
     // Re-register (was previously abgemeldet)
     const { error } = await supabase
       .from('anmeldungen')
-      .update({ status, notizen, anmeldedatum: new Date().toISOString() } as never)
+      .update({
+        status,
+        notizen,
+        anmeldedatum: new Date().toISOString(),
+      } as never)
       .eq('id', existing.id)
 
     if (error) {

@@ -44,11 +44,11 @@ export async function getProbenForStueck(stueckId: string): Promise<Probe[]> {
 /**
  * Get kommende Proben (from view)
  */
-export async function getKommendeProben(limit?: number): Promise<KommendeProbe[]> {
+export async function getKommendeProben(
+  limit?: number
+): Promise<KommendeProbe[]> {
   const supabase = await createClient()
-  let query = supabase
-    .from('kommende_proben')
-    .select('*')
+  let query = supabase.from('kommende_proben').select('*')
 
   if (limit) {
     query = query.limit(limit)
@@ -71,7 +71,8 @@ export async function getProbe(id: string): Promise<ProbeMitDetails | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('proben')
-    .select(`
+    .select(
+      `
       *,
       stueck:stuecke(id, titel),
       szenen:proben_szenen(
@@ -82,7 +83,8 @@ export async function getProbe(id: string): Promise<ProbeMitDetails | null> {
         *,
         person:personen(id, vorname, nachname, email)
       )
-    `)
+    `
+    )
     .eq('id', id)
     .single()
 
@@ -198,9 +200,7 @@ export async function addSzeneToProbe(
   data: ProbeSzeneInsert
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase
-    .from('proben_szenen')
-    .insert(data as never)
+  const { error } = await supabase.from('proben_szenen').insert(data as never)
 
   if (error) {
     console.error('Error adding szene to probe:', error)
@@ -385,14 +385,22 @@ export async function generateTeilnehmerFromBesetzungen(
 /**
  * Get Szenen for a Probe
  */
-export async function getProbeSzenen(probeId: string): Promise<(ProbeSzene & { szene: Pick<Szene, 'id' | 'nummer' | 'titel' | 'dauer_minuten'> })[]> {
+export async function getProbeSzenen(
+  probeId: string
+): Promise<
+  (ProbeSzene & {
+    szene: Pick<Szene, 'id' | 'nummer' | 'titel' | 'dauer_minuten'>
+  })[]
+> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('proben_szenen')
-    .select(`
+    .select(
+      `
       *,
       szene:szenen(id, nummer, titel, dauer_minuten)
-    `)
+    `
+    )
     .eq('probe_id', probeId)
     .order('reihenfolge', { ascending: true })
 
@@ -408,14 +416,27 @@ export async function getProbeSzenen(probeId: string): Promise<(ProbeSzene & { s
 /**
  * Get Teilnehmer for a Probe
  */
-export async function getProbeTeilnehmer(probeId: string): Promise<(ProbeTeilnehmer & { person: { id: string; vorname: string; nachname: string; email: string | null } })[]> {
+export async function getProbeTeilnehmer(
+  probeId: string
+): Promise<
+  (ProbeTeilnehmer & {
+    person: {
+      id: string
+      vorname: string
+      nachname: string
+      email: string | null
+    }
+  })[]
+> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('proben_teilnehmer')
-    .select(`
+    .select(
+      `
       *,
       person:personen(id, vorname, nachname, email)
-    `)
+    `
+    )
     .eq('probe_id', probeId)
     .order('status', { ascending: true })
 
@@ -455,7 +476,9 @@ export async function getProbenStatistik(stueckId: string): Promise<{
   const proben = data || []
   return {
     total: proben.length,
-    geplant: proben.filter((p) => p.status === 'geplant' || p.status === 'bestaetigt').length,
+    geplant: proben.filter(
+      (p) => p.status === 'geplant' || p.status === 'bestaetigt'
+    ).length,
     abgeschlossen: proben.filter((p) => p.status === 'abgeschlossen').length,
     abgesagt: proben.filter((p) => p.status === 'abgesagt').length,
   }

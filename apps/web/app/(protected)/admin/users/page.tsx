@@ -1,6 +1,12 @@
 import { getUser } from '@/lib/supabase/server'
 import { getAllUsers } from '@/app/actions/profile'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui'
 import { UsersTable } from '@/components/admin/UsersTable'
 
 export const metadata = {
@@ -22,7 +28,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-neutral-900">Benutzerverwaltung</h1>
+        <h1 className="text-2xl font-semibold text-neutral-900">
+          Benutzerverwaltung
+        </h1>
         <p className="mt-1 text-neutral-600">
           Verwalte Benutzer und deren Rollen
         </p>
@@ -32,7 +40,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         <CardHeader>
           <CardTitle>Alle Benutzer</CardTitle>
           <CardDescription>
-            {users.length} Benutzer {search ? `gefunden für "${search}"` : 'registriert'}
+            {users.length} Benutzer{' '}
+            {search ? `gefunden für "${search}"` : 'registriert'}
           </CardDescription>
         </CardHeader>
         <CardContent>

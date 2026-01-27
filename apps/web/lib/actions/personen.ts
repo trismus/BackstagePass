@@ -4,7 +4,12 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { createAdminClient } from '../supabase/admin'
 import { dummyPersonen, getPersonById, searchPersonen } from '../personen/data'
-import type { Person, PersonInsert, PersonUpdate, UserRole } from '../supabase/types'
+import type {
+  Person,
+  PersonInsert,
+  PersonUpdate,
+  UserRole,
+} from '../supabase/types'
 
 const USE_DUMMY_DATA = !process.env.NEXT_PUBLIC_SUPABASE_URL
 
@@ -65,7 +70,9 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
   const { data, error } = await supabase
     .from('personen')
     .select('*')
-    .or(`vorname.ilike.%${query}%,nachname.ilike.%${query}%,email.ilike.%${query}%`)
+    .or(
+      `vorname.ilike.%${query}%,nachname.ilike.%${query}%,email.ilike.%${query}%`
+    )
     .order('nachname', { ascending: true })
 
   if (error) {
@@ -168,7 +175,8 @@ export async function createPersonWithAccount(
     console.error('Error in invite flow:', err)
     return {
       success: true,
-      error: 'Mitglied erstellt, aber App-Zugang konnte nicht erstellt werden. Ist SUPABASE_SERVICE_ROLE_KEY konfiguriert?',
+      error:
+        'Mitglied erstellt, aber App-Zugang konnte nicht erstellt werden. Ist SUPABASE_SERVICE_ROLE_KEY konfiguriert?',
     }
   }
 

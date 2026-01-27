@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createPerson, createPersonWithAccount, updatePerson, deletePerson } from '@/lib/actions/personen'
+import {
+  createPerson,
+  createPersonWithAccount,
+  updatePerson,
+  deletePerson,
+} from '@/lib/actions/personen'
 import type { Person, Rolle, UserRole } from '@/lib/supabase/types'
 
 interface MitgliedFormProps {
@@ -18,11 +23,31 @@ const rollenOptions: { value: Rolle; label: string }[] = [
   { value: 'gast', label: 'Gast' },
 ]
 
-const appRollenOptions: { value: UserRole; label: string; description: string }[] = [
-  { value: 'MITGLIED_PASSIV', label: 'Passives Mitglied', description: 'Nur eigenes Profil' },
-  { value: 'MITGLIED_AKTIV', label: 'Aktives Mitglied', description: 'Anmeldungen, Stundenkonto' },
-  { value: 'VORSTAND', label: 'Vorstand', description: 'Alle operativen Module' },
-  { value: 'ADMIN', label: 'Administrator', description: 'Vollzugriff inkl. System' },
+const appRollenOptions: {
+  value: UserRole
+  label: string
+  description: string
+}[] = [
+  {
+    value: 'MITGLIED_PASSIV',
+    label: 'Passives Mitglied',
+    description: 'Nur eigenes Profil',
+  },
+  {
+    value: 'MITGLIED_AKTIV',
+    label: 'Aktives Mitglied',
+    description: 'Anmeldungen, Stundenkonto',
+  },
+  {
+    value: 'VORSTAND',
+    label: 'Vorstand',
+    description: 'Alle operativen Module',
+  },
+  {
+    value: 'ADMIN',
+    label: 'Administrator',
+    description: 'Vollzugriff inkl. System',
+  },
 ]
 
 export function MitgliedForm({ person, mode }: MitgliedFormProps) {
@@ -86,7 +111,8 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
 
   async function handleDelete() {
     if (!person) return
-    if (!confirm(`${person.vorname} ${person.nachname} wirklich deaktivieren?`)) return
+    if (!confirm(`${person.vorname} ${person.nachname} wirklich deaktivieren?`))
+      return
 
     setLoading(true)
     const result = await deletePerson(person.id)
@@ -102,18 +128,23 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
           {error}
         </div>
       )}
 
       {/* Persönliche Daten */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Persönliche Daten</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">
+          Persönliche Daten
+        </h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Vorname */}
           <div>
-            <label htmlFor="vorname" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="vorname"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Vorname *
             </label>
             <input
@@ -122,13 +153,16 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               required
               value={vorname}
               onChange={(e) => setVorname(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Nachname */}
           <div>
-            <label htmlFor="nachname" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="nachname"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Nachname *
             </label>
             <input
@@ -137,13 +171,16 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               required
               value={nachname}
               onChange={(e) => setNachname(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Geburtstag */}
           <div>
-            <label htmlFor="geburtstag" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="geburtstag"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Geburtstag
             </label>
             <input
@@ -151,20 +188,23 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               type="date"
               value={geburtstag}
               onChange={(e) => setGeburtstag(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Rolle */}
           <div>
-            <label htmlFor="rolle" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="rolle"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Rolle
             </label>
             <select
               id="rolle"
               value={rolle}
               onChange={(e) => setRolle(e.target.value as Rolle)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             >
               {rollenOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -178,11 +218,14 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
 
       {/* Adresse */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Adresse</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Adresse</h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Strasse */}
           <div className="md:col-span-2">
-            <label htmlFor="strasse" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="strasse"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Straße
             </label>
             <input
@@ -190,14 +233,17 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               type="text"
               value={strasse}
               onChange={(e) => setStrasse(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Musterstraße 123"
             />
           </div>
 
           {/* PLZ */}
           <div>
-            <label htmlFor="plz" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="plz"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               PLZ
             </label>
             <input
@@ -205,14 +251,17 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               type="text"
               value={plz}
               onChange={(e) => setPlz(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="80331"
             />
           </div>
 
           {/* Ort */}
           <div>
-            <label htmlFor="ort" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="ort"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Ort
             </label>
             <input
@@ -220,7 +269,7 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               type="text"
               value={ort}
               onChange={(e) => setOrt(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="München"
             />
           </div>
@@ -229,11 +278,14 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
 
       {/* Kontakt */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Kontakt</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Kontakt</h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="email"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               E-Mail
             </label>
             <input
@@ -241,13 +293,16 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Telefon */}
           <div>
-            <label htmlFor="telefon" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="telefon"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Telefon
             </label>
             <input
@@ -255,7 +310,7 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               type="tel"
               value={telefon}
               onChange={(e) => setTelefon(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -264,7 +319,7 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
       {/* App-Zugang - nur bei Erstellung */}
       {mode === 'create' && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">App-Zugang</h3>
+          <h3 className="mb-4 text-lg font-medium text-gray-900">App-Zugang</h3>
 
           <div className="mb-4">
             <label className="flex items-center gap-2">
@@ -280,22 +335,25 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               </span>
             </label>
             {!email && (
-              <p className="text-xs text-gray-500 mt-1 ml-6">
+              <p className="ml-6 mt-1 text-xs text-gray-500">
                 E-Mail-Adresse erforderlich für App-Zugang
               </p>
             )}
           </div>
 
           {createAppAccount && email && (
-            <div className="ml-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <label htmlFor="appRole" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="ml-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <label
+                htmlFor="appRole"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
                 App-Berechtigung
               </label>
               <select
                 id="appRole"
                 value={appRole}
                 onChange={(e) => setAppRole(e.target.value as UserRole)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               >
                 {appRollenOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -303,7 +361,7 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="mt-2 text-xs text-gray-600">
                 Eine Einladungs-E-Mail wird an {email} gesendet.
               </p>
             </div>
@@ -313,7 +371,7 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
 
       {/* Sonstiges */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Sonstiges</h3>
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Sonstiges</h3>
 
         {/* Aktiv */}
         <div className="mb-4">
@@ -324,13 +382,18 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
               onChange={(e) => setAktiv(e.target.checked)}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm font-medium text-gray-700">Aktives Mitglied</span>
+            <span className="text-sm font-medium text-gray-700">
+              Aktives Mitglied
+            </span>
           </label>
         </div>
 
         {/* Notizen */}
         <div>
-          <label htmlFor="notizen" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="notizen"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             Notizen
           </label>
           <textarea
@@ -338,13 +401,13 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
             rows={3}
             value={notizen}
             onChange={(e) => setNotizen(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex justify-between items-center pt-4 border-t">
+      <div className="flex items-center justify-between border-t pt-4">
         <div>
           {mode === 'edit' && person?.aktiv && (
             <button
@@ -368,7 +431,7 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+            className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
           >
             {loading ? 'Speichern...' : 'Speichern'}
           </button>

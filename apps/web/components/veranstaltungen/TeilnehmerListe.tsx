@@ -44,7 +44,7 @@ export function TeilnehmerListe({
 
   const renderRow = (a: AnmeldungMitPerson) => (
     <tr key={a.id} className="hover:bg-gray-50">
-      <td className="px-4 py-3 whitespace-nowrap">
+      <td className="whitespace-nowrap px-4 py-3">
         <div className="font-medium text-gray-900">
           {a.person.vorname} {a.person.nachname}
         </div>
@@ -52,14 +52,14 @@ export function TeilnehmerListe({
           <div className="text-sm text-gray-500">{a.person.email}</div>
         )}
       </td>
-      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
         {formatDate(a.anmeldedatum)}
       </td>
-      <td className="px-4 py-3 whitespace-nowrap">
+      <td className="whitespace-nowrap px-4 py-3">
         <AnmeldungStatusBadge status={a.status} />
       </td>
       {canEdit && (
-        <td className="px-4 py-3 whitespace-nowrap text-right">
+        <td className="whitespace-nowrap px-4 py-3 text-right">
           {loading === a.id ? (
             <span className="text-sm text-gray-400">...</span>
           ) : (
@@ -68,7 +68,7 @@ export function TeilnehmerListe({
               onChange={(e) =>
                 handleStatusChange(a.id, e.target.value as AnmeldungStatus)
               }
-              className="text-sm border border-gray-300 rounded px-2 py-1"
+              className="rounded border border-gray-300 px-2 py-1 text-sm"
             >
               <option value="angemeldet">Angemeldet</option>
               <option value="warteliste">Warteliste</option>
@@ -98,24 +98,26 @@ export function TeilnehmerListe({
 
       {/* Angemeldet */}
       {angemeldet.length > 0 && (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="px-4 py-3 bg-gray-50 border-b">
-            <h4 className="font-medium text-gray-900">Angemeldete Teilnehmer</h4>
+        <div className="overflow-hidden rounded-lg bg-white shadow">
+          <div className="border-b bg-gray-50 px-4 py-3">
+            <h4 className="font-medium text-gray-900">
+              Angemeldete Teilnehmer
+            </h4>
           </div>
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Name
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Angemeldet am
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Status
                 </th>
                 {canEdit && (
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-2 text-right text-xs font-medium uppercase text-gray-500">
                     Aktion
                   </th>
                 )}
@@ -130,24 +132,24 @@ export function TeilnehmerListe({
 
       {/* Warteliste */}
       {warteliste.length > 0 && (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="px-4 py-3 bg-yellow-50 border-b">
+        <div className="overflow-hidden rounded-lg bg-white shadow">
+          <div className="border-b bg-yellow-50 px-4 py-3">
             <h4 className="font-medium text-yellow-800">Warteliste</h4>
           </div>
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Name
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Angemeldet am
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">
                   Status
                 </th>
                 {canEdit && (
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-2 text-right text-xs font-medium uppercase text-gray-500">
                     Aktion
                   </th>
                 )}
@@ -162,7 +164,7 @@ export function TeilnehmerListe({
 
       {/* Empty State */}
       {anmeldungen.length === 0 && (
-        <div className="bg-white shadow rounded-lg p-8 text-center text-gray-500">
+        <div className="rounded-lg bg-white p-8 text-center text-gray-500 shadow">
           Noch keine Anmeldungen
         </div>
       )}

@@ -9,7 +9,9 @@ interface HelfereinsaetzeTableProps {
   helfereinsaetze: HelfereinsatzMitPartner[]
 }
 
-export function HelfereinsaetzeTable({ helfereinsaetze }: HelfereinsaetzeTableProps) {
+export function HelfereinsaetzeTable({
+  helfereinsaetze,
+}: HelfereinsaetzeTableProps) {
   const [search, setSearch] = useState('')
   const [showPast, setShowPast] = useState(false)
 
@@ -41,16 +43,16 @@ export function HelfereinsaetzeTable({ helfereinsaetze }: HelfereinsaetzeTablePr
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="rounded-lg bg-white shadow">
       {/* Filter Bar */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="border-b border-gray-200 p-4">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <input
             type="text"
             placeholder="Suche nach Titel oder Partner..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 sm:w-64"
           />
           <label className="flex items-center gap-2">
             <input
@@ -62,7 +64,7 @@ export function HelfereinsaetzeTable({ helfereinsaetze }: HelfereinsaetzeTablePr
             <span className="text-sm text-gray-600">Vergangene anzeigen</span>
           </label>
         </div>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="mt-2 text-sm text-gray-500">
           {filtered.length} von {helfereinsaetze.length} Einsätze
         </p>
       </div>
@@ -72,22 +74,22 @@ export function HelfereinsaetzeTable({ helfereinsaetze }: HelfereinsaetzeTablePr
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Einsatz
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Partner
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Datum / Zeit
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Ort
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                 Aktionen
               </th>
             </tr>
@@ -95,36 +97,36 @@ export function HelfereinsaetzeTable({ helfereinsaetze }: HelfereinsaetzeTablePr
           <tbody className="divide-y divide-gray-200">
             {filtered.map((h) => (
               <tr key={h.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap px-6 py-4">
                   <Link
                     href={`/helfereinsaetze/${h.id}`}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="font-medium text-blue-600 hover:text-blue-800"
                   >
                     {h.titel}
                   </Link>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
                   {h.partner?.name || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
                   {formatDate(h.datum)}
                   {h.startzeit && (
-                    <span className="text-gray-400 ml-2">
+                    <span className="ml-2 text-gray-400">
                       {formatTime(h.startzeit)}
                       {h.endzeit && ` - ${formatTime(h.endzeit)}`}
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
                   {h.ort || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap px-6 py-4">
                   <HelfereinsatzStatusBadge status={h.status} />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right">
+                <td className="whitespace-nowrap px-6 py-4 text-right">
                   <Link
                     href={`/helfereinsaetze/${h.id}`}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-sm text-blue-600 hover:text-blue-800"
                   >
                     Details
                   </Link>

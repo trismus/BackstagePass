@@ -39,15 +39,18 @@ export function ProbenList({ proben, stueckId, canEdit }: ProbenListProps) {
 
   const formatMonthHeader = (monthKey: string) => {
     const [year, month] = monthKey.split('-')
-    return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('de-CH', {
-      month: 'long',
-      year: 'numeric',
-    })
+    return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString(
+      'de-CH',
+      {
+        month: 'long',
+        year: 'numeric',
+      }
+    )
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div className="rounded-lg bg-white shadow">
+      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Proben</h2>
           <p className="text-sm text-gray-500">
@@ -67,7 +70,7 @@ export function ProbenList({ proben, stueckId, canEdit }: ProbenListProps) {
           {canEdit && (
             <Link
               href={`/stuecke/${stueckId}/proben/neu` as Route}
-              className="px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg"
+              className="rounded-lg bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700"
             >
               + Neue Probe
             </Link>
@@ -83,7 +86,7 @@ export function ProbenList({ proben, stueckId, canEdit }: ProbenListProps) {
         <div className="divide-y divide-gray-200">
           {Object.entries(groupedByMonth).map(([monthKey, monthProben]) => (
             <div key={monthKey}>
-              <div className="px-6 py-2 bg-gray-50 text-sm font-medium text-gray-500">
+              <div className="bg-gray-50 px-6 py-2 text-sm font-medium text-gray-500">
                 {formatMonthHeader(monthKey)}
               </div>
               <ul className="divide-y divide-gray-100">
@@ -95,24 +98,30 @@ export function ProbenList({ proben, stueckId, canEdit }: ProbenListProps) {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="text-center min-w-[60px]">
+                          <div className="min-w-[60px] text-center">
                             <div className="text-2xl font-bold text-gray-900">
                               {new Date(probe.datum).getDate()}
                             </div>
-                            <div className="text-xs text-gray-500 uppercase">
-                              {new Date(probe.datum).toLocaleDateString('de-CH', { weekday: 'short' })}
+                            <div className="text-xs uppercase text-gray-500">
+                              {new Date(probe.datum).toLocaleDateString(
+                                'de-CH',
+                                { weekday: 'short' }
+                              )}
                             </div>
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900">{probe.titel}</span>
+                              <span className="font-medium text-gray-900">
+                                {probe.titel}
+                              </span>
                               <ProbeStatusBadge status={probe.status} />
                             </div>
-                            <div className="text-sm text-gray-500 mt-0.5">
+                            <div className="mt-0.5 text-sm text-gray-500">
                               {probe.startzeit && (
                                 <span>
                                   {formatTime(probe.startzeit)}
-                                  {probe.endzeit && ` - ${formatTime(probe.endzeit)}`}
+                                  {probe.endzeit &&
+                                    ` - ${formatTime(probe.endzeit)}`}
                                 </span>
                               )}
                               {probe.ort && (
@@ -121,8 +130,18 @@ export function ProbenList({ proben, stueckId, canEdit }: ProbenListProps) {
                             </div>
                           </div>
                         </div>
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg
+                          className="h-5 w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     </Link>

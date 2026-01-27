@@ -5,10 +5,10 @@ interface KonfliktWarnungProps {
 
 export function KonfliktWarnung({ message, items }: KonfliktWarnungProps) {
   return (
-    <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+    <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
       <div className="flex items-start gap-2">
         <svg
-          className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0"
+          className="mt-0.5 h-5 w-5 flex-shrink-0 text-orange-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -22,7 +22,7 @@ export function KonfliktWarnung({ message, items }: KonfliktWarnungProps) {
         </svg>
         <div>
           <p className="text-sm font-medium text-orange-800">{message}</p>
-          <ul className="mt-1 text-sm text-orange-700 list-disc list-inside">
+          <ul className="mt-1 list-inside list-disc text-sm text-orange-700">
             {items.map((item, index) => (
               <li key={index}>{item}</li>
             ))}

@@ -38,16 +38,16 @@ export function AuffuehrungenTable({ auffuehrungen }: AuffuehrungenTableProps) {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="rounded-lg bg-white shadow">
       {/* Filter Bar */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="border-b border-gray-200 p-4">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <input
             type="text"
             placeholder="Suche nach Titel..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 sm:w-64"
           />
           <label className="flex items-center gap-2">
             <input
@@ -59,7 +59,7 @@ export function AuffuehrungenTable({ auffuehrungen }: AuffuehrungenTableProps) {
             <span className="text-sm text-gray-600">Vergangene anzeigen</span>
           </label>
         </div>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="mt-2 text-sm text-gray-500">
           {filtered.length} von {auffuehrungen.length} Aufführungen
         </p>
       </div>
@@ -69,19 +69,19 @@ export function AuffuehrungenTable({ auffuehrungen }: AuffuehrungenTableProps) {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Aufführung
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Datum / Zeit
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Ort
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                 Aktionen
               </th>
             </tr>
@@ -89,38 +89,38 @@ export function AuffuehrungenTable({ auffuehrungen }: AuffuehrungenTableProps) {
           <tbody className="divide-y divide-gray-200">
             {filtered.map((a) => (
               <tr key={a.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap px-6 py-4">
                   <Link
                     href={`/auffuehrungen/${a.id}`}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="font-medium text-blue-600 hover:text-blue-800"
                   >
                     {a.titel}
                   </Link>
                   {a.beschreibung && (
-                    <p className="text-sm text-gray-500 truncate max-w-xs">
+                    <p className="max-w-xs truncate text-sm text-gray-500">
                       {a.beschreibung}
                     </p>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
                   {formatDate(a.datum)}
                   {a.startzeit && (
-                    <span className="text-gray-400 ml-2">
+                    <span className="ml-2 text-gray-400">
                       {formatTime(a.startzeit)}
                       {a.endzeit && ` - ${formatTime(a.endzeit)}`}
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
                   {a.ort || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="whitespace-nowrap px-6 py-4">
                   <StatusBadge status={a.status} />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right">
+                <td className="whitespace-nowrap px-6 py-4 text-right">
                   <Link
                     href={`/auffuehrungen/${a.id}`}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-sm text-blue-600 hover:text-blue-800"
                   >
                     Verwalten
                   </Link>

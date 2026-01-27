@@ -1,7 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import type { StueckRolle, StueckRolleInsert, RollenTyp } from '@/lib/supabase/types'
+import type {
+  StueckRolle,
+  StueckRolleInsert,
+  RollenTyp,
+} from '@/lib/supabase/types'
 import { createRolle, updateRolle, deleteRolle } from '@/lib/actions/stuecke'
 
 interface RollenListProps {
@@ -92,8 +96,8 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
   )
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div className="rounded-lg bg-white shadow">
+      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
         <h2 className="text-lg font-semibold text-gray-900">Rollen</h2>
         {canEdit && !isAdding && (
           <button
@@ -106,7 +110,7 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
       </div>
 
       {error && (
-        <div className="mx-6 mt-4 bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg text-sm">
+        <div className="border-error-200 mx-6 mt-4 rounded-lg border bg-error-50 px-4 py-3 text-sm text-error-700">
           {error}
         </div>
       )}
@@ -118,7 +122,9 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
 
           return (
             <div key={typ} className="px-6 py-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">{label}</h3>
+              <h3 className="mb-3 text-sm font-medium text-gray-500">
+                {label}
+              </h3>
               <ul className="space-y-2">
                 {rollenInGroup.map((rolle) => (
                   <li key={rolle.id}>
@@ -130,11 +136,15 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
                         isSubmitting={isSubmitting}
                       />
                     ) : (
-                      <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
                         <div>
-                          <span className="font-medium text-gray-900">{rolle.name}</span>
+                          <span className="font-medium text-gray-900">
+                            {rolle.name}
+                          </span>
                           {rolle.beschreibung && (
-                            <p className="text-sm text-gray-500">{rolle.beschreibung}</p>
+                            <p className="text-sm text-gray-500">
+                              {rolle.beschreibung}
+                            </p>
                           )}
                         </div>
                         {canEdit && (
@@ -147,7 +157,7 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
                             </button>
                             <button
                               onClick={() => handleDelete(rolle.id)}
-                              className="text-sm text-error-600 hover:text-error-800"
+                              className="hover:text-error-800 text-sm text-error-600"
                             >
                               Löschen
                             </button>
@@ -163,20 +173,27 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
         })}
 
         {isAdding && (
-          <div className="px-6 py-4 bg-gray-50">
+          <div className="bg-gray-50 px-6 py-4">
             <div className="space-y-3">
               <div className="flex gap-3">
                 <input
                   type="text"
                   placeholder="Rollenname"
                   value={newRolle.name}
-                  onChange={(e) => setNewRolle({ ...newRolle, name: e.target.value })}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                  onChange={(e) =>
+                    setNewRolle({ ...newRolle, name: e.target.value })
+                  }
+                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                 />
                 <select
                   value={newRolle.typ}
-                  onChange={(e) => setNewRolle({ ...newRolle, typ: e.target.value as RollenTyp })}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                  onChange={(e) =>
+                    setNewRolle({
+                      ...newRolle,
+                      typ: e.target.value as RollenTyp,
+                    })
+                  }
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                 >
                   {rollenTypOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -189,8 +206,10 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
                 type="text"
                 placeholder="Beschreibung (optional)"
                 value={newRolle.beschreibung ?? ''}
-                onChange={(e) => setNewRolle({ ...newRolle, beschreibung: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                onChange={(e) =>
+                  setNewRolle({ ...newRolle, beschreibung: e.target.value })
+                }
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -202,7 +221,7 @@ export function RollenList({ stueckId, rollen, canEdit }: RollenListProps) {
                 <button
                   onClick={handleAdd}
                   disabled={isSubmitting || !newRolle.name}
-                  className="px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-lg"
+                  className="rounded-lg bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700 disabled:bg-gray-400"
                 >
                   {isSubmitting ? 'Speichern...' : 'Hinzufügen'}
                 </button>
@@ -228,7 +247,12 @@ interface RolleEditRowProps {
   isSubmitting: boolean
 }
 
-function RolleEditRow({ rolle, onSave, onCancel, isSubmitting }: RolleEditRowProps) {
+function RolleEditRow({
+  rolle,
+  onSave,
+  onCancel,
+  isSubmitting,
+}: RolleEditRowProps) {
   const [editData, setEditData] = useState(rolle)
 
   return (
@@ -238,12 +262,14 @@ function RolleEditRow({ rolle, onSave, onCancel, isSubmitting }: RolleEditRowPro
           type="text"
           value={editData.name}
           onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
         />
         <select
           value={editData.typ}
-          onChange={(e) => setEditData({ ...editData, typ: e.target.value as RollenTyp })}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+          onChange={(e) =>
+            setEditData({ ...editData, typ: e.target.value as RollenTyp })
+          }
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
         >
           {rollenTypOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -256,8 +282,10 @@ function RolleEditRow({ rolle, onSave, onCancel, isSubmitting }: RolleEditRowPro
         type="text"
         placeholder="Beschreibung"
         value={editData.beschreibung ?? ''}
-        onChange={(e) => setEditData({ ...editData, beschreibung: e.target.value || null })}
-        className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+        onChange={(e) =>
+          setEditData({ ...editData, beschreibung: e.target.value || null })
+        }
+        className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
       />
       <div className="flex justify-end gap-2">
         <button
@@ -269,7 +297,7 @@ function RolleEditRow({ rolle, onSave, onCancel, isSubmitting }: RolleEditRowPro
         <button
           onClick={() => onSave(editData)}
           disabled={isSubmitting}
-          className="px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-lg"
+          className="rounded-lg bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700 disabled:bg-gray-400"
         >
           {isSubmitting ? 'Speichern...' : 'Speichern'}
         </button>

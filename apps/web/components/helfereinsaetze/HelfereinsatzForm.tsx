@@ -101,20 +101,20 @@ export function HelfereinsatzForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
           {error}
         </div>
       )}
 
       {/* Grunddaten */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Grunddaten</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Grunddaten</h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Titel */}
           <div className="md:col-span-2">
             <label
               htmlFor="titel"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Titel *
             </label>
@@ -124,7 +124,7 @@ export function HelfereinsatzForm({
               required
               value={titel}
               onChange={(e) => setTitel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="z.B. Helferteam Dorffest"
             />
           </div>
@@ -133,7 +133,7 @@ export function HelfereinsatzForm({
           <div>
             <label
               htmlFor="partner"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Partner
             </label>
@@ -141,7 +141,7 @@ export function HelfereinsatzForm({
               id="partner"
               value={partnerId}
               onChange={(e) => setPartnerId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Kein Partner</option>
               {partner.map((p) => (
@@ -156,7 +156,7 @@ export function HelfereinsatzForm({
           <div>
             <label
               htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Status
             </label>
@@ -164,7 +164,7 @@ export function HelfereinsatzForm({
               id="status"
               value={status}
               onChange={(e) => setStatus(e.target.value as HelfereinsatzStatus)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             >
               {statusOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -178,7 +178,7 @@ export function HelfereinsatzForm({
           <div className="md:col-span-2">
             <label
               htmlFor="beschreibung"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Beschreibung
             </label>
@@ -187,7 +187,7 @@ export function HelfereinsatzForm({
               rows={3}
               value={beschreibung}
               onChange={(e) => setBeschreibung(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -195,13 +195,13 @@ export function HelfereinsatzForm({
 
       {/* Datum & Zeit */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Datum & Zeit</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Datum & Zeit</h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Datum */}
           <div>
             <label
               htmlFor="datum"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Datum *
             </label>
@@ -211,7 +211,7 @@ export function HelfereinsatzForm({
               required
               value={datum}
               onChange={(e) => setDatum(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -219,7 +219,7 @@ export function HelfereinsatzForm({
           <div>
             <label
               htmlFor="startzeit"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Startzeit
             </label>
@@ -228,7 +228,7 @@ export function HelfereinsatzForm({
               type="time"
               value={startzeit}
               onChange={(e) => setStartzeit(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -236,7 +236,7 @@ export function HelfereinsatzForm({
           <div>
             <label
               htmlFor="endzeit"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Endzeit
             </label>
@@ -245,7 +245,7 @@ export function HelfereinsatzForm({
               type="time"
               value={endzeit}
               onChange={(e) => setEndzeit(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -253,15 +253,15 @@ export function HelfereinsatzForm({
 
       {/* Ort & Vergütung */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">
           Ort & Vergütung
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Ort */}
           <div>
             <label
               htmlFor="ort"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Ort
             </label>
@@ -270,7 +270,7 @@ export function HelfereinsatzForm({
               type="text"
               value={ort}
               onChange={(e) => setOrt(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -278,7 +278,7 @@ export function HelfereinsatzForm({
           <div>
             <label
               htmlFor="stundenlohn"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1 block text-sm font-medium text-gray-700"
             >
               Stundenlohn Verein (CHF)
             </label>
@@ -289,7 +289,7 @@ export function HelfereinsatzForm({
               min="0"
               value={stundenlohnVerein}
               onChange={(e) => setStundenlohnVerein(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="z.B. 25.00"
             />
           </div>
@@ -297,7 +297,7 @@ export function HelfereinsatzForm({
       </div>
 
       {/* Actions */}
-      <div className="flex justify-between items-center pt-4 border-t">
+      <div className="flex items-center justify-between border-t pt-4">
         <div>
           {mode === 'edit' && (
             <button
@@ -321,7 +321,7 @@ export function HelfereinsatzForm({
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+            className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
           >
             {loading ? 'Speichern...' : 'Speichern'}
           </button>

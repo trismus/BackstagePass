@@ -36,7 +36,11 @@ export function SzenenRollenMatrix({
       if (isAssigned(szeneId, rolleId)) {
         await removeRolleFromSzene(szeneId, rolleId)
       } else {
-        await addRolleToSzene({ szene_id: szeneId, rolle_id: rolleId, notizen: null })
+        await addRolleToSzene({
+          szene_id: szeneId,
+          rolle_id: rolleId,
+          notizen: null,
+        })
       }
     } finally {
       setIsSubmitting(false)
@@ -45,7 +49,7 @@ export function SzenenRollenMatrix({
 
   if (szenen.length === 0 || rollen.length === 0) {
     return (
-      <div className="bg-white shadow rounded-lg p-6 text-center text-gray-500">
+      <div className="rounded-lg bg-white p-6 text-center text-gray-500 shadow">
         {szenen.length === 0 && rollen.length === 0
           ? 'Erstelle zuerst Szenen und Rollen, um die Matrix zu sehen.'
           : szenen.length === 0
@@ -56,10 +60,12 @@ export function SzenenRollenMatrix({
   }
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Szenen-Rollen-Matrix</h2>
-        <p className="text-sm text-gray-500 mt-1">
+    <div className="overflow-hidden rounded-lg bg-white shadow">
+      <div className="border-b border-gray-200 px-6 py-4">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Szenen-Rollen-Matrix
+        </h2>
+        <p className="mt-1 text-sm text-gray-500">
           {canEdit
             ? 'Klicke auf eine Zelle, um zuzuordnen/zu entfernen'
             : 'Übersicht der Rollenzuordnung pro Szene'}
@@ -70,25 +76,25 @@ export function SzenenRollenMatrix({
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
+              <th className="sticky left-0 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Rolle
               </th>
               {szenen.map((szene) => (
                 <th
                   key={szene.id}
-                  className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]"
+                  className="min-w-[80px] px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500"
                 >
                   <div className="flex flex-col items-center">
-                    <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-200 text-gray-600 text-xs font-medium rounded-full mb-1">
+                    <span className="mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
                       {szene.nummer}
                     </span>
-                    <span className="text-[10px] normal-case font-normal truncate max-w-[70px]">
+                    <span className="max-w-[70px] truncate text-[10px] font-normal normal-case">
                       {szene.titel}
                     </span>
                   </div>
                 </th>
               ))}
-              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
                 Total
               </th>
             </tr>
@@ -101,9 +107,9 @@ export function SzenenRollenMatrix({
 
               return (
                 <tr key={rolle.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap sticky left-0 bg-white z-10">
+                  <td className="sticky left-0 z-10 whitespace-nowrap bg-white px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900 text-sm">
+                      <span className="text-sm font-medium text-gray-900">
                         {rolle.name}
                       </span>
                       <RollenTypBadge typ={rolle.typ} />
@@ -112,14 +118,11 @@ export function SzenenRollenMatrix({
                   {szenen.map((szene) => {
                     const assigned = isAssigned(szene.id, rolle.id)
                     return (
-                      <td
-                        key={szene.id}
-                        className="px-3 py-3 text-center"
-                      >
+                      <td key={szene.id} className="px-3 py-3 text-center">
                         <button
                           onClick={() => toggleAssignment(szene.id, rolle.id)}
                           disabled={!canEdit || isSubmitting}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                             assigned
                               ? 'bg-primary-100 text-primary-700 hover:bg-primary-200'
                               : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
@@ -132,7 +135,7 @@ export function SzenenRollenMatrix({
                         >
                           {assigned ? (
                             <svg
-                              className="w-5 h-5"
+                              className="h-5 w-5"
                               fill="currentColor"
                               viewBox="0 0 20 20"
                             >
@@ -150,7 +153,7 @@ export function SzenenRollenMatrix({
                     )
                   })}
                   <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-sm font-medium text-gray-700">
                       {rolleCount}
                     </span>
                   </td>
@@ -160,7 +163,7 @@ export function SzenenRollenMatrix({
           </tbody>
           <tfoot className="bg-gray-50">
             <tr>
-              <td className="px-4 py-3 font-medium text-gray-700 text-sm sticky left-0 bg-gray-50 z-10">
+              <td className="sticky left-0 z-10 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700">
                 Total Rollen
               </td>
               {szenen.map((szene) => {
@@ -169,14 +172,14 @@ export function SzenenRollenMatrix({
                 ).length
                 return (
                   <td key={szene.id} className="px-3 py-3 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gray-200 text-sm font-medium text-gray-700">
                       {szeneCount}
                     </span>
                   </td>
                 )
               })}
               <td className="px-4 py-3 text-center">
-                <span className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 text-primary-700 text-sm font-medium rounded-lg">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 text-sm font-medium text-primary-700">
                   {szenenRollen.length}
                 </span>
               </td>

@@ -36,7 +36,12 @@ interface CheckResult {
 
 const results: CheckResult[] = []
 
-function check(name: string, condition: boolean, message: string, warnOnly = false) {
+function check(
+  name: string,
+  condition: boolean,
+  message: string,
+  warnOnly = false
+) {
   results.push({
     name,
     status: condition ? 'ok' : warnOnly ? 'warn' : 'error',
@@ -76,8 +81,12 @@ function printResults() {
 }
 
 async function main() {
-  console.log(`\n${COLORS.blue}BackstagePass - Konfigurations-Check${COLORS.reset}`)
-  console.log(`${COLORS.dim}Prüft Vercel und Supabase Konfiguration${COLORS.reset}`)
+  console.log(
+    `\n${COLORS.blue}BackstagePass - Konfigurations-Check${COLORS.reset}`
+  )
+  console.log(
+    `${COLORS.dim}Prüft Vercel und Supabase Konfiguration${COLORS.reset}`
+  )
 
   // ─────────────────────────────────────────────
   // 1. Dateien prüfen
@@ -117,7 +126,10 @@ async function main() {
 
   // Required env vars
   const requiredEnvVars = [
-    { name: 'NEXT_PUBLIC_SUPABASE_URL', pattern: /^https:\/\/.*\.supabase\.co$/ },
+    {
+      name: 'NEXT_PUBLIC_SUPABASE_URL',
+      pattern: /^https:\/\/.*\.supabase\.co$/,
+    },
     { name: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', pattern: /^eyJ.*/ },
   ]
 
@@ -178,14 +190,21 @@ async function main() {
   // Check for vercel.json (optional)
   const vercelJsonPath = join(process.cwd(), 'vercel.json')
   const vercelJsonExists = existsSync(vercelJsonPath)
-  check('vercel.json', vercelJsonExists, vercelJsonExists ? 'vorhanden' : 'nicht vorhanden (optional)', true)
+  check(
+    'vercel.json',
+    vercelJsonExists,
+    vercelJsonExists ? 'vorhanden' : 'nicht vorhanden (optional)',
+    true
+  )
 
   // Check if running on Vercel
   const isVercel = !!process.env.VERCEL
   check(
     'Vercel Environment',
     true,
-    isVercel ? `Läuft auf Vercel (${process.env.VERCEL_ENV})` : 'Lokale Entwicklung',
+    isVercel
+      ? `Läuft auf Vercel (${process.env.VERCEL_ENV})`
+      : 'Lokale Entwicklung',
     true
   )
 
@@ -201,7 +220,11 @@ async function main() {
 
     const requiredScripts = ['dev', 'build', 'start', 'lint']
     for (const script of requiredScripts) {
-      check(`Script: ${script}`, !!scripts[script], scripts[script] ? 'vorhanden' : 'fehlt')
+      check(
+        `Script: ${script}`,
+        !!scripts[script],
+        scripts[script] ? 'vorhanden' : 'fehlt'
+      )
     }
   } catch {
     check('package.json', false, 'konnte nicht gelesen werden')

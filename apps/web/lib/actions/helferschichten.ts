@@ -184,7 +184,9 @@ export async function removeHelfer(
 /**
  * Get total hours worked by a person
  */
-export async function getTotalStundenForPerson(personId: string): Promise<number> {
+export async function getTotalStundenForPerson(
+  personId: string
+): Promise<number> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helferschichten')

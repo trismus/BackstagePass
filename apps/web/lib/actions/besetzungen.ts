@@ -20,15 +20,19 @@ import type {
 /**
  * Get all Besetzungen for a Stück
  */
-export async function getBesetzungenForStueck(stueckId: string): Promise<BesetzungMitDetails[]> {
+export async function getBesetzungenForStueck(
+  stueckId: string
+): Promise<BesetzungMitDetails[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('besetzungen')
-    .select(`
+    .select(
+      `
       *,
       person:personen(id, vorname, nachname, email),
       rolle:rollen!inner(id, name, typ, stueck_id, stueck:stuecke(id, titel))
-    `)
+    `
+    )
     .eq('rolle.stueck_id', stueckId)
     .order('rolle(name)', { ascending: true })
 
@@ -38,28 +42,43 @@ export async function getBesetzungenForStueck(stueckId: string): Promise<Besetzu
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data as any[])?.map((d) => ({
-    ...d,
-    rolle: {
-      id: d.rolle.id,
-      name: d.rolle.name,
-      typ: d.rolle.typ,
-      stueck: d.rolle.stueck,
-    },
-  })) || []
+  return (
+    (data as any[])?.map((d) => ({
+      ...d,
+      rolle: {
+        id: d.rolle.id,
+        name: d.rolle.name,
+        typ: d.rolle.typ,
+        stueck: d.rolle.stueck,
+      },
+    })) || []
+  )
 }
 
 /**
  * Get all Besetzungen for a Rolle
  */
-export async function getBesetzungenForRolle(rolleId: string): Promise<(Besetzung & { person: { id: string; vorname: string; nachname: string; email: string | null } })[]> {
+export async function getBesetzungenForRolle(
+  rolleId: string
+): Promise<
+  (Besetzung & {
+    person: {
+      id: string
+      vorname: string
+      nachname: string
+      email: string | null
+    }
+  })[]
+> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('besetzungen')
-    .select(`
+    .select(
+      `
       *,
       person:personen(id, vorname, nachname, email)
-    `)
+    `
+    )
     .eq('rolle_id', rolleId)
     .order('typ', { ascending: true })
 
@@ -75,17 +94,21 @@ export async function getBesetzungenForRolle(rolleId: string): Promise<(Besetzun
 /**
  * Get Rollen with their Besetzungen for a Stück
  */
-export async function getRollenMitBesetzungen(stueckId: string): Promise<RolleMitBesetzungen[]> {
+export async function getRollenMitBesetzungen(
+  stueckId: string
+): Promise<RolleMitBesetzungen[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('rollen')
-    .select(`
+    .select(
+      `
       *,
       besetzungen(
         *,
         person:personen(id, vorname, nachname)
       )
-    `)
+    `
+    )
     .eq('stueck_id', stueckId)
     .order('typ', { ascending: true })
     .order('name', { ascending: true })
@@ -101,17 +124,21 @@ export async function getRollenMitBesetzungen(stueckId: string): Promise<RolleMi
 /**
  * Get all Besetzungen for a Person
  */
-export async function getBesetzungenForPerson(personId: string): Promise<PersonMitRollen['besetzungen']> {
+export async function getBesetzungenForPerson(
+  personId: string
+): Promise<PersonMitRollen['besetzungen']> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('besetzungen')
-    .select(`
+    .select(
+      `
       *,
       rolle:rollen(
         id, name, typ,
         stueck:stuecke(id, titel)
       )
-    `)
+    `
+    )
     .eq('person_id', personId)
 
   if (error) {
@@ -242,9 +269,7 @@ export async function deleteBesetzung(
  */
 export async function getUnbesetzteRollen(): Promise<UnbesetzteRolle[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('unbesetzte_rollen')
-    .select('*')
+  const { data, error } = await supabase.from('unbesetzte_rollen').select('*')
 
   if (error) {
     console.error('Error fetching unbesetzte rollen:', error)
@@ -257,14 +282,20 @@ export async function getUnbesetzteRollen(): Promise<UnbesetzteRolle[]> {
 /**
  * Get Besetzungs-Historie for a Rolle
  */
-export async function getBesetzungHistorie(rolleId: string): Promise<(BesetzungHistorie & { person: { vorname: string; nachname: string } })[]> {
+export async function getBesetzungHistorie(
+  rolleId: string
+): Promise<
+  (BesetzungHistorie & { person: { vorname: string; nachname: string } })[]
+> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('besetzungen_historie')
-    .select(`
+    .select(
+      `
       *,
       person:personen(vorname, nachname)
-    `)
+    `
+    )
     .eq('rolle_id', rolleId)
     .order('geaendert_am', { ascending: false })
 
@@ -280,7 +311,10 @@ export async function getBesetzungHistorie(rolleId: string): Promise<(BesetzungH
 /**
  * Check if a Person is already cast in a Rolle
  */
-export async function isPersonCast(rolleId: string, personId: string): Promise<boolean> {
+export async function isPersonCast(
+  rolleId: string,
+  personId: string
+): Promise<boolean> {
   const supabase = await createClient()
   const { count, error } = await supabase
     .from('besetzungen')

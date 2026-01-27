@@ -146,7 +146,9 @@ export async function deleteVeranstaltung(
 /**
  * Get registration count for a veranstaltung
  */
-export async function getAnmeldungCount(veranstaltungId: string): Promise<number> {
+export async function getAnmeldungCount(
+  veranstaltungId: string
+): Promise<number> {
   const supabase = await createClient()
   const { count, error } = await supabase
     .from('anmeldungen')

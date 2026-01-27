@@ -17,7 +17,8 @@ export default async function VerfuegbareEinsaetzePage() {
   const today = new Date().toISOString().split('T')[0]
   const { data: einsaetze } = await supabase
     .from('helfereinsaetze')
-    .select(`
+    .select(
+      `
       id,
       titel,
       datum,
@@ -27,7 +28,8 @@ export default async function VerfuegbareEinsaetzePage() {
       beschreibung,
       helfer_max,
       helferschichten (id)
-    `)
+    `
+    )
     .gte('datum', today)
     .order('datum', { ascending: true })
     .limit(20)
@@ -46,25 +48,23 @@ export default async function VerfuegbareEinsaetzePage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href={'/helfer' as never}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-block"
+            className="mb-2 inline-block text-sm text-gray-500 hover:text-gray-700"
           >
             &larr; Zurück zur Übersicht
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
             Verfügbare Einsätze
           </h1>
-          <p className="text-gray-600 mt-1">
-            Melde dich für Helfereinsätze an
-          </p>
+          <p className="mt-1 text-gray-600">Melde dich für Helfereinsätze an</p>
         </div>
 
         {!person && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <p className="text-yellow-800">
               Du musst mit einem Profil verknüpft sein, um dich für Einsätze
               anzumelden.
@@ -77,7 +77,9 @@ export default async function VerfuegbareEinsaetzePage() {
           {einsaetze && einsaetze.length > 0 ? (
             einsaetze.map((einsatz) => {
               const registered = meineEinsatzIds.has(einsatz.id)
-              const schichtenArray = einsatz.helferschichten as unknown as { id: string }[] | null
+              const schichtenArray = einsatz.helferschichten as unknown as
+                | { id: string }[]
+                | null
               const currentHelpers = schichtenArray?.length ?? 0
               const spotsLeft = einsatz.helfer_max
                 ? einsatz.helfer_max - currentHelpers
@@ -87,14 +89,14 @@ export default async function VerfuegbareEinsaetzePage() {
               return (
                 <div
                   key={einsatz.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                  className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">
                         {einsatz.titel}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="mt-1 text-sm text-gray-600">
                         {einsatz.datum}
                         {einsatz.startzeit && ` | ${einsatz.startzeit}`}
                         {einsatz.endzeit && ` - ${einsatz.endzeit}`}
@@ -103,13 +105,13 @@ export default async function VerfuegbareEinsaetzePage() {
                         <p className="text-sm text-gray-500">{einsatz.ort}</p>
                       )}
                       {einsatz.beschreibung && (
-                        <p className="text-sm text-gray-600 mt-2">
+                        <p className="mt-2 text-sm text-gray-600">
                           {einsatz.beschreibung}
                         </p>
                       )}
                       {spotsLeft !== null && (
                         <p
-                          className={`text-sm mt-2 ${
+                          className={`mt-2 text-sm ${
                             isFull ? 'text-red-600' : 'text-green-600'
                           }`}
                         >
@@ -121,17 +123,17 @@ export default async function VerfuegbareEinsaetzePage() {
                     </div>
                     <div className="ml-4">
                       {registered ? (
-                        <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded">
+                        <span className="rounded bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
                           Angemeldet
                         </span>
                       ) : isFull ? (
-                        <span className="px-3 py-1 text-sm font-medium bg-gray-100 text-gray-500 rounded">
+                        <span className="rounded bg-gray-100 px-3 py-1 text-sm font-medium text-gray-500">
                           Voll
                         </span>
                       ) : (
                         <button
                           disabled={!person}
-                          className="px-3 py-1 text-sm font-medium bg-black text-white rounded hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          className="rounded bg-black px-3 py-1 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
                         >
                           Anmelden
                         </button>
@@ -142,11 +144,11 @@ export default async function VerfuegbareEinsaetzePage() {
               )
             })
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
               <p className="text-gray-500">
                 Momentan gibt es keine offenen Helfereinsätze.
               </p>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="mt-1 text-sm text-gray-400">
                 Schau später wieder vorbei!
               </p>
             </div>

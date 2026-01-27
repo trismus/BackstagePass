@@ -2,13 +2,23 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
-import type { Zeitblock, ZeitblockInsert, ZeitblockUpdate } from '../supabase/types'
-import { zeitblockSchema, zeitblockUpdateSchema, validateInput } from '../validations/modul2'
+import type {
+  Zeitblock,
+  ZeitblockInsert,
+  ZeitblockUpdate,
+} from '../supabase/types'
+import {
+  zeitblockSchema,
+  zeitblockUpdateSchema,
+  validateInput,
+} from '../validations/modul2'
 
 /**
  * Get all time blocks for a performance
  */
-export async function getZeitbloecke(veranstaltungId: string): Promise<Zeitblock[]> {
+export async function getZeitbloecke(
+  veranstaltungId: string
+): Promise<Zeitblock[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('zeitbloecke')

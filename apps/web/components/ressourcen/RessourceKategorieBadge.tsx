@@ -1,6 +1,9 @@
 import type { RessourceKategorie } from '@/lib/supabase/types'
 
-const kategorieConfig: Record<RessourceKategorie, { label: string; color: string }> = {
+const kategorieConfig: Record<
+  RessourceKategorie,
+  { label: string; color: string }
+> = {
   licht: { label: 'Licht', color: 'bg-yellow-100 text-yellow-800' },
   ton: { label: 'Ton', color: 'bg-blue-100 text-blue-800' },
   requisite: { label: 'Requisite', color: 'bg-green-100 text-green-800' },
@@ -13,15 +16,19 @@ interface RessourceKategorieBadgeProps {
   kategorie: RessourceKategorie | null
 }
 
-export function RessourceKategorieBadge({ kategorie }: RessourceKategorieBadgeProps) {
+export function RessourceKategorieBadge({
+  kategorie,
+}: RessourceKategorieBadgeProps) {
   if (!kategorie) {
-    return <span className="text-gray-400 text-sm">-</span>
+    return <span className="text-sm text-gray-400">-</span>
   }
 
   const config = kategorieConfig[kategorie]
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config.color}`}
+    >
       {config.label}
     </span>
   )

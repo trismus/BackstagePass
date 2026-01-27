@@ -32,7 +32,9 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
   })
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -72,14 +74,17 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
+        <div className="border-error-200 rounded-lg border bg-error-50 px-4 py-3 text-error-700">
           {error}
         </div>
       )}
 
       {/* Titel */}
       <div>
-        <label htmlFor="titel" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="titel"
+          className="block text-sm font-medium text-gray-700"
+        >
           Titel *
         </label>
         <input
@@ -89,14 +94,17 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
           required
           value={formData.titel}
           onChange={handleChange}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           placeholder="z.B. Der Besuch der alten Dame"
         />
       </div>
 
       {/* Autor */}
       <div>
-        <label htmlFor="autor" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="autor"
+          className="block text-sm font-medium text-gray-700"
+        >
           Autor
         </label>
         <input
@@ -105,16 +113,19 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
           name="autor"
           value={formData.autor ?? ''}
           onChange={handleChange}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           placeholder="z.B. Friedrich Dürrenmatt"
         />
       </div>
 
       {/* Status und Premiere in einer Zeile */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Status */}
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-700"
+          >
             Status
           </label>
           <select
@@ -122,7 +133,7 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           >
             {statusOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -134,7 +145,10 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
 
         {/* Premiere Datum */}
         <div>
-          <label htmlFor="premiere_datum" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="premiere_datum"
+            className="block text-sm font-medium text-gray-700"
+          >
             Premiere
           </label>
           <input
@@ -143,14 +157,17 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
             name="premiere_datum"
             value={formData.premiere_datum ?? ''}
             onChange={handleChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </div>
 
       {/* Beschreibung */}
       <div>
-        <label htmlFor="beschreibung" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="beschreibung"
+          className="block text-sm font-medium text-gray-700"
+        >
           Beschreibung
         </label>
         <textarea
@@ -159,7 +176,7 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
           rows={4}
           value={formData.beschreibung ?? ''}
           onChange={handleChange}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           placeholder="Kurze Beschreibung des Stücks..."
         />
       </div>
@@ -176,7 +193,7 @@ export function StueckForm({ mode, stueck }: StueckFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
+          className="rounded-lg bg-primary-600 px-6 py-2 font-medium text-white transition-colors hover:bg-primary-700 disabled:bg-gray-400"
         >
           {isSubmitting
             ? 'Wird gespeichert...'

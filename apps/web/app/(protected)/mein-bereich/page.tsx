@@ -16,7 +16,7 @@ export default async function MeinBereichPage() {
   if (!profile) {
     return (
       <div className="space-y-8">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <p className="text-yellow-800">
             Bitte melde dich an, um deinen persönlichen Bereich zu sehen.
           </p>
@@ -46,15 +46,16 @@ export default async function MeinBereichPage() {
 
   // Get available helper events (only for active members)
   const today = new Date().toISOString().split('T')[0]
-  const { data: verfuegbareEinsaetze } =
-    !isPassiveMember
-      ? await supabase
-          .from('helfereinsaetze')
-          .select('id, titel, datum, startzeit, ort, helfer_max, helferschichten(id)')
-          .gte('datum', today)
-          .order('datum', { ascending: true })
-          .limit(3)
-      : { data: [] }
+  const { data: verfuegbareEinsaetze } = !isPassiveMember
+    ? await supabase
+        .from('helfereinsaetze')
+        .select(
+          'id, titel, datum, startzeit, ort, helfer_max, helferschichten(id)'
+        )
+        .gte('datum', today)
+        .order('datum', { ascending: true })
+        .limit(3)
+    : { data: [] }
 
   // Filter to upcoming events only
   const upcomingAnmeldungen = anmeldungen.filter(
@@ -78,7 +79,7 @@ export default async function MeinBereichPage() {
       </div>
 
       {!person && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <p className="text-yellow-800">
             Dein Account ist noch nicht mit einem Mitgliederprofil verknüpft.
             Bitte wende dich an einen Administrator.
@@ -89,7 +90,7 @@ export default async function MeinBereichPage() {
       {/* Widgets Grid - Different layout for passive vs active */}
       {isPassiveMember ? (
         // Passive Member View - Simplified
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
           <QuickLinksWidget variant="passive" />
         </div>
@@ -97,35 +98,35 @@ export default async function MeinBereichPage() {
         // Active Member View - Full
         <>
           {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="rounded-xl border border-neutral-200 bg-white p-4">
               <p className="text-sm text-neutral-500">Anstehende Termine</p>
-              <p className="text-2xl font-bold text-neutral-900 mt-1">
+              <p className="mt-1 text-2xl font-bold text-neutral-900">
                 {upcomingAnmeldungen.length}
               </p>
             </div>
             <div className="rounded-xl border border-neutral-200 bg-white p-4">
               <p className="text-sm text-neutral-500">Stunden gesamt</p>
-              <p className="text-2xl font-bold text-neutral-900 mt-1">
+              <p className="mt-1 text-2xl font-bold text-neutral-900">
                 {stundenSummary.total.toFixed(1)}
               </p>
             </div>
             <div className="rounded-xl border border-neutral-200 bg-white p-4">
               <p className="text-sm text-neutral-500">Dieses Jahr</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">
+              <p className="mt-1 text-2xl font-bold text-green-600">
                 {stundenSummary.thisYear.toFixed(1)}
               </p>
             </div>
             <div className="rounded-xl border border-neutral-200 bg-white p-4">
               <p className="text-sm text-neutral-500">Offene Einsätze</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">
+              <p className="mt-1 text-2xl font-bold text-blue-600">
                 {verfuegbareEinsaetze?.length ?? 0}
               </p>
             </div>
           </div>
 
           {/* Main Widgets */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
             <StundenWidget
               total={stundenSummary.total}
@@ -144,14 +145,14 @@ export default async function MeinBereichPage() {
       {isPassiveMember && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-6">
           <h3 className="font-semibold text-blue-900">Aktiver werden?</h3>
-          <p className="text-sm text-blue-700 mt-1">
+          <p className="mt-1 text-sm text-blue-700">
             Möchtest du aktiver in der Theatergruppe mitwirken? Als aktives
             Mitglied kannst du bei Aufführungen und Helfereinsätzen teilnehmen
             und Stunden sammeln.
           </p>
           <Link
             href="/profile"
-            className="inline-block mt-3 text-sm font-medium text-blue-700 hover:text-blue-900"
+            className="mt-3 inline-block text-sm font-medium text-blue-700 hover:text-blue-900"
           >
             Mehr erfahren &rarr;
           </Link>

@@ -48,7 +48,9 @@ export async function getSchichten(
 /**
  * Get a single shift by ID
  */
-export async function getSchicht(id: string): Promise<SchichtMitZeitblock | null> {
+export async function getSchicht(
+  id: string
+): Promise<SchichtMitZeitblock | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_schichten')
@@ -182,7 +184,10 @@ export async function deleteSchicht(
     .eq('id', id)
     .single()
 
-  const { error } = await supabase.from('auffuehrung_schichten').delete().eq('id', id)
+  const { error } = await supabase
+    .from('auffuehrung_schichten')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error deleting schicht:', error)
@@ -327,7 +332,10 @@ export async function deleteZuweisung(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const { error } = await supabase.from('auffuehrung_zuweisungen').delete().eq('id', id)
+  const { error } = await supabase
+    .from('auffuehrung_zuweisungen')
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('Error deleting zuweisung:', error)

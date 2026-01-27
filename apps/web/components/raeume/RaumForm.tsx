@@ -27,7 +27,9 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
 
   const [name, setName] = useState(raum?.name || '')
   const [typ, setTyp] = useState<RaumTyp | ''>(raum?.typ || '')
-  const [kapazitaet, setKapazitaet] = useState(raum?.kapazitaet?.toString() || '')
+  const [kapazitaet, setKapazitaet] = useState(
+    raum?.kapazitaet?.toString() || ''
+  )
   const [beschreibung, setBeschreibung] = useState(raum?.beschreibung || '')
   const [aktiv, setAktiv] = useState(raum?.aktiv ?? true)
 
@@ -86,14 +88,17 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
       {/* Name */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="name"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Name *
         </label>
         <input
@@ -102,20 +107,23 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Typ */}
       <div>
-        <label htmlFor="typ" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="typ"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Typ
         </label>
         <select
           id="typ"
           value={typ}
           onChange={(e) => setTyp(e.target.value as RaumTyp | '')}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         >
           <option value="">-- Auswählen --</option>
           {raumTypen.map((t) => (
@@ -128,7 +136,10 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
 
       {/* Kapazität */}
       <div>
-        <label htmlFor="kapazitaet" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="kapazitaet"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Kapazität (Personen)
         </label>
         <input
@@ -137,13 +148,16 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
           min="0"
           value={kapazitaet}
           onChange={(e) => setKapazitaet(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Beschreibung */}
       <div>
-        <label htmlFor="beschreibung" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="beschreibung"
+          className="mb-1 block text-sm font-medium text-gray-700"
+        >
           Beschreibung
         </label>
         <textarea
@@ -151,7 +165,7 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
           rows={2}
           value={beschreibung}
           onChange={(e) => setBeschreibung(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -171,14 +185,14 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
       )}
 
       {/* Actions */}
-      <div className="flex justify-between items-center pt-4 border-t">
+      <div className="flex items-center justify-between border-t pt-4">
         <div>
           {mode === 'edit' && (
             <button
               type="button"
               onClick={handleDelete}
               disabled={loading}
-              className="px-3 py-1.5 text-red-600 hover:text-red-800 text-sm disabled:opacity-50"
+              className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
             >
               Löschen
             </button>
@@ -187,7 +201,7 @@ export function RaumForm({ raum, mode, onSuccess }: RaumFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
         >
           {loading ? 'Speichern...' : 'Speichern'}
         </button>

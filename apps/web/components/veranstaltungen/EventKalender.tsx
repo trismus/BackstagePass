@@ -84,8 +84,18 @@ export function EventKalender({
   }, [currentDate])
 
   const monthNames = [
-    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+    'Januar',
+    'Februar',
+    'März',
+    'April',
+    'Mai',
+    'Juni',
+    'Juli',
+    'August',
+    'September',
+    'Oktober',
+    'November',
+    'Dezember',
   ]
 
   const weekDayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
@@ -130,10 +140,12 @@ export function EventKalender({
   const todayKey = formatDateKey(today)
 
   const getWeekNumber = (date: Date): number => {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+    const d = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    )
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+    return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
   }
 
   // Export handlers
@@ -142,12 +154,15 @@ export function EventKalender({
   }
 
   const handleICalExport = () => {
-    const events = filteredEvents.filter(v => v.status !== 'abgesagt')
-    let ical = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//BackstagePass//TGW//DE\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n'
+    const events = filteredEvents.filter((v) => v.status !== 'abgesagt')
+    let ical =
+      'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//BackstagePass//TGW//DE\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n'
 
     events.forEach((event) => {
       const startDate = event.datum.replace(/-/g, '')
-      const startTime = event.startzeit ? event.startzeit.replace(/:/g, '') : '000000'
+      const startTime = event.startzeit
+        ? event.startzeit.replace(/:/g, '')
+        : '000000'
       const endTime = event.endzeit ? event.endzeit.replace(/:/g, '') : '235959'
       const uid = `${event.id}@backstagepass.tgw`
 
@@ -177,16 +192,26 @@ export function EventKalender({
   }
 
   return (
-    <div className="bg-white shadow rounded-lg print:shadow-none">
+    <div className="rounded-lg bg-white shadow print:shadow-none">
       {/* Calendar Header */}
-      <div className="px-4 py-3 border-b flex flex-wrap justify-between items-center gap-2 print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 print:hidden">
         <div className="flex items-center gap-4">
           <button
             onClick={goToPrev}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
           <h2 className="text-lg font-semibold text-gray-900">
@@ -196,10 +221,20 @@ export function EventKalender({
           </h2>
           <button
             onClick={goToNext}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="rounded-lg p-2 transition-colors hover:bg-gray-100"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
@@ -207,8 +242,10 @@ export function EventKalender({
         <div className="flex items-center gap-2">
           <select
             value={filterTyp}
-            onChange={(e) => setFilterTyp(e.target.value as VeranstaltungTyp | 'all')}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            onChange={(e) =>
+              setFilterTyp(e.target.value as VeranstaltungTyp | 'all')
+            }
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Alle Typen</option>
             {Object.entries(typLabels).map(([value, label]) => (
@@ -218,7 +255,7 @@ export function EventKalender({
             ))}
           </select>
 
-          <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+          <div className="flex overflow-hidden rounded-lg border border-gray-300">
             <button
               onClick={() => setView('month')}
               className={`px-3 py-1.5 text-sm ${view === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
@@ -235,16 +272,16 @@ export function EventKalender({
 
           <button
             onClick={goToToday}
-            className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="rounded-lg px-3 py-1.5 text-sm text-blue-600 transition-colors hover:bg-blue-50"
           >
             Heute
           </button>
 
-          <div className="border-l border-gray-200 h-6 mx-2" />
+          <div className="mx-2 h-6 border-l border-gray-200" />
 
           <button
             onClick={handleICalExport}
-            className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
             title="Als iCal exportieren"
           >
             iCal
@@ -252,7 +289,7 @@ export function EventKalender({
 
           <button
             onClick={handlePrint}
-            className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
             title="Drucken"
           >
             PDF
@@ -261,7 +298,7 @@ export function EventKalender({
       </div>
 
       {/* Print Header */}
-      <div className="hidden print:block p-4 border-b">
+      <div className="hidden border-b p-4 print:block">
         <h2 className="text-xl font-semibold">
           {view === 'month'
             ? `${monthNames[month]} ${year}`
@@ -274,9 +311,12 @@ export function EventKalender({
         {view === 'month' ? (
           <>
             {/* Week Day Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="mb-2 grid grid-cols-7 gap-1">
               {weekDayNames.map((day) => (
-                <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                <div
+                  key={day}
+                  className="py-2 text-center text-sm font-medium text-gray-500"
+                >
                   {day}
                 </div>
               ))}
@@ -286,7 +326,12 @@ export function EventKalender({
             <div className="grid grid-cols-7 gap-1">
               {calendarDays.map((day, index) => {
                 if (day === null) {
-                  return <div key={`empty-${index}`} className="min-h-24 bg-gray-50 rounded-lg print:min-h-16" />
+                  return (
+                    <div
+                      key={`empty-${index}`}
+                      className="min-h-24 rounded-lg bg-gray-50 print:min-h-16"
+                    />
+                  )
                 }
 
                 const dateKey = formatDateKey(day)
@@ -296,14 +341,14 @@ export function EventKalender({
                 return (
                   <div
                     key={dateKey}
-                    className={`min-h-24 p-2 rounded-lg border print:min-h-16 print:text-xs ${
+                    className={`min-h-24 rounded-lg border p-2 print:min-h-16 print:text-xs ${
                       isToday
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <div
-                      className={`text-sm font-medium mb-1 ${
+                      className={`mb-1 text-sm font-medium ${
                         isToday ? 'text-blue-600' : 'text-gray-700'
                       }`}
                     >
@@ -316,7 +361,7 @@ export function EventKalender({
                           <Link
                             key={v.id}
                             href={`${basePath}/${v.id}` as never}
-                            className={`block p-1 text-xs rounded truncate ${typColors[v.typ] || typColors.sonstiges}`}
+                            className={`block truncate rounded p-1 text-xs ${typColors[v.typ] || typColors.sonstiges}`}
                             title={v.titel}
                           >
                             {v.startzeit && (
@@ -350,36 +395,41 @@ export function EventKalender({
               return (
                 <div
                   key={dateKey}
-                  className={`p-3 rounded-lg border ${
-                    isToday
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200'
+                  className={`rounded-lg border p-3 ${
+                    isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                   }`}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className={`font-medium ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                  <div className="mb-2 flex items-center gap-3">
+                    <span
+                      className={`font-medium ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
+                    >
                       {weekDayNames[(day.getDay() + 6) % 7]}
                     </span>
                     <span className="text-gray-500">
-                      {day.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit' })}
+                      {day.toLocaleDateString('de-CH', {
+                        day: '2-digit',
+                        month: '2-digit',
+                      })}
                     </span>
                   </div>
 
                   {dayEvents.length === 0 ? (
-                    <p className="text-sm text-gray-400">Keine Veranstaltungen</p>
+                    <p className="text-sm text-gray-400">
+                      Keine Veranstaltungen
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {dayEvents.map((v) => (
                         <Link
                           key={v.id}
                           href={`${basePath}/${v.id}` as never}
-                          className={`block p-2 rounded ${typColors[v.typ] || typColors.sonstiges}`}
+                          className={`block rounded p-2 ${typColors[v.typ] || typColors.sonstiges}`}
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{v.titel}</span>
                             <StatusBadge status={v.status} />
                           </div>
-                          <div className="text-sm opacity-75 mt-1">
+                          <div className="mt-1 text-sm opacity-75">
                             {v.startzeit && `${v.startzeit.slice(0, 5)}`}
                             {v.startzeit && v.endzeit && ' - '}
                             {v.endzeit && `${v.endzeit.slice(0, 5)}`}
@@ -398,7 +448,7 @@ export function EventKalender({
 
       {/* Upcoming List */}
       <div className="border-t p-4">
-        <h3 className="font-medium text-gray-900 mb-3">{title}</h3>
+        <h3 className="mb-3 font-medium text-gray-900">{title}</h3>
         <div className="space-y-2">
           {filteredEvents
             .filter((v) => v.datum >= todayKey && v.status !== 'abgesagt')
@@ -407,16 +457,22 @@ export function EventKalender({
               <Link
                 key={v.id}
                 href={`${basePath}/${v.id}` as never}
-                className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg"
+                className="flex items-center justify-between rounded-lg p-2 hover:bg-gray-50"
               >
                 <div>
-                  <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                    v.typ === 'vereinsevent' ? 'bg-blue-500' :
-                    v.typ === 'probe' ? 'bg-amber-500' :
-                    v.typ === 'auffuehrung' ? 'bg-purple-500' : 'bg-gray-500'
-                  }`} />
+                  <span
+                    className={`mr-2 inline-block h-2 w-2 rounded-full ${
+                      v.typ === 'vereinsevent'
+                        ? 'bg-blue-500'
+                        : v.typ === 'probe'
+                          ? 'bg-amber-500'
+                          : v.typ === 'auffuehrung'
+                            ? 'bg-purple-500'
+                            : 'bg-gray-500'
+                    }`}
+                  />
                   <span className="font-medium text-gray-900">{v.titel}</span>
-                  <span className="text-sm text-gray-500 ml-2">
+                  <span className="ml-2 text-sm text-gray-500">
                     {new Date(v.datum).toLocaleDateString('de-CH', {
                       day: '2-digit',
                       month: '2-digit',
@@ -427,8 +483,12 @@ export function EventKalender({
                 <StatusBadge status={v.status} />
               </Link>
             ))}
-          {filteredEvents.filter((v) => v.datum >= todayKey && v.status !== 'abgesagt').length === 0 && (
-            <p className="text-gray-500 text-sm">Keine kommenden Veranstaltungen</p>
+          {filteredEvents.filter(
+            (v) => v.datum >= todayKey && v.status !== 'abgesagt'
+          ).length === 0 && (
+            <p className="text-sm text-gray-500">
+              Keine kommenden Veranstaltungen
+            </p>
           )}
         </div>
       </div>

@@ -4,8 +4,15 @@ import { getUserProfile } from '@/lib/supabase/server'
 import { canEdit as canEditFn } from '@/lib/supabase/auth-helpers'
 import { getVeranstaltung } from '@/lib/actions/veranstaltungen'
 import { getZeitbloecke } from '@/lib/actions/zeitbloecke'
-import { getSchichten, getBedarfUebersicht, getZuweisungenForVeranstaltung } from '@/lib/actions/auffuehrung-schichten'
-import { getRaumReservierungen, getRessourcenReservierungen } from '@/lib/actions/reservierungen'
+import {
+  getSchichten,
+  getBedarfUebersicht,
+  getZuweisungenForVeranstaltung,
+} from '@/lib/actions/auffuehrung-schichten'
+import {
+  getRaumReservierungen,
+  getRessourcenReservierungen,
+} from '@/lib/actions/reservierungen'
 import { getPersonen } from '@/lib/actions/personen'
 import { StatusBadge } from '@/components/veranstaltungen/StatusBadge'
 import { ZeitblockEditor } from '@/components/auffuehrungen/ZeitblockEditor'
@@ -81,13 +88,15 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-start">
+          <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">{veranstaltung.titel}</h1>
+              <div className="mb-2 flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {veranstaltung.titel}
+                </h1>
                 <StatusBadge status={veranstaltung.status} />
               </div>
               <p className="text-gray-600">
@@ -95,20 +104,25 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
                 {veranstaltung.startzeit && (
                   <span className="ml-2">
                     {formatTime(veranstaltung.startzeit)}
-                    {veranstaltung.endzeit && ` - ${formatTime(veranstaltung.endzeit)}`}
+                    {veranstaltung.endzeit &&
+                      ` - ${formatTime(veranstaltung.endzeit)}`}
                   </span>
                 )}
-                {veranstaltung.ort && <span className="ml-4">{veranstaltung.ort}</span>}
+                {veranstaltung.ort && (
+                  <span className="ml-4">{veranstaltung.ort}</span>
+                )}
               </p>
               {veranstaltung.beschreibung && (
-                <p className="text-gray-500 mt-2">{veranstaltung.beschreibung}</p>
+                <p className="mt-2 text-gray-500">
+                  {veranstaltung.beschreibung}
+                </p>
               )}
             </div>
             <div className="flex gap-3">
               {canEdit && (
                 <Link
                   href={`/veranstaltungen/${id}/bearbeiten` as never}
-                  className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm"
+                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                 >
                   Bearbeiten
                 </Link>
@@ -118,17 +132,20 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
         </div>
 
         {/* Template Apply (only if no zeitbloecke yet) */}
-        {canEdit && templates.length > 0 && zeitbloecke.length === 0 && veranstaltung.startzeit && (
-          <div className="mb-6">
-            <TemplateApplyDialog
-              veranstaltungId={id}
-              startzeit={veranstaltung.startzeit}
-              templates={templates}
-            />
-          </div>
-        )}
+        {canEdit &&
+          templates.length > 0 &&
+          zeitbloecke.length === 0 &&
+          veranstaltung.startzeit && (
+            <div className="mb-6">
+              <TemplateApplyDialog
+                veranstaltungId={id}
+                startzeit={veranstaltung.startzeit}
+                templates={templates}
+              />
+            </div>
+          )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Left Column */}
           <div className="space-y-6">
             {/* Zeitblöcke */}
@@ -182,16 +199,27 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
 
         {/* Admin Actions */}
         {isAdmin && (
-          <div className="mt-8 pt-6 border-t">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Admin-Aktionen</h3>
+          <div className="mt-8 border-t pt-6">
+            <h3 className="mb-3 text-sm font-medium text-gray-700">
+              Admin-Aktionen
+            </h3>
             <div className="flex gap-3">
-              <Link href="/raeume" className="text-sm text-blue-600 hover:text-blue-800">
+              <Link
+                href="/raeume"
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
                 Räume verwalten
               </Link>
-              <Link href="/ressourcen" className="text-sm text-blue-600 hover:text-blue-800">
+              <Link
+                href="/ressourcen"
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
                 Ressourcen verwalten
               </Link>
-              <Link href={"/templates" as never} className="text-sm text-blue-600 hover:text-blue-800">
+              <Link
+                href={'/templates' as never}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
                 Vorlagen verwalten
               </Link>
             </div>
@@ -200,7 +228,10 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
 
         {/* Back Link */}
         <div className="mt-8">
-          <Link href="/auffuehrungen" className="text-blue-600 hover:text-blue-800">
+          <Link
+            href="/auffuehrungen"
+            className="text-blue-600 hover:text-blue-800"
+          >
             &larr; Zurück zu Aufführungen
           </Link>
         </div>

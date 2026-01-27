@@ -3,7 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type { Raum, RaumInsert, RaumUpdate } from '../supabase/types'
-import { raumSchema, raumUpdateSchema, validateInput } from '../validations/modul2'
+import {
+  raumSchema,
+  raumUpdateSchema,
+  validateInput,
+} from '../validations/modul2'
 
 /**
  * Get all active rooms

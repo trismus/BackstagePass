@@ -18,7 +18,7 @@ export default async function BearbeitenPage({ params }: BearbeitenPageProps) {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-3xl px-4 py-8">
         {/* Back Link */}
         <div className="mb-6">
           <Link
@@ -32,11 +32,11 @@ export default async function BearbeitenPage({ params }: BearbeitenPageProps) {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Stück bearbeiten</h1>
-          <p className="text-gray-600 mt-1">{stueck.titel}</p>
+          <p className="mt-1 text-gray-600">{stueck.titel}</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="rounded-lg bg-white p-6 shadow">
           <StueckForm mode="edit" stueck={stueck} />
         </div>
       </div>

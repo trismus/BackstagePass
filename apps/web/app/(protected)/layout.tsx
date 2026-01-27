@@ -67,7 +67,7 @@ export default async function ProtectedLayout({
                 Stücke
               </Link>
               <Link
-                href={"/proben" as never}
+                href={'/proben' as never}
                 className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
               >
                 Proben

@@ -2,7 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createRaumReservierung, deleteRaumReservierung, checkRaumKonflikt } from '@/lib/actions/reservierungen'
+import {
+  createRaumReservierung,
+  deleteRaumReservierung,
+  checkRaumKonflikt,
+} from '@/lib/actions/reservierungen'
 import type { RaumReservierungMitRaum, Raum } from '@/lib/supabase/types'
 import { RaumTypBadge } from '@/components/raeume/RaumTypBadge'
 import { KonfliktWarnung } from './KonfliktWarnung'
@@ -74,9 +78,11 @@ export function RaumReservierungPicker({
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-        <h3 className="font-medium text-gray-900">Räume ({reservierungen.length})</h3>
+    <div className="rounded-lg bg-white shadow">
+      <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-3">
+        <h3 className="font-medium text-gray-900">
+          Räume ({reservierungen.length})
+        </h3>
         {canEdit && !showForm && availableRaeume.length > 0 && (
           <button
             onClick={() => setShowForm(true)}
@@ -89,12 +95,12 @@ export function RaumReservierungPicker({
 
       {/* Add Room Form */}
       {showForm && canEdit && (
-        <div className="p-4 border-b bg-blue-50">
+        <div className="border-b bg-blue-50 p-4">
           <div className="flex gap-2">
             <select
               value={selectedRaumId}
               onChange={(e) => handleRaumSelect(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
               <option value="">Raum auswählen...</option>
               {availableRaeume.map((r) => (
@@ -106,7 +112,7 @@ export function RaumReservierungPicker({
             <button
               onClick={handleAddReservierung}
               disabled={loading || !selectedRaumId || checkingKonflikt}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:bg-blue-400"
+              className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white disabled:bg-blue-400"
             >
               {loading ? 'Speichern...' : 'Reservieren'}
             </button>
@@ -116,7 +122,7 @@ export function RaumReservierungPicker({
                 setSelectedRaumId('')
                 setKonflikt(null)
               }}
-              className="px-3 py-2 text-gray-600 text-sm"
+              className="px-3 py-2 text-sm text-gray-600"
             >
               Abbrechen
             </button>
@@ -133,7 +139,7 @@ export function RaumReservierungPicker({
           )}
 
           {checkingKonflikt && (
-            <p className="text-sm text-gray-500 mt-2">Prüfe Verfügbarkeit...</p>
+            <p className="mt-2 text-sm text-gray-500">Prüfe Verfügbarkeit...</p>
           )}
         </div>
       )}
@@ -141,10 +147,10 @@ export function RaumReservierungPicker({
       {/* Reserved Rooms */}
       <div className="divide-y divide-gray-200">
         {reservierungen.map((r) => (
-          <div key={r.id} className="p-4 flex justify-between items-center">
+          <div key={r.id} className="flex items-center justify-between p-4">
             <div>
               <span className="font-medium text-gray-900">{r.raum.name}</span>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="mt-1 flex items-center gap-2">
                 <RaumTypBadge typ={r.raum.typ} />
                 {r.raum.kapazitaet && (
                   <span className="text-sm text-gray-500">
@@ -156,7 +162,7 @@ export function RaumReservierungPicker({
             {canEdit && (
               <button
                 onClick={() => handleRemoveReservierung(r.id, r.raum.name)}
-                className="text-red-600 hover:text-red-800 text-sm"
+                className="text-sm text-red-600 hover:text-red-800"
               >
                 Entfernen
               </button>

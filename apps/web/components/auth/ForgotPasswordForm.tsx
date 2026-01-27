@@ -30,8 +30,8 @@ export function ForgotPasswordForm() {
   if (success) {
     return (
       <Alert variant="success">
-        Wir haben dir eine E-Mail mit einem Link zum Zurücksetzen deines Passworts
-        gesendet. Bitte überprüfe dein Postfach.
+        Wir haben dir eine E-Mail mit einem Link zum Zurücksetzen deines
+        Passworts gesendet. Bitte überprüfe dein Postfach.
       </Alert>
     )
   }
