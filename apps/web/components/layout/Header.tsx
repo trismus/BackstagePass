@@ -6,6 +6,7 @@ import type { UserRole } from '@/lib/supabase/types'
 import { USER_ROLE_LABELS } from '@/lib/supabase/types'
 import { MenuIcon } from './NavIcons'
 import { Breadcrumb } from './Breadcrumb'
+import { DashboardSwitch } from './DashboardSwitch'
 
 // =============================================================================
 // Types
@@ -195,6 +196,11 @@ export function Header({
               BackstagePass
             </span>
           </Link>
+        </div>
+
+        {/* Center: Dashboard Switch (Admin only) */}
+        <div className="hidden md:block">
+          <DashboardSwitch userRole={userRole} />
         </div>
 
         {/* Right Side: Profile */}
