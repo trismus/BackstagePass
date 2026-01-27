@@ -1,0 +1,225 @@
+'use client'
+
+import { useState } from 'react'
+import type { ProbeTeilnehmer, Person, TeilnehmerStatus } from '@/lib/supabase/types'
+import {
+  updateTeilnehmerStatus,
+  addTeilnehmerToProbe,
+  removeTeilnehmerFromProbe,
+  generateTeilnehmerFromBesetzungen,
+} from '@/lib/actions/proben'
+import { TeilnehmerStatusBadge } from './ProbeStatusBadge'
+
+interface TeilnehmerListProps {
+  probeId: string
+  teilnehmer: (ProbeTeilnehmer & { person: { id: string; vorname: string; nachname: string; email: string | null } })[]
+  personen: Person[]
+  canEdit: boolean
+  hasSzenen: boolean
+}
+
+const statusOptions: { value: TeilnehmerStatus; label: string }[] = [
+  { value: 'eingeladen', label: 'Eingeladen' },
+  { value: 'zugesagt', label: 'Zugesagt' },
+  { value: 'abgesagt', label: 'Abgesagt' },
+  { value: 'erschienen', label: 'Erschienen' },
+  { value: 'nicht_erschienen', label: 'Nicht erschienen' },
+]
+
+export function TeilnehmerList({ probeId, teilnehmer, personen, canEdit, hasSzenen }: TeilnehmerListProps) {
+  const [isAdding, setIsAdding] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedPersonId, setSelectedPersonId] = useState('')
+
+  // Personen die noch nicht eingeladen sind
+  const teilnehmerIds = teilnehmer.map((t) => t.person_id)
+  const availablePersonen = personen.filter((p) => !teilnehmerIds.includes(p.id) && p.aktiv)
+
+  const handleStatusChange = async (personId: string, status: TeilnehmerStatus) => {
+    setIsSubmitting(true)
+    try {
+      await updateTeilnehmerStatus(probeId, personId, status)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleAdd = async () => {
+    if (!selectedPersonId) return
+    setIsSubmitting(true)
+    try {
+      await addTeilnehmerToProbe({
+        probe_id: probeId,
+        person_id: selectedPersonId,
+        status: 'eingeladen',
+        notizen: null,
+      })
+      setSelectedPersonId('')
+      setIsAdding(false)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleRemove = async (personId: string) => {
+    if (!confirm('Teilnehmer wirklich entfernen?')) return
+    setIsSubmitting(true)
+    try {
+      await removeTeilnehmerFromProbe(probeId, personId)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleGenerateFromBesetzungen = async () => {
+    if (!hasSzenen) {
+      alert('Bitte zuerst Szenen zur Probe hinzufügen')
+      return
+    }
+    setIsSubmitting(true)
+    try {
+      const result = await generateTeilnehmerFromBesetzungen(probeId)
+      if (result.success) {
+        alert(`${result.count} Teilnehmer wurden hinzugefügt`)
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Gruppiere nach Status
+  const groupedByStatus: Record<TeilnehmerStatus, typeof teilnehmer> = {
+    zugesagt: [],
+    eingeladen: [],
+    abgesagt: [],
+    erschienen: [],
+    nicht_erschienen: [],
+  }
+  teilnehmer.forEach((t) => {
+    groupedByStatus[t.status].push(t)
+  })
+
+  const zusagenCount = groupedByStatus.zugesagt.length + groupedByStatus.erschienen.length
+  const absagenCount = groupedByStatus.abgesagt.length + groupedByStatus.nicht_erschienen.length
+
+  return (
+    <div className="bg-white shadow rounded-lg">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Teilnehmer</h2>
+            <p className="text-sm text-gray-500">
+              {teilnehmer.length} eingeladen
+              {zusagenCount > 0 && <span className="text-success-600"> · {zusagenCount} zugesagt</span>}
+              {absagenCount > 0 && <span className="text-error-600"> · {absagenCount} abgesagt</span>}
+            </p>
+          </div>
+          {canEdit && (
+            <div className="flex gap-2">
+              <button
+                onClick={handleGenerateFromBesetzungen}
+                disabled={isSubmitting || !hasSzenen}
+                className="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-50 disabled:opacity-50 rounded-lg"
+                title={hasSzenen ? 'Teilnehmer aus Besetzungen generieren' : 'Zuerst Szenen hinzufügen'}
+              >
+                Aus Besetzungen
+              </button>
+              <button
+                onClick={() => setIsAdding(true)}
+                className="px-3 py-1.5 text-sm text-primary-600 hover:text-primary-800"
+              >
+                + Hinzufügen
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Add Teilnehmer Form */}
+      {isAdding && (
+        <div className="px-6 py-4 bg-blue-50 border-b border-blue-100">
+          <div className="flex gap-3">
+            <select
+              value={selectedPersonId}
+              onChange={(e) => setSelectedPersonId(e.target.value)}
+              className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="">Person auswählen...</option>
+              {availablePersonen.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.vorname} {p.nachname}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleAdd}
+              disabled={isSubmitting || !selectedPersonId}
+              className="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-lg"
+            >
+              Einladen
+            </button>
+            <button
+              onClick={() => setIsAdding(false)}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Teilnehmer Liste */}
+      <div className="divide-y divide-gray-200">
+        {teilnehmer.length === 0 ? (
+          <div className="px-6 py-8 text-center text-gray-500">
+            Noch keine Teilnehmer eingeladen
+          </div>
+        ) : (
+          teilnehmer.map((t) => (
+            <div key={t.id} className="px-6 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-sm font-medium">
+                  {t.person.vorname[0]}{t.person.nachname[0]}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">
+                    {t.person.vorname} {t.person.nachname}
+                  </span>
+                  {t.person.email && (
+                    <span className="text-sm text-gray-500 ml-2">{t.person.email}</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {canEdit ? (
+                  <>
+                    <select
+                      value={t.status}
+                      onChange={(e) => handleStatusChange(t.person_id, e.target.value as TeilnehmerStatus)}
+                      disabled={isSubmitting}
+                      className="text-sm border border-gray-300 rounded px-2 py-1"
+                    >
+                      {statusOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => handleRemove(t.person_id)}
+                      className="text-error-600 hover:text-error-800 text-sm"
+                    >
+                      Entfernen
+                    </button>
+                  </>
+                ) : (
+                  <TeilnehmerStatusBadge status={t.status} />
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
