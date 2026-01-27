@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getUser, getUserProfile } from '@/lib/supabase/server'
 import { LogoutButton } from '@/components/auth/LogoutButton'
+import { hasPermission, isAdmin } from '@/lib/supabase/auth-helpers'
 
 export default async function ProtectedLayout({
   children,
@@ -15,7 +16,12 @@ export default async function ProtectedLayout({
     redirect('/login')
   }
 
-  const isAdmin = profile?.role === 'ADMIN'
+  // Permission-based navigation visibility
+  const userRole = profile?.role ?? 'FREUNDE'
+  const canViewMitglieder = hasPermission(userRole, 'mitglieder:read')
+  const canViewHelfereinsaetze = hasPermission(userRole, 'helfereinsaetze:read')
+  const canViewPartner = hasPermission(userRole, 'partner:read')
+  const canAccessAdmin = isAdmin(userRole)
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -34,12 +40,14 @@ export default async function ProtectedLayout({
               >
                 Dashboard
               </Link>
-              <Link
-                href="/mitglieder"
-                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
-              >
-                Mitglieder
-              </Link>
+              {canViewMitglieder && (
+                <Link
+                  href="/mitglieder"
+                  className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+                >
+                  Mitglieder
+                </Link>
+              )}
               <Link
                 href="/veranstaltungen"
                 className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
@@ -47,25 +55,47 @@ export default async function ProtectedLayout({
                 Veranstaltungen
               </Link>
               <Link
-                href="/helfereinsaetze"
+                href="/auffuehrungen"
                 className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
               >
-                Helfereinsätze
+                Aufführungen
               </Link>
+              <Link
+                href="/stuecke"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+              >
+                Stücke
+              </Link>
+              <Link
+                href={"/proben" as never}
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+              >
+                Proben
+              </Link>
+              {canViewHelfereinsaetze && (
+                <Link
+                  href="/helfereinsaetze"
+                  className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+                >
+                  Helfereinsätze
+                </Link>
+              )}
               <Link
                 href="/mein-bereich"
                 className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
               >
                 Mein Bereich
               </Link>
-              {isAdmin && (
+              {canViewPartner && (
+                <Link
+                  href="/partner"
+                  className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
+                >
+                  Partner
+                </Link>
+              )}
+              {canAccessAdmin && (
                 <>
-                  <Link
-                    href="/partner"
-                    className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
-                  >
-                    Partner
-                  </Link>
                   <Link
                     href="/admin/users"
                     className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"

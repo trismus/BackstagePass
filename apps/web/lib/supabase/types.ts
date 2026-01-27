@@ -26,7 +26,72 @@ export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at'>
 
 export type PersonUpdate = Partial<PersonInsert>
 
-export type UserRole = 'ADMIN' | 'EDITOR' | 'VIEWER'
+// =============================================================================
+// User Roles & Permissions (Issue #108)
+// =============================================================================
+
+/**
+ * App-level user roles for RBAC
+ * - ADMIN: System administrator (full access)
+ * - VORSTAND: Board/Committee (all operational modules)
+ * - MITGLIED_AKTIV: Active member (own data, registrations, hours)
+ * - MITGLIED_PASSIV: Passive member (own profile, public info)
+ * - HELFER: Helper (assigned shifts only)
+ * - PARTNER: Partner organization (own partner data)
+ * - FREUNDE: Friends (public info only)
+ */
+export type UserRole =
+  | 'ADMIN'
+  | 'VORSTAND'
+  | 'MITGLIED_AKTIV'
+  | 'MITGLIED_PASSIV'
+  | 'HELFER'
+  | 'PARTNER'
+  | 'FREUNDE'
+
+/**
+ * German labels for user roles (for UI display)
+ */
+export const USER_ROLE_LABELS: Record<UserRole, string> = {
+  ADMIN: 'Administrator',
+  VORSTAND: 'Vorstand',
+  MITGLIED_AKTIV: 'Aktives Mitglied',
+  MITGLIED_PASSIV: 'Passives Mitglied',
+  HELFER: 'Helfer',
+  PARTNER: 'Partner',
+  FREUNDE: 'Freunde',
+}
+
+/**
+ * Capability-based permissions
+ */
+export type Permission =
+  | 'admin:access'
+  | 'mitglieder:read'
+  | 'mitglieder:write'
+  | 'mitglieder:delete'
+  | 'profile:write_own'
+  | 'veranstaltungen:read'
+  | 'veranstaltungen:write'
+  | 'veranstaltungen:delete'
+  | 'veranstaltungen:register'
+  | 'helfereinsaetze:read'
+  | 'helfereinsaetze:write'
+  | 'helfereinsaetze:delete'
+  | 'helfereinsaetze:register'
+  | 'stundenkonto:read'
+  | 'stundenkonto:read_own'
+  | 'stundenkonto:write'
+  | 'partner:read'
+  | 'partner:write'
+  | 'partner:delete'
+  | 'stuecke:read'
+  | 'stuecke:write'
+  | 'stuecke:delete'
+  | 'raeume:read'
+  | 'raeume:write'
+  | 'ressourcen:read'
+  | 'ressourcen:write'
 
 export type Profile = {
   id: string
@@ -489,6 +554,130 @@ export type StueckRolleMitSzenen = StueckRolle & {
 }
 
 // =============================================================================
+// Besetzungen (Issue #102)
+// =============================================================================
+
+export type BesetzungTyp = 'hauptbesetzung' | 'zweitbesetzung' | 'ersatz'
+
+export type Besetzung = {
+  id: string
+  rolle_id: string
+  person_id: string
+  typ: BesetzungTyp
+  gueltig_von: string | null
+  gueltig_bis: string | null
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type BesetzungInsert = Omit<Besetzung, 'id' | 'created_at' | 'updated_at'>
+export type BesetzungUpdate = Partial<BesetzungInsert>
+
+export type BesetzungHistorieAktion = 'erstellt' | 'geaendert' | 'entfernt'
+
+export type BesetzungHistorie = {
+  id: string
+  besetzung_id: string | null
+  rolle_id: string
+  person_id: string
+  typ: BesetzungTyp
+  aktion: BesetzungHistorieAktion
+  geaendert_von: string | null
+  geaendert_am: string
+  details: Record<string, unknown> | null
+}
+
+// Extended types for views
+export type BesetzungMitDetails = Besetzung & {
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
+  rolle: Pick<StueckRolle, 'id' | 'name' | 'typ'> & {
+    stueck: Pick<Stueck, 'id' | 'titel'>
+  }
+}
+
+export type RolleMitBesetzungen = StueckRolle & {
+  besetzungen: (Besetzung & {
+    person: Pick<Person, 'id' | 'vorname' | 'nachname'>
+  })[]
+}
+
+export type PersonMitRollen = Person & {
+  besetzungen: (Besetzung & {
+    rolle: Pick<StueckRolle, 'id' | 'name' | 'typ'> & {
+      stueck: Pick<Stueck, 'id' | 'titel'>
+    }
+  })[]
+}
+
+export type UnbesetzteRolle = StueckRolle & {
+  stueck_titel: string
+}
+
+// =============================================================================
+// Proben (Issue #103)
+// =============================================================================
+
+export type ProbeStatus = 'geplant' | 'bestaetigt' | 'abgesagt' | 'verschoben' | 'abgeschlossen'
+export type TeilnehmerStatus = 'eingeladen' | 'zugesagt' | 'abgesagt' | 'erschienen' | 'nicht_erschienen'
+
+export type Probe = {
+  id: string
+  stueck_id: string
+  titel: string
+  beschreibung: string | null
+  datum: string
+  startzeit: string | null
+  endzeit: string | null
+  ort: string | null
+  status: ProbeStatus
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProbeInsert = Omit<Probe, 'id' | 'created_at' | 'updated_at'>
+export type ProbeUpdate = Partial<ProbeInsert>
+
+export type ProbeSzene = {
+  id: string
+  probe_id: string
+  szene_id: string
+  reihenfolge: number | null
+  notizen: string | null
+  created_at: string
+}
+
+export type ProbeSzeneInsert = Omit<ProbeSzene, 'id' | 'created_at'>
+
+export type ProbeTeilnehmer = {
+  id: string
+  probe_id: string
+  person_id: string
+  status: TeilnehmerStatus
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProbeTeilnehmerInsert = Omit<ProbeTeilnehmer, 'id' | 'created_at' | 'updated_at'>
+export type ProbeTeilnehmerUpdate = Partial<ProbeTeilnehmerInsert>
+
+// Extended types
+export type ProbeMitDetails = Probe & {
+  stueck: Pick<Stueck, 'id' | 'titel'>
+  szenen: (ProbeSzene & { szene: Pick<Szene, 'id' | 'nummer' | 'titel'> })[]
+  teilnehmer: (ProbeTeilnehmer & { person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'> })[]
+}
+
+export type KommendeProbe = Probe & {
+  stueck_titel: string
+  szenen_count: number
+  teilnehmer_count: number
+  zusagen_count: number
+}
+
+// =============================================================================
 // Database Schema Type
 // =============================================================================
 
@@ -559,6 +748,31 @@ export type Database = {
         Row: SzeneRolle
         Insert: SzeneRolleInsert
         Update: Partial<SzeneRolleInsert>
+      }
+      besetzungen: {
+        Row: Besetzung
+        Insert: BesetzungInsert
+        Update: BesetzungUpdate
+      }
+      besetzungen_historie: {
+        Row: BesetzungHistorie
+        Insert: never
+        Update: never
+      }
+      proben: {
+        Row: Probe
+        Insert: ProbeInsert
+        Update: ProbeUpdate
+      }
+      proben_szenen: {
+        Row: ProbeSzene
+        Insert: ProbeSzeneInsert
+        Update: Partial<ProbeSzeneInsert>
+      }
+      proben_teilnehmer: {
+        Row: ProbeTeilnehmer
+        Insert: ProbeTeilnehmerInsert
+        Update: ProbeTeilnehmerUpdate
       }
       raeume: {
         Row: Raum

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
-import { hasRole } from '@/lib/supabase/auth-helpers'
+import { canEdit } from '@/lib/supabase/auth-helpers'
 import { VeranstaltungForm } from '@/components/veranstaltungen/VeranstaltungForm'
 import { getTemplates } from '@/lib/actions/templates'
 import { TemplateApplySelector } from '@/components/templates/TemplateApplySelector'
@@ -13,8 +13,8 @@ export default async function NeueAuffuehrungPage() {
     redirect('/login')
   }
 
-  // Only EDITOR and ADMIN can create
-  if (!hasRole(profile.role, 'EDITOR')) {
+  // Only management (ADMIN, VORSTAND) can create
+  if (!canEdit(profile.role)) {
     redirect('/auffuehrungen')
   }
 

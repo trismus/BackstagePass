@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { logAuditEvent } from '@/lib/audit'
+import type { UserRole } from '@/lib/supabase/types'
 
 export async function updateProfile(displayName: string) {
   const supabase = await createClient()
@@ -65,7 +66,7 @@ export async function getAllUsers() {
   return profiles || []
 }
 
-export async function updateUserRole(userId: string, role: 'ADMIN' | 'EDITOR' | 'VIEWER') {
+export async function updateUserRole(userId: string, role: UserRole) {
   const supabase = await createClient()
 
   // Check if current user is admin

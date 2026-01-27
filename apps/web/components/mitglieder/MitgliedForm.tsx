@@ -19,9 +19,10 @@ const rollenOptions: { value: Rolle; label: string }[] = [
 ]
 
 const appRollenOptions: { value: UserRole; label: string; description: string }[] = [
-  { value: 'VIEWER', label: 'Betrachter', description: 'Kann Daten ansehen' },
-  { value: 'EDITOR', label: 'Bearbeiter', description: 'Kann Daten bearbeiten' },
-  { value: 'ADMIN', label: 'Administrator', description: 'Vollzugriff' },
+  { value: 'MITGLIED_PASSIV', label: 'Passives Mitglied', description: 'Nur eigenes Profil' },
+  { value: 'MITGLIED_AKTIV', label: 'Aktives Mitglied', description: 'Anmeldungen, Stundenkonto' },
+  { value: 'VORSTAND', label: 'Vorstand', description: 'Alle operativen Module' },
+  { value: 'ADMIN', label: 'Administrator', description: 'Vollzugriff inkl. System' },
 ]
 
 export function MitgliedForm({ person, mode }: MitgliedFormProps) {
@@ -43,7 +44,7 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
 
   // App-Zugang
   const [createAppAccount, setCreateAppAccount] = useState(false)
-  const [appRole, setAppRole] = useState<UserRole>('VIEWER')
+  const [appRole, setAppRole] = useState<UserRole>('MITGLIED_PASSIV')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
-import { hasRole } from '@/lib/supabase/auth-helpers'
+import { canEdit as canEditFn } from '@/lib/supabase/auth-helpers'
 import { getVeranstaltung } from '@/lib/actions/veranstaltungen'
 import { getZeitbloecke } from '@/lib/actions/zeitbloecke'
 import { getSchichten, getBedarfUebersicht, getZuweisungenForVeranstaltung } from '@/lib/actions/auffuehrung-schichten'
@@ -37,7 +37,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const canEdit = hasRole(profile.role, 'EDITOR')
+  const canEdit = canEditFn(profile.role)
   const isAdmin = profile.role === 'ADMIN'
 
   // Fetch all related data in parallel
@@ -107,7 +107,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
             <div className="flex gap-3">
               {canEdit && (
                 <Link
-                  href={`/veranstaltungen/${id}/bearbeiten`}
+                  href={`/veranstaltungen/${id}/bearbeiten` as never}
                   className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors text-sm"
                 >
                   Bearbeiten
@@ -191,7 +191,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
               <Link href="/ressourcen" className="text-sm text-blue-600 hover:text-blue-800">
                 Ressourcen verwalten
               </Link>
-              <Link href="/templates" className="text-sm text-blue-600 hover:text-blue-800">
+              <Link href={"/templates" as never} className="text-sm text-blue-600 hover:text-blue-800">
                 Vorlagen verwalten
               </Link>
             </div>

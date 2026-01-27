@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { getVeranstaltungen } from '@/lib/actions/veranstaltungen'
 import { AuffuehrungenTable } from '@/components/auffuehrungen/AuffuehrungenTable'
-import { hasRole } from '@/lib/supabase/auth-helpers'
+import { canEdit } from '@/lib/supabase/auth-helpers'
 
 export default async function AuffuehrungenPage() {
   const profile = await getUserProfile()
@@ -14,7 +14,7 @@ export default async function AuffuehrungenPage() {
 
   const allVeranstaltungen = await getVeranstaltungen()
   const auffuehrungen = allVeranstaltungen.filter((v) => v.typ === 'auffuehrung')
-  const canEdit = hasRole(profile.role, 'EDITOR')
+  const userCanEdit = canEdit(profile.role)
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -28,7 +28,7 @@ export default async function AuffuehrungenPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            {canEdit && (
+            {userCanEdit && (
               <Link
                 href="/auffuehrungen/neu"
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
@@ -61,7 +61,7 @@ export default async function AuffuehrungenPage() {
               Ressourcen verwalten &rarr;
             </Link>
             <Link
-              href="/templates"
+              href={"/templates" as never}
               className="text-sm text-blue-600 hover:text-blue-800"
             >
               Vorlagen verwalten &rarr;
