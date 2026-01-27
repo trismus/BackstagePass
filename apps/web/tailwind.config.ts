@@ -9,7 +9,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // BackstagePass Theaterfarben
+        // =============================================================
+        // Design Decision (Issue #135): Minimalist Black/Neutral
+        // UI components use black/neutral for actions and focus states.
+        // Theater colors (stage-*, curtain-*) reserved for branding/accents.
+        // =============================================================
+
+        // BackstagePass Theaterfarben (branding/accents only)
         stage: {
           50: '#fef3f2',
           100: '#fee4e2',
