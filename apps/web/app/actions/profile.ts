@@ -50,13 +50,20 @@ export async function getProfile() {
 }
 
 // Admin functions
-export async function getAllUsers() {
+export async function getAllUsers(search?: string) {
   const supabase = await createClient()
 
-  const { data: profiles, error } = await supabase
+  let query = supabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
+
+  if (search && search.trim()) {
+    const searchTerm = `%${search.trim()}%`
+    query = query.or(`display_name.ilike.${searchTerm},email.ilike.${searchTerm}`)
+  }
+
+  const { data: profiles, error } = await query
 
   if (error) {
     console.error('Failed to fetch users:', error)
@@ -64,6 +71,60 @@ export async function getAllUsers() {
   }
 
   return profiles || []
+}
+
+export async function toggleUserActive(userId: string) {
+  const supabase = await createClient()
+
+  // Check if current user is admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Nicht angemeldet' }
+  }
+
+  const { data: currentProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (currentProfile?.role !== 'ADMIN') {
+    return { error: 'Keine Berechtigung' }
+  }
+
+  // Prevent deactivating yourself
+  if (userId === user.id) {
+    return { error: 'Sie können sich nicht selbst deaktivieren' }
+  }
+
+  // Get current status
+  const { data: targetProfile } = await supabase
+    .from('profiles')
+    .select('is_active, email')
+    .eq('id', userId)
+    .single()
+
+  const newStatus = !targetProfile?.is_active
+
+  // Update status
+  const { error } = await supabase
+    .from('profiles')
+    .update({ is_active: newStatus })
+    .eq('id', userId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  await logAuditEvent(
+    newStatus ? 'user.enabled' : 'user.disabled',
+    'profile',
+    userId,
+    { target_email: targetProfile?.email }
+  )
+
+  revalidatePath('/admin/users')
+  return { success: true, is_active: newStatus }
 }
 
 export async function updateUserRole(userId: string, role: UserRole) {
