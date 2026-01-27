@@ -346,6 +346,167 @@ export async function getPersonenFiltered(
   return (data as Person[]) || []
 }
 
+// =============================================================================
+// Advanced Filter (Issue #154)
+// =============================================================================
+
+export type SortField = 'name' | 'mitglied_seit' | 'rolle'
+export type SortOrder = 'asc' | 'desc'
+
+export interface MitgliederFilterParams {
+  search?: string
+  status?: ArchiveFilter
+  rolle?: string[]
+  skills?: string[]
+  sortBy?: SortField
+  sortOrder?: SortOrder
+}
+
+/**
+ * Get personen with advanced filtering and sorting
+ */
+export async function getPersonenAdvanced(
+  params: MitgliederFilterParams = {}
+): Promise<Person[]> {
+  const {
+    search = '',
+    status = 'aktiv',
+    rolle = [],
+    skills = [],
+    sortBy = 'name',
+    sortOrder = 'asc',
+  } = params
+
+  if (USE_DUMMY_DATA) {
+    const filtered = dummyPersonen.filter((p) => {
+      // Status filter
+      if (status === 'aktiv' && !p.aktiv) return false
+      if (status === 'archiviert' && p.aktiv) return false
+
+      // Search filter
+      if (search) {
+        const searchLower = search.toLowerCase()
+        const matchesSearch =
+          p.vorname.toLowerCase().includes(searchLower) ||
+          p.nachname.toLowerCase().includes(searchLower) ||
+          p.email?.toLowerCase().includes(searchLower)
+        if (!matchesSearch) return false
+      }
+
+      // Rolle filter
+      if (rolle.length > 0 && !rolle.includes(p.rolle)) return false
+
+      // Skills filter
+      if (skills.length > 0) {
+        const personSkills = p.skills || []
+        const hasMatchingSkill = skills.some((s) => personSkills.includes(s))
+        if (!hasMatchingSkill) return false
+      }
+
+      return true
+    })
+
+    // Sort
+    filtered.sort((a, b) => {
+      let comparison = 0
+      if (sortBy === 'name') {
+        comparison = `${a.nachname} ${a.vorname}`.localeCompare(
+          `${b.nachname} ${b.vorname}`
+        )
+      } else if (sortBy === 'mitglied_seit') {
+        const dateA = a.mitglied_seit || '9999'
+        const dateB = b.mitglied_seit || '9999'
+        comparison = dateA.localeCompare(dateB)
+      } else if (sortBy === 'rolle') {
+        comparison = a.rolle.localeCompare(b.rolle)
+      }
+      return sortOrder === 'desc' ? -comparison : comparison
+    })
+
+    return filtered
+  }
+
+  const supabase = await createClient()
+
+  let query = supabase.from('personen').select('*')
+
+  // Status filter
+  if (status === 'aktiv') {
+    query = query.eq('aktiv', true)
+  } else if (status === 'archiviert') {
+    query = query.eq('aktiv', false)
+  }
+
+  // Search filter (use ilike for case-insensitive search)
+  if (search) {
+    query = query.or(
+      `vorname.ilike.%${search}%,nachname.ilike.%${search}%,email.ilike.%${search}%`
+    )
+  }
+
+  // Rolle filter
+  if (rolle.length > 0) {
+    query = query.in('rolle', rolle)
+  }
+
+  // Skills filter (JSONB array contains)
+  if (skills.length > 0) {
+    // Use overlaps operator for JSONB arrays
+    query = query.overlaps('skills', skills)
+  }
+
+  // Sorting
+  const ascending = sortOrder === 'asc'
+  if (sortBy === 'name') {
+    query = query.order('nachname', { ascending }).order('vorname', { ascending })
+  } else if (sortBy === 'mitglied_seit') {
+    query = query.order('mitglied_seit', { ascending, nullsFirst: false })
+  } else if (sortBy === 'rolle') {
+    query = query.order('rolle', { ascending })
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching personen:', error)
+    return []
+  }
+
+  return (data as Person[]) || []
+}
+
+/**
+ * Get unique skills from all personen (for filter dropdown)
+ */
+export async function getAllSkills(): Promise<string[]> {
+  if (USE_DUMMY_DATA) {
+    const allSkills = new Set<string>()
+    dummyPersonen.forEach((p) => {
+      p.skills?.forEach((s) => allSkills.add(s))
+    })
+    return Array.from(allSkills).sort()
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('personen')
+    .select('skills')
+    .not('skills', 'is', null)
+
+  if (error) {
+    console.error('Error fetching skills:', error)
+    return []
+  }
+
+  const allSkills = new Set<string>()
+  data?.forEach((row) => {
+    const skills = row.skills as string[] | null
+    skills?.forEach((s) => allSkills.add(s))
+  })
+
+  return Array.from(allSkills).sort()
+}
+
 /**
  * Archive a member (soft delete with audit trail)
  */

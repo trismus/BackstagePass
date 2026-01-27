@@ -1,10 +1,51 @@
 import Link from 'next/link'
-import { getPersonen } from '@/lib/actions/personen'
+import {
+  getPersonenAdvanced,
+  getAllSkills,
+  type MitgliederFilterParams,
+  type ArchiveFilter,
+  type SortField,
+  type SortOrder,
+} from '@/lib/actions/personen'
 import { MitgliederTable } from '@/components/mitglieder/MitgliederTable'
 import { HelpButton } from '@/components/help'
 
-export default async function MitgliederPage() {
-  const personen = await getPersonen()
+interface PageProps {
+  searchParams: Promise<{
+    search?: string
+    status?: string
+    rolle?: string | string[]
+    skills?: string | string[]
+    sortBy?: string
+    sortOrder?: string
+  }>
+}
+
+export default async function MitgliederPage({ searchParams }: PageProps) {
+  const params = await searchParams
+
+  // Parse URL params into filter params
+  const filterParams: MitgliederFilterParams = {
+    search: params.search || '',
+    status: (params.status as ArchiveFilter) || 'aktiv',
+    rolle: params.rolle
+      ? Array.isArray(params.rolle)
+        ? params.rolle
+        : [params.rolle]
+      : [],
+    skills: params.skills
+      ? Array.isArray(params.skills)
+        ? params.skills
+        : [params.skills]
+      : [],
+    sortBy: (params.sortBy as SortField) || 'name',
+    sortOrder: (params.sortOrder as SortOrder) || 'asc',
+  }
+
+  const [personen, allSkills] = await Promise.all([
+    getPersonenAdvanced(filterParams),
+    getAllSkills(),
+  ])
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -28,8 +69,13 @@ export default async function MitgliederPage() {
           </Link>
         </div>
 
-        {/* Table */}
-        <MitgliederTable personen={personen} />
+        {/* Table with Filters */}
+        <MitgliederTable
+          personen={personen}
+          filterParams={filterParams}
+          availableSkills={allSkills}
+          showArchiveActions={true}
+        />
 
         {/* Back Link */}
         <div className="mt-8">
