@@ -4,11 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { logAuditEvent } from '@/lib/audit'
+import { getStartPageForRole } from '@/lib/navigation'
+import type { UserRole } from '@/lib/supabase/types'
 
 export async function signIn(email: string, password: string) {
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
@@ -19,8 +21,22 @@ export async function signIn(email: string, password: string) {
 
   await logAuditEvent('auth.login')
 
+  // Get user profile to determine role-based redirect
+  let startPage = '/dashboard'
+  if (authData.user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .single()
+
+    if (profile?.role) {
+      startPage = getStartPageForRole(profile.role as UserRole)
+    }
+  }
+
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(startPage)
 }
 
 export async function signUp(
@@ -30,7 +46,7 @@ export async function signUp(
 ) {
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signUp({
+  const { data: authData, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -48,8 +64,23 @@ export async function signUp(
 
   await logAuditEvent('auth.signup')
 
+  // Get user profile to determine role-based redirect
+  // New users default to FREUNDE, so they go to /willkommen
+  let startPage = '/willkommen'
+  if (authData.user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .single()
+
+    if (profile?.role) {
+      startPage = getStartPageForRole(profile.role as UserRole)
+    }
+  }
+
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(startPage)
 }
 
 export async function signOut() {

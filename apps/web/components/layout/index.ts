@@ -16,3 +16,5 @@ export { Breadcrumb } from './Breadcrumb'
 export type { BreadcrumbProps } from './Breadcrumb'
 
 export { NavIconComponent, ChevronLeftIcon, ChevronRightIcon, MenuIcon, CloseIcon } from './NavIcons'
+
+export { ProtectedLayoutClient } from './ProtectedLayoutClient'
