@@ -17,7 +17,15 @@
       "Bash(git push:*)",
       "Bash(gh issue create --title \"UI: Admin page for HelferRollenTemplate management\" --milestone \"Helfer Liste\" --body \"$\\(cat <<''EOF''\n## UI: Admin page for HelferRollenTemplate management\n\n**Description:**\nDevelop an administration page for creating, viewing, editing, and deleting `helfer_rollen_templates`. This page will allow administrators to define and manage reusable helper role templates.\n\nKey components and functionalities:\n*   **Page \\(`apps/web/app/\\(protected\\)/admin/helfer-rollen-templates/page.tsx`\\):**\n    *   Table/List view of all `helfer_rollen_templates`.\n    *   Actions to \"Create New Template\", \"Edit Template\", \"Delete Template\".\n*   **Form \\(`apps/web/components/helfer/HelferRollenTemplateForm.tsx`\\):**\n    *   Input fields for `name`, `default_anzahl_personen`, `description`.\n    *   Validation for all form inputs.\n    *   Utilize existing UI components.\n\n**Acceptance Criteria:**\n*   The admin page for `helfer_rollen_templates` is accessible only by authorized admin users.\n*   Admins can successfully create, edit, and delete helper role templates through the UI.\n*   The form includes all necessary fields and provides clear feedback.\n*   The list/table of templates accurately displays data from the backend.\n*   The UI adheres to the project''s design system and conventions.\nEOF\n\\)\")",
       "Bash(gh issue create:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git stash:*)",
+      "Bash(gh issue list:*)",
+      "Bash(npm run build:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh issue close:*)",
+      "Bash(gh label list:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(git pull:*)"
     ]
   }
 }

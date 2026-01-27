@@ -157,3 +157,34 @@ The project has a defined AI team workflow in `docs/team.md` with roles:
 - Johannes (Chronist) - documentation
 
 Branch naming: `feature/issue-{number}-{slug}`
+
+## Project Milestones
+
+| Milestone | Status | Description |
+|-----------|--------|-------------|
+| Modul 0 | In Progress | Foundation & Setup |
+| Modul 1 | In Progress | Core Features (Mitglieder, Veranstaltungen) |
+| Modul 2 | ✅ Done | Extended Features |
+| Modul 3 | In Progress | Künstlerische Planung (Stücke, Besetzungen, Proben) |
+| Helfer Liste | Open | Helferliste Feature (20 Issues) |
+
+## GitHub Labels
+
+**Domain Labels:**
+- `database`, `migration` - Database/Schema changes
+- `backend`, `api` - Server-side code
+- `frontend`, `ui` - Client-side code
+- `admin` - Admin functionality
+- `tests` - Testing
+
+**Priority/Status:**
+- `bug`, `enhancement`, `documentation`
+- `prio:high`, `good first issue`, `help wanted`
+
+## Journal & Documentation
+
+Development documentation is stored in:
+- `journal/` - Daily development logs
+- `journal/milestones/` - Milestone definitions
+- `journal/issues/` - Issue templates by feature
+- `docs/` - Architecture documentation
