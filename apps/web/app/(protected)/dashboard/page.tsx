@@ -72,9 +72,6 @@ export default async function DashboardPage() {
 
   const isVorstand = profile?.role ? isManagement(profile.role) : false
   const today = new Date().toISOString().split('T')[0]
-  const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split('T')[0]
 
   // Parallel data fetching
   const [

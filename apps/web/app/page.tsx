@@ -154,11 +154,11 @@ export default async function HomePage() {
           </div>
 
           {/* Helper Card */}
-          <div className="flex flex-col rounded-2xl border border-secondary-200 bg-gradient-to-br from-secondary-50 to-white p-8 shadow-sm">
+          <div className="flex flex-col rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
             <div className="mb-6">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary-100">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100">
                 <svg
-                  className="h-6 w-6 text-secondary-600"
+                  className="h-6 w-6 text-neutral-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -189,7 +189,7 @@ export default async function HomePage() {
                   {auffuehrungenMitBedarf.map((auffuehrung) => (
                     <li
                       key={auffuehrung.id}
-                      className="flex items-center justify-between rounded-lg bg-white/70 px-3 py-2"
+                      className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2"
                     >
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium text-neutral-900">
@@ -202,7 +202,7 @@ export default async function HomePage() {
                         </p>
                       </div>
                       {auffuehrung.offeneSchichten > 0 ? (
-                        <span className="ml-3 flex-shrink-0 rounded-full bg-secondary-100 px-2.5 py-1 text-xs font-semibold text-secondary-700">
+                        <span className="ml-3 flex-shrink-0 rounded-full bg-primary-100 px-2.5 py-1 text-xs font-semibold text-primary-700">
                           {auffuehrung.offeneSchichten} offen
                         </span>
                       ) : (
@@ -215,7 +215,7 @@ export default async function HomePage() {
                 </ul>
               </div>
             ) : (
-              <div className="mb-6 flex-1 rounded-lg bg-white/50 p-4 text-center text-sm text-neutral-500">
+              <div className="mb-6 flex-1 rounded-lg bg-neutral-50 p-4 text-center text-sm text-neutral-500">
                 Aktuell keine Aufführungen geplant.
               </div>
             )}
@@ -223,14 +223,14 @@ export default async function HomePage() {
             {/* Summary and CTA */}
             <div className="mt-auto">
               {totalOffeneSchichten > 0 && (
-                <p className="mb-3 text-center text-sm font-medium text-secondary-700">
+                <p className="mb-3 text-center text-sm font-medium text-neutral-700">
                   {totalOffeneSchichten} offene{' '}
                   {totalOffeneSchichten === 1 ? 'Schicht' : 'Schichten'} verfügbar
                 </p>
               )}
               <Link
                 href="/helferliste"
-                className="block w-full rounded-lg border-2 border-secondary-300 bg-white px-4 py-3 text-center font-medium text-secondary-700 transition-colors hover:border-secondary-400 hover:bg-secondary-50"
+                className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-center font-medium text-neutral-700 transition-colors hover:border-neutral-400 hover:bg-neutral-50"
               >
                 Zur Helfer-Übersicht
               </Link>
