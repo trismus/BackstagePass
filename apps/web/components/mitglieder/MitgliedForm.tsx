@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createPerson, updatePerson, deletePerson } from '@/lib/actions/personen'
-import type { Person, Rolle } from '@/lib/supabase/types'
+import { createPerson, createPersonWithAccount, updatePerson, deletePerson } from '@/lib/actions/personen'
+import type { Person, Rolle, UserRole } from '@/lib/supabase/types'
 
 interface MitgliedFormProps {
   person?: Person
@@ -16,6 +16,12 @@ const rollenOptions: { value: Rolle; label: string }[] = [
   { value: 'regie', label: 'Regie' },
   { value: 'technik', label: 'Technik' },
   { value: 'gast', label: 'Gast' },
+]
+
+const appRollenOptions: { value: UserRole; label: string; description: string }[] = [
+  { value: 'VIEWER', label: 'Betrachter', description: 'Kann Daten ansehen' },
+  { value: 'EDITOR', label: 'Bearbeiter', description: 'Kann Daten bearbeiten' },
+  { value: 'ADMIN', label: 'Administrator', description: 'Vollzugriff' },
 ]
 
 export function MitgliedForm({ person, mode }: MitgliedFormProps) {
@@ -34,6 +40,10 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
   const [rolle, setRolle] = useState<Rolle>(person?.rolle || 'mitglied')
   const [aktiv, setAktiv] = useState(person?.aktiv ?? true)
   const [notizen, setNotizen] = useState(person?.notizen || '')
+
+  // App-Zugang
+  const [createAppAccount, setCreateAppAccount] = useState(false)
+  const [appRole, setAppRole] = useState<UserRole>('VIEWER')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,10 +64,16 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
       notizen: notizen || null,
     }
 
-    const result =
-      mode === 'create'
-        ? await createPerson(data)
-        : await updatePerson(person!.id, data)
+    let result
+    if (mode === 'create') {
+      if (createAppAccount && data.email) {
+        result = await createPersonWithAccount(data, appRole)
+      } else {
+        result = await createPerson(data)
+      }
+    } else {
+      result = await updatePerson(person!.id, data)
+    }
 
     if (result.success) {
       router.push('/mitglieder')
@@ -243,6 +259,56 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
           </div>
         </div>
       </div>
+
+      {/* App-Zugang - nur bei Erstellung */}
+      {mode === 'create' && (
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">App-Zugang</h3>
+
+          <div className="mb-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={createAppAccount}
+                onChange={(e) => setCreateAppAccount(e.target.checked)}
+                disabled={!email}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                App-Zugang erstellen
+              </span>
+            </label>
+            {!email && (
+              <p className="text-xs text-gray-500 mt-1 ml-6">
+                E-Mail-Adresse erforderlich für App-Zugang
+              </p>
+            )}
+          </div>
+
+          {createAppAccount && email && (
+            <div className="ml-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <label htmlFor="appRole" className="block text-sm font-medium text-gray-700 mb-2">
+                App-Berechtigung
+              </label>
+              <select
+                id="appRole"
+                value={appRole}
+                onChange={(e) => setAppRole(e.target.value as UserRole)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {appRollenOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label} - {opt.description}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-600 mt-2">
+                Eine Einladungs-E-Mail wird an {email} gesendet.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Sonstiges */}
       <div>

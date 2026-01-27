@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
+import { createAdminClient } from '../supabase/admin'
 import { dummyPersonen, getPersonById, searchPersonen } from '../personen/data'
-import type { Person, PersonInsert, PersonUpdate } from '../supabase/types'
+import type { Person, PersonInsert, PersonUpdate, UserRole } from '../supabase/types'
 
 const USE_DUMMY_DATA = !process.env.NEXT_PUBLIC_SUPABASE_URL
 
@@ -96,6 +97,83 @@ export async function createPerson(
   }
 
   revalidatePath('/mitglieder')
+  return { success: true }
+}
+
+/**
+ * Create a new person with an app account
+ * This will:
+ * 1. Create the person in the personen table
+ * 2. Invite the user via email (creates auth.users entry)
+ * 3. Set the profile role
+ */
+export async function createPersonWithAccount(
+  personData: PersonInsert,
+  appRole: UserRole
+): Promise<{ success: boolean; error?: string }> {
+  if (!personData.email) {
+    return { success: false, error: 'E-Mail ist erforderlich für App-Zugang' }
+  }
+
+  if (USE_DUMMY_DATA) {
+    revalidatePath('/mitglieder')
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // 1. Create the person
+  const { error: personError } = await supabase
+    .from('personen')
+    .insert(personData as never)
+
+  if (personError) {
+    console.error('Error creating person:', personError)
+    return { success: false, error: personError.message }
+  }
+
+  // 2. Invite the user via Supabase Auth (requires service role)
+  try {
+    const adminClient = createAdminClient()
+
+    const { data: inviteData, error: inviteError } =
+      await adminClient.auth.admin.inviteUserByEmail(personData.email, {
+        data: {
+          display_name: `${personData.vorname} ${personData.nachname}`,
+        },
+      })
+
+    if (inviteError) {
+      console.error('Error inviting user:', inviteError)
+      // Person was created, but invite failed - still return success with warning
+      return {
+        success: true,
+        error: `Mitglied erstellt, aber Einladung fehlgeschlagen: ${inviteError.message}`,
+      }
+    }
+
+    // 3. Update the profile role (profile is created by trigger)
+    if (inviteData.user) {
+      const { error: profileError } = await adminClient
+        .from('profiles')
+        .update({ role: appRole })
+        .eq('id', inviteData.user.id)
+
+      if (profileError) {
+        console.error('Error updating profile role:', profileError)
+        // Don't fail - the user can still be updated later
+      }
+    }
+  } catch (err) {
+    console.error('Error in invite flow:', err)
+    return {
+      success: true,
+      error: 'Mitglied erstellt, aber App-Zugang konnte nicht erstellt werden. Ist SUPABASE_SERVICE_ROLE_KEY konfiguriert?',
+    }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath('/admin/users')
   return { success: true }
 }
 
