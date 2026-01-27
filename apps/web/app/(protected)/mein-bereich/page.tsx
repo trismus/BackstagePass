@@ -3,9 +3,11 @@ import { getUserProfile } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
 import { getStundenkontoSummary } from '@/lib/actions/stundenkonto'
+import { getRollenHistorie, getHelfereinsatzHistorie } from '@/lib/actions/historie'
 import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
-import { ProfileCard } from '@/components/mein-bereich/ProfileCard'
 import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
+import { RollenHistorie } from '@/components/mein-bereich/RollenHistorie'
+import { HelfereinsatzHistorie } from '@/components/mein-bereich/HelfereinsatzHistorie'
 import {
   UpcomingEventsWidget,
   StundenWidget,
@@ -59,6 +61,13 @@ export default async function MeinBereichPage() {
         .order('datum', { ascending: true })
         .limit(5)
     : { data: [] }
+
+  // Get history data (only for active members)
+  const rollenHistorie = !isPassiveMember ? await getRollenHistorie() : []
+  const helfereinsatzHistorie =
+    person && !isPassiveMember
+      ? await getHelfereinsatzHistorie(person.id)
+      : []
 
   // Build calendar events from all sources
   const kalenderTermine: KalenderTermin[] = []
@@ -244,6 +253,12 @@ export default async function MeinBereichPage() {
               thisYear={stundenSummary.thisYear}
               lastEntries={stundenSummary.lastEntries}
             />
+
+            {/* History Section */}
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+              <HelfereinsatzHistorie historie={helfereinsatzHistorie} />
+              <RollenHistorie historie={rollenHistorie} />
+            </div>
           </div>
         </div>
       )}
