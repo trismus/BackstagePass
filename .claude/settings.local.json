@@ -11,7 +11,10 @@
       "Bash(gh issue view:*)",
       "Bash(gh project field-list:*)",
       "Bash(gh api:*)",
-      "Bash(gh project:*)"
+      "Bash(gh project:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ]
   }
 }
