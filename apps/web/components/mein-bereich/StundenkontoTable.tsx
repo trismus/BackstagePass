@@ -5,6 +5,7 @@ import type { StundenkontoEintrag, StundenTyp } from '@/lib/supabase/types'
 
 interface StundenkontoTableProps {
   entries: StundenkontoEintrag[]
+  personId?: string
 }
 
 const typLabels: Record<StundenTyp, string> = {
@@ -21,7 +22,7 @@ const typColors: Record<StundenTyp, string> = {
   korrektur: 'bg-yellow-100 text-yellow-800',
 }
 
-export function StundenkontoTable({ entries }: StundenkontoTableProps) {
+export function StundenkontoTable({ entries, personId: _personId }: StundenkontoTableProps) {
   const [filterTyp, setFilterTyp] = useState<StundenTyp | 'all'>('all')
   const [filterYear, setFilterYear] = useState<string>('all')
 
@@ -46,6 +47,33 @@ export function StundenkontoTable({ entries }: StundenkontoTableProps) {
       month: '2-digit',
       year: 'numeric',
     })
+  }
+
+  const handleExportCSV = () => {
+    const headers = ['Datum', 'Typ', 'Stunden', 'Beschreibung']
+    const rows = filtered.map((e) => [
+      formatDate(e.created_at),
+      typLabels[e.typ],
+      e.stunden.toString().replace('.', ','),
+      e.beschreibung || '',
+    ])
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(';')),
+    ].join('\n')
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `stundenkonto-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handlePrint = () => {
+    window.print()
   }
 
   return (
@@ -84,7 +112,7 @@ export function StundenkontoTable({ entries }: StundenkontoTableProps) {
             </select>
           </div>
           <div className="flex-1" />
-          <div className="self-end">
+          <div className="self-end flex items-center gap-4">
             <span className="text-sm text-gray-600">
               Summe:{' '}
               <strong
@@ -94,6 +122,20 @@ export function StundenkontoTable({ entries }: StundenkontoTableProps) {
                 {totalFiltered.toFixed(1)} Stunden
               </strong>
             </span>
+            <button
+              onClick={handleExportCSV}
+              className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors print:hidden"
+              title="Als CSV exportieren"
+            >
+              CSV
+            </button>
+            <button
+              onClick={handlePrint}
+              className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors print:hidden"
+              title="Drucken"
+            >
+              PDF
+            </button>
           </div>
         </div>
       </div>
