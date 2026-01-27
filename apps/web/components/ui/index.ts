@@ -10,3 +10,4 @@ export {
   type CardProps,
 } from './Card'
 export { Alert, type AlertProps } from './Alert'
+export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog'
