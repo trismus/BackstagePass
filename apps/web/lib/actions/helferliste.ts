@@ -16,6 +16,10 @@ import type {
   HelferAnmeldung,
   HelferAnmeldungMitDetails,
 } from '../supabase/types'
+import {
+  notifyRegistrationConfirmed,
+  notifyStatusChange,
+} from './helferliste-notifications'
 
 // =============================================================================
 // Helfer Events
@@ -502,6 +506,11 @@ export async function anmelden(
     return { success: false, error: error.message }
   }
 
+  // Send confirmation email (async, don't block)
+  if (result?.id) {
+    notifyRegistrationConfirmed(result.id, false).catch(console.error)
+  }
+
   revalidatePath('/helferliste')
   revalidatePath('/mein-bereich')
   return { success: true, id: result?.id }
@@ -567,6 +576,11 @@ export async function updateAnmeldungStatus(
   if (error) {
     console.error('Error updating anmeldung status:', error)
     return { success: false, error: error.message }
+  }
+
+  // Send notification for status changes (async, don't block)
+  if (status === 'bestaetigt' || status === 'abgelehnt' || status === 'warteliste') {
+    notifyStatusChange(anmeldungId, status).catch(console.error)
   }
 
   revalidatePath('/helferliste')
@@ -788,6 +802,11 @@ export async function anmeldenPublic(
       return { success: false, error: error.message }
     }
 
+    // Send confirmation email for waitlist (async)
+    if (result?.id && data.email) {
+      notifyRegistrationConfirmed(result.id, true).catch(console.error)
+    }
+
     return { success: true, id: result?.id }
   }
 
@@ -806,6 +825,11 @@ export async function anmeldenPublic(
   if (error) {
     console.error('Error creating public anmeldung:', error)
     return { success: false, error: error.message }
+  }
+
+  // Send confirmation email (async)
+  if (result?.id && data.email) {
+    notifyRegistrationConfirmed(result.id, false).catch(console.error)
   }
 
   revalidatePath('/helferliste')

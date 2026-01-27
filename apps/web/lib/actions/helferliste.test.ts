@@ -1,0 +1,520 @@
+/**
+ * Unit Tests for Helferliste Server Actions
+ */
+
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import {
+  createMockClient,
+  mockHelferEvent,
+  mockRollenInstanz,
+  mockAnmeldung,
+  mockProfile,
+  mockRollenTemplate,
+} from '@/tests/mocks/supabase'
+
+// Mock the Supabase client
+const mockSupabase = createMockClient()
+
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: vi.fn(() => Promise.resolve(mockSupabase)),
+  getUserProfile: vi.fn(() => Promise.resolve(mockProfile)),
+}))
+
+// Mock the notifications (we don't want to send actual emails in tests)
+vi.mock('./helferliste-notifications', () => ({
+  notifyRegistrationConfirmed: vi.fn().mockResolvedValue({ success: true }),
+  notifyStatusChange: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+// Import after mocking
+import {
+  getHelferEvents,
+  getHelferEvent,
+  createHelferEvent,
+  updateHelferEvent,
+  deleteHelferEvent,
+  getRollenInstanzen,
+  createRollenInstanz,
+  anmelden,
+  abmelden,
+  updateAnmeldungStatus,
+  getPublicEventByToken,
+  anmeldenPublic,
+} from './helferliste'
+
+describe('Helferliste Actions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('getHelferEvents', () => {
+    it('returns empty array when no events exist', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      })
+
+      const result = await getHelferEvents()
+      expect(result).toEqual([])
+    })
+
+    it('returns events with role counts', async () => {
+      const eventsWithRoles = [{
+        ...mockHelferEvent,
+        veranstaltung: null,
+        rollen: [{ id: 'role-1' }, { id: 'role-2' }],
+      }]
+
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({ data: eventsWithRoles, error: null }),
+      })
+
+      const result = await getHelferEvents()
+      expect(result).toHaveLength(1)
+      expect(result[0].rollen_count).toBe(2)
+    })
+
+    it('handles errors gracefully', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Database error' },
+        }),
+      })
+
+      const result = await getHelferEvents()
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('getHelferEvent', () => {
+    it('returns a single event by ID', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: mockHelferEvent,
+          error: null,
+        }),
+      })
+
+      const result = await getHelferEvent('event-1')
+      expect(result).toEqual(mockHelferEvent)
+    })
+
+    it('returns null when event not found', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Not found' },
+        }),
+      })
+
+      const result = await getHelferEvent('non-existent')
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('createHelferEvent', () => {
+    it('creates a new event and returns success', async () => {
+      mockSupabase.from.mockReturnValue({
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: { id: 'new-event-1' },
+          error: null,
+        }),
+      })
+
+      const result = await createHelferEvent({
+        name: 'New Event',
+        typ: 'auffuehrung',
+        datum_start: '2026-04-01T18:00:00Z',
+        datum_end: '2026-04-01T22:00:00Z',
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.id).toBe('new-event-1')
+    })
+
+    it('returns error on failure', async () => {
+      mockSupabase.from.mockReturnValue({
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Insert failed' },
+        }),
+      })
+
+      const result = await createHelferEvent({
+        name: 'New Event',
+        typ: 'auffuehrung',
+        datum_start: '2026-04-01T18:00:00Z',
+        datum_end: '2026-04-01T22:00:00Z',
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Insert failed')
+    })
+  })
+
+  describe('updateHelferEvent', () => {
+    it('updates an event and returns success', async () => {
+      mockSupabase.from.mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      })
+
+      const result = await updateHelferEvent('event-1', { name: 'Updated Name' })
+
+      expect(result.success).toBe(true)
+    })
+
+    it('returns error on failure', async () => {
+      mockSupabase.from.mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: { message: 'Update failed' } }),
+      })
+
+      const result = await updateHelferEvent('event-1', { name: 'Updated Name' })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Update failed')
+    })
+  })
+
+  describe('deleteHelferEvent', () => {
+    it('deletes an event and returns success', async () => {
+      mockSupabase.from.mockReturnValue({
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      })
+
+      const result = await deleteHelferEvent('event-1')
+
+      expect(result.success).toBe(true)
+    })
+  })
+
+  describe('getRollenInstanzen', () => {
+    it('returns role instances for an event', async () => {
+      const instanzMitAnmeldungen = {
+        ...mockRollenInstanz,
+        template: mockRollenTemplate,
+        anmeldungen: [mockAnmeldung],
+      }
+
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: [instanzMitAnmeldungen],
+          error: null,
+        }),
+      })
+
+      const result = await getRollenInstanzen('event-1')
+      expect(result).toHaveLength(1)
+      expect(result[0].angemeldet_count).toBe(1)
+    })
+  })
+
+  describe('createRollenInstanz', () => {
+    it('creates a role instance and returns success', async () => {
+      mockSupabase.from.mockReturnValue({
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: { id: 'new-instanz-1' },
+          error: null,
+        }),
+      })
+
+      const result = await createRollenInstanz({
+        helfer_event_id: 'event-1',
+        anzahl_benoetigt: 2,
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.id).toBe('new-instanz-1')
+    })
+  })
+
+  describe('anmelden', () => {
+    it('registers user for a role', async () => {
+      // Mock: check existing registration
+      const fromMock = vi.fn()
+      fromMock
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+        })
+        // Mock: check double booking - get instanz
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: {
+              ...mockRollenInstanz,
+              helfer_event: { datum_start: mockHelferEvent.datum_start, datum_end: mockHelferEvent.datum_end },
+            },
+            error: null,
+          }),
+        })
+        // Mock: check double booking - get existing anmeldungen
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          neq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        })
+        // Mock: insert registration
+        .mockReturnValueOnce({
+          insert: vi.fn().mockReturnThis(),
+          select: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'new-anmeldung-1' },
+            error: null,
+          }),
+        })
+
+      mockSupabase.from = fromMock
+
+      const result = await anmelden('instanz-1')
+
+      expect(result.success).toBe(true)
+      expect(result.id).toBe('new-anmeldung-1')
+    })
+
+    it('prevents double registration', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: mockAnmeldung,
+          error: null,
+        }),
+      })
+
+      const result = await anmelden('instanz-1')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Bereits angemeldet')
+    })
+  })
+
+  describe('abmelden', () => {
+    it('cancels own registration', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        // Check ownership
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { profile_id: mockProfile.id },
+            error: null,
+          }),
+        })
+        // Delete
+        .mockReturnValueOnce({
+          delete: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        })
+
+      mockSupabase.from = fromMock
+
+      const result = await abmelden('anmeldung-1')
+
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects cancellation by other users', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: { profile_id: 'other-user' },
+          error: null,
+        }),
+      })
+
+      // Mock getUserProfile to return a non-management user
+      const { getUserProfile } = await import('@/lib/supabase/server')
+      vi.mocked(getUserProfile).mockResolvedValueOnce({
+        ...mockProfile,
+        role: 'MITGLIED_AKTIV',
+      })
+
+      const result = await abmelden('anmeldung-1')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Keine Berechtigung')
+    })
+  })
+
+  describe('updateAnmeldungStatus', () => {
+    it('updates registration status', async () => {
+      mockSupabase.from.mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      })
+
+      const result = await updateAnmeldungStatus('anmeldung-1', 'bestaetigt')
+
+      expect(result.success).toBe(true)
+    })
+  })
+
+  describe('getPublicEventByToken', () => {
+    it('returns public event with public roles only', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        // Get event
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { ...mockHelferEvent, veranstaltung: null },
+            error: null,
+          }),
+        })
+        // Get public roles
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [{
+              ...mockRollenInstanz,
+              template: mockRollenTemplate,
+              anmeldungen: [],
+            }],
+            error: null,
+          }),
+        })
+
+      mockSupabase.from = fromMock
+
+      const result = await getPublicEventByToken('abc123')
+
+      expect(result).not.toBeNull()
+      expect(result?.rollen).toHaveLength(1)
+    })
+
+    it('returns null for invalid token', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Not found' },
+        }),
+      })
+
+      const result = await getPublicEventByToken('invalid')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('anmeldenPublic', () => {
+    it('registers external helper', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        // Verify role is public
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'instanz-1', sichtbarkeit: 'public', anzahl_benoetigt: 5 },
+            error: null,
+          }),
+        })
+        // Check capacity
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          neq: vi.fn().mockResolvedValue({ count: 2, error: null }),
+        })
+        // Insert
+        .mockReturnValueOnce({
+          insert: vi.fn().mockReturnThis(),
+          select: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'new-anmeldung' },
+            error: null,
+          }),
+        })
+
+      mockSupabase.from = fromMock
+
+      const result = await anmeldenPublic('instanz-1', {
+        name: 'External Helper',
+        email: 'helper@example.com',
+      })
+
+      expect(result.success).toBe(true)
+    })
+
+    it('adds to waitlist when full', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        // Verify role is public
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'instanz-1', sichtbarkeit: 'public', anzahl_benoetigt: 2 },
+            error: null,
+          }),
+        })
+        // Check capacity - full
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          neq: vi.fn().mockResolvedValue({ count: 2, error: null }),
+        })
+        // Insert to waitlist
+        .mockReturnValueOnce({
+          insert: vi.fn().mockReturnThis(),
+          select: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'waitlist-anmeldung' },
+            error: null,
+          }),
+        })
+
+      mockSupabase.from = fromMock
+
+      const result = await anmeldenPublic('instanz-1', {
+        name: 'External Helper',
+        email: 'helper@example.com',
+      })
+
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects registration for non-public roles', async () => {
+      mockSupabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: { id: 'instanz-1', sichtbarkeit: 'intern', anzahl_benoetigt: 2 },
+          error: null,
+        }),
+      })
+
+      const result = await anmeldenPublic('instanz-1', {
+        name: 'External Helper',
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Rolle nicht öffentlich zugänglich')
+    })
+  })
+})
