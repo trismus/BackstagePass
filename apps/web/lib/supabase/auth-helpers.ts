@@ -237,9 +237,17 @@ export async function requireRole(requiredRole: UserRole): Promise<Profile> {
 }
 
 /**
- * @deprecated Linear hierarchy no longer applies
+ * @deprecated Linear hierarchy no longer applies. Use hasPermission() instead.
  */
 export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
+  // Log deprecation warning to track usage
+  if (typeof console !== 'undefined') {
+    console.warn(
+      `[DEPRECATED] hasRole(${userRole}, ${requiredRole}) called. ` +
+      'Use hasPermission() with specific permission instead.'
+    )
+  }
+
   // Approximate old behavior for backward compatibility
   if (requiredRole === 'ADMIN') {
     return userRole === 'ADMIN'
@@ -247,6 +255,6 @@ export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
   if (requiredRole === 'VORSTAND') {
     return isManagement(userRole)
   }
-  // For other roles, just check if it matches
-  return true
+  // For other roles, check exact match
+  return userRole === requiredRole
 }
