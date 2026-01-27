@@ -222,3 +222,36 @@ export async function exportHelfereinsatzCSV(
   const csv = [headers, ...rows].map((row) => row.join(';')).join('\n')
   return csv
 }
+
+/**
+ * Sign up for an einsatz (simpler wrapper for zuweiseHelfer)
+ * Used by the Helfer Dashboard
+ */
+export async function signUpForEinsatz(
+  helfereinsatzId: string,
+  personId: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await zuweiseHelfer(helfereinsatzId, personId)
+
+  if (result.success) {
+    revalidatePath('/helfer-dashboard')
+  }
+
+  return result
+}
+
+/**
+ * Cancel own shift (set status to abgesagt)
+ * Used by the Helfer Dashboard
+ */
+export async function cancelSchicht(
+  schichtId: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await updateHelferschichtStatus(schichtId, 'abgesagt')
+
+  if (result.success) {
+    revalidatePath('/helfer-dashboard')
+  }
+
+  return result
+}
