@@ -95,6 +95,24 @@ function validatePersonRow(
       rolle,
       aktiv: true,
       notizen: row.notizen?.trim() || null,
+      // Extended profile fields (default values for import)
+      notfallkontakt_name: null,
+      notfallkontakt_telefon: null,
+      notfallkontakt_beziehung: null,
+      profilbild_url: null,
+      biografie: null,
+      mitglied_seit: null,
+      austrittsdatum: null,
+      austrittsgrund: null,
+      skills: [],
+      // Extended contact fields (default values for import)
+      telefon_nummern: [],
+      bevorzugte_kontaktart: null,
+      social_media: null,
+      kontakt_notizen: null,
+      // Archive fields (default values for import)
+      archiviert_am: null,
+      archiviert_von: null,
     },
   }
 }

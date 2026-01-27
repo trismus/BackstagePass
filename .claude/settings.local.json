@@ -46,7 +46,14 @@
       "Bash(for i in 57 58 59 60)",
       "Bash(do gh issue close $i -c \"Duplicate - bereits implementiert \\(siehe #92-#95\\)\" -r \"not planned\")",
       "Bash(for i in 61 62 63 64)",
-      "Bash(do gh issue close $i -c \"Bereits implementiert in Modul 2 \\(Aufführungen, Räume, Ressourcen, Templates\\)\" -r \"completed\")"
+      "Bash(do gh issue close $i -c \"Bereits implementiert in Modul 2 \\(Aufführungen, Räume, Ressourcen, Templates\\)\" -r \"completed\")",
+      "Bash(for i in 70 71 72 73)",
+      "Bash(do gh issue close $i -c \"Feature implementiert - siehe /veranstaltungen, /helfereinsaetze, /mein-bereich\" -r \"completed\")",
+      "Bash(for:*)",
+      "Bash(do gh issue close $i -c \"Feature implementiert - siehe /auffuehrungen, /raeume, /ressourcen\" -r \"completed\")",
+      "Bash(gh auth:*)",
+      "Bash(gh milestone create:*)",
+      "Bash(git reset:*)"
     ]
   }
 }

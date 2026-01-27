@@ -5,6 +5,44 @@
 
 export type Rolle = 'mitglied' | 'vorstand' | 'gast' | 'regie' | 'technik'
 
+// =============================================================================
+// Kontaktdaten Types (Issue #3 Mitglieder)
+// =============================================================================
+
+export type TelefonTyp = 'mobil' | 'privat' | 'geschaeft'
+
+export type TelefonNummer = {
+  typ: TelefonTyp
+  nummer: string
+  ist_bevorzugt?: boolean
+}
+
+export type BevorzugteKontaktart = 'telefon' | 'email' | 'whatsapp' | 'sms'
+
+export type SocialMedia = {
+  instagram?: string
+  facebook?: string
+  linkedin?: string
+  twitter?: string
+}
+
+export const TELEFON_TYP_LABELS: Record<TelefonTyp, string> = {
+  mobil: 'Mobil',
+  privat: 'Privat',
+  geschaeft: 'Geschäftlich',
+}
+
+export const KONTAKTART_LABELS: Record<BevorzugteKontaktart, string> = {
+  telefon: 'Telefon',
+  email: 'E-Mail',
+  whatsapp: 'WhatsApp',
+  sms: 'SMS',
+}
+
+// =============================================================================
+// Person Type
+// =============================================================================
+
 export type Person = {
   id: string
   vorname: string
@@ -18,6 +56,24 @@ export type Person = {
   rolle: Rolle
   aktiv: boolean
   notizen: string | null
+  // Extended profile fields (Issue #1 Mitglieder)
+  notfallkontakt_name: string | null
+  notfallkontakt_telefon: string | null
+  notfallkontakt_beziehung: string | null
+  profilbild_url: string | null
+  biografie: string | null
+  mitglied_seit: string | null
+  austrittsdatum: string | null
+  austrittsgrund: string | null
+  skills: string[] // JSONB array of skill tags
+  // Extended contact fields (Issue #3 Mitglieder)
+  telefon_nummern: TelefonNummer[] // Multiple phone numbers
+  bevorzugte_kontaktart: BevorzugteKontaktart | null
+  social_media: SocialMedia | null
+  kontakt_notizen: string | null
+  // Archive fields (Issue #5 Mitglieder)
+  archiviert_am: string | null
+  archiviert_von: string | null
   created_at: string
   updated_at: string
 }
@@ -25,6 +81,118 @@ export type Person = {
 export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at'>
 
 export type PersonUpdate = Partial<PersonInsert>
+
+// =============================================================================
+// Vereinsrollen (Organization Roles) - Issue #2 Mitglieder
+// =============================================================================
+
+export type Vereinsrolle = {
+  id: string
+  name: string
+  beschreibung: string | null
+  farbe: string
+  sortierung: number
+  aktiv: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type VereinsrolleInsert = Omit<
+  Vereinsrolle,
+  'id' | 'created_at' | 'updated_at'
+>
+export type VereinsrolleUpdate = Partial<VereinsrolleInsert>
+
+export type MitgliedRolle = {
+  id: string
+  mitglied_id: string
+  rolle_id: string
+  ist_primaer: boolean
+  gueltig_von: string
+  gueltig_bis: string | null
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MitgliedRolleInsert = Omit<
+  MitgliedRolle,
+  'id' | 'created_at' | 'updated_at'
+>
+export type MitgliedRolleUpdate = Partial<MitgliedRolleInsert>
+
+// Extended types for views
+export type MitgliedRolleMitDetails = MitgliedRolle & {
+  vereinsrolle: Pick<Vereinsrolle, 'id' | 'name' | 'farbe'>
+}
+
+export type PersonMitVereinsrollen = Person & {
+  vereinsrollen: MitgliedRolleMitDetails[]
+}
+
+// =============================================================================
+// Verfügbarkeiten (Availability) - Issue #4 Mitglieder
+// =============================================================================
+
+export type VerfuegbarkeitStatus =
+  | 'verfuegbar'
+  | 'eingeschraenkt'
+  | 'nicht_verfuegbar'
+
+export type WiederholungTyp = 'keine' | 'woechentlich' | 'monatlich'
+
+export const VERFUEGBARKEIT_STATUS_LABELS: Record<VerfuegbarkeitStatus, string> =
+  {
+    verfuegbar: 'Verfügbar',
+    eingeschraenkt: 'Eingeschränkt',
+    nicht_verfuegbar: 'Nicht verfügbar',
+  }
+
+export const WIEDERHOLUNG_TYP_LABELS: Record<WiederholungTyp, string> = {
+  keine: 'Einmalig',
+  woechentlich: 'Wöchentlich',
+  monatlich: 'Monatlich',
+}
+
+export const VERFUEGBARKEIT_GRUND_OPTIONS = [
+  'Urlaub',
+  'Arbeit',
+  'Privat',
+  'Krankheit',
+  'Probe',
+  'Auffuehrung',
+  'Sonstiges',
+] as const
+
+export type Verfuegbarkeit = {
+  id: string
+  mitglied_id: string
+  datum_von: string
+  datum_bis: string
+  zeitfenster_von: string | null
+  zeitfenster_bis: string | null
+  status: VerfuegbarkeitStatus
+  wiederholung: WiederholungTyp
+  grund: string | null
+  notiz: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type VerfuegbarkeitInsert = Omit<
+  Verfuegbarkeit,
+  'id' | 'created_at' | 'updated_at'
+>
+export type VerfuegbarkeitUpdate = Partial<VerfuegbarkeitInsert>
+
+// Extended types for views
+export type VerfuegbarkeitMitMitglied = Verfuegbarkeit & {
+  mitglied: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
+}
+
+export type PersonMitVerfuegbarkeiten = Person & {
+  verfuegbarkeiten: Verfuegbarkeit[]
+}
 
 // =============================================================================
 // User Roles & Permissions (Issue #108)
@@ -1153,6 +1321,21 @@ export type Database = {
         Row: GruppeMitglied
         Insert: GruppeMitgliedInsert
         Update: GruppeMitgliedUpdate
+      }
+      vereinsrollen: {
+        Row: Vereinsrolle
+        Insert: VereinsrolleInsert
+        Update: VereinsrolleUpdate
+      }
+      mitglied_rollen: {
+        Row: MitgliedRolle
+        Insert: MitgliedRolleInsert
+        Update: MitgliedRolleUpdate
+      }
+      verfuegbarkeiten: {
+        Row: Verfuegbarkeit
+        Insert: VerfuegbarkeitInsert
+        Update: VerfuegbarkeitUpdate
       }
     }
   }

@@ -304,3 +304,153 @@ export async function updateOwnProfile(
   revalidatePath('/mein-bereich')
   return { success: true }
 }
+
+// =============================================================================
+// Archive Functions (Issue #5 Mitglieder)
+// =============================================================================
+
+export type ArchiveFilter = 'alle' | 'aktiv' | 'archiviert'
+
+/**
+ * Get all personen with optional filter for archive status
+ */
+export async function getPersonenFiltered(
+  filter: ArchiveFilter = 'aktiv'
+): Promise<Person[]> {
+  if (USE_DUMMY_DATA) {
+    const filtered = dummyPersonen.filter((p) => {
+      if (filter === 'aktiv') return p.aktiv
+      if (filter === 'archiviert') return !p.aktiv
+      return true
+    })
+    return filtered
+  }
+
+  const supabase = await createClient()
+
+  let query = supabase.from('personen').select('*')
+
+  if (filter === 'aktiv') {
+    query = query.eq('aktiv', true)
+  } else if (filter === 'archiviert') {
+    query = query.eq('aktiv', false)
+  }
+
+  const { data, error } = await query.order('nachname', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching personen:', error)
+    return dummyPersonen
+  }
+
+  return (data as Person[]) || []
+}
+
+/**
+ * Archive a member (soft delete with audit trail)
+ */
+export async function archiveMitglied(
+  id: string,
+  austrittsgrund?: string
+): Promise<{ success: boolean; error?: string }> {
+  if (USE_DUMMY_DATA) {
+    revalidatePath('/mitglieder')
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Get current user ID for audit
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { error } = await supabase
+    .from('personen')
+    .update({
+      aktiv: false,
+      archiviert_am: new Date().toISOString(),
+      archiviert_von: user?.id || null,
+      austrittsdatum: new Date().toISOString().split('T')[0],
+      austrittsgrund: austrittsgrund || null,
+    } as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error archiving member:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath(`/mitglieder/${id}`)
+  return { success: true }
+}
+
+/**
+ * Reactivate an archived member
+ */
+export async function reactivateMitglied(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
+  if (USE_DUMMY_DATA) {
+    revalidatePath('/mitglieder')
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('personen')
+    .update({
+      aktiv: true,
+      archiviert_am: null,
+      archiviert_von: null,
+      // Keep austrittsdatum and grund for history
+    } as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error reactivating member:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath(`/mitglieder/${id}`)
+  return { success: true }
+}
+
+/**
+ * Get archive statistics
+ */
+export async function getMitgliederStatistik(): Promise<{
+  aktive: number
+  archivierte: number
+  gesamt: number
+}> {
+  if (USE_DUMMY_DATA) {
+    const aktive = dummyPersonen.filter((p) => p.aktiv).length
+    const archivierte = dummyPersonen.filter((p) => !p.aktiv).length
+    return { aktive, archivierte, gesamt: dummyPersonen.length }
+  }
+
+  const supabase = await createClient()
+
+  const { data: aktiveData } = await supabase
+    .from('personen')
+    .select('id', { count: 'exact' })
+    .eq('aktiv', true)
+
+  const { data: archiviertData } = await supabase
+    .from('personen')
+    .select('id', { count: 'exact' })
+    .eq('aktiv', false)
+
+  const aktive = aktiveData?.length || 0
+  const archivierte = archiviertData?.length || 0
+
+  return {
+    aktive,
+    archivierte,
+    gesamt: aktive + archivierte,
+  }
+}

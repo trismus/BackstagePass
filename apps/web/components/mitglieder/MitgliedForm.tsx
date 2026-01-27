@@ -8,7 +8,16 @@ import {
   updatePerson,
   deletePerson,
 } from '@/lib/actions/personen'
-import type { Person, Rolle, UserRole } from '@/lib/supabase/types'
+import type {
+  Person,
+  Rolle,
+  UserRole,
+  TelefonNummer,
+  TelefonTyp,
+  BevorzugteKontaktart,
+  SocialMedia,
+} from '@/lib/supabase/types'
+import { TELEFON_TYP_LABELS, KONTAKTART_LABELS } from '@/lib/supabase/types'
 
 interface MitgliedFormProps {
   person?: Person
@@ -67,9 +76,51 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
   const [aktiv, setAktiv] = useState(person?.aktiv ?? true)
   const [notizen, setNotizen] = useState(person?.notizen || '')
 
+  // Extended profile fields (Issue #1 Mitglieder)
+  const [biografie, setBiografie] = useState(person?.biografie || '')
+  const [mitgliedSeit, setMitgliedSeit] = useState(person?.mitglied_seit || '')
+  const [austrittsdatum, setAustrittsdatum] = useState(person?.austrittsdatum || '')
+  const [austrittsgrund, setAustrittsgrund] = useState(person?.austrittsgrund || '')
+  const [skills, setSkills] = useState<string[]>(person?.skills || [])
+  const [skillInput, setSkillInput] = useState('')
+
+  // Emergency contact
+  const [notfallkontaktName, setNotfallkontaktName] = useState(person?.notfallkontakt_name || '')
+  const [notfallkontaktTelefon, setNotfallkontaktTelefon] = useState(person?.notfallkontakt_telefon || '')
+  const [notfallkontaktBeziehung, setNotfallkontaktBeziehung] = useState(person?.notfallkontakt_beziehung || '')
+
+  // Extended contact fields (Issue #3 Mitglieder)
+  const [telefonNummern, setTelefonNummern] = useState<TelefonNummer[]>(
+    person?.telefon_nummern || []
+  )
+  const [bevorzugteKontaktart, setBevorzugteKontaktart] = useState<BevorzugteKontaktart | null>(
+    person?.bevorzugte_kontaktart || null
+  )
+  const [socialMedia, setSocialMedia] = useState<SocialMedia | null>(
+    person?.social_media || null
+  )
+  const [kontaktNotizen, setKontaktNotizen] = useState(person?.kontakt_notizen || '')
+  const [showAddPhone, setShowAddPhone] = useState(false)
+  const [newPhoneTyp, setNewPhoneTyp] = useState<TelefonTyp>('mobil')
+  const [newPhoneNummer, setNewPhoneNummer] = useState('')
+
   // App-Zugang
   const [createAppAccount, setCreateAppAccount] = useState(false)
   const [appRole, setAppRole] = useState<UserRole>('MITGLIED_PASSIV')
+
+  // Add a skill tag
+  const addSkill = () => {
+    const trimmed = skillInput.trim()
+    if (trimmed && !skills.includes(trimmed)) {
+      setSkills([...skills, trimmed])
+      setSkillInput('')
+    }
+  }
+
+  // Remove a skill tag
+  const removeSkill = (skill: string) => {
+    setSkills(skills.filter((s) => s !== skill))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -88,6 +139,24 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
       rolle,
       aktiv,
       notizen: notizen || null,
+      // Extended profile fields
+      biografie: biografie || null,
+      mitglied_seit: mitgliedSeit || null,
+      austrittsdatum: austrittsdatum || null,
+      austrittsgrund: austrittsgrund || null,
+      skills,
+      notfallkontakt_name: notfallkontaktName || null,
+      notfallkontakt_telefon: notfallkontaktTelefon || null,
+      notfallkontakt_beziehung: notfallkontaktBeziehung || null,
+      profilbild_url: person?.profilbild_url || null, // preserved from existing, upload handled separately
+      // Extended contact fields
+      telefon_nummern: telefonNummern,
+      bevorzugte_kontaktart: bevorzugteKontaktart,
+      social_media: socialMedia,
+      kontakt_notizen: kontaktNotizen || null,
+      // Archive fields (preserved from existing)
+      archiviert_am: person?.archiviert_am || null,
+      archiviert_von: person?.archiviert_von || null,
     }
 
     let result
@@ -279,40 +348,484 @@ export function MitgliedForm({ person, mode }: MitgliedFormProps) {
       {/* Kontakt */}
       <div>
         <h3 className="mb-4 text-lg font-medium text-gray-900">Kontakt</h3>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Email */}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                E-Mail
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Telefon */}
+            <div>
+              <label
+                htmlFor="telefon"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                Haupttelefon
+              </label>
+              <input
+                id="telefon"
+                type="tel"
+                value={telefon}
+                onChange={(e) => setTelefon(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                placeholder="+41 79 123 45 67"
+              />
+            </div>
+          </div>
+
+          {/* Weitere Telefonnummern */}
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-sm font-medium text-gray-700">
+                Weitere Telefonnummern
+              </label>
+              {!showAddPhone && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddPhone(true)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  + Hinzufügen
+                </button>
+              )}
+            </div>
+
+            {telefonNummern.length > 0 && (
+              <div className="mb-3 space-y-2">
+                {telefonNummern.map((phone, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                        {TELEFON_TYP_LABELS[phone.typ]}
+                      </span>
+                      <span className="text-sm">{phone.nummer}</span>
+                      {phone.ist_bevorzugt && (
+                        <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-700">
+                          Bevorzugt
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!phone.ist_bevorzugt && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTelefonNummern(
+                              telefonNummern.map((p, i) => ({
+                                ...p,
+                                ist_bevorzugt: i === index,
+                              }))
+                            )
+                          }}
+                          className="text-xs text-gray-500 hover:text-gray-700"
+                        >
+                          Als bevorzugt
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = telefonNummern.filter((_, i) => i !== index)
+                          if (phone.ist_bevorzugt && updated.length > 0) {
+                            updated[0].ist_bevorzugt = true
+                          }
+                          setTelefonNummern(updated)
+                        }}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Entfernen
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showAddPhone && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                <div className="flex items-end gap-2">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-600">Typ</label>
+                    <select
+                      value={newPhoneTyp}
+                      onChange={(e) => setNewPhoneTyp(e.target.value as TelefonTyp)}
+                      className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+                    >
+                      {(Object.keys(TELEFON_TYP_LABELS) as TelefonTyp[]).map(
+                        (typ) => (
+                          <option key={typ} value={typ}>
+                            {TELEFON_TYP_LABELS[typ]}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="mb-1 block text-xs text-gray-600">Nummer</label>
+                    <input
+                      type="tel"
+                      value={newPhoneNummer}
+                      onChange={(e) => setNewPhoneNummer(e.target.value)}
+                      placeholder="+41 79 123 45 67"
+                      className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newPhoneNummer.trim()) {
+                        setTelefonNummern([
+                          ...telefonNummern,
+                          {
+                            typ: newPhoneTyp,
+                            nummer: newPhoneNummer.trim(),
+                            ist_bevorzugt: telefonNummern.length === 0,
+                          },
+                        ])
+                        setNewPhoneNummer('')
+                        setShowAddPhone(false)
+                      }
+                    }}
+                    disabled={!newPhoneNummer.trim()}
+                    className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:bg-blue-400"
+                  >
+                    OK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddPhone(false)
+                      setNewPhoneNummer('')
+                    }}
+                    className="px-2 py-1.5 text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bevorzugte Kontaktart */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <label
+                htmlFor="bevorzugteKontaktart"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                Bevorzugte Kontaktart
+              </label>
+              <select
+                id="bevorzugteKontaktart"
+                value={bevorzugteKontaktart || ''}
+                onChange={(e) =>
+                  setBevorzugteKontaktart(
+                    (e.target.value as BevorzugteKontaktart) || null
+                  )
+                }
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Keine Präferenz</option>
+                {(Object.keys(KONTAKTART_LABELS) as BevorzugteKontaktart[]).map(
+                  (art) => (
+                    <option key={art} value={art}>
+                      {KONTAKTART_LABELS[art]}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="kontaktNotizen"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                Kontakt-Hinweise
+              </label>
+              <input
+                id="kontaktNotizen"
+                type="text"
+                value={kontaktNotizen}
+                onChange={(e) => setKontaktNotizen(e.target.value)}
+                placeholder="z.B. Nicht vor 10 Uhr anrufen"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Social Media */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Social Media (optional)
+            </label>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <input
+                type="text"
+                value={socialMedia?.instagram || ''}
+                onChange={(e) =>
+                  setSocialMedia({
+                    ...(socialMedia || {}),
+                    instagram: e.target.value || undefined,
+                  })
+                }
+                placeholder="Instagram"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                value={socialMedia?.facebook || ''}
+                onChange={(e) =>
+                  setSocialMedia({
+                    ...(socialMedia || {}),
+                    facebook: e.target.value || undefined,
+                  })
+                }
+                placeholder="Facebook"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                value={socialMedia?.linkedin || ''}
+                onChange={(e) =>
+                  setSocialMedia({
+                    ...(socialMedia || {}),
+                    linkedin: e.target.value || undefined,
+                  })
+                }
+                placeholder="LinkedIn"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                value={socialMedia?.twitter || ''}
+                onChange={(e) =>
+                  setSocialMedia({
+                    ...(socialMedia || {}),
+                    twitter: e.target.value || undefined,
+                  })
+                }
+                placeholder="X / Twitter"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Notfallkontakt */}
+      <div>
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Notfallkontakt</h3>
+        <p className="mb-4 text-sm text-gray-500">
+          Nur für Vorstand und Admins sichtbar
+        </p>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="notfallkontaktName"
               className="mb-1 block text-sm font-medium text-gray-700"
             >
-              E-Mail
+              Name
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="notfallkontaktName"
+              type="text"
+              value={notfallkontaktName}
+              onChange={(e) => setNotfallkontaktName(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              placeholder="Max Muster"
             />
           </div>
 
-          {/* Telefon */}
           <div>
             <label
-              htmlFor="telefon"
+              htmlFor="notfallkontaktTelefon"
               className="mb-1 block text-sm font-medium text-gray-700"
             >
               Telefon
             </label>
             <input
-              id="telefon"
+              id="notfallkontaktTelefon"
               type="tel"
-              value={telefon}
-              onChange={(e) => setTelefon(e.target.value)}
+              value={notfallkontaktTelefon}
+              onChange={(e) => setNotfallkontaktTelefon(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              placeholder="+41 79 123 45 67"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="notfallkontaktBeziehung"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
+              Beziehung
+            </label>
+            <select
+              id="notfallkontaktBeziehung"
+              value={notfallkontaktBeziehung}
+              onChange={(e) => setNotfallkontaktBeziehung(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">-- Wählen --</option>
+              <option value="Ehepartner">Ehepartner/in</option>
+              <option value="Partner">Partner/in</option>
+              <option value="Eltern">Eltern</option>
+              <option value="Geschwister">Geschwister</option>
+              <option value="Kind">Kind</option>
+              <option value="Freund">Freund/in</option>
+              <option value="Sonstiges">Sonstiges</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Biografie */}
+      <div>
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Über mich</h3>
+        <div>
+          <label
+            htmlFor="biografie"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Kurze Vorstellung
+          </label>
+          <textarea
+            id="biografie"
+            rows={3}
+            value={biografie}
+            onChange={(e) => setBiografie(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+            placeholder="Ein paar Worte über dich..."
+          />
+        </div>
+      </div>
+
+      {/* Fähigkeiten/Skills */}
+      <div>
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Fähigkeiten</h3>
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={skillInput}
+              onChange={(e) => setSkillInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  addSkill()
+                }
+              }}
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              placeholder="z.B. Licht, Ton, Bühnenbau..."
+            />
+            <button
+              type="button"
+              onClick={addSkill}
+              className="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
+            >
+              Hinzufügen
+            </button>
+          </div>
+
+          {skills.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800"
+                >
+                  {skill}
+                  <button
+                    type="button"
+                    onClick={() => removeSkill(skill)}
+                    className="ml-1 text-blue-600 hover:text-blue-900"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          <p className="text-xs text-gray-500">
+            Häufige Skills: Licht, Ton, Bühnenbau, Kostüm, Maske, Requisite, Fotografie, Video
+          </p>
+        </div>
+      </div>
+
+      {/* Mitgliedschaft */}
+      <div>
+        <h3 className="mb-4 text-lg font-medium text-gray-900">Mitgliedschaft</h3>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div>
+            <label
+              htmlFor="mitgliedSeit"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
+              Mitglied seit
+            </label>
+            <input
+              id="mitgliedSeit"
+              type="date"
+              value={mitgliedSeit}
+              onChange={(e) => setMitgliedSeit(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          {!aktiv && (
+            <>
+              <div>
+                <label
+                  htmlFor="austrittsdatum"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
+                  Austrittsdatum
+                </label>
+                <input
+                  id="austrittsdatum"
+                  type="date"
+                  value={austrittsdatum}
+                  onChange={(e) => setAustrittsdatum(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="austrittsgrund"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
+                  Austrittsgrund
+                </label>
+                <input
+                  id="austrittsgrund"
+                  type="text"
+                  value={austrittsgrund}
+                  onChange={(e) => setAustrittsgrund(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                  placeholder="Optional"
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 

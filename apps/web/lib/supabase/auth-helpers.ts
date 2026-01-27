@@ -7,7 +7,7 @@
  * For client-safe permission checking, use ./permissions.ts directly.
  */
 
-import { getUserProfile } from './server'
+import { getUserProfile, createClient } from './server'
 import type { UserRole, Permission, Profile } from './types'
 import {
   hasPermission as _hasPermission,
@@ -91,4 +91,26 @@ export async function requireRole(requiredRole: UserRole): Promise<Profile> {
   }
 
   return profile
+}
+
+/**
+ * Get the person ID for the currently logged-in user
+ * Returns null if not logged in or no person record exists
+ */
+export async function getCurrentPersonId(): Promise<string | null> {
+  const profile = await getUserProfile()
+
+  if (!profile) {
+    return null
+  }
+
+  const supabase = await createClient()
+
+  const { data: person } = await supabase
+    .from('personen')
+    .select('id')
+    .eq('email', profile.email)
+    .single()
+
+  return person?.id || null
 }

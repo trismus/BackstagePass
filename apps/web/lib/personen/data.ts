@@ -5,6 +5,27 @@
 
 import type { Person } from '../supabase/types'
 
+// Default values for extended profile fields
+const defaultExtendedFields = {
+  notfallkontakt_name: null,
+  notfallkontakt_telefon: null,
+  notfallkontakt_beziehung: null,
+  profilbild_url: null,
+  biografie: null,
+  mitglied_seit: null,
+  austrittsdatum: null,
+  austrittsgrund: null,
+  skills: [] as string[],
+  // Extended contact fields (Issue #3)
+  telefon_nummern: [] as { typ: 'mobil' | 'privat' | 'geschaeft'; nummer: string; ist_bevorzugt?: boolean }[],
+  bevorzugte_kontaktart: null,
+  social_media: null,
+  kontakt_notizen: null,
+  // Archive fields (Issue #5)
+  archiviert_am: null,
+  archiviert_von: null,
+}
+
 export const dummyPersonen: Person[] = [
   {
     id: '1',
@@ -19,6 +40,10 @@ export const dummyPersonen: Person[] = [
     rolle: 'vorstand',
     aktiv: true,
     notizen: 'Erste Vorsitzende seit 2020',
+    ...defaultExtendedFields,
+    mitglied_seit: '2020-01-01',
+    biografie: 'Seit 2020 Erste Vorsitzende der Theatergruppe.',
+    skills: ['Organisation', 'Regie'],
     created_at: '2024-01-01T10:00:00Z',
     updated_at: '2024-01-01T10:00:00Z',
   },
@@ -35,6 +60,9 @@ export const dummyPersonen: Person[] = [
     rolle: 'regie',
     aktiv: true,
     notizen: 'Hauptregisseur',
+    ...defaultExtendedFields,
+    mitglied_seit: '2015-06-01',
+    skills: ['Regie', 'Schauspiel'],
     created_at: '2024-01-02T10:00:00Z',
     updated_at: '2024-01-02T10:00:00Z',
   },
@@ -51,6 +79,9 @@ export const dummyPersonen: Person[] = [
     rolle: 'mitglied',
     aktiv: true,
     notizen: 'Schauspielerin',
+    ...defaultExtendedFields,
+    mitglied_seit: '2018-09-01',
+    skills: ['Schauspiel', 'Gesang'],
     created_at: '2024-01-03T10:00:00Z',
     updated_at: '2024-01-03T10:00:00Z',
   },
@@ -67,6 +98,9 @@ export const dummyPersonen: Person[] = [
     rolle: 'technik',
     aktiv: true,
     notizen: 'Licht und Ton',
+    ...defaultExtendedFields,
+    mitglied_seit: '2019-03-15',
+    skills: ['Licht', 'Ton', 'Video'],
     created_at: '2024-01-04T10:00:00Z',
     updated_at: '2024-01-04T10:00:00Z',
   },
@@ -83,6 +117,9 @@ export const dummyPersonen: Person[] = [
     rolle: 'mitglied',
     aktiv: true,
     notizen: 'Kostüm und Maske',
+    ...defaultExtendedFields,
+    mitglied_seit: '2021-01-10',
+    skills: ['Kostüm', 'Maske', 'Requisite'],
     created_at: '2024-01-05T10:00:00Z',
     updated_at: '2024-01-05T10:00:00Z',
   },

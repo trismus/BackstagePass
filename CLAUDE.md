@@ -11,6 +11,7 @@ BackstagePass (codename: Argus) is a web application for theater group managemen
 - **Frontend:** Next.js 15 (App Router), React 19, TypeScript 5.7
 - **Backend:** Supabase (PostgreSQL + Auth with SSR adapter)
 - **Styling:** Tailwind CSS with custom theater color palette (stage-*, curtain-*)
+- **Validation:** Zod for runtime schema validation
 - **Hosting:** Vercel
 
 ## Commands
@@ -18,16 +19,23 @@ BackstagePass (codename: Argus) is a web application for theater group managemen
 All commands run from `apps/web/`:
 
 ```bash
-npm run dev          # Start development server
+npm run dev          # Start development server (http://localhost:3000)
 npm run build        # Production build
 npm run lint         # ESLint check
 npm run lint:fix     # Auto-fix lint issues
 npm run format       # Prettier format all files
 npm run format:check # Check formatting
-npm run typecheck    # TypeScript type check
+npm run typecheck    # TypeScript type check (tsc --noEmit)
 npm run check:config # Validate config files
 npm run check:health # Health check (requires running server)
 ```
+
+## Environment Variables
+
+Required in `.env.local` (auto-synced via Supabase-Vercel integration):
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Public anon key for client
+- `SUPABASE_SERVICE_ROLE_KEY` - Admin operations (server-side only)
 
 ## Architecture
 
@@ -54,12 +62,14 @@ apps/web/
 ├── components/             # React components by domain
 ├── lib/
 │   ├── actions/            # Server actions by domain
+│   ├── validations/        # Zod schemas for form/input validation
 │   └── supabase/
-│       ├── client.ts       # Browser client
+│       ├── client.ts       # Browser client (createBrowserClient)
 │       ├── server.ts       # Server-side client (getUser, getUserProfile)
 │       ├── admin.ts        # Admin client (service role key)
 │       ├── middleware.ts   # Auth middleware helpers
-│       ├── auth-helpers.ts # Permission utilities (see below)
+│       ├── auth-helpers.ts # Server-side permission checks (throws/redirects)
+│       ├── permissions.ts  # Client-safe permission matrix (no secrets)
 │       └── types.ts        # Database types & Permission types
 └── middleware.ts           # Next.js middleware for route protection
 
@@ -70,7 +80,7 @@ journal/                    # Development journal & documentation
 
 ## Key Patterns
 
-### Authentication & Authorization (Issue #108)
+### Authentication & Authorization
 
 **7 User Roles** (capability-based, not hierarchical):
 | Role | German | Description |
@@ -83,21 +93,16 @@ journal/                    # Development journal & documentation
 | `PARTNER` | Partner | Own partner data |
 | `FREUNDE` | Freunde | Public info only |
 
-**Permission System** in `lib/supabase/auth-helpers.ts`:
+**Permission Checking** (two files for different contexts):
 ```typescript
-// Check specific permission
+// Server-side (lib/supabase/auth-helpers.ts) - can throw/redirect
+await requirePermission('mitglieder:write')  // Throws if unauthorized
+const profile = await getUserProfile()        // Get current user
+
+// Client-safe (lib/supabase/permissions.ts) - for conditional rendering
+import { hasPermission, isManagement, isAdmin } from '@/lib/supabase/permissions'
 hasPermission(userRole, 'mitglieder:read')
-hasPermission(userRole, 'veranstaltungen:write')
-
-// Check management level (ADMIN or VORSTAND)
-isManagement(userRole)
-canEdit(userRole)  // alias for isManagement
-
-// Check admin only
-isAdmin(userRole)
-
-// Server-side with redirect
-await requirePermission('mitglieder:write')
+isManagement(userRole)  // ADMIN or VORSTAND
 ```
 
 **Permission Types** (defined in `types.ts`):
@@ -105,10 +110,48 @@ await requirePermission('mitglieder:write')
 - `helfereinsaetze:read/write/delete/register`, `stundenkonto:read/read_own/write`
 - `partner:read/write/delete`, `stuecke:read/write/delete`, `raeume:read/write`, `ressourcen:read/write`
 
+### Data Fetching (Server Components)
+
+```typescript
+// app/(protected)/mitglieder/page.tsx - Server Component
+import { createClient } from '@/lib/supabase/server'
+
+export default async function MitgliederPage() {
+  const supabase = await createClient()
+  const { data } = await supabase.from('personen').select('*')
+
+  return <MitgliederList data={data} />  // Pass to client component
+}
+```
+
+### Server Actions
+
+```typescript
+// lib/actions/personen.ts
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { requirePermission } from '@/lib/supabase/auth-helpers'
+
+export async function updatePerson(id: string, data: PersonUpdate) {
+  await requirePermission('mitglieder:write')  // Check permission first
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('personen')
+    .update(data)
+    .eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/mitglieder')
+}
+```
+
 ### Component Architecture
 - Server Components by default
 - Use `'use client'` directive only when needed (useState, useEffect, onClick handlers)
 - Supabase data fetching happens in Server Components
+- Pass data to Client Components via props
 
 ### Database
 - All tables use Row Level Security (RLS)
@@ -149,42 +192,28 @@ Format: `type: message` (lowercase)
 
 ## AI Team Workflow
 
-The project has a defined AI team workflow in `docs/team.md` with roles:
-- Christian (Regisseur/PM) - user stories
-- Martin (Bühnenmeister/Architect) - technical planning
-- Peter (Kulissenbauer/Developer) - implementation
-- Ioannis (Kritiker/QA) - code review
-- Johannes (Chronist) - documentation
+The project uses a defined AI team workflow (see `docs/team.md` for full details):
+- **Christian** (Regisseur/PM) - User stories, requirements
+- **Martin** (Bühnenmeister/Architect) - Technical planning, database design
+- **Peter** (Kulissenbauer/Developer) - Implementation
+- **Ioannis** (Kritiker/QA) - Code review, security audit
+- **Johannes** (Chronist) - Documentation
 
-Branch naming: `feature/issue-{number}-{slug}`
+Branch naming: `feature/issue-{number}-{slug}` or `fix/issue-{number}-{slug}`
 
-## Project Milestones
+## GitHub
 
-| Milestone | Status | Description |
-|-----------|--------|-------------|
-| Modul 0 | In Progress | Foundation & Setup |
-| Modul 1 | In Progress | Core Features (Mitglieder, Veranstaltungen) |
-| Modul 2 | ✅ Done | Extended Features |
-| Modul 3 | In Progress | Künstlerische Planung (Stücke, Besetzungen, Proben) |
-| Helfer Liste | Open | Helferliste Feature (20 Issues) |
+**Project Board:** https://github.com/users/trismus/projects/2/views/1
 
-## GitHub Labels
+**Labels:**
+- Domain: `database`, `migration`, `backend`, `api`, `frontend`, `ui`, `admin`
+- Priority: `prio:high`, `prio:medium`, `prio:low`
+- Status: `blocked`, `ready`, `in-review`
+- Type: `bug`, `feature`, `enhancement`, `documentation`
 
-**Domain Labels:**
-- `database`, `migration` - Database/Schema changes
-- `backend`, `api` - Server-side code
-- `frontend`, `ui` - Client-side code
-- `admin` - Admin functionality
-- `tests` - Testing
+## Documentation
 
-**Priority/Status:**
-- `bug`, `enhancement`, `documentation`
-- `prio:high`, `good first issue`, `help wanted`
-
-## Journal & Documentation
-
-Development documentation is stored in:
-- `journal/` - Daily development logs
-- `journal/milestones/` - Milestone definitions
-- `journal/issues/` - Issue templates by feature
-- `docs/` - Architecture documentation
+- `docs/` - Architecture documentation, team workflow, design system
+- `docs/architecture/` - System architecture details
+- `journal/` - Development logs and decisions
+- `journal/decisions/` - Technical decision records (ADRs)
