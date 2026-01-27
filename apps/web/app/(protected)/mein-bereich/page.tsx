@@ -7,6 +7,7 @@ import {
   UpcomingEventsWidget,
   StundenWidget,
   QuickLinksWidget,
+  HelferEinsaetzeWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
 
 export default async function MeinBereichPage() {
@@ -14,34 +15,48 @@ export default async function MeinBereichPage() {
 
   if (!profile) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-800">
-              Bitte melde dich an, um deinen persönlichen Bereich zu sehen.
-            </p>
-          </div>
+      <div className="space-y-8">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800">
+            Bitte melde dich an, um deinen persönlichen Bereich zu sehen.
+          </p>
         </div>
-      </main>
+      </div>
     )
   }
 
-  // Try to find the person linked to this user
   const supabase = await createClient()
+
+  // Try to find the person linked to this user
   const { data: person } = await supabase
     .from('personen')
     .select('id, vorname, nachname')
     .eq('email', profile.email)
     .single()
 
+  // Check if user is passive member (reduced view)
+  const isPassiveMember = profile.role === 'MITGLIED_PASSIV'
+
   // Get data if person is linked
   const anmeldungen = person ? await getAnmeldungenForPerson(person.id) : []
-  const stundenSummary = person
-    ? await getStundenkontoSummary(person.id)
-    : { total: 0, thisYear: 0, lastEntries: [] }
+  const stundenSummary =
+    person && !isPassiveMember
+      ? await getStundenkontoSummary(person.id)
+      : { total: 0, thisYear: 0, lastEntries: [] }
+
+  // Get available helper events (only for active members)
+  const today = new Date().toISOString().split('T')[0]
+  const { data: verfuegbareEinsaetze } =
+    !isPassiveMember
+      ? await supabase
+          .from('helfereinsaetze')
+          .select('id, titel, datum, startzeit, ort, helfer_max, helferschichten(id)')
+          .gte('datum', today)
+          .order('datum', { ascending: true })
+          .limit(3)
+      : { data: [] }
 
   // Filter to upcoming events only
-  const today = new Date().toISOString().split('T')[0]
   const upcomingAnmeldungen = anmeldungen.filter(
     (a) =>
       a.veranstaltung.datum >= today &&
@@ -49,50 +64,99 @@ export default async function MeinBereichPage() {
   )
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Hallo{person ? `, ${person.vorname}` : ''}!
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Dein persönlicher Bereich bei BackstagePass
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-semibold text-neutral-900">
+          Hallo{person ? `, ${person.vorname}` : ''}!
+        </h1>
+        <p className="mt-1 text-neutral-600">
+          {isPassiveMember
+            ? 'Dein Überblick über die Theatergruppe Widen'
+            : 'Dein persönlicher Bereich bei BackstagePass'}
+        </p>
+      </div>
+
+      {!person && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800">
+            Dein Account ist noch nicht mit einem Mitgliederprofil verknüpft.
+            Bitte wende dich an einen Administrator.
           </p>
         </div>
+      )}
 
-        {!person && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800">
-              Dein Account ist noch nicht mit einem Mitgliederprofil verknüpft.
-              Bitte wende dich an einen Administrator.
-            </p>
-          </div>
-        )}
-
-        {/* Widgets Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Upcoming Events */}
+      {/* Widgets Grid - Different layout for passive vs active */}
+      {isPassiveMember ? (
+        // Passive Member View - Simplified
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
+          <QuickLinksWidget variant="passive" />
+        </div>
+      ) : (
+        // Active Member View - Full
+        <>
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="rounded-xl border border-neutral-200 bg-white p-4">
+              <p className="text-sm text-neutral-500">Anstehende Termine</p>
+              <p className="text-2xl font-bold text-neutral-900 mt-1">
+                {upcomingAnmeldungen.length}
+              </p>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-white p-4">
+              <p className="text-sm text-neutral-500">Stunden gesamt</p>
+              <p className="text-2xl font-bold text-neutral-900 mt-1">
+                {stundenSummary.total.toFixed(1)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-white p-4">
+              <p className="text-sm text-neutral-500">Dieses Jahr</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">
+                {stundenSummary.thisYear.toFixed(1)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-white p-4">
+              <p className="text-sm text-neutral-500">Offene Einsätze</p>
+              <p className="text-2xl font-bold text-blue-600 mt-1">
+                {verfuegbareEinsaetze?.length ?? 0}
+              </p>
+            </div>
+          </div>
 
-          {/* Stundenkonto */}
-          <StundenWidget
-            total={stundenSummary.total}
-            thisYear={stundenSummary.thisYear}
-            lastEntries={stundenSummary.lastEntries}
-          />
+          {/* Main Widgets */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
+            <StundenWidget
+              total={stundenSummary.total}
+              thisYear={stundenSummary.thisYear}
+              lastEntries={stundenSummary.lastEntries}
+            />
+            <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
+          </div>
 
           {/* Quick Links */}
-          <QuickLinksWidget />
-        </div>
+          <QuickLinksWidget variant="active" />
+        </>
+      )}
 
-        {/* Back Link */}
-        <div className="mt-8">
-          <Link href="/dashboard" className="text-blue-600 hover:text-blue-800">
-            &larr; Zurück zum Dashboard
+      {/* CTA for passive members */}
+      {isPassiveMember && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-6">
+          <h3 className="font-semibold text-blue-900">Aktiver werden?</h3>
+          <p className="text-sm text-blue-700 mt-1">
+            Möchtest du aktiver in der Theatergruppe mitwirken? Als aktives
+            Mitglied kannst du bei Aufführungen und Helfereinsätzen teilnehmen
+            und Stunden sammeln.
+          </p>
+          <Link
+            href="/profile"
+            className="inline-block mt-3 text-sm font-medium text-blue-700 hover:text-blue-900"
+          >
+            Mehr erfahren &rarr;
           </Link>
         </div>
-      </div>
-    </main>
+      )}
+    </div>
   )
 }
