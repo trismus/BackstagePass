@@ -4,6 +4,7 @@ import { getAuditLogs } from '@/lib/audit'
 import { getGruppen } from '@/lib/actions/gruppen'
 import { getVersionInfo } from '@/lib/version'
 import { SystemStatusCard } from '@/components/admin/SystemStatusCard'
+import { DataImportExport } from '@/components/admin/DataImportExport'
 import {
   Card,
   CardHeader,
@@ -179,6 +180,9 @@ export default async function AdminDashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Data Import/Export */}
+      <DataImportExport />
 
       {/* Recent Users */}
       <Card>
