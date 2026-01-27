@@ -25,6 +25,8 @@ npm run lint:fix     # Auto-fix lint issues
 npm run format       # Prettier format all files
 npm run format:check # Check formatting
 npm run typecheck    # TypeScript type check
+npm run check:config # Validate config files
+npm run check:health # Health check (requires running server)
 ```
 
 ## Architecture
@@ -32,19 +34,26 @@ npm run typecheck    # TypeScript type check
 ```
 apps/web/
 ├── app/                    # Next.js App Router
-│   ├── (auth)/             # Auth routes (login) - no auth required
+│   ├── (auth)/             # Auth routes (login, signup, password reset)
 │   ├── (protected)/        # Protected routes - requires authentication
 │   │   ├── dashboard/
-│   │   └── mitglieder/     # Members management
-│   ├── actions/            # Server actions (auth.ts)
+│   │   ├── mitglieder/     # Members (Personen) management
+│   │   ├── veranstaltungen/# Club events management
+│   │   ├── helfereinsaetze/# Helper events (external work)
+│   │   ├── partner/        # Partner organizations
+│   │   ├── mein-bereich/   # Personal area (stundenkonto)
+│   │   └── admin/          # Admin-only (users, audit logs)
+│   ├── actions/            # Server actions (auth.ts, profile.ts)
 │   └── api/                # API routes
 ├── components/             # React components by domain
 ├── lib/
 │   └── supabase/
 │       ├── client.ts       # Browser client
-│       ├── server.ts       # Server-side client
+│       ├── server.ts       # Server-side client (getUser, getUserProfile)
+│       ├── admin.ts        # Admin client (service role key)
 │       ├── middleware.ts   # Auth middleware helpers
-│       └── auth-helpers.ts # RBAC utilities (requireRole, hasRole)
+│       ├── auth-helpers.ts # RBAC utilities (requireRole, hasRole, canEdit)
+│       └── types.ts        # Database types (Person, Veranstaltung, etc.)
 └── middleware.ts           # Next.js middleware for route protection
 
 supabase/migrations/        # Database migrations (SQL)
@@ -67,11 +76,14 @@ docs/                       # Architecture and team documentation
 ### Database
 - All tables use Row Level Security (RLS)
 - Migrations in `supabase/migrations/` with format `YYYYMMDDHHMMSS_name.sql`
+- Core tables: `personen`, `profiles`, `veranstaltungen`, `anmeldungen`, `partner`, `helfereinsaetze`, `helferschichten`, `stundenkonto`
+- Types defined in `lib/supabase/types.ts` (Person, Veranstaltung, Helfereinsatz, etc.)
 
 ## Code Style
 
 - No semicolons, single quotes, 2-space indentation
 - Tailwind CSS for all styling (no custom CSS files)
+- Custom color palette: `primary-*`, `secondary-*`, `stage-*`, `curtain-*`, `success-*`, `error-*`, `warning-*`, `info-*`
 - Prefix unused variables with `_`
 - `console.log` is warned; use `console.warn`/`console.error` if needed
 
