@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getAllUsers } from '@/app/actions/profile'
 import { getAuditLogs } from '@/lib/audit'
+import { getGruppen } from '@/lib/actions/gruppen'
 import {
   Card,
   CardHeader,
@@ -42,12 +43,15 @@ function StatCard({
 }
 
 export default async function AdminDashboardPage() {
-  const users = await getAllUsers()
-  const { count: auditCount } = await getAuditLogs({ limit: 1 })
+  const [users, gruppen, { count: auditCount }] = await Promise.all([
+    getAllUsers(),
+    getGruppen(),
+    getAuditLogs({ limit: 1 }),
+  ])
 
   const userCount = users.length
   const adminCount = users.filter((u) => u.role === 'ADMIN').length
-  const editorCount = users.filter((u) => u.role === 'EDITOR').length
+  const gruppenCount = gruppen.length
 
   return (
     <div className="space-y-8">
@@ -68,8 +72,8 @@ export default async function AdminDashboardPage() {
         <Link href="/admin/users">
           <StatCard label="Admins" value={adminCount} color="bg-purple-500" />
         </Link>
-        <Link href="/admin/users">
-          <StatCard label="Editoren" value={editorCount} color="bg-green-500" />
+        <Link href={'/admin/gruppen' as never}>
+          <StatCard label="Gruppen" value={gruppenCount} color="bg-green-500" />
         </Link>
         <Link href="/admin/audit">
           <StatCard
@@ -135,7 +139,7 @@ export default async function AdminDashboardPage() {
               </div>
             </Link>
             <Link
-              href="/partner"
+              href={'/admin/gruppen' as never}
               className="flex items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:bg-neutral-50"
             >
               <svg
@@ -148,14 +152,14 @@ export default async function AdminDashboardPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
               <div>
                 <p className="font-medium text-neutral-900">
-                  Partner verwalten
+                  Gruppen verwalten
                 </p>
-                <p className="text-sm text-neutral-500">Externe Partner</p>
+                <p className="text-sm text-neutral-500">Teams & Gremien</p>
               </div>
             </Link>
           </div>

@@ -914,6 +914,65 @@ export type HelferAnmeldungMitDetails = HelferAnmeldung & {
 }
 
 // =============================================================================
+// Gruppen (Teams, Gremien, Produktions-Casts) - Dashboards Milestone
+// =============================================================================
+
+export type GruppenTyp = 'team' | 'gremium' | 'produktion' | 'sonstiges'
+
+export const GRUPPEN_TYP_LABELS: Record<GruppenTyp, string> = {
+  team: 'Team',
+  gremium: 'Gremium',
+  produktion: 'Produktion',
+  sonstiges: 'Sonstiges',
+}
+
+export type Gruppe = {
+  id: string
+  name: string
+  typ: GruppenTyp
+  beschreibung: string | null
+  stueck_id: string | null
+  aktiv: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type GruppeInsert = Omit<Gruppe, 'id' | 'created_at' | 'updated_at'>
+export type GruppeUpdate = Partial<GruppeInsert>
+
+export type GruppeMitglied = {
+  id: string
+  gruppe_id: string
+  person_id: string
+  rolle_in_gruppe: string | null
+  von: string | null
+  bis: string | null
+  created_at: string
+}
+
+export type GruppeMitgliedInsert = Omit<GruppeMitglied, 'id' | 'created_at'>
+export type GruppeMitgliedUpdate = Partial<GruppeMitgliedInsert>
+
+// Extended types for views
+export type GruppeMitDetails = Gruppe & {
+  mitglieder_count: number
+  stueck: Pick<Stueck, 'id' | 'titel'> | null
+}
+
+export type GruppeMitMitglieder = Gruppe & {
+  mitglieder: (GruppeMitglied & {
+    person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
+  })[]
+  stueck: Pick<Stueck, 'id' | 'titel'> | null
+}
+
+export type PersonMitGruppen = Person & {
+  gruppen: (GruppeMitglied & {
+    gruppe: Pick<Gruppe, 'id' | 'name' | 'typ'>
+  })[]
+}
+
+// =============================================================================
 // Database Schema Type
 // =============================================================================
 
@@ -1084,6 +1143,16 @@ export type Database = {
         Row: HelferAnmeldung
         Insert: HelferAnmeldungInsert
         Update: HelferAnmeldungUpdate
+      }
+      gruppen: {
+        Row: Gruppe
+        Insert: GruppeInsert
+        Update: GruppeUpdate
+      }
+      gruppen_mitglieder: {
+        Row: GruppeMitglied
+        Insert: GruppeMitgliedInsert
+        Update: GruppeMitgliedUpdate
       }
     }
   }
