@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getUser, getUserProfile } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
+import { HelpButton } from '@/components/help'
 
 export const metadata = {
   title: 'Dashboard',
@@ -162,7 +163,10 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-neutral-900">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-neutral-900">Dashboard</h1>
+          <HelpButton contextKey="dashboard" />
+        </div>
         <p className="mt-1 text-neutral-600">
           Willkommen zurück
           {profile?.display_name ? `, ${profile.display_name}` : ''}!

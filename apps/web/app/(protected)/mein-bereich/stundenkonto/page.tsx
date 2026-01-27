@@ -6,6 +6,7 @@ import {
   getStundensaldo,
 } from '@/lib/actions/stundenkonto'
 import { StundenkontoTable } from '@/components/mein-bereich/StundenkontoTable'
+import { HelpButton } from '@/components/help'
 
 export default async function StundenkontoPage() {
   const profile = await getUserProfile()
@@ -73,9 +74,12 @@ export default async function StundenkontoPage() {
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Mein Stundenkonto
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Mein Stundenkonto
+              </h1>
+              <HelpButton contextKey="stundenkonto" />
+            </div>
             <p className="mt-1 text-gray-600">
               Übersicht deiner geleisteten Helferstunden
             </p>

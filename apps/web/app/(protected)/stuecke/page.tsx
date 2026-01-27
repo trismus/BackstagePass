@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { getStuecke } from '@/lib/actions/stuecke'
 import { StueckeTable } from '@/components/stuecke'
+import { HelpButton } from '@/components/help'
 
 export default async function StueckePage() {
   const stuecke = await getStuecke()
@@ -12,7 +13,10 @@ export default async function StueckePage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Stücke</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">Stücke</h1>
+              <HelpButton contextKey="stuecke" />
+            </div>
             <p className="mt-1 text-gray-600">
               Theaterstücke, Szenen und Rollen verwalten
             </p>

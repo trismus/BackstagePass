@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getVeranstaltungen } from '@/lib/actions/veranstaltungen'
 import { VeranstaltungenTable } from '@/components/veranstaltungen/VeranstaltungenTable'
+import { HelpButton } from '@/components/help'
 
 export const metadata = {
   title: 'Veranstaltungen',
@@ -16,9 +17,12 @@ export default async function VeranstaltungenPage() {
         {/* Header */}
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Veranstaltungen
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Veranstaltungen
+              </h1>
+              <HelpButton contextKey="veranstaltungen" />
+            </div>
             <p className="mt-1 text-gray-600">
               Vereinsevents, Proben und Aufführungen verwalten
             </p>
