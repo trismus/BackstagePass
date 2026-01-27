@@ -5,6 +5,7 @@ import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
 import { getStundenkontoSummary } from '@/lib/actions/stundenkonto'
 import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
 import { ProfileCard } from '@/components/mein-bereich/ProfileCard'
+import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
 import {
   UpcomingEventsWidget,
   StundenWidget,
@@ -118,7 +119,7 @@ export default async function MeinBereichPage() {
 
           {/* Right Column - Profile & Events */}
           <div className="space-y-6 lg:col-span-2">
-            <ProfileCard person={person} role={profile.role} />
+            <EditableProfileCard person={person} role={profile.role} />
             <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
 
             {/* CTA for passive members */}
@@ -224,7 +225,7 @@ export default async function MeinBereichPage() {
           {/* Main Content Area */}
           <div className="space-y-6 lg:col-span-8 xl:col-span-9">
             {/* Profile Card */}
-            <ProfileCard
+            <EditableProfileCard
               person={person}
               role={profile.role}
               stundenTotal={stundenSummary.total}

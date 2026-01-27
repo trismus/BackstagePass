@@ -239,3 +239,68 @@ export async function deletePerson(
   revalidatePath('/mitglieder')
   return { success: true }
 }
+
+/**
+ * Update own profile data (for mein-bereich)
+ * Only allows updating certain fields and validates ownership
+ */
+export async function updateOwnProfile(
+  personData: Pick<PersonUpdate, 'telefon' | 'strasse' | 'plz' | 'ort'>
+): Promise<{ success: boolean; error?: string }> {
+  if (USE_DUMMY_DATA) {
+    revalidatePath('/mein-bereich')
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: 'Nicht angemeldet' }
+  }
+
+  // Get the user's profile to find their email
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.email) {
+    return { success: false, error: 'Profil nicht gefunden' }
+  }
+
+  // Find the person linked to this email
+  const { data: person } = await supabase
+    .from('personen')
+    .select('id')
+    .eq('email', profile.email)
+    .single()
+
+  if (!person) {
+    return { success: false, error: 'Kein Mitgliederprofil verknüpft' }
+  }
+
+  // Update only allowed fields
+  const { error } = await supabase
+    .from('personen')
+    .update({
+      telefon: personData.telefon,
+      strasse: personData.strasse,
+      plz: personData.plz,
+      ort: personData.ort,
+    } as never)
+    .eq('id', person.id)
+
+  if (error) {
+    console.error('Error updating own profile:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/mein-bereich')
+  return { success: true }
+}
