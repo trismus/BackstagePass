@@ -1,7 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '../supabase/server'
+import { createClient, getUserProfile } from '../supabase/server'
+import { hasPermission, isManagement } from '../supabase/auth-helpers'
 import type {
   Probe,
   ProbeInsert,
@@ -102,6 +103,14 @@ export async function getProbe(id: string): Promise<ProbeMitDetails | null> {
 export async function createProbe(
   data: ProbeInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Proben erstellen.',
+    }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('proben')
@@ -126,6 +135,14 @@ export async function updateProbe(
   id: string,
   data: ProbeUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Proben bearbeiten.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -155,6 +172,14 @@ export async function updateProbe(
 export async function deleteProbe(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Proben löschen.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -199,6 +224,14 @@ async function getProbeBasic(id: string): Promise<Probe | null> {
 export async function addSzeneToProbe(
   data: ProbeSzeneInsert
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Szenen zuweisen.',
+    }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase.from('proben_szenen').insert(data as never)
 
@@ -218,6 +251,14 @@ export async function removeSzeneFromProbe(
   probeId: string,
   szeneId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Szenen entfernen.',
+    }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('proben_szenen')
@@ -241,6 +282,14 @@ export async function updateProbeSzenen(
   probeId: string,
   szenenIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Szenen bearbeiten.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Delete all existing
@@ -286,6 +335,14 @@ export async function updateProbeSzenen(
 export async function addTeilnehmerToProbe(
   data: ProbeTeilnehmerInsert
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !isManagement(profile.role)) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Teilnehmer hinzufügen.',
+    }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('proben_teilnehmer')
@@ -307,6 +364,14 @@ export async function removeTeilnehmerFromProbe(
   probeId: string,
   personId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !isManagement(profile.role)) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Teilnehmer entfernen.',
+    }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('proben_teilnehmer')
@@ -325,6 +390,7 @@ export async function removeTeilnehmerFromProbe(
 
 /**
  * Update Teilnehmer status
+ * Note: Members can update their own status via RLS policy
  */
 export async function updateTeilnehmerStatus(
   probeId: string,
@@ -332,6 +398,14 @@ export async function updateTeilnehmerStatus(
   status: TeilnehmerStatus,
   notizen?: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile) {
+    return {
+      success: false,
+      error: 'Nicht angemeldet.',
+    }
+  }
+
   const supabase = await createClient()
 
   const updateData: ProbeTeilnehmerUpdate = { status }
@@ -360,6 +434,14 @@ export async function updateTeilnehmerStatus(
 export async function generateTeilnehmerFromBesetzungen(
   probeId: string
 ): Promise<{ success: boolean; error?: string; count?: number }> {
+  const profile = await getUserProfile()
+  if (!profile || !isManagement(profile.role)) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Teilnehmer generieren.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Call the database function
@@ -409,8 +491,10 @@ export async function getProbeSzenen(
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data as any[]) || []
+  type ProbeSzeneMitDetails = ProbeSzene & {
+    szene: Pick<Szene, 'id' | 'nummer' | 'titel' | 'dauer_minuten'>
+  }
+  return (data as unknown as ProbeSzeneMitDetails[]) || []
 }
 
 /**
@@ -445,8 +529,10 @@ export async function getProbeTeilnehmer(
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data as any[]) || []
+  type TeilnehmerMitPerson = ProbeTeilnehmer & {
+    person: { id: string; vorname: string; nachname: string; email: string | null }
+  }
+  return (data as unknown as TeilnehmerMitPerson[]) || []
 }
 
 // =============================================================================

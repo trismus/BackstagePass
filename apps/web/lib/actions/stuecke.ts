@@ -1,7 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '../supabase/server'
+import { createClient, getUserProfile } from '../supabase/server'
+import { hasPermission } from '../supabase/auth-helpers'
 import type {
   Stueck,
   StueckInsert,
@@ -82,6 +83,14 @@ export async function getStueck(id: string): Promise<Stueck | null> {
 export async function createStueck(
   data: StueckInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Stücke erstellen.',
+    }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('stuecke')
@@ -105,6 +114,14 @@ export async function updateStueck(
   id: string,
   data: StueckUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Stücke bearbeiten.',
+    }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('stuecke')
@@ -127,6 +144,14 @@ export async function updateStueck(
 export async function deleteStueck(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:delete')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Administratoren können Stücke löschen.',
+    }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase.from('stuecke').delete().eq('id', id)
 
@@ -187,6 +212,14 @@ export async function getSzene(id: string): Promise<Szene | null> {
 export async function createSzene(
   data: SzeneInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Szenen erstellen.',
+    }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('szenen')
@@ -210,6 +243,14 @@ export async function updateSzene(
   id: string,
   data: SzeneUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Szenen bearbeiten.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -238,6 +279,14 @@ export async function updateSzene(
 export async function deleteSzene(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Szenen löschen.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -325,6 +374,14 @@ export async function getRolle(id: string): Promise<StueckRolle | null> {
 export async function createRolle(
   data: StueckRolleInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Rollen erstellen.',
+    }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('rollen')
@@ -348,6 +405,14 @@ export async function updateRolle(
   id: string,
   data: StueckRolleUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Rollen bearbeiten.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -376,6 +441,14 @@ export async function updateRolle(
 export async function deleteRolle(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Rollen löschen.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -443,8 +516,12 @@ export async function getRollenForSzene(
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data?.map((d: any) => d.rolle).filter(Boolean) as StueckRolle[]) || []
+  type SzeneRolleWithRolle = { rolle: StueckRolle | null }
+  return (
+    (data as unknown as SzeneRolleWithRolle[])
+      ?.map((d) => d.rolle)
+      .filter((r): r is StueckRolle => r !== null) || []
+  )
 }
 
 /**
@@ -453,6 +530,14 @@ export async function getRollenForSzene(
 export async function addRolleToSzene(
   data: SzeneRolleInsert
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Rollen zuweisen.',
+    }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase.from('szenen_rollen').insert(data as never)
 
@@ -476,6 +561,14 @@ export async function removeRolleFromSzene(
   szeneId: string,
   rolleId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Rollen entfernen.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -506,6 +599,14 @@ export async function updateSzeneRollen(
   szeneId: string,
   rollenIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Rollen zuweisen.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation

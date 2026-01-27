@@ -6,6 +6,8 @@
 export { AppLayout } from './AppLayout'
 export type { AppLayoutProps } from './AppLayout'
 
+export { AppLayoutWrapper } from './AppLayoutWrapper'
+
 export { Sidebar, MobileMenuButton, useSidebarState } from './Sidebar'
 export type { SidebarProps } from './Sidebar'
 

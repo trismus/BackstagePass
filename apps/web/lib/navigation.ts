@@ -6,7 +6,7 @@
  */
 
 import type { Permission, UserRole } from './supabase/types'
-import { hasPermission } from './supabase/auth-helpers'
+import { hasPermission } from './supabase/permissions'
 
 // =============================================================================
 // Types

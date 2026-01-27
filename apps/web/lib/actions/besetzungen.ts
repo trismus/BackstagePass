@@ -1,7 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '../supabase/server'
+import { createClient, getUserProfile } from '../supabase/server'
+import { hasPermission } from '../supabase/auth-helpers'
 import type {
   Besetzung,
   BesetzungInsert,
@@ -11,6 +12,7 @@ import type {
   PersonMitRollen,
   BesetzungHistorie,
   UnbesetzteRolle,
+  RollenTyp,
 } from '../supabase/types'
 
 // =============================================================================
@@ -41,9 +43,12 @@ export async function getBesetzungenForStueck(
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type RawBesetzung = Besetzung & {
+    person: { id: string; vorname: string; nachname: string; email: string | null }
+    rolle: { id: string; name: string; typ: RollenTyp; stueck_id: string; stueck: { id: string; titel: string } }
+  }
   return (
-    (data as any[])?.map((d) => ({
+    (data as unknown as RawBesetzung[])?.map((d) => ({
       ...d,
       rolle: {
         id: d.rolle.id,
@@ -87,8 +92,10 @@ export async function getBesetzungenForRolle(
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data as any[]) || []
+  type BesetzungWithPerson = Besetzung & {
+    person: { id: string; vorname: string; nachname: string; email: string | null }
+  }
+  return (data as unknown as BesetzungWithPerson[]) || []
 }
 
 /**
@@ -146,8 +153,7 @@ export async function getBesetzungenForPerson(
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data as any[]) || []
+  return (data as unknown as PersonMitRollen['besetzungen']) || []
 }
 
 /**
@@ -175,6 +181,14 @@ export async function getBesetzung(id: string): Promise<Besetzung | null> {
 export async function createBesetzung(
   data: BesetzungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Besetzungen erstellen.',
+    }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('besetzungen')
@@ -187,12 +201,13 @@ export async function createBesetzung(
     return { success: false, error: error.message }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const stueckId = (result as any)?.rolle?.stueck_id
+  type CreateResult = { id: string; rolle: { stueck_id: string } | null }
+  const typedResult = result as unknown as CreateResult | null
+  const stueckId = typedResult?.rolle?.stueck_id
   if (stueckId) {
     revalidatePath(`/stuecke/${stueckId}`)
   }
-  return { success: true, id: result?.id }
+  return { success: true, id: typedResult?.id }
 }
 
 /**
@@ -202,6 +217,14 @@ export async function updateBesetzung(
   id: string,
   data: BesetzungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Besetzungen bearbeiten.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation
@@ -236,6 +259,14 @@ export async function updateBesetzung(
 export async function deleteBesetzung(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile || !hasPermission(profile.role, 'stuecke:write')) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Besetzungen löschen.',
+    }
+  }
+
   const supabase = await createClient()
 
   // Get stueck_id for revalidation before delete
@@ -252,8 +283,9 @@ export async function deleteBesetzung(
     return { success: false, error: error.message }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const stueckId = (besetzung as any)?.rolle?.stueck_id
+  type BesetzungWithRolle = { rolle: { stueck_id: string } | null }
+  const typedBesetzung = besetzung as unknown as BesetzungWithRolle | null
+  const stueckId = typedBesetzung?.rolle?.stueck_id
   if (stueckId) {
     revalidatePath(`/stuecke/${stueckId}`)
   }
@@ -304,8 +336,8 @@ export async function getBesetzungHistorie(
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data as any[]) || []
+  type HistorieWithPerson = BesetzungHistorie & { person: { vorname: string; nachname: string } }
+  return (data as unknown as HistorieWithPerson[]) || []
 }
 
 /**

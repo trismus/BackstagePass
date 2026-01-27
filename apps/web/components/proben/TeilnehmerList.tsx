@@ -13,6 +13,7 @@ import {
   generateTeilnehmerFromBesetzungen,
 } from '@/lib/actions/proben'
 import { TeilnehmerStatusBadge } from './ProbeStatusBadge'
+import { ConfirmDialog } from '@/components/ui'
 
 interface TeilnehmerListProps {
   probeId: string
@@ -47,6 +48,11 @@ export function TeilnehmerList({
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState('')
+  const [removeConfirm, setRemoveConfirm] = useState<{
+    open: boolean
+    personId: string
+    name: string
+  }>({ open: false, personId: '', name: '' })
 
   // Personen die noch nicht eingeladen sind
   const teilnehmerIds = teilnehmer.map((t) => t.person_id)
@@ -83,11 +89,15 @@ export function TeilnehmerList({
     }
   }
 
-  const handleRemove = async (personId: string) => {
-    if (!confirm('Teilnehmer wirklich entfernen?')) return
+  const handleRemoveClick = (personId: string, name: string) => {
+    setRemoveConfirm({ open: true, personId, name })
+  }
+
+  const handleRemoveConfirm = async () => {
+    setRemoveConfirm({ open: false, personId: '', name: '' })
     setIsSubmitting(true)
     try {
-      await removeTeilnehmerFromProbe(probeId, personId)
+      await removeTeilnehmerFromProbe(probeId, removeConfirm.personId)
     } finally {
       setIsSubmitting(false)
     }
@@ -255,7 +265,12 @@ export function TeilnehmerList({
                       ))}
                     </select>
                     <button
-                      onClick={() => handleRemove(t.person_id)}
+                      onClick={() =>
+                        handleRemoveClick(
+                          t.person_id,
+                          `${t.person.vorname} ${t.person.nachname}`
+                        )
+                      }
                       className="hover:text-error-800 text-sm text-error-600"
                     >
                       Entfernen
@@ -269,6 +284,17 @@ export function TeilnehmerList({
           ))
         )}
       </div>
+
+      <ConfirmDialog
+        open={removeConfirm.open}
+        title="Teilnehmer entfernen"
+        message={`${removeConfirm.name} wirklich von der Probe entfernen?`}
+        confirmLabel="Entfernen"
+        cancelLabel="Abbrechen"
+        variant="danger"
+        onConfirm={handleRemoveConfirm}
+        onCancel={() => setRemoveConfirm({ open: false, personId: '', name: '' })}
+      />
     </div>
   )
 }
