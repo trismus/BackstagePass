@@ -48,6 +48,3 @@ Personen, die sporadisch bei Veranstaltungen oder Produktionen helfen, aber kein
 - **Aktionen:** Verfügbarkeiten für Helfereinsätze angeben, eigene zugewiesene Aufgaben einsehen.
 - **Einschränkungen:** Sehr eingeschränkter Zugriff, nur auf relevante Helferinformationen beschränkt.
 
-## Nächste Schritte:
-- Diese Rollen und ihre Berechtigungen detaillierter mit den tatsächlichen Modulen der Anwendung abgleichen.
-- Spezifische UI-Elemente und deren Verhalten basierend auf diesen Rollen definieren.
