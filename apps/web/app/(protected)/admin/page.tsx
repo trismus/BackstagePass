@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { getAllUsers } from '@/app/actions/profile'
 import { getAuditLogs } from '@/lib/audit'
 import { getGruppen } from '@/lib/actions/gruppen'
+import { getVersionInfo } from '@/lib/version'
+import { SystemStatusCard } from '@/components/admin/SystemStatusCard'
 import {
   Card,
   CardHeader,
@@ -49,6 +51,7 @@ export default async function AdminDashboardPage() {
     getAuditLogs({ limit: 1 }),
   ])
 
+  const versionInfo = getVersionInfo()
   const userCount = users.length
   const adminCount = users.filter((u) => u.role === 'ADMIN').length
   const gruppenCount = gruppen.length
@@ -64,8 +67,10 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* Top Section: Stats + System Status */}
+      <div className="grid gap-6 lg:grid-cols-4">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-4 lg:col-span-3">
         <Link href="/admin/users">
           <StatCard label="Benutzer" value={userCount} color="bg-blue-500" />
         </Link>
@@ -82,6 +87,15 @@ export default async function AdminDashboardPage() {
             color="bg-neutral-500"
           />
         </Link>
+        </div>
+
+        {/* System Status */}
+        <div className="lg:col-span-1">
+          <SystemStatusCard
+            version={versionInfo.version}
+            commitHash={versionInfo.commitHash || undefined}
+          />
+        </div>
       </div>
 
       {/* Quick Actions */}
