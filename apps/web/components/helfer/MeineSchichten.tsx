@@ -33,7 +33,7 @@ const STATUS_BADGES: Record<string, { label: string; color: string }> = {
   nicht_erschienen: { label: 'Nicht erschienen', color: 'bg-red-100 text-red-700' },
 }
 
-export function MeineSchichten({ schichten, personId }: MeineSchichtenProps) {
+export function MeineSchichten({ schichten, personId: _personId }: MeineSchichtenProps) {
   const [isPending, startTransition] = useTransition()
 
   const today = new Date().toISOString().split('T')[0]

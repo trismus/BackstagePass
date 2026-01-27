@@ -1,139 +1,34 @@
+/**
+ * Server-side auth helpers
+ *
+ * This file contains server-side authentication helpers that require
+ * access to getUserProfile() from the server module.
+ *
+ * For client-safe permission checking, use ./permissions.ts directly.
+ */
+
 import { getUserProfile } from './server'
 import type { UserRole, Permission, Profile } from './types'
+import {
+  hasPermission as _hasPermission,
+  hasAnyPermission as _hasAnyPermission,
+} from './permissions'
 
-/**
- * Capability-based permission system (Issue #108)
- *
- * Instead of a linear role hierarchy, each role has specific capabilities.
- * This allows for more granular access control matching theater organization needs.
- */
+// Re-export all client-safe functions for backward compatibility
+export {
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+  isAdmin,
+  isManagement,
+  canEdit,
+  canAccess,
+  hasRole,
+} from './permissions'
 
-/**
- * Permission matrix: which roles have which capabilities
- */
-const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  ADMIN: [
-    'admin:access',
-    'mitglieder:read',
-    'mitglieder:write',
-    'mitglieder:delete',
-    'profile:write_own',
-    'veranstaltungen:read',
-    'veranstaltungen:write',
-    'veranstaltungen:delete',
-    'veranstaltungen:register',
-    'helfereinsaetze:read',
-    'helfereinsaetze:write',
-    'helfereinsaetze:delete',
-    'helfereinsaetze:register',
-    'helferliste:read',
-    'helferliste:write',
-    'helferliste:delete',
-    'helferliste:register',
-    'stundenkonto:read',
-    'stundenkonto:read_own',
-    'stundenkonto:write',
-    'partner:read',
-    'partner:write',
-    'partner:delete',
-    'stuecke:read',
-    'stuecke:write',
-    'stuecke:delete',
-    'raeume:read',
-    'raeume:write',
-    'ressourcen:read',
-    'ressourcen:write',
-  ],
-
-  VORSTAND: [
-    'mitglieder:read',
-    'mitglieder:write',
-    'mitglieder:delete',
-    'profile:write_own',
-    'veranstaltungen:read',
-    'veranstaltungen:write',
-    'veranstaltungen:delete',
-    'veranstaltungen:register',
-    'helfereinsaetze:read',
-    'helfereinsaetze:write',
-    'helfereinsaetze:delete',
-    'helfereinsaetze:register',
-    'helferliste:read',
-    'helferliste:write',
-    'helferliste:delete',
-    'helferliste:register',
-    'stundenkonto:read',
-    'stundenkonto:read_own',
-    'stundenkonto:write',
-    'partner:read',
-    'partner:write',
-    'partner:delete',
-    'stuecke:read',
-    'stuecke:write',
-    'stuecke:delete',
-    'raeume:read',
-    'raeume:write',
-    'ressourcen:read',
-    'ressourcen:write',
-  ],
-
-  MITGLIED_AKTIV: [
-    'profile:write_own',
-    'veranstaltungen:read',
-    'veranstaltungen:register',
-    'helfereinsaetze:read',
-    'helfereinsaetze:register',
-    'helferliste:read',
-    'helferliste:register',
-    'stundenkonto:read_own',
-    'stuecke:read',
-    'raeume:read',
-    'ressourcen:read',
-  ],
-
-  MITGLIED_PASSIV: [
-    'profile:write_own',
-    'veranstaltungen:read',
-    'stuecke:read',
-  ],
-
-  HELFER: ['helfereinsaetze:read', 'helferliste:read', 'helferliste:register'],
-
-  PARTNER: ['profile:write_own', 'veranstaltungen:read', 'partner:read'],
-
-  FREUNDE: ['veranstaltungen:read'],
-}
-
-/**
- * Check if a role has a specific permission
- */
-export function hasPermission(
-  userRole: UserRole,
-  permission: Permission
-): boolean {
-  const permissions = ROLE_PERMISSIONS[userRole]
-  return permissions?.includes(permission) ?? false
-}
-
-/**
- * Check if a role has any of the specified permissions
- */
-export function hasAnyPermission(
-  userRole: UserRole,
-  permissions: Permission[]
-): boolean {
-  return permissions.some((p) => hasPermission(userRole, p))
-}
-
-/**
- * Check if a role has all of the specified permissions
- */
-export function hasAllPermissions(
-  userRole: UserRole,
-  permissions: Permission[]
-): boolean {
-  return permissions.every((p) => hasPermission(userRole, p))
-}
+// =============================================================================
+// Server-side functions (require getUserProfile)
+// =============================================================================
 
 /**
  * Server-side: Require a specific permission, throws if not met
@@ -147,7 +42,7 @@ export async function requirePermission(
     throw new Error('Profile not found')
   }
 
-  if (!hasPermission(profile.role, permission)) {
+  if (!_hasPermission(profile.role, permission)) {
     throw new Error('Insufficient permissions')
   }
 
@@ -166,65 +61,12 @@ export async function requireAnyPermission(
     throw new Error('Profile not found')
   }
 
-  if (!hasAnyPermission(profile.role, permissions)) {
+  if (!_hasAnyPermission(profile.role, permissions)) {
     throw new Error('Insufficient permissions')
   }
 
   return profile
 }
-
-/**
- * Check if user is admin
- */
-export function isAdmin(userRole: UserRole): boolean {
-  return userRole === 'ADMIN'
-}
-
-/**
- * Check if user is management level (ADMIN or VORSTAND)
- */
-export function isManagement(userRole: UserRole): boolean {
-  return userRole === 'ADMIN' || userRole === 'VORSTAND'
-}
-
-/**
- * Check if user can edit content (ADMIN or VORSTAND)
- * @deprecated Use hasPermission() with specific permission instead
- */
-export function canEdit(userRole: UserRole): boolean {
-  return isManagement(userRole)
-}
-
-/**
- * Check if user can access a specific route based on role
- */
-export function canAccess(route: string, userRole: UserRole): boolean {
-  const routePermissions: Record<string, Permission[]> = {
-    '/admin': ['admin:access'],
-    '/admin/users': ['admin:access'],
-    '/admin/audit': ['admin:access'],
-    '/mitglieder': ['mitglieder:read'],
-    '/mitglieder/neu': ['mitglieder:write'],
-    '/partner': ['partner:read'],
-    '/partner/neu': ['partner:write'],
-    '/helfereinsaetze': ['helfereinsaetze:read'],
-    '/helfereinsaetze/neu': ['helfereinsaetze:write'],
-    '/stundenkonto': ['stundenkonto:read', 'stundenkonto:read_own'],
-  }
-
-  const required = routePermissions[route]
-  if (!required) {
-    // Default: allow all authenticated users
-    return true
-  }
-
-  // User needs at least one of the required permissions
-  return hasAnyPermission(userRole, required)
-}
-
-// =============================================================================
-// Legacy functions (for backward compatibility during migration)
-// =============================================================================
 
 /**
  * @deprecated Use requirePermission() instead
@@ -244,32 +86,9 @@ export async function requireRole(requiredRole: UserRole): Promise<Profile> {
   }
 
   const permission = roleMap[requiredRole]
-  if (permission && !hasPermission(profile.role, permission)) {
+  if (permission && !_hasPermission(profile.role, permission)) {
     throw new Error('Insufficient permissions')
   }
 
   return profile
-}
-
-/**
- * @deprecated Linear hierarchy no longer applies. Use hasPermission() instead.
- */
-export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
-  // Log deprecation warning to track usage
-  if (typeof console !== 'undefined') {
-    console.warn(
-      `[DEPRECATED] hasRole(${userRole}, ${requiredRole}) called. ` +
-        'Use hasPermission() with specific permission instead.'
-    )
-  }
-
-  // Approximate old behavior for backward compatibility
-  if (requiredRole === 'ADMIN') {
-    return userRole === 'ADMIN'
-  }
-  if (requiredRole === 'VORSTAND') {
-    return isManagement(userRole)
-  }
-  // For other roles, check exact match
-  return userRole === requiredRole
 }

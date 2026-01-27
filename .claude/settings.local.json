@@ -29,7 +29,24 @@
       "Bash(find:*)",
       "Bash(npm run format:*)",
       "Bash(git checkout:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm install:*)",
+      "Bash(git status:*)",
+      "Bash(for i in 115 116 117 118)",
+      "Bash(do gh issue close $i -c \"Implemented in migration 20260227000000_helferliste.sql\")",
+      "Bash(done)",
+      "Bash(for i in 119 120 121 122 123 131)",
+      "Bash(do gh issue close $i -c \"Implemented in lib/actions/helferliste.ts\")",
+      "Bash(for i in 124 125 126 127 128 129 134)",
+      "Bash(do gh issue close $i -c \"Implemented in app/\\(protected\\)/helferliste/ and components/helferliste/\")",
+      "Bash(dir:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(for i in 57 58 59 60)",
+      "Bash(do gh issue close $i -c \"Duplicate - bereits implementiert \\(siehe #92-#95\\)\" -r \"not planned\")",
+      "Bash(for i in 61 62 63 64)",
+      "Bash(do gh issue close $i -c \"Bereits implementiert in Modul 2 \\(Aufführungen, Räume, Ressourcen, Templates\\)\" -r \"completed\")"
     ]
   }
 }
