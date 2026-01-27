@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type { Zeitblock, ZeitblockInsert, ZeitblockUpdate } from '../supabase/types'
+import { zeitblockSchema, zeitblockUpdateSchema, validateInput } from '../validations/modul2'
 
 /**
  * Get all time blocks for a performance
@@ -49,16 +50,22 @@ export async function getZeitblock(id: string): Promise<Zeitblock | null> {
 export async function createZeitblock(
   data: ZeitblockInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input (including startzeit < endzeit check)
+  const validation = validateInput(zeitblockSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('zeitbloecke')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating zeitblock:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen des Zeitblocks' }
   }
 
   revalidatePath(`/auffuehrungen/${data.veranstaltung_id}`)
@@ -102,6 +109,12 @@ export async function updateZeitblock(
   id: string,
   data: ZeitblockUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(zeitblockUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
 
   // Get the veranstaltung_id for revalidation
@@ -113,12 +126,12 @@ export async function updateZeitblock(
 
   const { error } = await supabase
     .from('zeitbloecke')
-    .update(data as never)
+    .update(validation.data as never)
     .eq('id', id)
 
   if (error) {
     console.error('Error updating zeitblock:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Aktualisieren des Zeitblocks' }
   }
 
   if (existing?.veranstaltung_id) {
@@ -159,27 +172,26 @@ export async function deleteZeitblock(
 }
 
 /**
- * Reorder time blocks
+ * Reorder time blocks (atomic operation using RPC)
  */
 export async function reorderZeitbloecke(
   veranstaltungId: string,
   orderedIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
+  if (orderedIds.length === 0) {
+    return { success: true }
+  }
+
   const supabase = await createClient()
 
-  // Update each zeitblock's sortierung
-  const updates = orderedIds.map((id, index) =>
-    supabase
-      .from('zeitbloecke')
-      .update({ sortierung: index } as never)
-      .eq('id', id)
-  )
+  // Use atomic RPC function to reorder in a single transaction
+  const { error } = await supabase.rpc('reorder_zeitbloecke', {
+    p_veranstaltung_id: veranstaltungId,
+    p_ordered_ids: orderedIds,
+  })
 
-  const results = await Promise.all(updates)
-  const hasError = results.some((r) => r.error)
-
-  if (hasError) {
-    console.error('Error reordering zeitbloecke')
+  if (error) {
+    console.error('Error reordering zeitbloecke:', error)
     return { success: false, error: 'Fehler beim Sortieren der Zeitblöcke' }
   }
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type { Raum, RaumInsert, RaumUpdate } from '../supabase/types'
+import { raumSchema, raumUpdateSchema, validateInput } from '../validations/modul2'
 
 /**
  * Get all active rooms
@@ -67,16 +68,22 @@ export async function getRaum(id: string): Promise<Raum | null> {
 export async function createRaum(
   data: RaumInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(raumSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('raeume')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating raum:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen des Raums' }
   }
 
   revalidatePath('/raeume')
@@ -91,15 +98,21 @@ export async function updateRaum(
   id: string,
   data: RaumUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(raumUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('raeume')
-    .update(data as never)
+    .update(validation.data as never)
     .eq('id', id)
 
   if (error) {
     console.error('Error updating raum:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Aktualisieren des Raums' }
   }
 
   revalidatePath('/raeume')

@@ -3,16 +3,21 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type {
-  AuffuehrungSchicht,
   AuffuehrungSchichtInsert,
   AuffuehrungSchichtUpdate,
   SchichtMitZeitblock,
-  AuffuehrungZuweisung,
   AuffuehrungZuweisungInsert,
   AuffuehrungZuweisungUpdate,
   ZuweisungMitPerson,
   BedarfStatus,
 } from '../supabase/types'
+import {
+  schichtSchema,
+  schichtUpdateSchema,
+  zuweisungSchema,
+  zuweisungUpdateSchema,
+  validateInput,
+} from '../validations/modul2'
 
 /**
  * Get all shifts for a performance with time block details
@@ -71,16 +76,22 @@ export async function getSchicht(id: string): Promise<SchichtMitZeitblock | null
 export async function createSchicht(
   data: AuffuehrungSchichtInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(schichtSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('auffuehrung_schichten')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating schicht:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen der Schicht' }
   }
 
   revalidatePath(`/auffuehrungen/${data.veranstaltung_id}`)
@@ -123,6 +134,12 @@ export async function updateSchicht(
   id: string,
   data: AuffuehrungSchichtUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(schichtUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
 
   // Get the veranstaltung_id for revalidation
@@ -134,12 +151,12 @@ export async function updateSchicht(
 
   const { error } = await supabase
     .from('auffuehrung_schichten')
-    .update(data as never)
+    .update(validation.data as never)
     .eq('id', id)
 
   if (error) {
     console.error('Error updating schicht:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Aktualisieren der Schicht' }
   }
 
   if (existing?.veranstaltung_id) {
@@ -253,16 +270,22 @@ export async function getZuweisungenForVeranstaltung(
 export async function createZuweisung(
   data: AuffuehrungZuweisungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(zuweisungSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('auffuehrung_zuweisungen')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating zuweisung:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen der Zuweisung' }
   }
 
   revalidatePath('/auffuehrungen')
@@ -276,15 +299,21 @@ export async function updateZuweisung(
   id: string,
   data: AuffuehrungZuweisungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(zuweisungUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('auffuehrung_zuweisungen')
-    .update(data as never)
+    .update(validation.data as never)
     .eq('id', id)
 
   if (error) {
     console.error('Error updating zuweisung:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Aktualisieren der Zuweisung' }
   }
 
   revalidatePath('/auffuehrungen')
@@ -364,11 +393,17 @@ export async function getBedarfUebersicht(
   })
 
   // Build the overview
-  return schichten.map((schicht) => ({
-    rolle: schicht.rolle,
-    zeitblock: schicht.zeitblock as BedarfStatus['zeitblock'],
-    benoetigt: schicht.anzahl_benoetigt,
-    zugewiesen: zuweisungCounts[schicht.id] || 0,
-    offen: schicht.anzahl_benoetigt - (zuweisungCounts[schicht.id] || 0),
-  }))
+  return schichten.map((schicht) => {
+    // Handle the zeitblock which may be an array or object from Supabase
+    const zb = schicht.zeitblock
+    const zeitblockData = Array.isArray(zb) ? zb[0] : zb
+
+    return {
+      rolle: schicht.rolle,
+      zeitblock: zeitblockData as BedarfStatus['zeitblock'],
+      benoetigt: schicht.anzahl_benoetigt,
+      zugewiesen: zuweisungCounts[schicht.id] || 0,
+      offen: schicht.anzahl_benoetigt - (zuweisungCounts[schicht.id] || 0),
+    }
+  })
 }

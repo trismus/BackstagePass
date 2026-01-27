@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type { Ressource, RessourceInsert, RessourceUpdate } from '../supabase/types'
+import { ressourceSchema, ressourceUpdateSchema, validateInput } from '../validations/modul2'
 
 /**
  * Get all resources
@@ -89,16 +90,22 @@ export async function getRessource(id: string): Promise<Ressource | null> {
 export async function createRessource(
   data: RessourceInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(ressourceSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('ressourcen')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating ressource:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen der Ressource' }
   }
 
   revalidatePath('/ressourcen')
@@ -113,15 +120,21 @@ export async function updateRessource(
   id: string,
   data: RessourceUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(ressourceUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('ressourcen')
-    .update(data as never)
+    .update(validation.data as never)
     .eq('id', id)
 
   if (error) {
     console.error('Error updating ressource:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Aktualisieren der Ressource' }
   }
 
   revalidatePath('/ressourcen')

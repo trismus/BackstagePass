@@ -11,12 +11,18 @@ import type {
   TemplateZeitblockInsert,
   TemplateSchicht,
   TemplateSchichtInsert,
-  TemplateRessource,
   TemplateRessourceInsert,
   ZeitblockInsert,
   AuffuehrungSchichtInsert,
-  RessourcenReservierungInsert,
 } from '../supabase/types'
+import {
+  templateSchema,
+  templateUpdateSchema,
+  templateZeitblockSchema,
+  templateSchichtSchema,
+  templateRessourceSchema,
+  validateInput,
+} from '../validations/modul2'
 
 /**
  * Get all templates (non-archived)
@@ -112,16 +118,22 @@ export async function getTemplate(id: string): Promise<TemplateMitDetails | null
 export async function createTemplate(
   data: AuffuehrungTemplateInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(templateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('auffuehrung_templates')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating template:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen der Vorlage' }
   }
 
   revalidatePath('/templates')
@@ -136,15 +148,21 @@ export async function updateTemplate(
   id: string,
   data: AuffuehrungTemplateUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(templateUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('auffuehrung_templates')
-    .update(data as never)
+    .update(validation.data as never)
     .eq('id', id)
 
   if (error) {
     console.error('Error updating template:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Aktualisieren der Vorlage' }
   }
 
   revalidatePath('/templates')
@@ -187,16 +205,22 @@ export async function deleteTemplate(
 export async function addTemplateZeitblock(
   data: TemplateZeitblockInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(templateZeitblockSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('template_zeitbloecke')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error adding template zeitblock:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Hinzufügen des Zeitblocks' }
   }
 
   revalidatePath(`/templates/${data.template_id}`)
@@ -226,16 +250,22 @@ export async function removeTemplateZeitblock(
 export async function addTemplateSchicht(
   data: TemplateSchichtInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(templateSchichtSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('template_schichten')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error adding template schicht:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Hinzufügen der Schicht' }
   }
 
   revalidatePath(`/templates/${data.template_id}`)
@@ -265,16 +295,22 @@ export async function removeTemplateSchicht(
 export async function addTemplateRessource(
   data: TemplateRessourceInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(templateRessourceSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('template_ressourcen')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error adding template ressource:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Hinzufügen der Ressource' }
   }
 
   revalidatePath(`/templates/${data.template_id}`)
@@ -383,7 +419,7 @@ export async function applyTemplate(
 
   // Create ressourcen reservierungen from template
   if (template.ressourcen.length > 0) {
-    const ressourcenInserts: RessourcenReservierungInsert[] = template.ressourcen
+    const ressourcenInserts = template.ressourcen
       .filter((tr) => tr.ressource_id)
       .map((tr) => ({
         veranstaltung_id: veranstaltungId,

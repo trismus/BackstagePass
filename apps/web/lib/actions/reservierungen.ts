@@ -3,13 +3,16 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type {
-  RaumReservierung,
   RaumReservierungInsert,
   RaumReservierungMitRaum,
-  RessourcenReservierung,
   RessourcenReservierungInsert,
   RessourcenReservierungMitRessource,
 } from '../supabase/types'
+import {
+  raumReservierungSchema,
+  ressourcenReservierungSchema,
+  validateInput,
+} from '../validations/modul2'
 
 // =============================================================================
 // Room Reservations
@@ -47,16 +50,22 @@ export async function getRaumReservierungen(
 export async function createRaumReservierung(
   data: RaumReservierungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(raumReservierungSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('raum_reservierungen')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating raum reservierung:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen der Raumreservierung' }
   }
 
   revalidatePath(`/auffuehrungen/${data.veranstaltung_id}`)
@@ -171,16 +180,22 @@ export async function getRessourcenReservierungen(
 export async function createRessourcenReservierung(
   data: RessourcenReservierungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(ressourcenReservierungSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('ressourcen_reservierungen')
-    .insert(data as never)
+    .insert(validation.data as never)
     .select('id')
     .single()
 
   if (error) {
     console.error('Error creating ressourcen reservierung:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: 'Fehler beim Erstellen der Ressourcenreservierung' }
   }
 
   revalidatePath(`/auffuehrungen/${data.veranstaltung_id}`)
