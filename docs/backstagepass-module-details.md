@@ -154,6 +154,8 @@ Damit entsteht ein klarer, praxisnaher Ablauf: **Mitglied → Produktion → Ter
 
 ## 🧩 Milestone: Produktionsplanung – Logistischer Prozess (Aufführungen & Helfereinsätze)
 
+Der vollständige Milestone inklusive Scope und Issues ist ausgelagert:  
+➡️ **[docs/milestones/produktionsplanung-logistik.md](./milestones/produktionsplanung-logistik.md)**
 **Ziel:** Die Planung von Aufführungsserien, Ressourcen, Helferschichten und Helferprofilen in klar getrennten Ebenen abbilden (Serie → Aufführung → Organisation → Personen).
 
 ### Scope (Ergebnisbild)
