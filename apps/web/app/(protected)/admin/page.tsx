@@ -5,6 +5,7 @@ import { getGruppen } from '@/lib/actions/gruppen'
 import { getVersionInfo } from '@/lib/version'
 import { SystemStatusCard } from '@/components/admin/SystemStatusCard'
 import { DataImportExport } from '@/components/admin/DataImportExport'
+import { DocumentationCard } from '@/components/admin/DocumentationCard'
 import {
   Card,
   CardHeader,
@@ -181,8 +182,11 @@ export default async function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Data Import/Export */}
-      <DataImportExport />
+      {/* Data Import/Export & Documentation */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DataImportExport />
+        <DocumentationCard />
+      </div>
 
       {/* Recent Users */}
       <Card>
