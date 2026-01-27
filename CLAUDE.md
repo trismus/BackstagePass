@@ -39,34 +39,71 @@ apps/web/
 │   │   ├── dashboard/
 │   │   ├── mitglieder/     # Members (Personen) management
 │   │   ├── veranstaltungen/# Club events management
+│   │   ├── auffuehrungen/  # Performances with shifts & scheduling
+│   │   ├── stuecke/        # Plays with scenes & roles
+│   │   ├── proben/         # Rehearsals
 │   │   ├── helfereinsaetze/# Helper events (external work)
 │   │   ├── partner/        # Partner organizations
+│   │   ├── raeume/         # Room management
+│   │   ├── ressourcen/     # Equipment management
+│   │   ├── templates/      # Performance templates
 │   │   ├── mein-bereich/   # Personal area (stundenkonto)
 │   │   └── admin/          # Admin-only (users, audit logs)
 │   ├── actions/            # Server actions (auth.ts, profile.ts)
 │   └── api/                # API routes
 ├── components/             # React components by domain
 ├── lib/
+│   ├── actions/            # Server actions by domain
 │   └── supabase/
 │       ├── client.ts       # Browser client
 │       ├── server.ts       # Server-side client (getUser, getUserProfile)
 │       ├── admin.ts        # Admin client (service role key)
 │       ├── middleware.ts   # Auth middleware helpers
-│       ├── auth-helpers.ts # RBAC utilities (requireRole, hasRole, canEdit)
-│       └── types.ts        # Database types (Person, Veranstaltung, etc.)
+│       ├── auth-helpers.ts # Permission utilities (see below)
+│       └── types.ts        # Database types & Permission types
 └── middleware.ts           # Next.js middleware for route protection
 
 supabase/migrations/        # Database migrations (SQL)
 docs/                       # Architecture and team documentation
+journal/                    # Development journal & documentation
 ```
 
 ## Key Patterns
 
-### Authentication & Authorization
-- Supabase SSR authentication with JWT tokens
-- Middleware-based route protection (`middleware.ts`)
-- Role hierarchy: ADMIN > EDITOR > VIEWER
-- Use `requireRole()` and `hasRole()` from `lib/supabase/auth-helpers.ts`
+### Authentication & Authorization (Issue #108)
+
+**7 User Roles** (capability-based, not hierarchical):
+| Role | German | Description |
+|------|--------|-------------|
+| `ADMIN` | Administrator | Full system access |
+| `VORSTAND` | Vorstand | All operational modules |
+| `MITGLIED_AKTIV` | Aktives Mitglied | Own data, registrations, hours |
+| `MITGLIED_PASSIV` | Passives Mitglied | Own profile, public info |
+| `HELFER` | Helfer | Assigned shifts only |
+| `PARTNER` | Partner | Own partner data |
+| `FREUNDE` | Freunde | Public info only |
+
+**Permission System** in `lib/supabase/auth-helpers.ts`:
+```typescript
+// Check specific permission
+hasPermission(userRole, 'mitglieder:read')
+hasPermission(userRole, 'veranstaltungen:write')
+
+// Check management level (ADMIN or VORSTAND)
+isManagement(userRole)
+canEdit(userRole)  // alias for isManagement
+
+// Check admin only
+isAdmin(userRole)
+
+// Server-side with redirect
+await requirePermission('mitglieder:write')
+```
+
+**Permission Types** (defined in `types.ts`):
+- `admin:access`, `mitglieder:read/write/delete`, `veranstaltungen:read/write/delete/register`
+- `helfereinsaetze:read/write/delete/register`, `stundenkonto:read/read_own/write`
+- `partner:read/write/delete`, `stuecke:read/write/delete`, `raeume:read/write`, `ressourcen:read/write`
 
 ### Component Architecture
 - Server Components by default
@@ -75,9 +112,23 @@ docs/                       # Architecture and team documentation
 
 ### Database
 - All tables use Row Level Security (RLS)
+- RLS helper functions: `is_management()`, `is_admin()`, `get_user_role()`, `has_role_permission()`
 - Migrations in `supabase/migrations/` with format `YYYYMMDDHHMMSS_name.sql`
-- Core tables: `personen`, `profiles`, `veranstaltungen`, `anmeldungen`, `partner`, `helfereinsaetze`, `helferschichten`, `stundenkonto`
-- Types defined in `lib/supabase/types.ts` (Person, Veranstaltung, Helfereinsatz, etc.)
+- Types defined in `lib/supabase/types.ts`
+
+**Core Tables:**
+- `personen` - Members/people
+- `profiles` - User accounts with roles
+- `veranstaltungen` - Events (vereinsevent, probe, auffuehrung, sonstiges)
+- `anmeldungen` - Event registrations
+- `partner` - Partner organizations
+- `helfereinsaetze`, `helferrollen`, `helferschichten` - Helper system
+- `stundenkonto` - Hours ledger
+- `stuecke`, `szenen`, `rollen`, `besetzungen` - Play management
+- `proben`, `proben_szenen`, `proben_teilnehmer` - Rehearsals
+- `zeitbloecke`, `auffuehrung_schichten`, `auffuehrung_zuweisungen` - Performance scheduling
+- `raeume`, `ressourcen`, `raum_reservierungen`, `ressourcen_reservierungen` - Resources
+- `auffuehrung_templates`, `template_zeitbloecke`, `template_schichten` - Templates
 
 ## Code Style
 
@@ -86,6 +137,7 @@ docs/                       # Architecture and team documentation
 - Custom color palette: `primary-*`, `secondary-*`, `stage-*`, `curtain-*`, `success-*`, `error-*`, `warning-*`, `info-*`
 - Prefix unused variables with `_`
 - `console.log` is warned; use `console.warn`/`console.error` if needed
+- Next.js Typed Routes enabled: use `as never` cast for dynamic route strings
 
 ## Commit Convention
 
