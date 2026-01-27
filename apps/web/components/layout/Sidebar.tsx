@@ -22,13 +22,6 @@ interface SidebarProps {
   className?: string
 }
 
-interface SidebarContextValue {
-  collapsed: boolean
-  setCollapsed: (collapsed: boolean) => void
-  mobileOpen: boolean
-  setMobileOpen: (open: boolean) => void
-}
-
 // =============================================================================
 // NavLink Component
 // =============================================================================
@@ -267,10 +260,6 @@ export function Sidebar({ sections, className = '' }: SidebarProps) {
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => !prev)
-  }, [])
-
-  const toggleMobile = useCallback(() => {
-    setMobileOpen((prev) => !prev)
   }, [])
 
   // Render nothing until mounted (prevents hydration mismatch)

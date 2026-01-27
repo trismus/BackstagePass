@@ -1,5 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { ROLE_START_PAGES, canAccessRoute } from '@/lib/navigation'
+import type { UserRole } from './types'
 
 type CookieToSet = {
   name: string
@@ -7,14 +9,32 @@ type CookieToSet = {
   options?: CookieOptions
 }
 
-// Routes that require authentication
-const protectedRoutes = ['/dashboard', '/mitglieder', '/app']
+// Routes that require authentication (all under (protected))
+const protectedPrefixes = [
+  '/dashboard',
+  '/mitglieder',
+  '/partner',
+  '/veranstaltungen',
+  '/auffuehrungen',
+  '/stuecke',
+  '/proben',
+  '/helfereinsaetze',
+  '/raeume',
+  '/ressourcen',
+  '/templates',
+  '/mein-bereich',
+  '/helfer',
+  '/partner-portal',
+  '/willkommen',
+  '/admin',
+  '/profile',
+]
 
 // Routes only accessible when NOT authenticated
 const authRoutes = ['/login', '/signup', '/forgot-password']
 
 // Routes accessible regardless of auth state (password reset flow)
-const publicRoutes = ['/reset-password']
+const publicRoutes = ['/reset-password', '/status']
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -44,9 +64,6 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -54,14 +71,14 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Check if current path is a protected route
-  const isProtectedRoute = protectedRoutes.some((route) =>
+  const isProtectedRoute = protectedPrefixes.some((route) =>
     pathname.startsWith(route)
   )
 
   // Check if current path is an auth route (login/signup)
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
 
-  // Check if current path is a public route (reset-password)
+  // Check if current path is a public route
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   // Redirect to login if accessing protected route without authentication
@@ -71,10 +88,36 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Redirect to dashboard if accessing auth routes while authenticated
-  // (but not public routes like reset-password)
+  // For authenticated users, check role-based access
+  if (user && isProtectedRoute) {
+    // Get user role from profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const userRole = (profile?.role as UserRole) || 'FREUNDE'
+
+    // Check if user can access this route
+    if (!canAccessRoute(userRole, pathname)) {
+      const startPage = ROLE_START_PAGES[userRole]
+      return NextResponse.redirect(new URL(startPage, request.url))
+    }
+  }
+
+  // Redirect authenticated users from auth routes to their start page
   if (isAuthRoute && user && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Get user role for correct redirect
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const userRole = (profile?.role as UserRole) || 'FREUNDE'
+    const startPage = ROLE_START_PAGES[userRole]
+    return NextResponse.redirect(new URL(startPage, request.url))
   }
 
   return supabaseResponse
