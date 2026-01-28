@@ -26,7 +26,7 @@ BackstagePass ist der digitale Backstage-Bereich für die Theatergruppe Widen �
 
 | Komponente | Status | Link |
 |------------|--------|------|
-| GitHub Issues | ✅ Aktiv | [Issues](https://github.com/trismus/Argus/issues) |
+| GitHub Issues | ✅ Aktiv | [Issues](https://github.com/trismus/BackstagePass/issues) |
 | Project Board | ✅ Aktiv | [Kanban](https://github.com/users/trismus/projects/2/views/1) |
 | Vercel | ✅ Erstellt | Dashboard |
 | Supabase | ✅ Integriert | via Vercel Integration |
