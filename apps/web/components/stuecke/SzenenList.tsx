@@ -7,6 +7,7 @@ import {
   updateSzene,
   deleteSzene,
   getNextSzeneNummer,
+  downloadSzene,
 } from '@/lib/actions/stuecke'
 
 interface SzenenListProps {
@@ -24,6 +25,7 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
   const [newSzene, setNewSzene] = useState<Partial<SzeneInsert>>({
     titel: '',
     beschreibung: '',
+    text: '',
     dauer_minuten: null,
   })
 
@@ -37,11 +39,12 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
         nummer,
         titel: newSzene.titel || `Szene ${nummer}`,
         beschreibung: newSzene.beschreibung || null,
+        text: newSzene.text || null,
         dauer_minuten: newSzene.dauer_minuten || null,
       })
       if (result.success) {
         setIsAdding(false)
-        setNewSzene({ titel: '', beschreibung: '', dauer_minuten: null })
+        setNewSzene({ titel: '', beschreibung: '', text: '', dauer_minuten: null })
       } else {
         setError(result.error || 'Fehler beim Erstellen')
       }
@@ -57,6 +60,7 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
       const result = await updateSzene(szene.id, {
         titel: szene.titel,
         beschreibung: szene.beschreibung,
+        text: szene.text,
         dauer_minuten: szene.dauer_minuten,
       })
       if (result.success) {
@@ -76,6 +80,27 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
       await deleteSzene(id)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDownload = async (id: string) => {
+    try {
+      const result = await downloadSzene(id)
+      if (result.success && result.content && result.filename) {
+        const blob = new Blob([result.content], { type: 'text/plain;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = result.filename
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      } else {
+        setError(result.error || 'Fehler beim Download')
+      }
+    } catch (err) {
+      setError('Download fehlgeschlagen')
     }
   }
 
@@ -128,23 +153,44 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
                       {szene.beschreibung}
                     </p>
                   )}
+                  {szene.text && (
+                    <div className="ml-11 mt-2 rounded-lg bg-gray-50 p-3">
+                      <p className="text-xs font-medium text-gray-600 mb-1">
+                        Szenentext:
+                      </p>
+                      <p className="whitespace-pre-wrap text-sm text-gray-700">
+                        {szene.text}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                {canEdit && (
-                  <div className="flex gap-2">
+                <div className="flex gap-2">
+                  {szene.text && (
                     <button
-                      onClick={() => setEditingId(szene.id)}
-                      className="text-sm text-gray-600 hover:text-gray-900"
+                      onClick={() => handleDownload(szene.id)}
+                      className="text-sm text-primary-600 hover:text-primary-800"
+                      title="Szene herunterladen"
                     >
-                      Bearbeiten
+                      ⬇ Download
                     </button>
-                    <button
-                      onClick={() => handleDelete(szene.id)}
-                      className="hover:text-error-800 text-sm text-error-600"
-                    >
-                      Löschen
-                    </button>
-                  </div>
-                )}
+                  )}
+                  {canEdit && (
+                    <>
+                      <button
+                        onClick={() => setEditingId(szene.id)}
+                        className="text-sm text-gray-600 hover:text-gray-900"
+                      >
+                        Bearbeiten
+                      </button>
+                      <button
+                        onClick={() => handleDelete(szene.id)}
+                        className="hover:text-error-800 text-sm text-error-600"
+                      >
+                        Löschen
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </li>
@@ -187,6 +233,15 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
                   className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                 />
               </div>
+              <textarea
+                placeholder="Szenentext / Script (optional)"
+                value={newSzene.text ?? ''}
+                onChange={(e) =>
+                  setNewSzene({ ...newSzene, text: e.target.value })
+                }
+                rows={6}
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
+              />
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setIsAdding(false)}
@@ -262,6 +317,15 @@ function SzeneEditRow({
           className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
         />
       </div>
+      <textarea
+        placeholder="Szenentext / Script"
+        value={editData.text ?? ''}
+        onChange={(e) =>
+          setEditData({ ...editData, text: e.target.value || null })
+        }
+        rows={8}
+        className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
+      />
       <div className="flex justify-end gap-2">
         <button
           onClick={onCancel}

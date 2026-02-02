@@ -761,6 +761,7 @@ export type Szene = {
   nummer: number
   titel: string
   beschreibung: string | null
+  text: string | null
   dauer_minuten: number | null
   created_at: string
   updated_at: string

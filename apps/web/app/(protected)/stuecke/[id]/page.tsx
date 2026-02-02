@@ -15,6 +15,7 @@ import {
   RollenList,
   SzenenRollenMatrix,
 } from '@/components/stuecke'
+import { DownloadStueckButton } from '@/components/stuecke/DownloadStueckButton'
 
 interface StueckDetailPageProps {
   params: Promise<{ id: string }>
@@ -84,14 +85,17 @@ export default async function StueckDetailPage({
                 </p>
               )}
             </div>
-            {canEdit && (
-              <Link
-                href={`/stuecke/${id}/bearbeiten` as Route}
-                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-              >
-                Bearbeiten
-              </Link>
-            )}
+            <div className="flex gap-2">
+              <DownloadStueckButton stueckId={id} />
+              {canEdit && (
+                <Link
+                  href={`/stuecke/${id}/bearbeiten` as Route}
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                >
+                  Bearbeiten
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Stats */}

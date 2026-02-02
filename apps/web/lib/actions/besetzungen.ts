@@ -361,3 +361,51 @@ export async function isPersonCast(
 
   return (count || 0) > 0
 }
+
+/**
+ * Get Besetzungen for the current user (for "Mein Bereich") - Issue #193
+ */
+export async function getMeineBesetzungen(): Promise<BesetzungMitDetails[]> {
+  const profile = await getUserProfile()
+
+  if (!profile) {
+    return []
+  }
+
+  const supabase = await createClient()
+
+  // Find person by email
+  const { data: person } = await supabase
+    .from('personen')
+    .select('id')
+    .eq('email', profile.email)
+    .single()
+
+  if (!person) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from('besetzungen')
+    .select(
+      `
+      *,
+      person:personen(id, vorname, nachname, email),
+      rolle:rollen!inner(id, name, typ, stueck_id, stueck:stuecke(id, titel))
+    `
+    )
+    .eq('person_id', person.id)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching meine besetzungen:', error)
+    return []
+  }
+
+  type RawBesetzung = Besetzung & {
+    person: { id: string; vorname: string; nachname: string; email: string | null }
+    rolle: { id: string; name: string; typ: RollenTyp; stueck_id: string; stueck: { id: string; titel: string } }
+  }
+
+  return (data as unknown as RawBesetzung[]) || []
+}

@@ -646,3 +646,85 @@ export async function updateSzeneRollen(
   }
   return { success: true }
 }
+
+// =============================================================================
+// Downloads (Issue #193)
+// =============================================================================
+
+/**
+ * Generate text content for a single Szene download
+ */
+export async function downloadSzene(
+  szeneId: string
+): Promise<{ success: boolean; content?: string; filename?: string; error?: string }> {
+  const szene = await getSzene(szeneId)
+
+  if (!szene) {
+    return { success: false, error: 'Szene nicht gefunden' }
+  }
+
+  const stueck = await getStueck(szene.stueck_id)
+
+  if (!stueck) {
+    return { success: false, error: 'Stück nicht gefunden' }
+  }
+
+  const content = `${stueck.titel}
+${stueck.autor ? `von ${stueck.autor}` : ''}
+
+${'='.repeat(60)}
+
+Szene ${szene.nummer}: ${szene.titel}
+${szene.beschreibung ? `\n${szene.beschreibung}\n` : ''}
+${szene.dauer_minuten ? `Dauer: ${szene.dauer_minuten} Minuten\n` : ''}
+${'='.repeat(60)}
+
+${szene.text || '(Noch kein Text vorhanden)'}
+`
+
+  const filename = `${stueck.titel.replace(/[^a-zA-Z0-9]/g, '_')}_Szene_${szene.nummer}.txt`
+
+  return { success: true, content, filename }
+}
+
+/**
+ * Generate text content for complete Stück download
+ */
+export async function downloadStueck(
+  stueckId: string
+): Promise<{ success: boolean; content?: string; filename?: string; error?: string }> {
+  const stueck = await getStueck(stueckId)
+
+  if (!stueck) {
+    return { success: false, error: 'Stück nicht gefunden' }
+  }
+
+  const szenen = await getSzenen(stueckId)
+
+  let content = `${stueck.titel}
+${stueck.autor ? `von ${stueck.autor}` : ''}
+${stueck.premiere_datum ? `\nPremiere: ${new Date(stueck.premiere_datum).toLocaleDateString('de-CH')}` : ''}
+
+${stueck.beschreibung ? `\n${stueck.beschreibung}\n` : ''}
+${'='.repeat(60)}
+
+`
+
+  for (const szene of szenen) {
+    content += `
+Szene ${szene.nummer}: ${szene.titel}
+${szene.beschreibung ? `${szene.beschreibung}\n` : ''}
+${szene.dauer_minuten ? `Dauer: ${szene.dauer_minuten} Minuten\n` : ''}
+${'-'.repeat(60)}
+
+${szene.text || '(Noch kein Text vorhanden)'}
+
+${'='.repeat(60)}
+
+`
+  }
+
+  const filename = `${stueck.titel.replace(/[^a-zA-Z0-9]/g, '_')}_Komplett.txt`
+
+  return { success: true, content, filename }
+}
