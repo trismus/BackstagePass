@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getUser, getUserProfile } from '@/lib/supabase/server'
 import { signOut } from '@/app/actions/auth'
 import { AppLayoutWrapper } from '@/components/layout/AppLayoutWrapper'
+import { FeedbackButton } from '@/components/feedback/FeedbackButton'
 
 export default async function ProtectedLayout({
   children,
@@ -18,13 +19,20 @@ export default async function ProtectedLayout({
   const userRole = profile?.role ?? 'FREUNDE'
 
   return (
-    <AppLayoutWrapper
-      userEmail={user.email}
-      userRole={userRole}
-      displayName={profile?.display_name}
-      onLogout={signOut}
-    >
-      {children}
-    </AppLayoutWrapper>
+    <>
+      <AppLayoutWrapper
+        userEmail={user.email}
+        userRole={userRole}
+        displayName={profile?.display_name}
+        onLogout={signOut}
+      >
+        {children}
+      </AppLayoutWrapper>
+      <FeedbackButton
+        userName={profile?.display_name ?? null}
+        userEmail={user.email}
+        userRole={userRole}
+      />
+    </>
   )
 }
