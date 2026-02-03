@@ -43,6 +43,9 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'raeume:write',
     'ressourcen:read',
     'ressourcen:write',
+    'produktionen:read',
+    'produktionen:write',
+    'produktionen:delete',
   ],
 
   VORSTAND: [
@@ -75,6 +78,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'raeume:write',
     'ressourcen:read',
     'ressourcen:write',
+    'produktionen:read',
+    'produktionen:write',
   ],
 
   MITGLIED_AKTIV: [
@@ -89,6 +94,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'stuecke:read',
     'raeume:read',
     'ressourcen:read',
+    'produktionen:read',
   ],
 
   MITGLIED_PASSIV: [

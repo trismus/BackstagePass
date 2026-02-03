@@ -264,6 +264,9 @@ export type Permission =
   | 'raeume:write'
   | 'ressourcen:read'
   | 'ressourcen:write'
+  | 'produktionen:read'
+  | 'produktionen:write'
+  | 'produktionen:delete'
 
 export type Profile = {
   id: string
@@ -1083,6 +1086,151 @@ export type HelferAnmeldungMitDetails = HelferAnmeldung & {
 }
 
 // =============================================================================
+// Produktionen (Issue #156)
+// =============================================================================
+
+export type ProduktionStatus =
+  | 'draft'
+  | 'planung'
+  | 'casting'
+  | 'proben'
+  | 'premiere'
+  | 'laufend'
+  | 'abgeschlossen'
+  | 'abgesagt'
+
+export type SerieStatus = 'draft' | 'planung' | 'publiziert' | 'abgeschlossen'
+
+export type AuffuehrungsTyp =
+  | 'regulaer'
+  | 'premiere'
+  | 'derniere'
+  | 'schulvorstellung'
+  | 'sondervorstellung'
+
+export const PRODUKTION_STATUS_LABELS: Record<ProduktionStatus, string> = {
+  draft: 'Entwurf',
+  planung: 'In Planung',
+  casting: 'Casting',
+  proben: 'Probenphase',
+  premiere: 'Premiere',
+  laufend: 'Laufend',
+  abgeschlossen: 'Abgeschlossen',
+  abgesagt: 'Abgesagt',
+}
+
+export const SERIE_STATUS_LABELS: Record<SerieStatus, string> = {
+  draft: 'Entwurf',
+  planung: 'In Planung',
+  publiziert: 'Publiziert',
+  abgeschlossen: 'Abgeschlossen',
+}
+
+export const AUFFUEHRUNG_TYP_LABELS: Record<AuffuehrungsTyp, string> = {
+  regulaer: 'Regulär',
+  premiere: 'Premiere',
+  derniere: 'Dernière',
+  schulvorstellung: 'Schulvorstellung',
+  sondervorstellung: 'Sondervorstellung',
+}
+
+export type Produktion = {
+  id: string
+  titel: string
+  beschreibung: string | null
+  stueck_id: string | null
+  status: ProduktionStatus
+  saison: string
+  proben_start: string | null
+  premiere: string | null
+  derniere: string | null
+  produktionsleitung_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProduktionInsert = Omit<
+  Produktion,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProduktionUpdate = Partial<ProduktionInsert>
+
+export type Auffuehrungsserie = {
+  id: string
+  produktion_id: string
+  name: string
+  beschreibung: string | null
+  status: SerieStatus
+  standard_ort: string | null
+  standard_startzeit: string | null
+  standard_einlass_minuten: number | null
+  template_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type AuffuehrungsserieInsert = Omit<
+  Auffuehrungsserie,
+  'id' | 'created_at' | 'updated_at'
+>
+export type AuffuehrungsserieUpdate = Partial<AuffuehrungsserieInsert>
+
+export type Serienauffuehrung = {
+  id: string
+  serie_id: string
+  veranstaltung_id: string | null
+  datum: string
+  startzeit: string | null
+  ort: string | null
+  typ: AuffuehrungsTyp
+  ist_ausnahme: boolean
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type SerienauffuehrungInsert = Omit<
+  Serienauffuehrung,
+  'id' | 'created_at' | 'updated_at'
+>
+export type SerienauffuehrungUpdate = Partial<SerienauffuehrungInsert>
+
+export type ProduktionsStab = {
+  id: string
+  produktion_id: string
+  person_id: string
+  funktion: string
+  ist_leitung: boolean
+  von: string | null
+  bis: string | null
+  notizen: string | null
+  created_at: string
+}
+
+export type ProduktionsStabInsert = Omit<ProduktionsStab, 'id' | 'created_at'>
+export type ProduktionsStabUpdate = Partial<ProduktionsStabInsert>
+
+// Extended types for views
+export type ProduktionMitDetails = Produktion & {
+  stueck: Pick<Stueck, 'id' | 'titel'> | null
+  produktionsleitung: Pick<Person, 'id' | 'vorname' | 'nachname'> | null
+  serien_count: number
+  naechste_auffuehrung: string | null
+}
+
+export type AuffuehrungsserieMitDetails = Auffuehrungsserie & {
+  produktion: Pick<Produktion, 'id' | 'titel'>
+  auffuehrungen_count: number
+  template: Pick<AuffuehrungTemplate, 'id' | 'name'> | null
+}
+
+export type ProduktionMitStab = Produktion & {
+  stab: (ProduktionsStab & {
+    person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
+  })[]
+}
+
+// =============================================================================
 // Gruppen (Teams, Gremien, Produktions-Casts) - Dashboards Milestone
 // =============================================================================
 
@@ -1312,6 +1460,26 @@ export type Database = {
         Row: HelferAnmeldung
         Insert: HelferAnmeldungInsert
         Update: HelferAnmeldungUpdate
+      }
+      produktionen: {
+        Row: Produktion
+        Insert: ProduktionInsert
+        Update: ProduktionUpdate
+      }
+      auffuehrungsserien: {
+        Row: Auffuehrungsserie
+        Insert: AuffuehrungsserieInsert
+        Update: AuffuehrungsserieUpdate
+      }
+      serienauffuehrungen: {
+        Row: Serienauffuehrung
+        Insert: SerienauffuehrungInsert
+        Update: SerienauffuehrungUpdate
+      }
+      produktions_stab: {
+        Row: ProduktionsStab
+        Insert: ProduktionsStabInsert
+        Update: ProduktionsStabUpdate
       }
       gruppen: {
         Row: Gruppe
