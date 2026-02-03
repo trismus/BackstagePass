@@ -9,7 +9,7 @@ import {
   ProduktionStatusBadge,
   ProduktionStatusSelect,
 } from '@/components/produktionen'
-import { PRODUKTION_STATUS_LABELS, SERIE_STATUS_LABELS } from '@/lib/supabase/types'
+import { SERIE_STATUS_LABELS } from '@/lib/supabase/types'
 import type { Stueck, Person, Auffuehrungsserie } from '@/lib/supabase/types'
 
 interface ProduktionDetailPageProps {

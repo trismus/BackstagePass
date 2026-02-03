@@ -42,7 +42,7 @@ export function ProduktionStatusSelect({
         <p className="text-sm text-error-600">{error}</p>
       )}
       <div className="flex flex-wrap gap-2">
-        {allowedTransitions.map((status) => (
+        {allowedTransitions.map((status: ProduktionStatus) => (
           <button
             key={status}
             onClick={() => handleStatusChange(status)}

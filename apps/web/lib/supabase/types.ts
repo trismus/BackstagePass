@@ -1231,6 +1231,58 @@ export type ProduktionMitStab = Produktion & {
 }
 
 // =============================================================================
+// Produktions-Besetzungen (Issue #158)
+// =============================================================================
+
+export type ProduktionsBesetzungStatus =
+  | 'offen'
+  | 'vorgemerkt'
+  | 'besetzt'
+  | 'abgesagt'
+
+export const PRODUKTIONS_BESETZUNG_STATUS_LABELS: Record<
+  ProduktionsBesetzungStatus,
+  string
+> = {
+  offen: 'Offen',
+  vorgemerkt: 'Vorgemerkt',
+  besetzt: 'Besetzt',
+  abgesagt: 'Abgesagt',
+}
+
+export type ProduktionsBesetzung = {
+  id: string
+  produktion_id: string
+  rolle_id: string
+  person_id: string | null
+  typ: BesetzungTyp
+  status: ProduktionsBesetzungStatus
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProduktionsBesetzungInsert = Omit<
+  ProduktionsBesetzung,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProduktionsBesetzungUpdate = Partial<
+  Omit<ProduktionsBesetzungInsert, 'produktion_id'>
+>
+
+// Extended types for views
+export type ProduktionsBesetzungMitDetails = ProduktionsBesetzung & {
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'skills'> | null
+  rolle: Pick<StueckRolle, 'id' | 'name' | 'typ'>
+}
+
+export type RolleMitProduktionsBesetzungen = StueckRolle & {
+  besetzungen: (ProduktionsBesetzung & {
+    person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'skills'> | null
+  })[]
+}
+
+// =============================================================================
 // Gruppen (Teams, Gremien, Produktions-Casts) - Dashboards Milestone
 // =============================================================================
 
@@ -1480,6 +1532,11 @@ export type Database = {
         Row: ProduktionsStab
         Insert: ProduktionsStabInsert
         Update: ProduktionsStabUpdate
+      }
+      produktions_besetzungen: {
+        Row: ProduktionsBesetzung
+        Insert: ProduktionsBesetzungInsert
+        Update: ProduktionsBesetzungUpdate
       }
       gruppen: {
         Row: Gruppe

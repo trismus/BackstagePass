@@ -1,4 +1,4 @@
-import type { ProduktionStatus } from '../supabase/types'
+import type { ProduktionStatus } from '@/lib/supabase/types'
 
 // =============================================================================
 // Status Workflow
