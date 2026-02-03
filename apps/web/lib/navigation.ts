@@ -55,6 +55,7 @@ export type NavIcon =
   | 'list'
   | 'mail'
   | 'eye'
+  | 'film'
 
 // =============================================================================
 // Startseiten pro Rolle
@@ -103,6 +104,12 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
     items: [
       { href: '/veranstaltungen', label: 'Übersicht', icon: 'calendar' },
       { href: '/auffuehrungen', label: 'Aufführungen', icon: 'theater' },
+      {
+        href: '/produktionen',
+        label: 'Produktionen',
+        icon: 'film',
+        permission: 'produktionen:read',
+      },
       {
         href: '/stuecke',
         label: 'Stücke',
@@ -427,6 +434,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   partner: 'Partner',
   veranstaltungen: 'Veranstaltungen',
   auffuehrungen: 'Aufführungen',
+  produktionen: 'Produktionen',
   stuecke: 'Stücke',
   proben: 'Proben',
   helfereinsaetze: 'Helfereinsätze',
