@@ -399,6 +399,10 @@ export type HelfereinsatzInsert = Omit<
 >
 export type HelfereinsatzUpdate = Partial<HelfereinsatzInsert>
 
+export type HelfereinsatzMitPartner = Helfereinsatz & {
+  partner: Pick<Partner, 'id' | 'name'> | null
+}
+
 export type Helferrolle = {
   id: string
   helfereinsatz_id: string
@@ -1149,6 +1153,19 @@ export type ProduktionInsert = Omit<
   'id' | 'created_at' | 'updated_at'
 >
 export type ProduktionUpdate = Partial<ProduktionInsert>
+
+export type ProduktionsChecklistItem = {
+  id: string
+  produktion_id: string
+  phase: string
+  label: string
+  pflicht: boolean
+  erledigt: boolean
+  erledigt_von: string | null
+  erledigt_am: string | null
+  sort_order: number
+  created_at: string
+}
 
 export type Auffuehrungsserie = {
   id: string

@@ -9,8 +9,16 @@ import { PRODUKTION_STATUS_LABELS } from '@/lib/supabase/types'
 import {
   initChecklistForProduktion,
   toggleChecklistItem,
-  CHECKLIST_PHASES,
 } from '@/lib/actions/produktions-checklisten'
+
+const CHECKLIST_PHASES: ProduktionStatus[] = [
+  'planung',
+  'casting',
+  'proben',
+  'premiere',
+  'laufend',
+  'abgeschlossen',
+]
 
 interface ProduktionChecklistSectionProps {
   produktionId: string
