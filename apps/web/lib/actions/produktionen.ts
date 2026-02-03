@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, getUserProfile } from '../supabase/server'
 import { hasPermission } from '../supabase/auth-helpers'
+import { ALLOWED_TRANSITIONS } from '../produktionen-utils'
 import type {
   Produktion,
   ProduktionInsert,
@@ -16,21 +17,6 @@ import type {
   SerienauffuehrungUpdate,
   AuffuehrungsTyp,
 } from '../supabase/types'
-
-// =============================================================================
-// Status Workflow
-// =============================================================================
-
-const ALLOWED_TRANSITIONS: Record<ProduktionStatus, ProduktionStatus[]> = {
-  draft: ['planung', 'abgesagt'],
-  planung: ['casting', 'proben', 'abgesagt'],
-  casting: ['proben', 'planung', 'abgesagt'],
-  proben: ['premiere', 'casting', 'abgesagt'],
-  premiere: ['laufend', 'abgesagt'],
-  laufend: ['abgeschlossen', 'abgesagt'],
-  abgeschlossen: [],
-  abgesagt: [],
-}
 
 // =============================================================================
 // Produktionen
@@ -203,12 +189,6 @@ export async function updateProduktionStatus(
   revalidatePath('/produktionen')
   revalidatePath(`/produktionen/${id}`)
   return { success: true }
-}
-
-export function getAllowedTransitions(
-  currentStatus: ProduktionStatus
-): ProduktionStatus[] {
-  return ALLOWED_TRANSITIONS[currentStatus] || []
 }
 
 // =============================================================================
