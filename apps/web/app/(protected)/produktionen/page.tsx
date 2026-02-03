@@ -3,7 +3,7 @@ import type { Route } from 'next'
 import { getProduktionen } from '@/lib/actions/produktionen'
 import { getUserProfile } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/supabase/permissions'
-import { ProduktionenTable } from '@/components/produktionen'
+import { ProduktionenViewToggle } from '@/components/produktionen'
 
 export default async function ProduktionenPage() {
   const [produktionen, profile] = await Promise.all([
@@ -39,8 +39,8 @@ export default async function ProduktionenPage() {
           )}
         </div>
 
-        {/* Table */}
-        <ProduktionenTable
+        {/* Dashboard with View Toggle */}
+        <ProduktionenViewToggle
           produktionen={produktionen}
           canEdit={canEdit}
           canDelete={canDelete}
