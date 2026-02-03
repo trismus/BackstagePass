@@ -2,12 +2,14 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
 import { getProduktion, getSerien } from '@/lib/actions/produktionen'
+import { getRollenMitProduktionsBesetzungen } from '@/lib/actions/produktions-besetzungen'
 import { getUserProfile } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/supabase/permissions'
 import { createClient } from '@/lib/supabase/server'
 import {
   ProduktionStatusBadge,
   ProduktionStatusSelect,
+  BesetzungsMatrix,
 } from '@/components/produktionen'
 import { SERIE_STATUS_LABELS } from '@/lib/supabase/types'
 import type { Stueck, Person, Auffuehrungsserie } from '@/lib/supabase/types'
@@ -55,6 +57,27 @@ export default async function ProduktionDetailPage({
       .eq('id', produktion.produktionsleitung_id)
       .single()
     leitung = data
+  }
+
+  // Fetch Besetzung data if Stück is linked
+  let rollenMitBesetzungen: Awaited<
+    ReturnType<typeof getRollenMitProduktionsBesetzungen>
+  > = []
+  let aktivePersonen: Pick<Person, 'id' | 'vorname' | 'nachname'>[] = []
+
+  if (produktion.stueck_id) {
+    const [rollenData, personenData] = await Promise.all([
+      getRollenMitProduktionsBesetzungen(id, produktion.stueck_id),
+      supabase
+        .from('personen')
+        .select('id, vorname, nachname')
+        .eq('aktiv', true)
+        .order('nachname', { ascending: true }),
+    ])
+    rollenMitBesetzungen = rollenData
+    aktivePersonen =
+      (personenData.data as Pick<Person, 'id' | 'vorname' | 'nachname'>[]) ||
+      []
   }
 
   const formatDate = (dateStr: string | null) => {
@@ -122,6 +145,17 @@ export default async function ProduktionDetailPage({
                   currentStatus={produktion.status}
                 />
               </div>
+            )}
+
+            {/* Besetzung */}
+            {produktion.stueck_id && (
+              <BesetzungsMatrix
+                produktionId={id}
+                stueckId={produktion.stueck_id}
+                rollen={rollenMitBesetzungen}
+                personen={aktivePersonen}
+                canEdit={canEdit}
+              />
             )}
 
             {/* Aufführungsserien */}
