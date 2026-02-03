@@ -1253,6 +1253,32 @@ export type ProduktionMitStab = Produktion & {
 }
 
 // =============================================================================
+// Produktions-Checklisten (Issue #161)
+// =============================================================================
+
+export type ProduktionsChecklistItem = {
+  id: string
+  produktion_id: string
+  phase: ProduktionStatus
+  label: string
+  pflicht: boolean
+  erledigt: boolean
+  erledigt_von: string | null
+  erledigt_am: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type ProduktionsChecklistItemInsert = Omit<
+  ProduktionsChecklistItem,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProduktionsChecklistItemUpdate = Partial<
+  Pick<ProduktionsChecklistItem, 'erledigt' | 'erledigt_von' | 'erledigt_am' | 'label' | 'pflicht' | 'sort_order'>
+>
+
+// =============================================================================
 // Produktions-Besetzungen (Issue #158)
 // =============================================================================
 
@@ -1564,6 +1590,11 @@ export type Database = {
         Row: ProduktionsBesetzung
         Insert: ProduktionsBesetzungInsert
         Update: ProduktionsBesetzungUpdate
+      }
+      produktions_checklisten: {
+        Row: ProduktionsChecklistItem
+        Insert: ProduktionsChecklistItemInsert
+        Update: ProduktionsChecklistItemUpdate
       }
       gruppen: {
         Row: Gruppe
