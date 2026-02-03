@@ -3,10 +3,8 @@
 import { useState } from 'react'
 import type { ProduktionStatus } from '@/lib/supabase/types'
 import { PRODUKTION_STATUS_LABELS } from '@/lib/supabase/types'
-import {
-  updateProduktionStatus,
-  getAllowedTransitions,
-} from '@/lib/actions/produktionen'
+import { updateProduktionStatus } from '@/lib/actions/produktionen'
+import { getAllowedTransitions } from '@/lib/produktionen-utils'
 
 interface ProduktionStatusSelectProps {
   produktionId: string
