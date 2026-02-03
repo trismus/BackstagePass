@@ -3,6 +3,7 @@ import type { Route } from 'next'
 import { notFound } from 'next/navigation'
 import { getProduktion, getSerien } from '@/lib/actions/produktionen'
 import { getRollenMitProduktionsBesetzungen } from '@/lib/actions/produktions-besetzungen'
+import { getLatestDokumente } from '@/lib/actions/produktions-dokumente'
 import { getUserProfile } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/supabase/permissions'
 import { createClient } from '@/lib/supabase/server'
@@ -10,6 +11,7 @@ import {
   ProduktionStatusBadge,
   ProduktionStatusSelect,
   BesetzungsMatrix,
+  ProduktionDokumenteSection,
 } from '@/components/produktionen'
 import { SERIE_STATUS_LABELS } from '@/lib/supabase/types'
 import type { Stueck, Person, Auffuehrungsserie } from '@/lib/supabase/types'
@@ -22,10 +24,11 @@ export default async function ProduktionDetailPage({
   params,
 }: ProduktionDetailPageProps) {
   const { id } = await params
-  const [produktion, serien, profile] = await Promise.all([
+  const [produktion, serien, profile, dokumente] = await Promise.all([
     getProduktion(id),
     getSerien(id),
     getUserProfile(),
+    getLatestDokumente(id),
   ])
 
   if (!produktion) {
@@ -157,6 +160,13 @@ export default async function ProduktionDetailPage({
                 canEdit={canEdit}
               />
             )}
+
+            {/* Dokumente */}
+            <ProduktionDokumenteSection
+              produktionId={id}
+              dokumente={dokumente}
+              canEdit={canEdit}
+            />
 
             {/* Aufführungsserien */}
             <div className="rounded-lg bg-white p-6 shadow">

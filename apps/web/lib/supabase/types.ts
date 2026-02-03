@@ -1231,6 +1231,61 @@ export type ProduktionMitStab = Produktion & {
 }
 
 // =============================================================================
+// Produktions-Dokumente (Issue #160)
+// =============================================================================
+
+export type DokumentKategorie =
+  | 'skript'
+  | 'spielplan'
+  | 'technik'
+  | 'requisiten'
+  | 'kostueme'
+  | 'werbung'
+  | 'sonstiges'
+
+export type DokumentStatus = 'entwurf' | 'freigegeben'
+
+export const DOKUMENT_KATEGORIE_LABELS: Record<DokumentKategorie, string> = {
+  skript: 'Skript',
+  spielplan: 'Spielplan',
+  technik: 'Technik',
+  requisiten: 'Requisiten',
+  kostueme: 'Kostüme',
+  werbung: 'Werbung',
+  sonstiges: 'Sonstiges',
+}
+
+export const DOKUMENT_STATUS_LABELS: Record<DokumentStatus, string> = {
+  entwurf: 'Entwurf',
+  freigegeben: 'Freigegeben',
+}
+
+export type ProduktionsDokument = {
+  id: string
+  produktion_id: string
+  name: string
+  kategorie: DokumentKategorie
+  datei_pfad: string
+  datei_name: string
+  datei_groesse: number | null
+  mime_type: string | null
+  version: number
+  vorgaenger_id: string | null
+  status: DokumentStatus
+  hochgeladen_von: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProduktionsDokumentInsert = Omit<
+  ProduktionsDokument,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProduktionsDokumentUpdate = Partial<
+  Omit<ProduktionsDokumentInsert, 'produktion_id' | 'datei_pfad'>
+>
+
+// =============================================================================
 // Produktions-Besetzungen (Issue #158)
 // =============================================================================
 
@@ -1537,6 +1592,11 @@ export type Database = {
         Row: ProduktionsBesetzung
         Insert: ProduktionsBesetzungInsert
         Update: ProduktionsBesetzungUpdate
+      }
+      produktions_dokumente: {
+        Row: ProduktionsDokument
+        Insert: ProduktionsDokumentInsert
+        Update: ProduktionsDokumentUpdate
       }
       gruppen: {
         Row: Gruppe
