@@ -1198,17 +1198,41 @@ export type SerienauffuehrungUpdate = Partial<SerienauffuehrungInsert>
 export type ProduktionsStab = {
   id: string
   produktion_id: string
-  person_id: string
+  person_id: string | null
   funktion: string
   ist_leitung: boolean
   von: string | null
   bis: string | null
   notizen: string | null
+  externer_name: string | null
+  externer_kontakt: string | null
   created_at: string
 }
 
 export type ProduktionsStabInsert = Omit<ProduktionsStab, 'id' | 'created_at'>
 export type ProduktionsStabUpdate = Partial<ProduktionsStabInsert>
+
+// Stab-Funktionen (Issue #159)
+export type StabKategorie = 'kuenstlerisch' | 'technisch' | 'organisation'
+
+export const STAB_KATEGORIE_LABELS: Record<StabKategorie, string> = {
+  kuenstlerisch: 'Künstlerisch',
+  technisch: 'Technisch',
+  organisation: 'Organisation',
+}
+
+export type StabFunktion = {
+  id: string
+  name: string
+  kategorie: StabKategorie
+  sortierung: number
+  aktiv: boolean
+  created_at: string
+}
+
+export type StabMitgliedMitDetails = ProduktionsStab & {
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'> | null
+}
 
 // Extended types for views
 export type ProduktionMitDetails = Produktion & {
@@ -1225,64 +1249,33 @@ export type AuffuehrungsserieMitDetails = Auffuehrungsserie & {
 }
 
 export type ProduktionMitStab = Produktion & {
-  stab: (ProduktionsStab & {
-    person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
-  })[]
+  stab: StabMitgliedMitDetails[]
 }
 
 // =============================================================================
-// Produktions-Dokumente (Issue #160)
+// Produktions-Checklisten (Issue #161)
 // =============================================================================
 
-export type DokumentKategorie =
-  | 'skript'
-  | 'spielplan'
-  | 'technik'
-  | 'requisiten'
-  | 'kostueme'
-  | 'werbung'
-  | 'sonstiges'
-
-export type DokumentStatus = 'entwurf' | 'freigegeben'
-
-export const DOKUMENT_KATEGORIE_LABELS: Record<DokumentKategorie, string> = {
-  skript: 'Skript',
-  spielplan: 'Spielplan',
-  technik: 'Technik',
-  requisiten: 'Requisiten',
-  kostueme: 'Kostüme',
-  werbung: 'Werbung',
-  sonstiges: 'Sonstiges',
-}
-
-export const DOKUMENT_STATUS_LABELS: Record<DokumentStatus, string> = {
-  entwurf: 'Entwurf',
-  freigegeben: 'Freigegeben',
-}
-
-export type ProduktionsDokument = {
+export type ProduktionsChecklistItem = {
   id: string
   produktion_id: string
-  name: string
-  kategorie: DokumentKategorie
-  datei_pfad: string
-  datei_name: string
-  datei_groesse: number | null
-  mime_type: string | null
-  version: number
-  vorgaenger_id: string | null
-  status: DokumentStatus
-  hochgeladen_von: string | null
+  phase: ProduktionStatus
+  label: string
+  pflicht: boolean
+  erledigt: boolean
+  erledigt_von: string | null
+  erledigt_am: string | null
+  sort_order: number
   created_at: string
   updated_at: string
 }
 
-export type ProduktionsDokumentInsert = Omit<
-  ProduktionsDokument,
+export type ProduktionsChecklistItemInsert = Omit<
+  ProduktionsChecklistItem,
   'id' | 'created_at' | 'updated_at'
 >
-export type ProduktionsDokumentUpdate = Partial<
-  Omit<ProduktionsDokumentInsert, 'produktion_id' | 'datei_pfad'>
+export type ProduktionsChecklistItemUpdate = Partial<
+  Pick<ProduktionsChecklistItem, 'erledigt' | 'erledigt_von' | 'erledigt_am' | 'label' | 'pflicht' | 'sort_order'>
 >
 
 // =============================================================================
@@ -1588,15 +1581,20 @@ export type Database = {
         Insert: ProduktionsStabInsert
         Update: ProduktionsStabUpdate
       }
+      stab_funktionen: {
+        Row: StabFunktion
+        Insert: Omit<StabFunktion, 'id' | 'created_at'>
+        Update: Partial<Omit<StabFunktion, 'id' | 'created_at'>>
+      }
       produktions_besetzungen: {
         Row: ProduktionsBesetzung
         Insert: ProduktionsBesetzungInsert
         Update: ProduktionsBesetzungUpdate
       }
-      produktions_dokumente: {
-        Row: ProduktionsDokument
-        Insert: ProduktionsDokumentInsert
-        Update: ProduktionsDokumentUpdate
+      produktions_checklisten: {
+        Row: ProduktionsChecklistItem
+        Insert: ProduktionsChecklistItemInsert
+        Update: ProduktionsChecklistItemUpdate
       }
       gruppen: {
         Row: Gruppe

@@ -4,6 +4,11 @@ import { notFound } from 'next/navigation'
 import { getProduktion, getSerien } from '@/lib/actions/produktionen'
 import { getRollenMitProduktionsBesetzungen } from '@/lib/actions/produktions-besetzungen'
 import { getLatestDokumente } from '@/lib/actions/produktions-dokumente'
+import {
+  getProduktionsStab,
+  getStabFunktionen,
+} from '@/lib/actions/produktions-stab'
+import { getChecklistItems } from '@/lib/actions/produktions-checklisten'
 import { getUserProfile } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/supabase/permissions'
 import { createClient } from '@/lib/supabase/server'
@@ -12,6 +17,8 @@ import {
   ProduktionStatusSelect,
   BesetzungsMatrix,
   ProduktionDokumenteSection,
+  ProduktionStabSection,
+  ProduktionChecklistSection,
 } from '@/components/produktionen'
 import { SERIE_STATUS_LABELS } from '@/lib/supabase/types'
 import type { Stueck, Person, Auffuehrungsserie } from '@/lib/supabase/types'
@@ -62,25 +69,31 @@ export default async function ProduktionDetailPage({
     leitung = data
   }
 
-  // Fetch Besetzung data if Stück is linked
-  let rollenMitBesetzungen: Awaited<
-    ReturnType<typeof getRollenMitProduktionsBesetzungen>
-  > = []
-  let aktivePersonen: Pick<Person, 'id' | 'vorname' | 'nachname'>[] = []
-
-  if (produktion.stueck_id) {
-    const [rollenData, personenData] = await Promise.all([
-      getRollenMitProduktionsBesetzungen(id, produktion.stueck_id),
+  // Fetch Stab + Funktionen + Personen + Checkliste in parallel
+  const [stabData, funktionenData, personenData, checklistItems] =
+    await Promise.all([
+      getProduktionsStab(id),
+      getStabFunktionen(),
       supabase
         .from('personen')
         .select('id, vorname, nachname')
         .eq('aktiv', true)
         .order('nachname', { ascending: true }),
+      getChecklistItems(id),
     ])
-    rollenMitBesetzungen = rollenData
-    aktivePersonen =
-      (personenData.data as Pick<Person, 'id' | 'vorname' | 'nachname'>[]) ||
-      []
+  const aktivePersonen =
+    (personenData.data as Pick<Person, 'id' | 'vorname' | 'nachname'>[]) || []
+
+  // Fetch Besetzung data if Stück is linked
+  let rollenMitBesetzungen: Awaited<
+    ReturnType<typeof getRollenMitProduktionsBesetzungen>
+  > = []
+
+  if (produktion.stueck_id) {
+    rollenMitBesetzungen = await getRollenMitProduktionsBesetzungen(
+      id,
+      produktion.stueck_id
+    )
   }
 
   const formatDate = (dateStr: string | null) => {
@@ -149,6 +162,23 @@ export default async function ProduktionDetailPage({
                 />
               </div>
             )}
+
+            {/* Checkliste */}
+            <ProduktionChecklistSection
+              produktionId={id}
+              currentStatus={produktion.status}
+              items={checklistItems}
+              canEdit={canEdit}
+            />
+
+            {/* Produktionsteam */}
+            <ProduktionStabSection
+              produktionId={id}
+              stab={stabData}
+              funktionen={funktionenData}
+              personen={aktivePersonen}
+              canEdit={canEdit}
+            />
 
             {/* Besetzung */}
             {produktion.stueck_id && (
