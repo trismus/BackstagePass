@@ -7,7 +7,6 @@ import type {
   ProduktionsDokument,
   ProduktionsDokumentUpdate,
   DokumentKategorie,
-  DokumentStatus,
 } from '../supabase/types'
 
 const BUCKET = 'produktions-dokumente'
