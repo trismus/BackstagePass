@@ -36,7 +36,7 @@ export function MeineTheaterrollen({ besetzungen }: MeineTheaterrollenProps) {
       } else {
         setError(result.error || 'Fehler beim Download')
       }
-    } catch (err) {
+    } catch {
       setError('Download fehlgeschlagen')
     } finally {
       setDownloadingId(null)

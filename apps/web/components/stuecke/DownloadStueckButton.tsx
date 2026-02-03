@@ -33,7 +33,7 @@ export function DownloadStueckButton({ stueckId }: DownloadStueckButtonProps) {
       } else {
         setError(result.error || 'Fehler beim Download')
       }
-    } catch (err) {
+    } catch {
       setError('Download fehlgeschlagen')
     } finally {
       setIsDownloading(false)

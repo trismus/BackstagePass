@@ -99,7 +99,7 @@ export function SzenenList({ stueckId, szenen, canEdit }: SzenenListProps) {
       } else {
         setError(result.error || 'Fehler beim Download')
       }
-    } catch (err) {
+    } catch {
       setError('Download fehlgeschlagen')
     }
   }
