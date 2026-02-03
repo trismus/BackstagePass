@@ -1198,17 +1198,41 @@ export type SerienauffuehrungUpdate = Partial<SerienauffuehrungInsert>
 export type ProduktionsStab = {
   id: string
   produktion_id: string
-  person_id: string
+  person_id: string | null
   funktion: string
   ist_leitung: boolean
   von: string | null
   bis: string | null
   notizen: string | null
+  externer_name: string | null
+  externer_kontakt: string | null
   created_at: string
 }
 
 export type ProduktionsStabInsert = Omit<ProduktionsStab, 'id' | 'created_at'>
 export type ProduktionsStabUpdate = Partial<ProduktionsStabInsert>
+
+// Stab-Funktionen (Issue #159)
+export type StabKategorie = 'kuenstlerisch' | 'technisch' | 'organisation'
+
+export const STAB_KATEGORIE_LABELS: Record<StabKategorie, string> = {
+  kuenstlerisch: 'Künstlerisch',
+  technisch: 'Technisch',
+  organisation: 'Organisation',
+}
+
+export type StabFunktion = {
+  id: string
+  name: string
+  kategorie: StabKategorie
+  sortierung: number
+  aktiv: boolean
+  created_at: string
+}
+
+export type StabMitgliedMitDetails = ProduktionsStab & {
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'> | null
+}
 
 // Extended types for views
 export type ProduktionMitDetails = Produktion & {
@@ -1225,9 +1249,7 @@ export type AuffuehrungsserieMitDetails = Auffuehrungsserie & {
 }
 
 export type ProduktionMitStab = Produktion & {
-  stab: (ProduktionsStab & {
-    person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
-  })[]
+  stab: StabMitgliedMitDetails[]
 }
 
 // =============================================================================
@@ -1532,6 +1554,11 @@ export type Database = {
         Row: ProduktionsStab
         Insert: ProduktionsStabInsert
         Update: ProduktionsStabUpdate
+      }
+      stab_funktionen: {
+        Row: StabFunktion
+        Insert: Omit<StabFunktion, 'id' | 'created_at'>
+        Update: Partial<Omit<StabFunktion, 'id' | 'created_at'>>
       }
       produktions_besetzungen: {
         Row: ProduktionsBesetzung
