@@ -7,6 +7,7 @@ import {
   getProduktionsStab,
   getStabFunktionen,
 } from '@/lib/actions/produktions-stab'
+import { getChecklistItems } from '@/lib/actions/produktions-checklisten'
 import { getUserProfile } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/supabase/permissions'
 import { createClient } from '@/lib/supabase/server'
@@ -15,6 +16,7 @@ import {
   ProduktionStatusSelect,
   BesetzungsMatrix,
   ProduktionStabSection,
+  ProduktionChecklistSection,
 } from '@/components/produktionen'
 import { SERIE_STATUS_LABELS } from '@/lib/supabase/types'
 import type { Stueck, Person, Auffuehrungsserie } from '@/lib/supabase/types'
@@ -64,16 +66,18 @@ export default async function ProduktionDetailPage({
     leitung = data
   }
 
-  // Fetch Stab + Funktionen + Personen in parallel
-  const [stabData, funktionenData, personenData] = await Promise.all([
-    getProduktionsStab(id),
-    getStabFunktionen(),
-    supabase
-      .from('personen')
-      .select('id, vorname, nachname')
-      .eq('aktiv', true)
-      .order('nachname', { ascending: true }),
-  ])
+  // Fetch Stab + Funktionen + Personen + Checkliste in parallel
+  const [stabData, funktionenData, personenData, checklistItems] =
+    await Promise.all([
+      getProduktionsStab(id),
+      getStabFunktionen(),
+      supabase
+        .from('personen')
+        .select('id, vorname, nachname')
+        .eq('aktiv', true)
+        .order('nachname', { ascending: true }),
+      getChecklistItems(id),
+    ])
   const aktivePersonen =
     (personenData.data as Pick<Person, 'id' | 'vorname' | 'nachname'>[]) || []
 
@@ -155,6 +159,14 @@ export default async function ProduktionDetailPage({
                 />
               </div>
             )}
+
+            {/* Checkliste */}
+            <ProduktionChecklistSection
+              produktionId={id}
+              currentStatus={produktion.status}
+              items={checklistItems}
+              canEdit={canEdit}
+            />
 
             {/* Produktionsteam */}
             <ProduktionStabSection
