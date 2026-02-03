@@ -361,7 +361,7 @@ export async function getBesetzungsVorschlaege(
   const vorschlaege: BesetzungsVorschlag[] = (
     personen as Pick<Person, 'id' | 'vorname' | 'nachname' | 'skills'>[]
   ).map((person) => {
-    const personSkills = (person.skills || []).map((s) => s.toLowerCase())
+
     const matchingSkills = (person.skills || []).filter((skill) =>
       keywords.some(
         (kw) =>
