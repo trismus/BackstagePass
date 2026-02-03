@@ -58,8 +58,7 @@
       "Bash(gh pr create:*)",
       "Bash(git fetch:*)",
       "Bash(gh pr view:*)",
-      "Bash(gh pr list:*)",
-      "Bash(gh pr edit 196 --title \"feat: add production-specific casting management \\(#158\\)\" --body \"$\\(cat <<''EOF''\n## Summary\n- **New `produktions_besetzungen` table** with status workflow \\(offen, vorgemerkt, besetzt, abgesagt\\), separate from existing Stück-level besetzungen\n- **Server actions**: CRUD, `initBesetzungenFromStueck` \\(imports roles with existing casts as \"vorgemerkt\"\\), `getBesetzungsVorschlaege` \\(skills-based ranking with conflict detection\\)\n- **BesetzungsMatrix**: grouped by Rollentyp, progress bar, status filter, \"Import from Stück\" button\n- **BesetzungsEditor**: inline per-role editing with person select, typ/status dropdowns, suggestions panel\n- **BesetzungsVorschlag**: ranked suggestions with skill highlights and conflict warnings\n- Integrated into Produktion detail page \\(visible when Stück is linked\\)\n\nCloses #158\n\n## Test plan\n- [ ] Verify migration creates `produktions_besetzungen` table with correct schema and RLS\n- [ ] Verify \"Rollen aus Stück importieren\" creates entries for all roles \\(vorgemerkt for existing casts, offen for uncast\\)\n- [ ] Verify casting CRUD: add, update status/typ, remove besetzung\n- [ ] Verify suggestions rank by skills match and flag conflicts\n- [ ] Verify progress bar updates as roles move to \"besetzt\"\n- [ ] Verify status filter narrows displayed roles\n- [ ] Verify non-management users see read-only matrix \\(no edit controls\\)\n- [ ] Verify Besetzung section only shows when Produktion has a linked Stück\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\nEOF\n\\)\")"
+      "Bash(gh pr list:*)"
     ]
   }
 }

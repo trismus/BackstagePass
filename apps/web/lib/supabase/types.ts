@@ -399,11 +399,6 @@ export type HelfereinsatzInsert = Omit<
 >
 export type HelfereinsatzUpdate = Partial<HelfereinsatzInsert>
 
-// Extended type with partner details
-export type HelfereinsatzMitPartner = Helfereinsatz & {
-  partner: Pick<Partner, 'id' | 'name'> | null
-}
-
 export type Helferrolle = {
   id: string
   helfereinsatz_id: string
@@ -1253,29 +1248,58 @@ export type ProduktionMitStab = Produktion & {
 }
 
 // =============================================================================
-// Produktions-Checklisten (Issue #161)
+// Produktions-Dokumente (Issue #160)
 // =============================================================================
 
-export type ProduktionsChecklistItem = {
+export type DokumentKategorie =
+  | 'skript'
+  | 'spielplan'
+  | 'technik'
+  | 'requisiten'
+  | 'kostueme'
+  | 'werbung'
+  | 'sonstiges'
+
+export type DokumentStatus = 'entwurf' | 'freigegeben'
+
+export const DOKUMENT_KATEGORIE_LABELS: Record<DokumentKategorie, string> = {
+  skript: 'Skript',
+  spielplan: 'Spielplan',
+  technik: 'Technik',
+  requisiten: 'Requisiten',
+  kostueme: 'Kostüme',
+  werbung: 'Werbung',
+  sonstiges: 'Sonstiges',
+}
+
+export const DOKUMENT_STATUS_LABELS: Record<DokumentStatus, string> = {
+  entwurf: 'Entwurf',
+  freigegeben: 'Freigegeben',
+}
+
+export type ProduktionsDokument = {
   id: string
   produktion_id: string
-  phase: ProduktionStatus
-  label: string
-  pflicht: boolean
-  erledigt: boolean
-  erledigt_von: string | null
-  erledigt_am: string | null
-  sort_order: number
+  name: string
+  kategorie: DokumentKategorie
+  datei_pfad: string
+  datei_name: string
+  datei_groesse: number | null
+  mime_type: string | null
+  version: number
+  vorgaenger_id: string | null
+  status: DokumentStatus
+  hochgeladen_von: string | null
   created_at: string
   updated_at: string
 }
 
-export type ProduktionsChecklistItemInsert = Omit<
-  ProduktionsChecklistItem,
+export type ProduktionsDokumentInsert = Omit<
+  ProduktionsDokument,
   'id' | 'created_at' | 'updated_at'
 >
-export type ProduktionsChecklistItemUpdate = Partial<
-  Pick<ProduktionsChecklistItem, 'erledigt' | 'erledigt_von' | 'erledigt_am' | 'label' | 'pflicht' | 'sort_order'>
+export type ProduktionsDokumentUpdate = Partial<
+  Omit<ProduktionsDokumentInsert, 'produktion_id' | 'datei_pfad'>
 >
 
 // =============================================================================
@@ -1591,10 +1615,10 @@ export type Database = {
         Insert: ProduktionsBesetzungInsert
         Update: ProduktionsBesetzungUpdate
       }
-      produktions_checklisten: {
-        Row: ProduktionsChecklistItem
-        Insert: ProduktionsChecklistItemInsert
-        Update: ProduktionsChecklistItemUpdate
+      produktions_dokumente: {
+        Row: ProduktionsDokument
+        Insert: ProduktionsDokumentInsert
+        Update: ProduktionsDokumentUpdate
       }
       gruppen: {
         Row: Gruppe

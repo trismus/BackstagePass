@@ -6,6 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 BackstagePass (codename: Argus) is a web application for theater group management (Theatergruppe Widen - TGW). The project uses German UI text and some German naming conventions.
 
+**Repository Structure:**
+- Root: Monorepo configuration and shared documentation
+- `apps/web/`: Main Next.js application (run commands from here)
+- `supabase/migrations/`: Database migrations
+- `docs/`: Architecture and team documentation
+- `journal/`: Development journal and decisions
+
 ## Tech Stack
 
 - **Frontend:** Next.js 15 (App Router), React 19, TypeScript 5.7
@@ -28,14 +35,23 @@ npm run format:check # Check formatting
 npm run typecheck    # TypeScript type check (tsc --noEmit)
 npm run check:config # Validate config files
 npm run check:health # Health check (requires running server)
+
+# Testing
+npm run test         # Run unit tests (vitest watch mode)
+npm run test:run     # Run unit tests once
+npm run test:coverage # Run tests with coverage report
+npm run test:e2e     # Run E2E tests (Playwright)
+npm run test:e2e:ui  # Run E2E tests with Playwright UI
 ```
 
 ## Environment Variables
 
-Required in `.env.local` (auto-synced via Supabase-Vercel integration):
+Required in `apps/web/.env.local` (auto-synced via Supabase-Vercel integration):
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Public anon key for client
 - `SUPABASE_SERVICE_ROLE_KEY` - Admin operations (server-side only)
+
+Note: A template `.env` file exists at `apps/web/.env` for reference.
 
 ## Architecture
 
@@ -153,11 +169,71 @@ export async function updatePerson(id: string, data: PersonUpdate) {
 - Supabase data fetching happens in Server Components
 - Pass data to Client Components via props
 
+### Form Validation
+
+```typescript
+// lib/validations/person.ts
+import { z } from 'zod'
+
+export const personSchema = z.object({
+  vorname: z.string().min(1, 'Vorname ist erforderlich'),
+  nachname: z.string().min(1, 'Nachname ist erforderlich'),
+  email: z.string().email('Ungültige E-Mail-Adresse').optional(),
+})
+
+export type PersonFormData = z.infer<typeof personSchema>
+
+// Use in server action
+export async function createPerson(formData: PersonFormData) {
+  const validated = personSchema.parse(formData)  // Throws if invalid
+  // ... save to database
+}
+```
+
 ### Database
 - All tables use Row Level Security (RLS)
 - RLS helper functions: `is_management()`, `is_admin()`, `get_user_role()`, `has_role_permission()`
 - Migrations in `supabase/migrations/` with format `YYYYMMDDHHMMSS_name.sql`
 - Types defined in `lib/supabase/types.ts`
+
+**Creating Migrations:**
+```bash
+# Create new migration file (from root directory)
+touch supabase/migrations/$(date +%Y%m%d%H%M%S)_feature_name.sql
+
+# Migration template
+-- supabase/migrations/YYYYMMDDHHMMSS_feature_name.sql
+CREATE TABLE table_name (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies
+CREATE POLICY "Policy description"
+  ON table_name
+  FOR SELECT
+  USING (has_role_permission('resource:read'));
+```
+
+**Generating Types:**
+Types are manually maintained in `lib/supabase/types.ts` following the database schema.
+
+### Testing
+
+**Unit Tests (Vitest):**
+- Located in `tests/` and alongside source files (*.test.ts)
+- Focus on server actions in `lib/actions/`
+- Setup file: `tests/setup.ts`
+- Run single test: `npm run test -- path/to/file.test.ts`
+
+**E2E Tests (Playwright):**
+- Located in `e2e/` directory
+- Tests run against local dev server (auto-started)
+- Base URL: `http://localhost:3000`
+- Example: `e2e/helferliste-admin.spec.ts`
 
 **Core Tables:**
 - `personen` - Members/people
