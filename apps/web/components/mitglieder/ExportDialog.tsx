@@ -4,9 +4,11 @@ import { useState, useTransition } from 'react'
 import {
   exportMitgliederCSV,
   exportMitgliederEmailList,
+} from '@/lib/actions/export'
+import {
   DEFAULT_EXPORT_COLUMNS,
   type ExportColumn,
-} from '@/lib/actions/export'
+} from '@/lib/validations/export'
 import type { MitgliederFilterParams } from '@/lib/actions/personen'
 
 interface ExportDialogProps {
