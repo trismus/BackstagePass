@@ -74,3 +74,8 @@ coverage/
 # IDE Extensions local config
 .vscode-remote/
 .vscode-server/
+
+# Claude Code local config
+.claude/settings.local.json
+.claude/agent-memory/
+.claude/agents/
