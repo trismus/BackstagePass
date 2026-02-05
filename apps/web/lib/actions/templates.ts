@@ -12,8 +12,14 @@ import type {
   TemplateSchicht,
   TemplateSchichtInsert,
   TemplateRessourceInsert,
+  TemplateInfoBlock,
+  TemplateInfoBlockInsert,
+  TemplateSachleistung,
+  TemplateSachleistungInsert,
   ZeitblockInsert,
   AuffuehrungSchichtInsert,
+  InfoBlockInsert,
+  SachleistungInsert,
 } from '../supabase/types'
 import {
   templateSchema,
@@ -21,6 +27,8 @@ import {
   templateZeitblockSchema,
   templateSchichtSchema,
   templateRessourceSchema,
+  templateInfoBlockSchema,
+  templateSachleistungSchema,
   validateInput,
 } from '../validations/modul2'
 
@@ -105,11 +113,26 @@ export async function getTemplate(
     )
     .eq('template_id', id)
 
+  // Get info_bloecke
+  const { data: info_bloecke } = await supabase
+    .from('template_info_bloecke')
+    .select('*')
+    .eq('template_id', id)
+    .order('sortierung', { ascending: true })
+
+  // Get sachleistungen
+  const { data: sachleistungen } = await supabase
+    .from('template_sachleistungen')
+    .select('*')
+    .eq('template_id', id)
+
   return {
     ...(template as AuffuehrungTemplate),
     zeitbloecke: (zeitbloecke as TemplateZeitblock[]) || [],
     schichten: (schichten as TemplateSchicht[]) || [],
     ressourcen: ressourcen || [],
+    info_bloecke: (info_bloecke as TemplateInfoBlock[]) || [],
+    sachleistungen: (sachleistungen as TemplateSachleistung[]) || [],
   } as TemplateMitDetails
 }
 
@@ -348,6 +371,102 @@ export async function removeTemplateRessource(
 }
 
 // =============================================================================
+// Template Info-Blöcke
+// =============================================================================
+
+export async function addTemplateInfoBlock(
+  data: TemplateInfoBlockInsert
+): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(templateInfoBlockSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { data: result, error } = await supabase
+    .from('template_info_bloecke')
+    .insert(validation.data as never)
+    .select('id')
+    .single()
+
+  if (error) {
+    console.error('Error adding template info block:', error)
+    return { success: false, error: 'Fehler beim Hinzufügen des Info-Blocks' }
+  }
+
+  revalidatePath(`/templates/${data.template_id}`)
+  return { success: true, id: result?.id }
+}
+
+export async function removeTemplateInfoBlock(
+  id: string,
+  templateId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_info_bloecke')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error removing template info block:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/templates/${templateId}`)
+  return { success: true }
+}
+
+// =============================================================================
+// Template Sachleistungen
+// =============================================================================
+
+export async function addTemplateSachleistung(
+  data: TemplateSachleistungInsert
+): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(templateSachleistungSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { data: result, error } = await supabase
+    .from('template_sachleistungen')
+    .insert(validation.data as never)
+    .select('id')
+    .single()
+
+  if (error) {
+    console.error('Error adding template sachleistung:', error)
+    return { success: false, error: 'Fehler beim Hinzufügen der Sachleistung' }
+  }
+
+  revalidatePath(`/templates/${data.template_id}`)
+  return { success: true, id: result?.id }
+}
+
+export async function removeTemplateSachleistung(
+  id: string,
+  templateId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_sachleistungen')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error removing template sachleistung:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/templates/${templateId}`)
+  return { success: true }
+}
+
+// =============================================================================
 // Apply Template
 // =============================================================================
 
@@ -461,6 +580,55 @@ export async function applyTemplate(
         )
         // Don't fail the whole operation for resource errors
       }
+    }
+  }
+
+  // Create info_bloecke from template (with calculated times from offsets)
+  if (template.info_bloecke && template.info_bloecke.length > 0) {
+    const infoBlockInserts: InfoBlockInsert[] = template.info_bloecke.map(
+      (ib) => ({
+        veranstaltung_id: veranstaltungId,
+        titel: ib.titel,
+        beschreibung: ib.beschreibung,
+        startzeit: minutesToTime(startTotalMinutes + ib.offset_minuten),
+        endzeit: minutesToTime(
+          startTotalMinutes + ib.offset_minuten + ib.dauer_minuten
+        ),
+        sortierung: ib.sortierung,
+      })
+    )
+
+    const { error: infoBlockError } = await supabase
+      .from('info_bloecke')
+      .insert(infoBlockInserts as never[])
+
+    if (infoBlockError) {
+      console.error('Error creating info_bloecke from template:', infoBlockError)
+      // Don't fail the whole operation for info block errors
+    }
+  }
+
+  // Create sachleistungen from template
+  if (template.sachleistungen && template.sachleistungen.length > 0) {
+    const sachleistungInserts: SachleistungInsert[] = template.sachleistungen.map(
+      (sl) => ({
+        veranstaltung_id: veranstaltungId,
+        name: sl.name,
+        anzahl: sl.anzahl,
+        beschreibung: sl.beschreibung,
+      })
+    )
+
+    const { error: sachleistungError } = await supabase
+      .from('sachleistungen')
+      .insert(sachleistungInserts as never[])
+
+    if (sachleistungError) {
+      console.error(
+        'Error creating sachleistungen from template:',
+        sachleistungError
+      )
+      // Don't fail the whole operation for sachleistung errors
     }
   }
 

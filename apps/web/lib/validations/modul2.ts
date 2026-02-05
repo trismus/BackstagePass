@@ -196,6 +196,38 @@ export const templateRessourceSchema = z.object({
 })
 
 // =============================================================================
+// Template Info-Block Validations (Issue #203)
+// =============================================================================
+
+export const templateInfoBlockSchema = z.object({
+  template_id: z.string().uuid('Ungültige Template-ID'),
+  titel: z.string().min(1, 'Titel ist erforderlich').max(100, 'Titel zu lang'),
+  beschreibung: z
+    .string()
+    .max(500, 'Beschreibung zu lang')
+    .nullable()
+    .optional(),
+  offset_minuten: z.number().int().default(0),
+  dauer_minuten: z.number().int().min(1, 'Dauer muss mindestens 1 Minute sein'),
+  sortierung: z.number().int().min(0).optional(),
+})
+
+// =============================================================================
+// Template Sachleistung Validations (Issue #202)
+// =============================================================================
+
+export const templateSachleistungSchema = z.object({
+  template_id: z.string().uuid('Ungültige Template-ID'),
+  name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
+  anzahl: z.number().int().min(1, 'Anzahl muss mindestens 1 sein').default(1),
+  beschreibung: z
+    .string()
+    .max(500, 'Beschreibung zu lang')
+    .nullable()
+    .optional(),
+})
+
+// =============================================================================
 // Helper function for validation
 // =============================================================================
 

@@ -9,6 +9,10 @@ import {
   removeTemplateSchicht,
   addTemplateRessource,
   removeTemplateRessource,
+  addTemplateInfoBlock,
+  removeTemplateInfoBlock,
+  addTemplateSachleistung,
+  removeTemplateSachleistung,
 } from '@/lib/actions/templates'
 import type {
   TemplateMitDetails,
@@ -57,6 +61,21 @@ export function TemplateDetailEditor({
   const [ressourceId, setRessourceId] = useState('')
   const [ressourceMenge, setRessourceMenge] = useState('1')
   const [ressourceLoading, setRessourceLoading] = useState(false)
+
+  // Info-Block Form State
+  const [showInfoBlockForm, setShowInfoBlockForm] = useState(false)
+  const [ibTitel, setIbTitel] = useState('')
+  const [ibBeschreibung, setIbBeschreibung] = useState('')
+  const [ibOffset, setIbOffset] = useState('0')
+  const [ibDauer, setIbDauer] = useState('30')
+  const [ibLoading, setIbLoading] = useState(false)
+
+  // Sachleistung Form State
+  const [showSachleistungForm, setShowSachleistungForm] = useState(false)
+  const [slName, setSlName] = useState('')
+  const [slAnzahl, setSlAnzahl] = useState('1')
+  const [slBeschreibung, setSlBeschreibung] = useState('')
+  const [slLoading, setSlLoading] = useState(false)
 
   // Filter out already added ressourcen
   const addedRessourceIds = template.ressourcen.map((r) => r.ressource_id)
@@ -135,6 +154,57 @@ export function TemplateDetailEditor({
   async function handleRemoveRessource(id: string, name: string) {
     if (!confirm(`Ressource "${name}" entfernen?`)) return
     await removeTemplateRessource(id, template.id)
+    router.refresh()
+  }
+
+  // Info-Block handlers
+  async function handleAddInfoBlock(e: React.FormEvent) {
+    e.preventDefault()
+    setIbLoading(true)
+    await addTemplateInfoBlock({
+      template_id: template.id,
+      titel: ibTitel,
+      beschreibung: ibBeschreibung || null,
+      offset_minuten: parseInt(ibOffset, 10),
+      dauer_minuten: parseInt(ibDauer, 10),
+      sortierung: template.info_bloecke?.length || 0,
+    })
+    setIbTitel('')
+    setIbBeschreibung('')
+    setIbOffset('0')
+    setIbDauer('30')
+    setShowInfoBlockForm(false)
+    setIbLoading(false)
+    router.refresh()
+  }
+
+  async function handleRemoveInfoBlock(id: string, titel: string) {
+    if (!confirm(`Info-Block "${titel}" entfernen?`)) return
+    await removeTemplateInfoBlock(id, template.id)
+    router.refresh()
+  }
+
+  // Sachleistung handlers
+  async function handleAddSachleistung(e: React.FormEvent) {
+    e.preventDefault()
+    setSlLoading(true)
+    await addTemplateSachleistung({
+      template_id: template.id,
+      name: slName,
+      anzahl: parseInt(slAnzahl, 10),
+      beschreibung: slBeschreibung || null,
+    })
+    setSlName('')
+    setSlAnzahl('1')
+    setSlBeschreibung('')
+    setShowSachleistungForm(false)
+    setSlLoading(false)
+    router.refresh()
+  }
+
+  async function handleRemoveSachleistung(id: string, name: string) {
+    if (!confirm(`Sachleistung "${name}" entfernen?`)) return
+    await removeTemplateSachleistung(id, template.id)
     router.refresh()
   }
 
@@ -437,6 +507,219 @@ export function TemplateDetailEditor({
           {template.ressourcen.length === 0 && (
             <div className="p-8 text-center text-gray-500">
               Keine Ressourcen
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Info-Blöcke */}
+      <div className="rounded-lg bg-white shadow">
+        <div className="flex items-center justify-between border-b bg-amber-50 px-4 py-3">
+          <h3 className="font-medium text-gray-900">
+            Info-Blöcke ({template.info_bloecke?.length || 0})
+          </h3>
+          {!showInfoBlockForm && (
+            <button
+              onClick={() => setShowInfoBlockForm(true)}
+              className="text-sm text-amber-600 hover:text-amber-800"
+            >
+              + Hinzufügen
+            </button>
+          )}
+        </div>
+
+        {showInfoBlockForm && (
+          <form
+            onSubmit={handleAddInfoBlock}
+            className="space-y-3 border-b bg-amber-50 p-4"
+          >
+            <input
+              type="text"
+              placeholder="Titel (z.B. Helferessen, Briefing) *"
+              required
+              value={ibTitel}
+              onChange={(e) => setIbTitel(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+            <textarea
+              placeholder="Beschreibung (optional)"
+              value={ibBeschreibung}
+              onChange={(e) => setIbBeschreibung(e.target.value)}
+              rows={2}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">
+                  Offset (Min)
+                </label>
+                <input
+                  type="number"
+                  value={ibOffset}
+                  onChange={(e) => setIbOffset(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">
+                  Dauer (Min)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={ibDauer}
+                  onChange={(e) => setIbDauer(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={ibLoading}
+                className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm text-white"
+              >
+                Speichern
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowInfoBlockForm(false)}
+                className="px-3 py-1.5 text-sm text-gray-600"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </form>
+        )}
+
+        <div className="divide-y divide-gray-200">
+          {template.info_bloecke?.map((ib) => (
+            <div key={ib.id} className="flex items-center justify-between p-4">
+              <div>
+                <span className="font-medium text-gray-900">{ib.titel}</span>
+                <div className="text-sm text-gray-500">
+                  Offset: {ib.offset_minuten} Min, Dauer: {ib.dauer_minuten} Min
+                </div>
+                {ib.beschreibung && (
+                  <div className="text-sm text-gray-400">{ib.beschreibung}</div>
+                )}
+              </div>
+              <button
+                onClick={() => handleRemoveInfoBlock(ib.id, ib.titel)}
+                className="text-sm text-red-600 hover:text-red-800"
+              >
+                Entfernen
+              </button>
+            </div>
+          ))}
+          {(!template.info_bloecke || template.info_bloecke.length === 0) && (
+            <div className="p-8 text-center text-gray-500">
+              Keine Info-Blöcke
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Sachleistungen */}
+      <div className="rounded-lg bg-white shadow">
+        <div className="flex items-center justify-between border-b bg-green-50 px-4 py-3">
+          <h3 className="font-medium text-gray-900">
+            Sachleistungen ({template.sachleistungen?.length || 0})
+          </h3>
+          {!showSachleistungForm && (
+            <button
+              onClick={() => setShowSachleistungForm(true)}
+              className="text-sm text-green-600 hover:text-green-800"
+            >
+              + Hinzufügen
+            </button>
+          )}
+        </div>
+
+        {showSachleistungForm && (
+          <form
+            onSubmit={handleAddSachleistung}
+            className="space-y-3 border-b bg-green-50 p-4"
+          >
+            <input
+              type="text"
+              placeholder="Name (z.B. Kuchen, Salat) *"
+              required
+              value={slName}
+              onChange={(e) => setSlName(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">
+                  Anzahl
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={slAnzahl}
+                  onChange={(e) => setSlAnzahl(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">
+                  Beschreibung
+                </label>
+                <input
+                  type="text"
+                  placeholder="Optional"
+                  value={slBeschreibung}
+                  onChange={(e) => setSlBeschreibung(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={slLoading}
+                className="rounded-lg bg-green-600 px-3 py-1.5 text-sm text-white"
+              >
+                Speichern
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSachleistungForm(false)}
+                className="px-3 py-1.5 text-sm text-gray-600"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </form>
+        )}
+
+        <div className="divide-y divide-gray-200">
+          {template.sachleistungen?.map((sl) => (
+            <div key={sl.id} className="flex items-center justify-between p-4">
+              <div>
+                <span className="font-medium text-gray-900">{sl.name}</span>
+                <span className="ml-2 text-sm text-gray-500">
+                  ({sl.anzahl}x)
+                </span>
+                {sl.beschreibung && (
+                  <span className="ml-2 text-sm text-gray-400">
+                    - {sl.beschreibung}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => handleRemoveSachleistung(sl.id, sl.name)}
+                className="text-sm text-red-600 hover:text-red-800"
+              >
+                Entfernen
+              </button>
+            </div>
+          ))}
+          {(!template.sachleistungen ||
+            template.sachleistungen.length === 0) && (
+            <div className="p-8 text-center text-gray-500">
+              Keine Sachleistungen
             </div>
           )}
         </div>
