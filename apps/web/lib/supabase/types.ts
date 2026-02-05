@@ -313,16 +313,30 @@ export type Veranstaltung = {
   status: VeranstaltungStatus
   helfer_template_id: string | null
   helfer_status: HelferStatus | null
+  // Booking limits (Issue #210)
+  max_schichten_pro_helfer: number | null
+  helfer_buchung_deadline: string | null
+  helfer_buchung_limit_aktiv: boolean
   created_at: string
   updated_at: string
 }
 
 export type VeranstaltungInsert = Omit<
   Veranstaltung,
-  'id' | 'created_at' | 'updated_at' | 'helfer_template_id' | 'helfer_status'
+  | 'id'
+  | 'created_at'
+  | 'updated_at'
+  | 'helfer_template_id'
+  | 'helfer_status'
+  | 'max_schichten_pro_helfer'
+  | 'helfer_buchung_deadline'
+  | 'helfer_buchung_limit_aktiv'
 > & {
   helfer_template_id?: string | null
   helfer_status?: HelferStatus | null
+  max_schichten_pro_helfer?: number | null
+  helfer_buchung_deadline?: string | null
+  helfer_buchung_limit_aktiv?: boolean
 }
 export type VeranstaltungUpdate = Partial<VeranstaltungInsert>
 
@@ -1029,6 +1043,81 @@ export type KommendeProbe = Probe & {
 }
 
 // =============================================================================
+// Externe Helfer Profile (Issue #208)
+// =============================================================================
+
+export type ExterneHelferProfil = {
+  id: string
+  email: string
+  vorname: string
+  nachname: string
+  telefon: string | null
+  notizen: string | null
+  erstellt_am: string
+  letzter_einsatz: string | null
+}
+
+export type ExterneHelferProfilInsert = Omit<
+  ExterneHelferProfil,
+  'id' | 'erstellt_am'
+>
+export type ExterneHelferProfilUpdate = Partial<
+  Omit<ExterneHelferProfilInsert, 'email'>
+>
+
+// Extended type with registration count
+export type ExterneHelferProfilMitEinsaetze = ExterneHelferProfil & {
+  einsaetze_count: number
+}
+
+// =============================================================================
+// Helfer Warteliste (Issue #211)
+// =============================================================================
+
+export type WartelisteStatus =
+  | 'wartend'
+  | 'benachrichtigt'
+  | 'zugewiesen'
+  | 'abgelehnt'
+
+export const WARTELISTE_STATUS_LABELS: Record<WartelisteStatus, string> = {
+  wartend: 'Wartend',
+  benachrichtigt: 'Benachrichtigt',
+  zugewiesen: 'Zugewiesen',
+  abgelehnt: 'Abgelehnt',
+}
+
+export type HelferWarteliste = {
+  id: string
+  schicht_id: string
+  profile_id: string | null
+  external_helper_id: string | null
+  position: number
+  erstellt_am: string
+  benachrichtigt_am: string | null
+  status: WartelisteStatus
+}
+
+export type HelferWartelisteInsert = Omit<
+  HelferWarteliste,
+  'id' | 'erstellt_am' | 'position'
+>
+export type HelferWartelisteUpdate = Partial<
+  Omit<HelferWartelisteInsert, 'schicht_id' | 'profile_id' | 'external_helper_id'>
+>
+
+// Extended type with person/helper details
+export type WartelisteEintragMitDetails = HelferWarteliste & {
+  profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
+  external_helper: Pick<ExterneHelferProfil, 'id' | 'vorname' | 'nachname' | 'email'> | null
+  schicht: {
+    id: string
+    rolle: string
+    veranstaltung_id: string
+  }
+}
+
+// =============================================================================
 // Helferliste (Helper List Feature) - Issues #115-134
 // =============================================================================
 
@@ -1113,9 +1202,10 @@ export type HelferAnmeldung = {
   id: string
   rollen_instanz_id: string
   profile_id: string | null
-  external_name: string | null
-  external_email: string | null
-  external_telefon: string | null
+  external_helper_id: string | null  // FK to externe_helfer_profile (Issue #208)
+  external_name: string | null       // Legacy: inline name for external helpers
+  external_email: string | null      // Legacy: inline email
+  external_telefon: string | null    // Legacy: inline phone
   status: HelferAnmeldungStatus
   created_at: string
 }
@@ -1728,6 +1818,16 @@ export type Database = {
         Row: HelferAnmeldung
         Insert: HelferAnmeldungInsert
         Update: HelferAnmeldungUpdate
+      }
+      externe_helfer_profile: {
+        Row: ExterneHelferProfil
+        Insert: ExterneHelferProfilInsert
+        Update: ExterneHelferProfilUpdate
+      }
+      helfer_warteliste: {
+        Row: HelferWarteliste
+        Insert: HelferWartelisteInsert
+        Update: HelferWartelisteUpdate
       }
       produktionen: {
         Row: Produktion
