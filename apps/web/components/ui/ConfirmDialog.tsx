@@ -5,7 +5,8 @@ import { useEffect, useRef } from 'react'
 export interface ConfirmDialogProps {
   open: boolean
   title?: string
-  message: string
+  message?: string
+  description?: string // alias for message
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'danger' | 'warning' | 'default'
@@ -17,12 +18,15 @@ export function ConfirmDialog({
   open,
   title = 'Bestätigung',
   message,
+  description,
   confirmLabel = 'Bestätigen',
   cancelLabel = 'Abbrechen',
   variant = 'default',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  // Support both message and description (description takes precedence)
+  const displayMessage = description || message || ''
   const dialogRef = useRef<HTMLDialogElement>(null)
   const confirmButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -66,7 +70,7 @@ export function ConfirmDialog({
     >
       <div className="p-6">
         <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>
-        <p className="mt-2 text-neutral-600">{message}</p>
+        <p className="mt-2 text-neutral-600">{displayMessage}</p>
 
         <div className="mt-6 flex justify-end gap-3">
           <button
