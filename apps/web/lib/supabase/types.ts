@@ -317,6 +317,9 @@ export type Veranstaltung = {
   max_schichten_pro_helfer: number | null
   helfer_buchung_deadline: string | null
   helfer_buchung_limit_aktiv: boolean
+  // Communication (Issue #221)
+  public_helfer_token: string | null
+  koordinator_id: string | null
   created_at: string
   updated_at: string
 }
@@ -331,12 +334,16 @@ export type VeranstaltungInsert = Omit<
   | 'max_schichten_pro_helfer'
   | 'helfer_buchung_deadline'
   | 'helfer_buchung_limit_aktiv'
+  | 'public_helfer_token'
+  | 'koordinator_id'
 > & {
   helfer_template_id?: string | null
   helfer_status?: HelferStatus | null
   max_schichten_pro_helfer?: number | null
   helfer_buchung_deadline?: string | null
   helfer_buchung_limit_aktiv?: boolean
+  public_helfer_token?: string | null
+  koordinator_id?: string | null
 }
 export type VeranstaltungUpdate = Partial<VeranstaltungInsert>
 
@@ -619,13 +626,16 @@ export type AuffuehrungZuweisung = {
   person_id: string
   status: ZuweisungStatus
   notizen: string | null
+  abmeldung_token: string | null
   created_at: string
 }
 
 export type AuffuehrungZuweisungInsert = Omit<
   AuffuehrungZuweisung,
-  'id' | 'created_at' | 'updated_at'
->
+  'id' | 'created_at' | 'updated_at' | 'abmeldung_token'
+> & {
+  abmeldung_token?: string | null
+}
 export type AuffuehrungZuweisungUpdate = Partial<AuffuehrungZuweisungInsert>
 
 // Extended type with person details
@@ -1096,6 +1106,8 @@ export type HelferWarteliste = {
   erstellt_am: string
   benachrichtigt_am: string | null
   status: WartelisteStatus
+  confirmation_token: string | null
+  antwort_deadline: string | null
 }
 
 export type HelferWartelisteInsert = Omit<
@@ -1628,6 +1640,98 @@ export type PersonMitGruppen = Person & {
 }
 
 // =============================================================================
+// Email Templates (Issue #220)
+// =============================================================================
+
+export type EmailTemplateTyp =
+  | 'confirmation'
+  | 'reminder_48h'
+  | 'reminder_6h'
+  | 'cancellation'
+  | 'waitlist_assigned'
+  | 'waitlist_timeout'
+  | 'thank_you'
+
+export const EMAIL_TEMPLATE_TYP_LABELS: Record<EmailTemplateTyp, string> = {
+  confirmation: 'Buchungsbestätigung',
+  reminder_48h: 'Erinnerung (48h vorher)',
+  reminder_6h: 'Erinnerung (6h vorher)',
+  cancellation: 'Abmeldebestätigung',
+  waitlist_assigned: 'Warteliste: Platz frei',
+  waitlist_timeout: 'Warteliste: Timeout',
+  thank_you: 'Dankeschön',
+}
+
+export type EmailTemplate = {
+  id: string
+  typ: EmailTemplateTyp
+  subject: string
+  body_html: string
+  body_text: string
+  placeholders: string[]
+  aktiv: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type EmailTemplateInsert = Omit<
+  EmailTemplate,
+  'id' | 'created_at' | 'updated_at'
+>
+export type EmailTemplateUpdate = Partial<
+  Omit<EmailTemplateInsert, 'typ'>
+>
+
+// Placeholder data structure for rendering templates
+export type EmailPlaceholderData = {
+  vorname?: string
+  nachname?: string
+  email?: string
+  veranstaltung?: string
+  datum?: string
+  uhrzeit?: string
+  ort?: string
+  rolle?: string
+  zeitblock?: string
+  startzeit?: string
+  endzeit?: string
+  treffpunkt?: string
+  briefing_zeit?: string
+  helferessen_zeit?: string
+  absage_link?: string
+  public_link?: string
+  koordinator_name?: string
+  koordinator_email?: string
+  koordinator_telefon?: string
+  frist?: string
+}
+
+// =============================================================================
+// Email Logs (Issue #221)
+// =============================================================================
+
+export type EmailLogStatus = 'pending' | 'sent' | 'failed' | 'retrying'
+
+export type EmailLog = {
+  id: string
+  anmeldung_id: string | null
+  helfer_anmeldung_id: string | null
+  template_typ: string
+  recipient_email: string
+  recipient_name: string | null
+  status: EmailLogStatus
+  error_message: string | null
+  retry_count: number
+  sent_at: string | null
+  created_at: string
+}
+
+export type EmailLogInsert = Omit<EmailLog, 'id' | 'created_at' | 'retry_count'> & {
+  retry_count?: number
+}
+export type EmailLogUpdate = Partial<Omit<EmailLogInsert, 'template_typ' | 'recipient_email'>>
+
+// =============================================================================
 // Database Schema Type
 // =============================================================================
 
@@ -1888,6 +1992,11 @@ export type Database = {
         Row: Verfuegbarkeit
         Insert: VerfuegbarkeitInsert
         Update: VerfuegbarkeitUpdate
+      }
+      email_templates: {
+        Row: EmailTemplate
+        Insert: EmailTemplateInsert
+        Update: EmailTemplateUpdate
       }
     }
   }
