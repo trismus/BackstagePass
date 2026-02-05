@@ -360,14 +360,17 @@ export type Anmeldung = {
   status: AnmeldungStatus
   anmeldedatum: string
   notizen: string | null
+  absage_grund: string | null
   created_at: string
   updated_at: string
 }
 
 export type AnmeldungInsert = Omit<
   Anmeldung,
-  'id' | 'created_at' | 'updated_at' | 'anmeldedatum'
->
+  'id' | 'created_at' | 'updated_at' | 'anmeldedatum' | 'absage_grund'
+> & {
+  absage_grund?: string | null
+}
 export type AnmeldungUpdate = Partial<AnmeldungInsert>
 
 // Extended type with person details for participant lists
@@ -634,6 +637,8 @@ export type AuffuehrungZuweisung = {
   // Replacement fields (M7)
   ersetzt_zuweisung_id: string | null
   ersatz_grund: string | null
+  // Feedback fields (M8)
+  feedback_token: string | null
   created_at: string
 }
 
@@ -647,6 +652,7 @@ export type AuffuehrungZuweisungInsert = Omit<
   | 'no_show'
   | 'ersetzt_zuweisung_id'
   | 'ersatz_grund'
+  | 'feedback_token'
 > & {
   abmeldung_token?: string | null
   checked_in_at?: string | null
@@ -654,6 +660,7 @@ export type AuffuehrungZuweisungInsert = Omit<
   no_show?: boolean
   ersetzt_zuweisung_id?: string | null
   ersatz_grund?: string | null
+  feedback_token?: string | null
 }
 export type AuffuehrungZuweisungUpdate = Partial<AuffuehrungZuweisungInsert>
 
@@ -1061,6 +1068,7 @@ export type ProbeStatus =
 export type TeilnehmerStatus =
   | 'eingeladen'
   | 'zugesagt'
+  | 'vielleicht'
   | 'abgesagt'
   | 'erschienen'
   | 'nicht_erschienen'
@@ -1100,14 +1108,17 @@ export type ProbeTeilnehmer = {
   person_id: string
   status: TeilnehmerStatus
   notizen: string | null
+  absage_grund: string | null
   created_at: string
   updated_at: string
 }
 
 export type ProbeTeilnehmerInsert = Omit<
   ProbeTeilnehmer,
-  'id' | 'created_at' | 'updated_at'
->
+  'id' | 'created_at' | 'updated_at' | 'absage_grund'
+> & {
+  absage_grund?: string | null
+}
 export type ProbeTeilnehmerUpdate = Partial<ProbeTeilnehmerInsert>
 
 // Extended types
@@ -1804,6 +1815,46 @@ export type EmailLogInsert = Omit<EmailLog, 'id' | 'created_at' | 'retry_count'>
   retry_count?: number
 }
 export type EmailLogUpdate = Partial<Omit<EmailLogInsert, 'template_typ' | 'recipient_email'>>
+
+// =============================================================================
+// Helfer Feedback (Issue #229)
+// =============================================================================
+
+export type HelferFeedback = {
+  id: string
+  zuweisung_id: string
+  rating: number
+  feedback_positiv: string | null
+  feedback_verbesserung: string | null
+  wieder_helfen: boolean | null
+  created_at: string
+}
+
+export type HelferFeedbackInsert = Omit<HelferFeedback, 'id' | 'created_at'>
+export type HelferFeedbackUpdate = Partial<HelferFeedbackInsert>
+
+// Extended type with helper details
+export type HelferFeedbackMitDetails = HelferFeedback & {
+  zuweisung: {
+    id: string
+    person: Pick<Person, 'id' | 'vorname' | 'nachname'> | null
+    schicht: {
+      rolle: string
+      veranstaltung_id: string
+    } | null
+  }
+}
+
+export type ThankYouEmailsSent = {
+  id: string
+  veranstaltung_id: string
+  sent_at: string
+  sent_by: string | null
+  recipient_count: number
+  only_attended: boolean
+}
+
+export type ThankYouEmailsSentInsert = Omit<ThankYouEmailsSent, 'id' | 'sent_at'>
 
 // =============================================================================
 // Database Schema Type

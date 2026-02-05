@@ -154,6 +154,7 @@ export async function getCheckInOverview(
             no_show: zuweisung.no_show,
             ersetzt_zuweisung_id: null,
             ersatz_grund: null,
+            feedback_token: null,
             created_at: '',
             person: {
               id: person.id,
@@ -240,6 +241,7 @@ export async function getCheckInOverview(
           no_show: zuweisung.no_show,
           ersetzt_zuweisung_id: null,
           ersatz_grund: null,
+          feedback_token: null,
           created_at: '',
           person: {
             id: person.id,

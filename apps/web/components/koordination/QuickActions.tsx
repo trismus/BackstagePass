@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { updateHelferStatus, getAllHelferEmails } from '@/lib/actions/koordination'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { StundenErfassungButton } from './StundenErfassungButton'
+import { ThankYouEmailsButton } from './ThankYouEmailsButton'
 
 interface QuickActionsProps {
   veranstaltungId: string
@@ -92,6 +94,18 @@ export function QuickActions({
             Abschliessen
           </button>
         )}
+
+        {/* Stundenkonto Erfassung Button - only visible when abgeschlossen */}
+        <StundenErfassungButton
+          veranstaltungId={veranstaltungId}
+          helferStatus={helferStatus}
+        />
+
+        {/* Thank You Emails Button - only visible when abgeschlossen */}
+        <ThankYouEmailsButton
+          veranstaltungId={veranstaltungId}
+          helferStatus={helferStatus}
+        />
 
         {/* Export Actions */}
         <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white">
