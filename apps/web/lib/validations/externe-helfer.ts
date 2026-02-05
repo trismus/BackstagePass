@@ -65,7 +65,17 @@ export const externeHelferRegistrierungSchema = z.object({
     .optional(),
 })
 
+/**
+ * Schema for public registration form with privacy acceptance
+ */
+export const externeHelferRegistrierungFormSchema = externeHelferRegistrierungSchema.extend({
+  datenschutz: z
+    .boolean()
+    .refine((val) => val === true, 'Bitte akzeptiere die Datenschutzerklärung'),
+})
+
 // Export types inferred from schemas
 export type ExterneHelferProfilFormData = z.infer<typeof externeHelferProfilSchema>
 export type ExterneHelferProfilUpdateFormData = z.infer<typeof externeHelferProfilUpdateSchema>
 export type ExterneHelferRegistrierungFormData = z.infer<typeof externeHelferRegistrierungSchema>
+export type ExterneHelferRegistrierungFormWithPrivacy = z.infer<typeof externeHelferRegistrierungFormSchema>

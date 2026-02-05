@@ -85,7 +85,9 @@ export function SchichtZuweisungListe({
 
   // Get already assigned person IDs for a schicht
   const getAssignedPersonIds = (schichtId: string): string[] => {
-    return (zuweisungenBySchicht[schichtId] || []).map((z) => z.person_id)
+    return (zuweisungenBySchicht[schichtId] || [])
+      .map((z) => z.person_id)
+      .filter((id): id is string => id !== null)
   }
 
   return (
