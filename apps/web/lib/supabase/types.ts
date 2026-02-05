@@ -669,6 +669,61 @@ export type ZuweisungMitSchicht = AuffuehrungZuweisung & {
 }
 
 // =============================================================================
+// Check-in Types (M7 Live Operations)
+// =============================================================================
+
+export type CheckInStatus = 'erwartet' | 'anwesend' | 'no_show'
+
+export const CHECKIN_STATUS_LABELS: Record<CheckInStatus, string> = {
+  erwartet: 'Erwartet',
+  anwesend: 'Anwesend',
+  no_show: 'Nicht erschienen',
+}
+
+export type ZuweisungMitCheckIn = AuffuehrungZuweisung & {
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'telefon' | 'email'>
+  schicht: {
+    id: string
+    rolle: string
+    zeitblock: Pick<Zeitblock, 'id' | 'name' | 'startzeit' | 'endzeit'> | null
+  }
+  checkin_status: CheckInStatus
+}
+
+export type ZeitblockMitCheckIns = {
+  id: string
+  name: string
+  startzeit: string
+  endzeit: string
+  typ: ZeitblockTyp
+  status: 'geplant' | 'aktiv' | 'abgeschlossen'
+  zuweisungen: ZuweisungMitCheckIn[]
+  stats: {
+    total: number
+    eingecheckt: number
+    no_show: number
+    erwartet: number
+  }
+}
+
+export type CheckInOverview = {
+  veranstaltung: {
+    id: string
+    titel: string
+    datum: string
+    startzeit: string | null
+    endzeit: string | null
+  }
+  zeitbloecke: ZeitblockMitCheckIns[]
+  stats: {
+    total: number
+    eingecheckt: number
+    no_show: number
+    erwartet: number
+  }
+}
+
+// =============================================================================
 // Reservierungen (Reservations) - Issue #98
 // =============================================================================
 
