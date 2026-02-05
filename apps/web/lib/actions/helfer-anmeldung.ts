@@ -36,6 +36,8 @@ export type HelferlisteData = {
     startzeit: string | null
     endzeit: string | null
     ort: string | null
+    helfer_status: 'entwurf' | 'veroeffentlicht' | 'abgeschlossen' | null
+    public_helfer_token: string | null
   }
   zeitbloecke: ZeitblockMitSchichten[]
   infoBloecke: InfoBlock[]
@@ -57,7 +59,7 @@ export async function getHelferlisteData(
   // Get veranstaltung
   const { data: veranstaltung, error: veranstaltungError } = await supabase
     .from('veranstaltungen')
-    .select('id, titel, datum, startzeit, endzeit, ort')
+    .select('id, titel, datum, startzeit, endzeit, ort, helfer_status, public_helfer_token')
     .eq('id', veranstaltungId)
     .eq('typ', 'auffuehrung')
     .single()

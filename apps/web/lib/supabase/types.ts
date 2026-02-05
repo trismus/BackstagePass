@@ -298,6 +298,12 @@ export type VeranstaltungStatus =
 
 export type HelferStatus = 'entwurf' | 'veroeffentlicht' | 'abgeschlossen'
 
+export const HELFER_STATUS_LABELS: Record<HelferStatus, string> = {
+  entwurf: 'Entwurf',
+  veroeffentlicht: 'Veröffentlicht',
+  abgeschlossen: 'Abgeschlossen',
+}
+
 export type Veranstaltung = {
   id: string
   titel: string
@@ -313,6 +319,7 @@ export type Veranstaltung = {
   status: VeranstaltungStatus
   helfer_template_id: string | null
   helfer_status: HelferStatus | null
+  public_helfer_token: string | null
   // Booking limits (Issue #210)
   max_schichten_pro_helfer: number | null
   helfer_buchung_deadline: string | null
@@ -328,12 +335,14 @@ export type VeranstaltungInsert = Omit<
   | 'updated_at'
   | 'helfer_template_id'
   | 'helfer_status'
+  | 'public_helfer_token'
   | 'max_schichten_pro_helfer'
   | 'helfer_buchung_deadline'
   | 'helfer_buchung_limit_aktiv'
 > & {
   helfer_template_id?: string | null
   helfer_status?: HelferStatus | null
+  public_helfer_token?: string | null
   max_schichten_pro_helfer?: number | null
   helfer_buchung_deadline?: string | null
   helfer_buchung_limit_aktiv?: boolean
@@ -580,19 +589,29 @@ export type ZeitblockUpdate = Partial<ZeitblockInsert>
 // Aufführung Schichten (Performance Shifts) - Issue #97
 // =============================================================================
 
+export type SchichtSichtbarkeit = 'intern' | 'public'
+
+export const SCHICHT_SICHTBARKEIT_LABELS: Record<SchichtSichtbarkeit, string> = {
+  intern: 'Intern',
+  public: 'Öffentlich',
+}
+
 export type AuffuehrungSchicht = {
   id: string
   veranstaltung_id: string
   zeitblock_id: string | null
   rolle: string
   anzahl_benoetigt: number
+  sichtbarkeit: SchichtSichtbarkeit
   created_at: string
 }
 
 export type AuffuehrungSchichtInsert = Omit<
   AuffuehrungSchicht,
-  'id' | 'created_at'
->
+  'id' | 'created_at' | 'sichtbarkeit'
+> & {
+  sichtbarkeit?: SchichtSichtbarkeit // defaults to 'intern' in DB
+}
 export type AuffuehrungSchichtUpdate = Partial<AuffuehrungSchichtInsert>
 
 // Extended type with time block details
@@ -616,7 +635,8 @@ export type ZuweisungStatus =
 export type AuffuehrungZuweisung = {
   id: string
   schicht_id: string
-  person_id: string
+  person_id: string | null
+  external_helper_id: string | null
   status: ZuweisungStatus
   notizen: string | null
   created_at: string
@@ -624,8 +644,10 @@ export type AuffuehrungZuweisung = {
 
 export type AuffuehrungZuweisungInsert = Omit<
   AuffuehrungZuweisung,
-  'id' | 'created_at' | 'updated_at'
->
+  'id' | 'created_at' | 'updated_at' | 'external_helper_id'
+> & {
+  external_helper_id?: string | null // optional - only for external helpers
+}
 export type AuffuehrungZuweisungUpdate = Partial<AuffuehrungZuweisungInsert>
 
 // Extended type with person details

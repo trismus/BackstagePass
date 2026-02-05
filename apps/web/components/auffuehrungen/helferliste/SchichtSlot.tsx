@@ -1,6 +1,7 @@
 'use client'
 
 import type { SchichtMitDetails } from '@/lib/actions/helfer-anmeldung'
+import { SichtbarkeitToggle } from '@/components/admin/helferliste'
 
 interface SchichtSlotProps {
   schicht: SchichtMitDetails
@@ -11,6 +12,7 @@ interface SchichtSlotProps {
   waitlistPosition?: number | null  // null = not on waitlist, number = position
   onJoinWaitlist?: () => void
   onLeaveWaitlist?: () => void
+  canEdit?: boolean
 }
 
 export function SchichtSlot({
@@ -22,6 +24,7 @@ export function SchichtSlot({
   waitlistPosition,
   onJoinWaitlist,
   onLeaveWaitlist,
+  canEdit = false,
 }: SchichtSlotProps) {
   // Count active zuweisungen
   const activeZuweisungen = (schicht.zuweisungen || []).filter(
@@ -65,6 +68,13 @@ export function SchichtSlot({
               <span className="rounded-full bg-warning-100 px-2 py-0.5 text-xs font-medium text-warning-700">
                 Warteliste Position {waitlistPosition}
               </span>
+            )}
+            {/* Visibility Toggle (Admin only) */}
+            {canEdit && (
+              <SichtbarkeitToggle
+                schichtId={schicht.id}
+                currentSichtbarkeit={schicht.sichtbarkeit || 'intern'}
+              />
             )}
           </div>
 

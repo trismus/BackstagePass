@@ -3,7 +3,12 @@ import { redirect, notFound } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/supabase/auth-helpers'
 import { getHelferlisteData } from '@/lib/actions/helfer-anmeldung'
+import { getSchichtSichtbarkeitStats } from '@/lib/actions/schicht-sichtbarkeit'
 import { HelferlisteView } from '@/components/auffuehrungen/helferliste'
+import {
+  HelferStatusControl,
+  BulkSichtbarkeitAction,
+} from '@/components/admin/helferliste'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -26,14 +31,21 @@ export default async function HelferlistePage({ params }: PageProps) {
   }
 
   const { id } = await params
-  const data = await getHelferlisteData(id)
+
+  // Fetch data in parallel
+  const [data, sichtbarkeitStats] = await Promise.all([
+    getHelferlisteData(id),
+    getSchichtSichtbarkeitStats(id),
+  ])
 
   if (!data) {
     notFound()
   }
 
-  // Check if user can register for shifts
+  // Check user permissions
   const canRegister = hasPermission(profile.role, 'helferliste:register')
+  const canEdit = hasPermission(profile.role, 'helferliste:write')
+  const isAdmin = profile.role === 'ADMIN'
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -85,8 +97,27 @@ export default async function HelferlistePage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* Admin Controls */}
+        {canEdit && (
+          <div className="mb-8 space-y-4">
+            <HelferStatusControl
+              veranstaltungId={id}
+              currentStatus={data.veranstaltung.helfer_status}
+              publicToken={data.veranstaltung.public_helfer_token}
+              canEdit={canEdit}
+              isAdmin={isAdmin}
+            />
+
+            <BulkSichtbarkeitAction
+              veranstaltungId={id}
+              stats={sichtbarkeitStats}
+              disabled={data.veranstaltung.helfer_status === 'abgeschlossen'}
+            />
+          </div>
+        )}
+
         {/* Helferliste View */}
-        <HelferlisteView data={data} canRegister={canRegister} />
+        <HelferlisteView data={data} canRegister={canRegister} canEdit={canEdit} />
 
         {/* Back Link */}
         <div className="mt-8">
