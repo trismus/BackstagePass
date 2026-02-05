@@ -19,6 +19,7 @@ Hier sammeln wir Projekt- und Fachdokumentation (z. B. Architektur, Entscheidung
 ### 🎭 **Projekt Dokumentation:**
 - [BackstagePass – Detailkonzept der drei Kernmodule](backstagepass-module-details.md)
 - [BackstagePass – High-Level Architecture](architecture/backstagepass-architecture.md)
+- [Database Schema: Modul 2](architecture/database-schema-modul2.md)
 - [Teamrollen & Workflow](team.md)
 - [Kanban-Board](kanban.md)
 - [Mitarbeiter Beschreibungen](mitarbeiter-beschreibungen.md)
@@ -43,7 +44,8 @@ docs/
 │   ├── backstagepass-module-details.md (Module Konzepte)
 │   ├── kanban.md                       (Kanban Board)
 │   └── architecture/
-│       └── backstagepass-architecture.md (High-Level Architecture)
+│       ├── backstagepass-architecture.md (High-Level Architecture)
+│       └── database-schema-modul2.md  (Database Schema Modul 2)
 │
 ├── 📊 STRATEGIE & PLANUNG
 │   ├── strategy/
@@ -63,13 +65,22 @@ docs/
 | "Meine API Keys funktionieren nicht" | [VSCODE-SECRETS-SETUP.md](VSCODE-SECRETS-SETUP.md) |
 | "Welche Keybinding war das?" | [VSCODE-QUICK-REFERENCE.md](VSCODE-QUICK-REFERENCE.md) |
 | "Wie ist die Architektur?" | [architecture/backstagepass-architecture.md](architecture/backstagepass-architecture.md) |
+| "Wie ist das Datenmodell?" | [architecture/database-schema-modul2.md](architecture/database-schema-modul2.md) |
 | "Wer hat welche Rolle?" | [team.md](team.md) |
 | "Was ist im Kanban?" | [kanban.md](kanban.md) |
 | "Ich verstehe VS Code Setup nicht" | [VS-CODE-SETUP-GUIDE.md](VS-CODE-SETUP-GUIDE.md) |
 | "Visuelle Erklärung?" | [VSCODE-SETUP-VISUALS.md](VSCODE-SETUP-VISUALS.md) |
 
-## ✨ Highlights (2026-01-26 Update)
+## ✨ Highlights
 
+### 2026-02-05 Update
+🆕 **M1: Datenmodell & Templates dokumentiert:**
+- ✅ ADR-001: Offset-Based Template Times
+- ✅ Vollständige Datenbank-Schema Dokumentation (Modul 2)
+- ✅ Implementation Log mit technischen Details
+- ✅ Journal-Eintrag mit Lessons Learned
+
+### 2026-01-26 Update
 🆕 **Komplettes VS Code Multi-Device Setup hinzugefügt:**
 - ✅ Automatische Extension Synchronisierung
 - ✅ Settings Sync zwischen Geräten
@@ -78,5 +89,3 @@ docs/
 - ✅ Sicherheits-Best-Practices
 - ✅ Troubleshooting Guides
 - ✅ Visuelle Diagramme
-
-**Total neue Dokumentation:** ~10,000 Zeilen
