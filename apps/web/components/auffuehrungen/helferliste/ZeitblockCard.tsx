@@ -9,6 +9,7 @@ interface ZeitblockCardProps {
   isLoading: boolean
   onRegister: (schichtId: string) => void
   onUnregister: (schichtId: string) => void
+  canEdit?: boolean
 }
 
 export function ZeitblockCard({
@@ -17,6 +18,7 @@ export function ZeitblockCard({
   isLoading,
   onRegister,
   onUnregister,
+  canEdit = false,
 }: ZeitblockCardProps) {
   const formatTime = (timeStr: string) => {
     return timeStr.slice(0, 5)
@@ -94,6 +96,7 @@ export function ZeitblockCard({
                 isLoading={isLoading}
                 onRegister={() => onRegister(schicht.id)}
                 onUnregister={() => onUnregister(schicht.id)}
+                canEdit={canEdit}
               />
             ))}
           </div>

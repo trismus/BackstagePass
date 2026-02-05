@@ -13,13 +13,14 @@ import { InfoBlockCard } from './InfoBlockCard'
 interface HelferlisteViewProps {
   data: HelferlisteData
   canRegister: boolean
+  canEdit?: boolean
 }
 
 type OptimisticAction =
   | { type: 'register'; schichtId: string }
   | { type: 'unregister'; schichtId: string }
 
-export function HelferlisteView({ data, canRegister }: HelferlisteViewProps) {
+export function HelferlisteView({ data, canRegister, canEdit = false }: HelferlisteViewProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -194,6 +195,7 @@ export function HelferlisteView({ data, canRegister }: HelferlisteViewProps) {
                 isLoading={isPending}
                 onRegister={canRegister ? handleRegister : () => {}}
                 onUnregister={canRegister ? handleUnregister : () => {}}
+                canEdit={canEdit}
               />
             ))
         )}
