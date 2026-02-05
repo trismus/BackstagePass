@@ -627,14 +627,33 @@ export type AuffuehrungZuweisung = {
   status: ZuweisungStatus
   notizen: string | null
   abmeldung_token: string | null
+  // Check-in fields (M7)
+  checked_in_at: string | null
+  checked_in_by: string | null
+  no_show: boolean
+  // Replacement fields (M7)
+  ersetzt_zuweisung_id: string | null
+  ersatz_grund: string | null
   created_at: string
 }
 
 export type AuffuehrungZuweisungInsert = Omit<
   AuffuehrungZuweisung,
-  'id' | 'created_at' | 'updated_at' | 'abmeldung_token'
+  | 'id'
+  | 'created_at'
+  | 'abmeldung_token'
+  | 'checked_in_at'
+  | 'checked_in_by'
+  | 'no_show'
+  | 'ersetzt_zuweisung_id'
+  | 'ersatz_grund'
 > & {
   abmeldung_token?: string | null
+  checked_in_at?: string | null
+  checked_in_by?: string | null
+  no_show?: boolean
+  ersetzt_zuweisung_id?: string | null
+  ersatz_grund?: string | null
 }
 export type AuffuehrungZuweisungUpdate = Partial<AuffuehrungZuweisungInsert>
 
@@ -646,6 +665,61 @@ export type ZuweisungMitPerson = AuffuehrungZuweisung & {
 // Extended type with full shift details
 export type ZuweisungMitSchicht = AuffuehrungZuweisung & {
   schicht: SchichtMitZeitblock
+}
+
+// =============================================================================
+// Check-in Types (M7 Live Operations)
+// =============================================================================
+
+export type CheckInStatus = 'erwartet' | 'anwesend' | 'no_show'
+
+export const CHECKIN_STATUS_LABELS: Record<CheckInStatus, string> = {
+  erwartet: 'Erwartet',
+  anwesend: 'Anwesend',
+  no_show: 'Nicht erschienen',
+}
+
+export type ZuweisungMitCheckIn = AuffuehrungZuweisung & {
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'telefon' | 'email'>
+  schicht: {
+    id: string
+    rolle: string
+    zeitblock: Pick<Zeitblock, 'id' | 'name' | 'startzeit' | 'endzeit'> | null
+  }
+  checkin_status: CheckInStatus
+}
+
+export type ZeitblockMitCheckIns = {
+  id: string
+  name: string
+  startzeit: string
+  endzeit: string
+  typ: ZeitblockTyp
+  status: 'geplant' | 'aktiv' | 'abgeschlossen'
+  zuweisungen: ZuweisungMitCheckIn[]
+  stats: {
+    total: number
+    eingecheckt: number
+    no_show: number
+    erwartet: number
+  }
+}
+
+export type CheckInOverview = {
+  veranstaltung: {
+    id: string
+    titel: string
+    datum: string
+    startzeit: string | null
+    endzeit: string | null
+  }
+  zeitbloecke: ZeitblockMitCheckIns[]
+  stats: {
+    total: number
+    eingecheckt: number
+    no_show: number
+    erwartet: number
+  }
 }
 
 // =============================================================================

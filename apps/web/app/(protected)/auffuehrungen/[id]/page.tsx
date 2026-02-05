@@ -126,12 +126,26 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
                 Zur Helferliste
               </Link>
               {canEdit && (
-                <Link
-                  href={`/veranstaltungen/${id}/bearbeiten` as never}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                >
-                  Bearbeiten
-                </Link>
+                <>
+                  <Link
+                    href={`/auffuehrungen/${id}/checkin` as never}
+                    className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+                  >
+                    Check-in
+                  </Link>
+                  <Link
+                    href={`/auffuehrungen/${id}/live-board` as never}
+                    className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                  >
+                    Live-Board
+                  </Link>
+                  <Link
+                    href={`/veranstaltungen/${id}/bearbeiten` as never}
+                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    Bearbeiten
+                  </Link>
+                </>
               )}
             </div>
           </div>
