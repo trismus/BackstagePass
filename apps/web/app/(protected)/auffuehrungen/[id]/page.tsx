@@ -119,6 +119,12 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
               )}
             </div>
             <div className="flex gap-3">
+              <Link
+                href={`/auffuehrungen/${id}/helferliste` as never}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+              >
+                Zur Helferliste
+              </Link>
               {canEdit && (
                 <Link
                   href={`/veranstaltungen/${id}/bearbeiten` as never}
