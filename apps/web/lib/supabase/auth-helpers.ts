@@ -14,6 +14,9 @@ import {
   hasAnyPermission as _hasAnyPermission,
 } from './permissions'
 
+// Re-export getUserProfile for convenience
+export { getUserProfile }
+
 // Re-export all client-safe functions for backward compatibility
 export {
   hasPermission,

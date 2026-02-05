@@ -76,6 +76,24 @@ function TemplateIcon() {
   )
 }
 
+function EmailIcon() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+      />
+    </svg>
+  )
+}
+
 function NavLinkContent({
   icon,
   label,
@@ -135,6 +153,13 @@ export function AdminSidebar() {
               icon={<TemplateIcon />}
               label="Schicht-Templates"
               isActive={pathname?.startsWith('/admin/schicht-templates') ?? false}
+            />
+          </Link>
+          <Link href={'/admin/email-templates' as never}>
+            <NavLinkContent
+              icon={<EmailIcon />}
+              label="E-Mail Templates"
+              isActive={pathname?.startsWith('/admin/email-templates') ?? false}
             />
           </Link>
         </nav>

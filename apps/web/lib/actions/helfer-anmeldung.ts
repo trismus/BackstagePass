@@ -281,13 +281,15 @@ export async function registerForSlot(
     .single()
 
   // Create zuweisung
-  const { error: insertError } = await supabase
+  const { data: insertedZuweisung, error: insertError } = await supabase
     .from('auffuehrung_zuweisungen')
     .insert({
       schicht_id: schichtId,
       person_id: person.id,
       status: 'zugesagt',
     } as never)
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('Error creating zuweisung:', insertError)
@@ -295,6 +297,16 @@ export async function registerForSlot(
       return { success: false, error: 'Du bist bereits fuer diese Schicht angemeldet' }
     }
     return { success: false, error: 'Fehler bei der Anmeldung' }
+  }
+
+  // Send confirmation email (async, don't wait)
+  if (insertedZuweisung?.id) {
+    // Dynamic import to avoid circular dependencies
+    import('./email-sender').then(({ sendBookingConfirmation }) => {
+      sendBookingConfirmation(insertedZuweisung.id).catch((err) => {
+        console.error('Error sending confirmation email:', err)
+      })
+    })
   }
 
   // Revalidate paths
@@ -360,6 +372,13 @@ export async function unregisterFromSlot(
     console.error('Error deleting zuweisung:', deleteError)
     return { success: false, error: 'Fehler beim Abmelden' }
   }
+
+  // Notify waitlist if someone was waiting for this slot
+  import('./warteliste-notification').then(({ processWaitlistWithNotification }) => {
+    processWaitlistWithNotification(schichtId).catch((err) => {
+      console.error('Error processing waitlist:', err)
+    })
+  })
 
   // Revalidate paths
   if (schicht) {
