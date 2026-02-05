@@ -710,6 +710,69 @@ export type TemplateRessource = {
 export type TemplateRessourceInsert = Omit<TemplateRessource, 'id'>
 export type TemplateRessourceUpdate = Partial<TemplateRessourceInsert>
 
+// =============================================================================
+// Template Info-Blöcke (Issue #203)
+// =============================================================================
+
+export type TemplateInfoBlock = {
+  id: string
+  template_id: string
+  titel: string
+  beschreibung: string | null
+  offset_minuten: number
+  dauer_minuten: number
+  sortierung: number
+  created_at: string
+}
+
+export type TemplateInfoBlockInsert = Omit<TemplateInfoBlock, 'id' | 'created_at'>
+export type TemplateInfoBlockUpdate = Partial<TemplateInfoBlockInsert>
+
+export type InfoBlock = {
+  id: string
+  veranstaltung_id: string
+  titel: string
+  beschreibung: string | null
+  startzeit: string
+  endzeit: string
+  sortierung: number
+  created_at: string
+}
+
+export type InfoBlockInsert = Omit<InfoBlock, 'id' | 'created_at'>
+export type InfoBlockUpdate = Partial<InfoBlockInsert>
+
+// =============================================================================
+// Template Sachleistungen (Issue #202)
+// =============================================================================
+
+export type TemplateSachleistung = {
+  id: string
+  template_id: string
+  name: string
+  anzahl: number
+  beschreibung: string | null
+  created_at: string
+}
+
+export type TemplateSachleistungInsert = Omit<
+  TemplateSachleistung,
+  'id' | 'created_at'
+>
+export type TemplateSachleistungUpdate = Partial<TemplateSachleistungInsert>
+
+export type Sachleistung = {
+  id: string
+  veranstaltung_id: string
+  name: string
+  anzahl: number
+  beschreibung: string | null
+  created_at: string
+}
+
+export type SachleistungInsert = Omit<Sachleistung, 'id' | 'created_at'>
+export type SachleistungUpdate = Partial<SachleistungInsert>
+
 // Extended type with all template details
 export type TemplateMitDetails = AuffuehrungTemplate & {
   zeitbloecke: TemplateZeitblock[]
@@ -717,6 +780,8 @@ export type TemplateMitDetails = AuffuehrungTemplate & {
   ressourcen: (TemplateRessource & {
     ressource: Pick<Ressource, 'id' | 'name'> | null
   })[]
+  info_bloecke: TemplateInfoBlock[]
+  sachleistungen: TemplateSachleistung[]
 }
 
 // =============================================================================
@@ -1177,6 +1242,9 @@ export type Auffuehrungsserie = {
   standard_startzeit: string | null
   standard_einlass_minuten: number | null
   template_id: string | null
+  stueck_id: string | null
+  datum_von: string | null
+  datum_bis: string | null
   created_at: string
   updated_at: string
 }
@@ -1581,6 +1649,26 @@ export type Database = {
         Row: TemplateRessource
         Insert: TemplateRessourceInsert
         Update: TemplateRessourceUpdate
+      }
+      template_info_bloecke: {
+        Row: TemplateInfoBlock
+        Insert: TemplateInfoBlockInsert
+        Update: TemplateInfoBlockUpdate
+      }
+      info_bloecke: {
+        Row: InfoBlock
+        Insert: InfoBlockInsert
+        Update: InfoBlockUpdate
+      }
+      template_sachleistungen: {
+        Row: TemplateSachleistung
+        Insert: TemplateSachleistungInsert
+        Update: TemplateSachleistungUpdate
+      }
+      sachleistungen: {
+        Row: Sachleistung
+        Insert: SachleistungInsert
+        Update: SachleistungUpdate
       }
       helfer_events: {
         Row: HelferEvent
