@@ -11,6 +11,7 @@ import { StatistikSection } from './StatistikSection'
 import { HelferAssignmentModal } from './HelferAssignmentModal'
 import { ExportHandler } from './ExportHandler'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { PerformanceReportView } from '@/components/reports'
 
 interface KoordinationViewProps {
   data: KoordinationData
@@ -254,6 +255,12 @@ export function KoordinationView({ data: initialData }: KoordinationViewProps) {
 
       {/* Statistiken */}
       <StatistikSection veranstaltungId={data.veranstaltung.id} />
+
+      {/* Performance Report (only when abgeschlossen) */}
+      <PerformanceReportView
+        veranstaltungId={data.veranstaltung.id}
+        helferStatus={data.veranstaltung.helfer_status}
+      />
 
       {/* Assignment Modal */}
       <HelferAssignmentModal
