@@ -647,13 +647,6 @@ export type AuffuehrungZuweisung = {
   status: ZuweisungStatus
   notizen: string | null
   abmeldung_token: string | null
-  // Check-in fields (M7)
-  checked_in_at: string | null
-  checked_in_by: string | null
-  no_show: boolean
-  // Replacement fields (M7)
-  ersetzt_zuweisung_id: string | null
-  ersatz_grund: string | null
   created_at: string
 }
 
