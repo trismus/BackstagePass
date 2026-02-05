@@ -296,6 +296,8 @@ export type VeranstaltungStatus =
   | 'abgesagt'
   | 'abgeschlossen'
 
+export type HelferStatus = 'entwurf' | 'veroeffentlicht' | 'abgeschlossen'
+
 export type Veranstaltung = {
   id: string
   titel: string
@@ -309,14 +311,19 @@ export type Veranstaltung = {
   organisator_id: string | null
   typ: VeranstaltungTyp
   status: VeranstaltungStatus
+  helfer_template_id: string | null
+  helfer_status: HelferStatus | null
   created_at: string
   updated_at: string
 }
 
 export type VeranstaltungInsert = Omit<
   Veranstaltung,
-  'id' | 'created_at' | 'updated_at'
->
+  'id' | 'created_at' | 'updated_at' | 'helfer_template_id' | 'helfer_status'
+> & {
+  helfer_template_id?: string | null
+  helfer_status?: HelferStatus | null
+}
 export type VeranstaltungUpdate = Partial<VeranstaltungInsert>
 
 export type AnmeldungStatus =
@@ -1274,6 +1281,38 @@ export type SerienauffuehrungInsert = Omit<
   'id' | 'created_at' | 'updated_at'
 >
 export type SerienauffuehrungUpdate = Partial<SerienauffuehrungInsert>
+
+// =============================================================================
+// Produktions-Serie Template-Zuweisung (Issue #207)
+// =============================================================================
+
+export type Wochentag = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
+export const WOCHENTAG_LABELS: Record<Wochentag, string> = {
+  0: 'Sonntag',
+  1: 'Montag',
+  2: 'Dienstag',
+  3: 'Mittwoch',
+  4: 'Donnerstag',
+  5: 'Freitag',
+  6: 'Samstag',
+}
+
+export type ProduktionsSerieTemplate = {
+  id: string
+  serie_id: string
+  wochentag: Wochentag
+  template_id: string
+  created_at: string
+}
+
+export type ProduktionsSerieTemplateInsert = Omit<ProduktionsSerieTemplate, 'id' | 'created_at'>
+export type ProduktionsSerieTemplateUpdate = Partial<ProduktionsSerieTemplateInsert>
+
+// Extended type with template details
+export type ProduktionsSerieTemplateMitDetails = ProduktionsSerieTemplate & {
+  template: Pick<AuffuehrungTemplate, 'id' | 'name'>
+}
 
 export type ProduktionsStab = {
   id: string
