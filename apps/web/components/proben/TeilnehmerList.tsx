@@ -33,6 +33,7 @@ interface TeilnehmerListProps {
 const statusOptions: { value: TeilnehmerStatus; label: string }[] = [
   { value: 'eingeladen', label: 'Eingeladen' },
   { value: 'zugesagt', label: 'Zugesagt' },
+  { value: 'vielleicht', label: 'Vielleicht' },
   { value: 'abgesagt', label: 'Abgesagt' },
   { value: 'erschienen', label: 'Erschienen' },
   { value: 'nicht_erschienen', label: 'Nicht erschienen' },
@@ -122,6 +123,7 @@ export function TeilnehmerList({
   // Gruppiere nach Status
   const groupedByStatus: Record<TeilnehmerStatus, typeof teilnehmer> = {
     zugesagt: [],
+    vielleicht: [],
     eingeladen: [],
     abgesagt: [],
     erschienen: [],
@@ -133,8 +135,10 @@ export function TeilnehmerList({
 
   const zusagenCount =
     groupedByStatus.zugesagt.length + groupedByStatus.erschienen.length
+  const vielleichtCount = groupedByStatus.vielleicht.length
   const absagenCount =
     groupedByStatus.abgesagt.length + groupedByStatus.nicht_erschienen.length
+  const offenCount = groupedByStatus.eingeladen.length
 
   return (
     <div className="rounded-lg bg-white shadow">
@@ -148,6 +152,18 @@ export function TeilnehmerList({
                 <span className="text-success-600">
                   {' '}
                   · {zusagenCount} zugesagt
+                </span>
+              )}
+              {vielleichtCount > 0 && (
+                <span className="text-warning-600">
+                  {' '}
+                  · {vielleichtCount} vielleicht
+                </span>
+              )}
+              {offenCount > 0 && (
+                <span className="text-gray-500">
+                  {' '}
+                  · {offenCount} offen
                 </span>
               )}
               {absagenCount > 0 && (

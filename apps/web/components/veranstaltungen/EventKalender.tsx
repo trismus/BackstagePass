@@ -16,6 +16,7 @@ const typColors: Record<string, string> = {
   probe: 'bg-amber-100 text-amber-800 hover:bg-amber-200',
   auffuehrung: 'bg-purple-100 text-purple-800 hover:bg-purple-200',
   sonstiges: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+  meeting: 'bg-green-100 text-green-800 hover:bg-green-200',
 }
 
 const typLabels: Record<VeranstaltungTyp, string> = {
@@ -23,6 +24,7 @@ const typLabels: Record<VeranstaltungTyp, string> = {
   probe: 'Probe',
   auffuehrung: 'Aufführung',
   sonstiges: 'Sonstiges',
+  meeting: 'Meeting',
 }
 
 export function EventKalender({

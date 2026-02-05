@@ -102,7 +102,8 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
   {
     title: 'Veranstaltungen',
     items: [
-      { href: '/veranstaltungen', label: 'Übersicht', icon: 'calendar' },
+      { href: '/kalender', label: 'Kalender', icon: 'calendar' },
+      { href: '/veranstaltungen', label: 'Übersicht', icon: 'list' },
       { href: '/auffuehrungen', label: 'Aufführungen', icon: 'theater' },
       {
         href: '/produktionen',
@@ -432,6 +433,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
   mitglieder: 'Mitglieder',
   partner: 'Partner',
+  kalender: 'Kalender',
   veranstaltungen: 'Veranstaltungen',
   auffuehrungen: 'Aufführungen',
   produktionen: 'Produktionen',

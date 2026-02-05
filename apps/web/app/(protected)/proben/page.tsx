@@ -58,6 +58,25 @@ export default async function ProbenPage() {
           <h1 className="text-2xl font-bold text-gray-900">Proben</h1>
           <p className="mt-1 text-gray-600">Übersicht aller Proben</p>
         </div>
+        <Link
+          href={'/proben/generator' as Route}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
+          </svg>
+          Probenplan-Generator
+        </Link>
       </div>
 
       {/* Kommende Proben */}

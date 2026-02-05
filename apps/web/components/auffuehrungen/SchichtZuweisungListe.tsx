@@ -60,6 +60,7 @@ export function SchichtZuweisungListe({
     const result = await createZuweisung({
       schicht_id: schichtId,
       person_id: selectedPersonId,
+      external_helper_id: null,
       status: 'zugesagt',
       notizen: null,
     })

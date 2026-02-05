@@ -55,6 +55,10 @@ const teilnehmerStatusConfig: Record<
     label: 'Zugesagt',
     className: 'bg-green-100 text-green-800',
   },
+  vielleicht: {
+    label: 'Vielleicht',
+    className: 'bg-amber-100 text-amber-800',
+  },
   abgesagt: {
     label: 'Abgesagt',
     className: 'bg-error-100 text-error-800',

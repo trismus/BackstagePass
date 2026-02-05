@@ -28,6 +28,7 @@ const typConfig: Record<
   probe: { label: 'Probe', className: 'bg-purple-100 text-purple-800' },
   auffuehrung: { label: 'Aufführung', className: 'bg-pink-100 text-pink-800' },
   sonstiges: { label: 'Sonstiges', className: 'bg-gray-100 text-gray-800' },
+  meeting: { label: 'Meeting', className: 'bg-green-100 text-green-800' },
 }
 
 const anmeldungStatusConfig: Record<

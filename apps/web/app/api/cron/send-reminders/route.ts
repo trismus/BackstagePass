@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { sendAllReminders } from '@/lib/actions/reminder-sender'
 import { processExpiredWaitlistNotifications } from '@/lib/actions/warteliste-notification'
+import { sendAllProbeReminders } from '@/lib/actions/probe-reminders'
 
 // Cron job for sending reminder emails and processing waitlists
 // Schedule: Every 6 hours (0 0,6,12,18 * * *)
 // - Sends 48h reminders for events starting in ~48 hours
 // - Sends 6h reminders for events starting in ~6 hours
+// - Sends 24h reminders for proben (Issue #167)
 // - Processes expired waitlist notifications (24h timeout)
 // Security: Uses CRON_SECRET to verify the request is from Vercel Cron
 
@@ -41,8 +43,11 @@ export async function GET(request: Request) {
     console.warn('[Cron] Starting reminder job...')
     const startTime = Date.now()
 
-    // Send reminders
+    // Send reminders (veranstaltungen/auffuehrungen)
     const reminderResults = await sendAllReminders()
+
+    // Send probe reminders (Issue #167)
+    const probeReminderResults = await sendAllProbeReminders()
 
     // Process expired waitlist notifications
     const waitlistResults = await processExpiredWaitlistNotifications()
@@ -56,6 +61,7 @@ export async function GET(request: Request) {
       duration_ms: duration,
       results: {
         ...reminderResults,
+        ...probeReminderResults,
         waitlist: waitlistResults,
       },
     })

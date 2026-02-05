@@ -290,6 +290,7 @@ export type VeranstaltungTyp =
   | 'probe'
   | 'auffuehrung'
   | 'sonstiges'
+  | 'meeting'
 export type VeranstaltungStatus =
   | 'geplant'
   | 'bestaetigt'
@@ -325,7 +326,6 @@ export type Veranstaltung = {
   helfer_buchung_deadline: string | null
   helfer_buchung_limit_aktiv: boolean
   // Communication (Issue #221)
-  public_helfer_token: string | null
   koordinator_id: string | null
   created_at: string
   updated_at: string
@@ -342,7 +342,6 @@ export type VeranstaltungInsert = Omit<
   | 'max_schichten_pro_helfer'
   | 'helfer_buchung_deadline'
   | 'helfer_buchung_limit_aktiv'
-  | 'public_helfer_token'
   | 'koordinator_id'
 > & {
   helfer_template_id?: string | null
@@ -351,7 +350,6 @@ export type VeranstaltungInsert = Omit<
   max_schichten_pro_helfer?: number | null
   helfer_buchung_deadline?: string | null
   helfer_buchung_limit_aktiv?: boolean
-  public_helfer_token?: string | null
   koordinator_id?: string | null
 }
 export type VeranstaltungUpdate = Partial<VeranstaltungInsert>
@@ -673,6 +671,7 @@ export type AuffuehrungZuweisungInsert = Omit<
   | 'ersetzt_zuweisung_id'
   | 'ersatz_grund'
   | 'feedback_token'
+  | 'external_helper_id'
 > & {
   abmeldung_token?: string | null
   checked_in_at?: string | null
@@ -1141,6 +1140,135 @@ export type ProbeTeilnehmerInsert = Omit<
   absage_grund?: string | null
 }
 export type ProbeTeilnehmerUpdate = Partial<ProbeTeilnehmerInsert>
+
+// =============================================================================
+// Proben-Protokoll (Issue #168)
+// =============================================================================
+
+export type ProtokollStatus = 'entwurf' | 'abgeschlossen' | 'geteilt'
+export type SzenenProbenStatus = 'geprobt' | 'teilweise' | 'nicht_geprobt' | 'probleme'
+export type AufgabenPrioritaet = 'niedrig' | 'normal' | 'hoch' | 'dringend'
+export type AufgabenStatus = 'offen' | 'in_arbeit' | 'erledigt' | 'abgebrochen'
+
+export const PROTOKOLL_STATUS_LABELS: Record<ProtokollStatus, string> = {
+  entwurf: 'Entwurf',
+  abgeschlossen: 'Abgeschlossen',
+  geteilt: 'Geteilt',
+}
+
+export const SZENEN_PROBEN_STATUS_LABELS: Record<SzenenProbenStatus, string> = {
+  geprobt: 'Geprobt',
+  teilweise: 'Teilweise geprobt',
+  nicht_geprobt: 'Nicht geprobt',
+  probleme: 'Probleme',
+}
+
+export const AUFGABEN_PRIORITAET_LABELS: Record<AufgabenPrioritaet, string> = {
+  niedrig: 'Niedrig',
+  normal: 'Normal',
+  hoch: 'Hoch',
+  dringend: 'Dringend',
+}
+
+export const AUFGABEN_STATUS_LABELS: Record<AufgabenStatus, string> = {
+  offen: 'Offen',
+  in_arbeit: 'In Arbeit',
+  erledigt: 'Erledigt',
+  abgebrochen: 'Abgebrochen',
+}
+
+export type ProtokollTemplateItem = {
+  typ: 'abschnitt' | 'text' | 'checkbox'
+  id?: string
+  titel?: string
+  label?: string
+}
+
+export type ProtokollTemplate = {
+  id: string
+  name: string
+  beschreibung: string | null
+  struktur: ProtokollTemplateItem[]
+  ist_standard: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProtokollTemplateInsert = Omit<
+  ProtokollTemplate,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProtokollTemplateUpdate = Partial<ProtokollTemplateInsert>
+
+export type ProbenProtokoll = {
+  id: string
+  probe_id: string
+  template_id: string | null
+  erstellt_von: string | null
+  status: ProtokollStatus
+  allgemeine_notizen: string | null
+  anwesenheits_notizen: string | null
+  inhalt: Record<string, string>[]
+  created_at: string
+  updated_at: string
+}
+
+export type ProbenProtokollInsert = Omit<
+  ProbenProtokoll,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProbenProtokollUpdate = Partial<ProbenProtokollInsert>
+
+export type ProtokollSzenenNotiz = {
+  id: string
+  protokoll_id: string
+  szene_id: string
+  notizen: string | null
+  status: SzenenProbenStatus | null
+  dauer_minuten: number | null
+  fortschritt: number | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProtokollSzenenNotizInsert = Omit<
+  ProtokollSzenenNotiz,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProtokollSzenenNotizUpdate = Partial<ProtokollSzenenNotizInsert>
+
+export type ProtokollAufgabe = {
+  id: string
+  protokoll_id: string
+  titel: string
+  beschreibung: string | null
+  zustaendig_id: string | null
+  faellig_bis: string | null
+  prioritaet: AufgabenPrioritaet
+  status: AufgabenStatus
+  szene_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProtokollAufgabeInsert = Omit<
+  ProtokollAufgabe,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ProtokollAufgabeUpdate = Partial<ProtokollAufgabeInsert>
+
+// Extended types
+export type ProbenProtokollMitDetails = ProbenProtokoll & {
+  probe: Pick<Probe, 'id' | 'titel' | 'datum'>
+  template: Pick<ProtokollTemplate, 'id' | 'name'> | null
+  szenen_notizen: (ProtokollSzenenNotiz & {
+    szene: Pick<Szene, 'id' | 'nummer' | 'titel'>
+  })[]
+  aufgaben: (ProtokollAufgabe & {
+    zustaendig: Pick<Person, 'id' | 'vorname' | 'nachname'> | null
+  })[]
+}
 
 // Extended types
 export type ProbeMitDetails = Probe & {
@@ -1878,6 +2006,211 @@ export type ThankYouEmailsSent = {
 export type ThankYouEmailsSentInsert = Omit<ThankYouEmailsSent, 'id' | 'sent_at'>
 
 // =============================================================================
+// Notification System (Issue #167)
+// =============================================================================
+
+export type BenachrichtigungTyp =
+  | 'termin_erinnerung'
+  | 'termin_geaendert'
+  | 'termin_abgesagt'
+  | 'neue_probe'
+  | 'neue_einladung'
+  | 'zusage_bestaetigt'
+  | 'wochenzusammenfassung'
+  | 'system'
+
+export const BENACHRICHTIGUNG_TYP_LABELS: Record<BenachrichtigungTyp, string> = {
+  termin_erinnerung: 'Termin-Erinnerung',
+  termin_geaendert: 'Termin geändert',
+  termin_abgesagt: 'Termin abgesagt',
+  neue_probe: 'Neue Probe',
+  neue_einladung: 'Neue Einladung',
+  zusage_bestaetigt: 'Zusage bestätigt',
+  wochenzusammenfassung: 'Wochenzusammenfassung',
+  system: 'System',
+}
+
+export type BenachrichtigungsEinstellungen = {
+  id: string
+  profile_id: string
+  // Email preferences
+  email_48h_erinnerung: boolean
+  email_6h_erinnerung: boolean
+  email_24h_probe_erinnerung: boolean
+  email_wochenzusammenfassung: boolean
+  email_aenderungsbenachrichtigung: boolean
+  // In-app preferences
+  inapp_termin_erinnerung: boolean
+  inapp_aenderungen: boolean
+  inapp_neue_termine: boolean
+  // Custom settings
+  eigene_erinnerungszeiten: number[]
+  ruhezeit_von: string | null
+  ruhezeit_bis: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type BenachrichtigungsEinstellungenInsert = Omit<
+  BenachrichtigungsEinstellungen,
+  'id' | 'created_at' | 'updated_at'
+>
+export type BenachrichtigungsEinstellungenUpdate = Partial<
+  Omit<BenachrichtigungsEinstellungenInsert, 'profile_id'>
+>
+
+export type Benachrichtigung = {
+  id: string
+  profile_id: string
+  typ: BenachrichtigungTyp
+  titel: string
+  nachricht: string
+  referenz_typ: string | null
+  referenz_id: string | null
+  metadata: Record<string, unknown>
+  gelesen: boolean
+  gelesen_am: string | null
+  action_url: string | null
+  created_at: string
+}
+
+export type BenachrichtigungInsert = Omit<Benachrichtigung, 'id' | 'created_at'>
+
+// =============================================================================
+// Meeting Types (Issue #169)
+// =============================================================================
+
+export type MeetingTyp = 'vorstand' | 'regie' | 'team' | 'sonstiges'
+
+export const MEETING_TYP_LABELS: Record<MeetingTyp, string> = {
+  vorstand: 'Vorstandssitzung',
+  regie: 'Regiesitzung',
+  team: 'Teamsitzung',
+  sonstiges: 'Sonstiges',
+}
+
+export type ProtokollStatusMeeting = 'entwurf' | 'genehmigt' | 'verteilt'
+
+export const PROTOKOLL_STATUS_MEETING_LABELS: Record<ProtokollStatusMeeting, string> = {
+  entwurf: 'Entwurf',
+  genehmigt: 'Genehmigt',
+  verteilt: 'Verteilt',
+}
+
+export type AgendaStatus = 'offen' | 'besprochen' | 'vertagt' | 'abgeschlossen'
+
+export const AGENDA_STATUS_LABELS: Record<AgendaStatus, string> = {
+  offen: 'Offen',
+  besprochen: 'Besprochen',
+  vertagt: 'Vertagt',
+  abgeschlossen: 'Abgeschlossen',
+}
+
+export type BeschlussStatus = 'beschlossen' | 'abgelehnt' | 'vertagt' | 'umgesetzt'
+
+export const BESCHLUSS_STATUS_LABELS: Record<BeschlussStatus, string> = {
+  beschlossen: 'Beschlossen',
+  abgelehnt: 'Abgelehnt',
+  vertagt: 'Vertagt',
+  umgesetzt: 'Umgesetzt',
+}
+
+export type WiederholungTypMeeting = 'woechentlich' | 'zweiwoechentlich' | 'monatlich'
+
+export type Meeting = {
+  id: string
+  veranstaltung_id: string
+  meeting_typ: MeetingTyp
+  leiter_id: string | null
+  protokoll: string | null
+  protokoll_status: ProtokollStatusMeeting
+  protokollant_id: string | null
+  wiederkehrend_template_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MeetingInsert = Omit<Meeting, 'id' | 'created_at' | 'updated_at'>
+export type MeetingUpdate = Partial<Omit<MeetingInsert, 'veranstaltung_id'>>
+
+export type MeetingMitDetails = Meeting & {
+  veranstaltung: Veranstaltung
+  leiter: Person | null
+  protokollant: Person | null
+  agenda: MeetingAgendaItem[]
+  beschluesse: MeetingBeschluss[]
+}
+
+export type MeetingAgendaItem = {
+  id: string
+  meeting_id: string
+  nummer: number
+  titel: string
+  beschreibung: string | null
+  dauer_minuten: number | null
+  verantwortlich_id: string | null
+  status: AgendaStatus
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MeetingAgendaItemInsert = Omit<MeetingAgendaItem, 'id' | 'created_at' | 'updated_at'>
+export type MeetingAgendaItemUpdate = Partial<Omit<MeetingAgendaItemInsert, 'meeting_id'>>
+
+export type MeetingBeschluss = {
+  id: string
+  meeting_id: string
+  agenda_item_id: string | null
+  nummer: number
+  titel: string
+  beschreibung: string | null
+  abstimmung_ja: number | null
+  abstimmung_nein: number | null
+  abstimmung_enthaltung: number | null
+  status: BeschlussStatus
+  zustaendig_id: string | null
+  faellig_bis: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MeetingBeschlussInsert = Omit<MeetingBeschluss, 'id' | 'created_at' | 'updated_at'>
+export type MeetingBeschlussUpdate = Partial<Omit<MeetingBeschlussInsert, 'meeting_id'>>
+
+export type MeetingBeschlussMitDetails = MeetingBeschluss & {
+  zustaendig: Person | null
+  agenda_item: MeetingAgendaItem | null
+}
+
+export type StandardAgendaItem = {
+  titel: string
+  beschreibung?: string
+  dauer_minuten?: number
+}
+
+export type MeetingTemplate = {
+  id: string
+  name: string
+  beschreibung: string | null
+  meeting_typ: MeetingTyp
+  default_ort: string | null
+  default_startzeit: string | null
+  default_dauer_minuten: number
+  default_leiter_id: string | null
+  wiederholung_typ: WiederholungTypMeeting | null
+  wiederholung_tag: number | null
+  standard_agenda: StandardAgendaItem[]
+  aktiv: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type MeetingTemplateInsert = Omit<MeetingTemplate, 'id' | 'created_at' | 'updated_at'>
+export type MeetingTemplateUpdate = Partial<Omit<MeetingTemplateInsert, 'created_by'>>
+
+// =============================================================================
 // Database Schema Type
 // =============================================================================
 
@@ -2143,6 +2476,26 @@ export type Database = {
         Row: EmailTemplate
         Insert: EmailTemplateInsert
         Update: EmailTemplateUpdate
+      }
+      meetings: {
+        Row: Meeting
+        Insert: MeetingInsert
+        Update: MeetingUpdate
+      }
+      meeting_agenda: {
+        Row: MeetingAgendaItem
+        Insert: MeetingAgendaItemInsert
+        Update: MeetingAgendaItemUpdate
+      }
+      meeting_beschluesse: {
+        Row: MeetingBeschluss
+        Insert: MeetingBeschlussInsert
+        Update: MeetingBeschlussUpdate
+      }
+      meeting_templates: {
+        Row: MeetingTemplate
+        Insert: MeetingTemplateInsert
+        Update: MeetingTemplateUpdate
       }
     }
   }

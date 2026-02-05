@@ -396,7 +396,8 @@ export async function updateTeilnehmerStatus(
   probeId: string,
   personId: string,
   status: TeilnehmerStatus,
-  notizen?: string
+  notizen?: string,
+  absageGrund?: string
 ): Promise<{ success: boolean; error?: string }> {
   const profile = await getUserProfile()
   if (!profile) {
@@ -412,6 +413,9 @@ export async function updateTeilnehmerStatus(
   if (notizen !== undefined) {
     updateData.notizen = notizen
   }
+  if (absageGrund !== undefined) {
+    updateData.absage_grund = absageGrund
+  }
 
   const { error } = await supabase
     .from('proben_teilnehmer')
@@ -426,6 +430,37 @@ export async function updateTeilnehmerStatus(
 
   revalidatePath(`/proben/${probeId}`)
   return { success: true }
+}
+
+/**
+ * Auto-invite participants to a Probe based on cast
+ * Uses the database function auto_invite_probe_teilnehmer
+ */
+export async function autoInviteProbeTeilnehmer(
+  probeId: string
+): Promise<{ success: boolean; error?: string; count?: number }> {
+  const profile = await getUserProfile()
+  if (!profile || !isManagement(profile.role)) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Teilnehmer einladen.',
+    }
+  }
+
+  const supabase = await createClient()
+
+  // Call the database function
+  const { data, error } = await supabase.rpc('auto_invite_probe_teilnehmer', {
+    probe_uuid: probeId,
+  })
+
+  if (error) {
+    console.error('Error auto-inviting teilnehmer:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/proben/${probeId}`)
+  return { success: true, count: data || 0 }
 }
 
 /**

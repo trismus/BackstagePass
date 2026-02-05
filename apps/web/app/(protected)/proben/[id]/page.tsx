@@ -8,9 +8,13 @@ import {
   getProbeSzenen,
   getProbeTeilnehmer,
 } from '@/lib/actions/proben'
+import {
+  getProbenProtokoll,
+  getProtokollTemplates,
+} from '@/lib/actions/proben-protokoll'
 import { canEdit as checkCanEdit } from '@/lib/supabase/auth-helpers'
-import { ProbeStatusBadge, TeilnehmerList } from '@/components/proben'
-import type { ProbeSzene, Szene } from '@/lib/supabase/types'
+import { ProbeStatusBadge, TeilnehmerList, ProbenProtokoll } from '@/components/proben'
+import type { ProbeSzene, Szene, Person } from '@/lib/supabase/types'
 
 interface ProbeDetailPageProps {
   params: Promise<{ id: string }>
@@ -48,6 +52,17 @@ export default async function ProbeDetailPage({
     .select('*')
     .eq('aktiv', true)
     .order('nachname')
+
+  // Hole Protokoll-Daten für Management
+  const protokoll = canEdit ? await getProbenProtokoll(id) : null
+  const templates = canEdit ? await getProtokollTemplates() : []
+
+  // Hole alle Szenen des Stücks für das Protokoll
+  const { data: alleSzenen } = await supabase
+    .from('szenen')
+    .select('*')
+    .eq('stueck_id', probe.stueck_id)
+    .order('nummer')
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -207,6 +222,19 @@ export default async function ProbeDetailPage({
           </h2>
           <p className="whitespace-pre-wrap text-yellow-900">{probe.notizen}</p>
         </div>
+      )}
+
+      {/* Proben-Protokoll (nur für Management) */}
+      {canEdit && (
+        <ProbenProtokoll
+          probeId={id}
+          protokoll={protokoll}
+          templates={templates}
+          szenen={alleSzenen ?? []}
+          teilnehmer={teilnehmer.map((t) => ({
+            person: t.person as Person,
+          }))}
+        />
       )}
     </div>
   )
