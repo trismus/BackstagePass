@@ -769,24 +769,166 @@ export type RaumReservierungMitRaum = RaumReservierung & {
   raum: Pick<Raum, 'id' | 'name' | 'typ' | 'kapazitaet'>
 }
 
+export type ReservierungStatus = 'geplant' | 'reserviert' | 'bestaetigt'
+export type BedarfTyp = 'fix' | 'variabel'
+
+export const RESERVIERUNG_STATUS_LABELS: Record<ReservierungStatus, string> = {
+  geplant: 'Geplant',
+  reserviert: 'Reserviert',
+  bestaetigt: 'Bestaetigt',
+}
+
+export const BEDARF_TYP_LABELS: Record<BedarfTyp, string> = {
+  fix: 'Fix',
+  variabel: 'Variabel',
+}
+
 export type RessourcenReservierung = {
   id: string
   veranstaltung_id: string
   ressource_id: string
   menge: number
   notizen: string | null
+  status: ReservierungStatus
+  bedarf_typ: BedarfTyp
   created_at: string
 }
 
 export type RessourcenReservierungInsert = Omit<
   RessourcenReservierung,
-  'id' | 'created_at'
->
+  'id' | 'created_at' | 'status' | 'bedarf_typ'
+> & {
+  status?: ReservierungStatus
+  bedarf_typ?: BedarfTyp
+}
 export type RessourcenReservierungUpdate = Partial<RessourcenReservierungInsert>
 
 // Extended type with resource details
 export type RessourcenReservierungMitRessource = RessourcenReservierung & {
   ressource: Pick<Ressource, 'id' | 'name' | 'kategorie' | 'menge'>
+}
+
+// Serie Ressourcen (defaults for series)
+export type SerieRessource = {
+  id: string
+  serie_id: string
+  ressource_id: string | null
+  menge: number
+  bedarf_typ: BedarfTyp
+  notizen: string | null
+  created_at: string
+}
+
+export type SerieRessourceInsert = Omit<SerieRessource, 'id' | 'created_at'>
+export type SerieRessourceUpdate = Partial<Omit<SerieRessourceInsert, 'serie_id'>>
+
+// Ressourcen-Konflikt
+export type RessourcenKonflikt = {
+  konflikt_veranstaltung_id: string
+  konflikt_titel: string
+  konflikt_datum: string
+  reserviert_menge: number
+}
+
+// =============================================================================
+// Partner Kontingente - Issue #174
+// =============================================================================
+
+export type PartnerKontingent = {
+  id: string
+  partner_id: string
+  serie_id: string
+  soll_stunden: number
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type PartnerKontingentInsert = Omit<
+  PartnerKontingent,
+  'id' | 'created_at' | 'updated_at'
+>
+export type PartnerKontingentUpdate = Partial<
+  Omit<PartnerKontingentInsert, 'partner_id' | 'serie_id'>
+>
+
+export type PartnerKontingentZuweisung = {
+  id: string
+  kontingent_id: string
+  zuweisung_id: string
+  stunden: number
+  created_at: string
+}
+
+export type PartnerKontingentZuweisungInsert = Omit<
+  PartnerKontingentZuweisung,
+  'id' | 'created_at'
+>
+
+// View type for Soll/Ist overview
+export type PartnerKontingentUebersicht = {
+  id: string
+  partner_id: string
+  partner_name: string
+  serie_id: string
+  serie_name: string
+  soll_stunden: number
+  ist_stunden: number
+  differenz: number
+  erfuellungsgrad: number
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+// =============================================================================
+// Lessons Learned - Issue #175
+// =============================================================================
+
+export type LessonsLearnedKategorie = 'positiv' | 'verbesserung' | 'problem' | 'idee'
+export type LessonsLearnedPrioritaet = 'niedrig' | 'mittel' | 'hoch'
+export type LessonsLearnedStatus = 'offen' | 'in_bearbeitung' | 'erledigt' | 'verworfen'
+
+export const LESSONS_LEARNED_KATEGORIE_LABELS: Record<LessonsLearnedKategorie, string> = {
+  positiv: 'Was gut lief',
+  verbesserung: 'Verbesserungsvorschlag',
+  problem: 'Problem',
+  idee: 'Idee',
+}
+
+export const LESSONS_LEARNED_STATUS_LABELS: Record<LessonsLearnedStatus, string> = {
+  offen: 'Offen',
+  in_bearbeitung: 'In Bearbeitung',
+  erledigt: 'Erledigt',
+  verworfen: 'Verworfen',
+}
+
+export type LessonsLearned = {
+  id: string
+  veranstaltung_id: string
+  kategorie: LessonsLearnedKategorie
+  titel: string
+  beschreibung: string | null
+  prioritaet: LessonsLearnedPrioritaet | null
+  status: LessonsLearnedStatus
+  verantwortlich_id: string | null
+  erstellt_von: string | null
+  erledigt_am: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type LessonsLearnedInsert = Omit<
+  LessonsLearned,
+  'id' | 'created_at' | 'updated_at' | 'erledigt_am'
+>
+export type LessonsLearnedUpdate = Partial<
+  Omit<LessonsLearnedInsert, 'veranstaltung_id' | 'erstellt_von'>
+>
+
+export type LessonsLearnedMitDetails = LessonsLearned & {
+  verantwortlich: Pick<Person, 'id' | 'vorname' | 'nachname'> | null
+  ersteller: Pick<Profile, 'id' | 'email'> | null
 }
 
 // =============================================================================

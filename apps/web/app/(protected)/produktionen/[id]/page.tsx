@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
-import { getProduktion, getSerien } from '@/lib/actions/produktionen'
+import {
+  getProduktion,
+  getSerien,
+  getAllAuffuehrungenForProduktion,
+} from '@/lib/actions/produktionen'
 import { getRollenMitProduktionsBesetzungen } from '@/lib/actions/produktions-besetzungen'
 import { getLatestDokumente } from '@/lib/actions/produktions-dokumente'
 import {
@@ -19,9 +23,9 @@ import {
   ProduktionDokumenteSection,
   ProduktionStabSection,
   ProduktionChecklistSection,
+  SerieManager,
 } from '@/components/produktionen'
-import { SERIE_STATUS_LABELS } from '@/lib/supabase/types'
-import type { Stueck, Person, Auffuehrungsserie } from '@/lib/supabase/types'
+import type { Stueck, Person, AuffuehrungTemplate } from '@/lib/supabase/types'
 
 interface ProduktionDetailPageProps {
   params: Promise<{ id: string }>
@@ -31,12 +35,14 @@ export default async function ProduktionDetailPage({
   params,
 }: ProduktionDetailPageProps) {
   const { id } = await params
-  const [produktion, serien, profile, dokumente] = await Promise.all([
-    getProduktion(id),
-    getSerien(id),
-    getUserProfile(),
-    getLatestDokumente(id),
-  ])
+  const [produktion, serien, profile, dokumente, serienAuffuehrungen] =
+    await Promise.all([
+      getProduktion(id),
+      getSerien(id),
+      getUserProfile(),
+      getLatestDokumente(id),
+      getAllAuffuehrungenForProduktion(id),
+    ])
 
   if (!produktion) {
     notFound()
@@ -69,8 +75,8 @@ export default async function ProduktionDetailPage({
     leitung = data
   }
 
-  // Fetch Stab + Funktionen + Personen + Checkliste in parallel
-  const [stabData, funktionenData, personenData, checklistItems] =
+  // Fetch Stab + Funktionen + Personen + Checkliste + Templates in parallel
+  const [stabData, funktionenData, personenData, checklistItems, templatesData] =
     await Promise.all([
       getProduktionsStab(id),
       getStabFunktionen(),
@@ -80,9 +86,16 @@ export default async function ProduktionDetailPage({
         .eq('aktiv', true)
         .order('nachname', { ascending: true }),
       getChecklistItems(id),
+      supabase
+        .from('auffuehrung_templates')
+        .select('id, name')
+        .eq('archiviert', false)
+        .order('name', { ascending: true }),
     ])
   const aktivePersonen =
     (personenData.data as Pick<Person, 'id' | 'vorname' | 'nachname'>[]) || []
+  const templates =
+    (templatesData.data as Pick<AuffuehrungTemplate, 'id' | 'name'>[]) || []
 
   // Fetch Besetzung data if Stück is linked
   let rollenMitBesetzungen: Awaited<
@@ -199,43 +212,13 @@ export default async function ProduktionDetailPage({
             />
 
             {/* Aufführungsserien */}
-            <div className="rounded-lg bg-white p-6 shadow">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Aufführungsserien
-                </h2>
-              </div>
-              {serien.length === 0 ? (
-                <p className="text-gray-500">
-                  Noch keine Aufführungsserien vorhanden.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {serien.map((serie: Auffuehrungsserie) => (
-                    <div
-                      key={serie.id}
-                      className="rounded-lg border border-gray-200 p-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900">
-                            {serie.name}
-                          </h3>
-                          {serie.standard_ort && (
-                            <p className="text-sm text-gray-500">
-                              {serie.standard_ort}
-                            </p>
-                          )}
-                        </div>
-                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
-                          {SERIE_STATUS_LABELS[serie.status]}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <SerieManager
+              produktionId={id}
+              serien={serien}
+              auffuehrungen={serienAuffuehrungen}
+              templates={templates}
+              canEdit={canEdit}
+            />
           </div>
 
           {/* Sidebar */}

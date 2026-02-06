@@ -53,6 +53,122 @@ export async function getAktiveProduktionen(): Promise<Produktion[]> {
   return (data as Produktion[]) || []
 }
 
+export async function getAktuelleProduktionFuerDashboard(): Promise<{
+  produktion: Produktion | null
+  probenStats: { total: number; absolviert: number } | null
+  besetzungStats: { total: number; besetzt: number } | null
+  naechsteTermine: { id: string; titel: string; datum: string; typ: string }[]
+}> {
+  const supabase = await createClient()
+
+  // Find the current production: laufend > premiere > proben > casting > planung
+  const { data: produktionen } = await supabase
+    .from('produktionen')
+    .select('*')
+    .not('status', 'in', '("abgeschlossen","abgesagt","draft")')
+    .order('premiere', { ascending: true, nullsFirst: false })
+    .limit(5)
+
+  if (!produktionen || produktionen.length === 0) {
+    return {
+      produktion: null,
+      probenStats: null,
+      besetzungStats: null,
+      naechsteTermine: [],
+    }
+  }
+
+  // Prioritize by status
+  const statusPriority: Record<ProduktionStatus, number> = {
+    laufend: 1,
+    premiere: 2,
+    proben: 3,
+    casting: 4,
+    planung: 5,
+    draft: 6,
+    abgeschlossen: 7,
+    abgesagt: 8,
+  }
+
+  const sorted = ([...produktionen] as Produktion[]).sort(
+    (a, b) =>
+      statusPriority[a.status as ProduktionStatus] -
+      statusPriority[b.status as ProduktionStatus]
+  )
+  const produktion = sorted[0]
+
+  // Fetch stats for this production
+  let probenStats: { total: number; absolviert: number } | null = null
+  let besetzungStats: { total: number; besetzt: number } | null = null
+
+  if (produktion.stueck_id) {
+    // Get probe stats
+    const { data: proben } = await supabase
+      .from('proben')
+      .select('id, status')
+      .eq('stueck_id', produktion.stueck_id)
+
+    if (proben && proben.length > 0) {
+      probenStats = {
+        total: proben.length,
+        absolviert: proben.filter((p) => p.status === 'abgeschlossen').length,
+      }
+    }
+
+    // Get besetzung stats
+    const { data: besetzungen } = await supabase
+      .from('produktions_besetzungen')
+      .select('id, status')
+      .eq('produktion_id', produktion.id)
+
+    if (besetzungen && besetzungen.length > 0) {
+      besetzungStats = {
+        total: besetzungen.length,
+        besetzt: besetzungen.filter((b) => b.status === 'besetzt').length,
+      }
+    }
+  }
+
+  // Get upcoming events for this production
+  const today = new Date().toISOString().split('T')[0]
+  const naechsteTermine: { id: string; titel: string; datum: string; typ: string }[] = []
+
+  // Check for veranstaltungen linked via serienauffuehrungen
+  const { data: serien } = await supabase
+    .from('auffuehrungsserien')
+    .select('id')
+    .eq('produktion_id', produktion.id)
+
+  if (serien && serien.length > 0) {
+    const serieIds = serien.map((s) => s.id)
+    const { data: auffuehrungen } = await supabase
+      .from('serienauffuehrungen')
+      .select('id, datum, startzeit, typ, veranstaltung_id')
+      .in('serie_id', serieIds)
+      .gte('datum', today)
+      .order('datum', { ascending: true })
+      .limit(5)
+
+    if (auffuehrungen) {
+      for (const auff of auffuehrungen) {
+        naechsteTermine.push({
+          id: auff.veranstaltung_id || auff.id,
+          titel: produktion.titel,
+          datum: auff.datum,
+          typ: auff.typ || 'auffuehrung',
+        })
+      }
+    }
+  }
+
+  return {
+    produktion,
+    probenStats,
+    besetzungStats,
+    naechsteTermine,
+  }
+}
+
 export async function getProduktion(id: string): Promise<Produktion | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -343,6 +459,47 @@ export async function getSerienAuffuehrungen(
   }
 
   return (data as Serienauffuehrung[]) || []
+}
+
+export async function getAllAuffuehrungenForProduktion(
+  produktionId: string
+): Promise<Record<string, Serienauffuehrung[]>> {
+  const supabase = await createClient()
+
+  // Fetch all serien for this produktion
+  const { data: serien } = await supabase
+    .from('auffuehrungsserien')
+    .select('id')
+    .eq('produktion_id', produktionId)
+
+  if (!serien || serien.length === 0) {
+    return {}
+  }
+
+  const serieIds = serien.map((s) => s.id)
+
+  // Fetch all auffuehrungen for these serien
+  const { data, error } = await supabase
+    .from('serienauffuehrungen')
+    .select('*')
+    .in('serie_id', serieIds)
+    .order('datum', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching all serienauffuehrungen:', error)
+    return {}
+  }
+
+  // Group by serie_id
+  const grouped: Record<string, Serienauffuehrung[]> = {}
+  for (const auff of (data as Serienauffuehrung[]) || []) {
+    if (!grouped[auff.serie_id]) {
+      grouped[auff.serie_id] = []
+    }
+    grouped[auff.serie_id].push(auff)
+  }
+
+  return grouped
 }
 
 export async function generiereAuffuehrungen(

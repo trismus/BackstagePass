@@ -8,3 +8,5 @@ export type {
   ModulStatProps,
   ModulAktivitaetProps,
 } from './VorstandModul'
+
+export { ProduktionDashboardWidget } from './ProduktionDashboardWidget'

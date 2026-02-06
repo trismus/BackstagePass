@@ -4,8 +4,9 @@ import { useState } from 'react'
 import type { Produktion } from '@/lib/supabase/types'
 import { ProduktionenTable } from './ProduktionenTable'
 import { ProduktionKanban } from './ProduktionKanban'
+import { ProduktionTimeline } from './ProduktionTimeline'
 
-type ViewMode = 'kanban' | 'liste'
+type ViewMode = 'kanban' | 'liste' | 'timeline'
 
 interface ProduktionenViewToggleProps {
   produktionen: Produktion[]
@@ -44,18 +45,30 @@ export function ProduktionenViewToggle({
         >
           Liste
         </button>
+        <button
+          onClick={() => setView('timeline')}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            view === 'timeline'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Timeline
+        </button>
       </div>
 
       {/* Views */}
-      {view === 'kanban' ? (
+      {view === 'kanban' && (
         <ProduktionKanban produktionen={produktionen} canEdit={canEdit} />
-      ) : (
+      )}
+      {view === 'liste' && (
         <ProduktionenTable
           produktionen={produktionen}
           canEdit={canEdit}
           canDelete={canDelete}
         />
       )}
+      {view === 'timeline' && <ProduktionTimeline produktionen={produktionen} />}
     </div>
   )
 }

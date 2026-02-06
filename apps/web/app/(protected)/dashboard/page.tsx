@@ -8,7 +8,9 @@ import {
   ModulStat,
   ModulAktivitaet,
   HandlungsbedarfCard,
+  ProduktionDashboardWidget,
 } from '@/components/dashboard'
+import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
 
 export const metadata = {
   title: 'Dashboard',
@@ -82,6 +84,7 @@ export default async function DashboardPage() {
     { data: upcomingEvents },
     { data: aktivesStuck },
     { data: offeneSchichten },
+    aktuelleProduktion,
   ] = await Promise.all([
     supabase.from('personen').select('*', { count: 'exact', head: true }),
     supabase.from('personen').select('*', { count: 'exact', head: true }).eq('aktiv', true),
@@ -104,6 +107,7 @@ export default async function DashboardPage() {
       .from('auffuehrung_schichten')
       .select('id, rolle, anzahl_benoetigt')
       .limit(10),
+    getAktuelleProduktionFuerDashboard(),
   ])
 
   // Calculate warnings
@@ -300,6 +304,14 @@ export default async function DashboardPage() {
             </div>
           </VorstandModul>
         </div>
+
+        {/* Aktuelle Produktion Widget */}
+        <ProduktionDashboardWidget
+          produktion={aktuelleProduktion.produktion}
+          probenStats={aktuelleProduktion.probenStats ?? undefined}
+          besetzungStats={aktuelleProduktion.besetzungStats ?? undefined}
+          naechsteTermine={aktuelleProduktion.naechsteTermine}
+        />
 
         {/* Quick Actions */}
         <div className="rounded-xl border border-neutral-200 bg-white p-6">

@@ -3,7 +3,10 @@ import type { Route } from 'next'
 import { getProduktionen } from '@/lib/actions/produktionen'
 import { getUserProfile } from '@/lib/supabase/server'
 import { hasPermission } from '@/lib/supabase/permissions'
-import { ProduktionenViewToggle } from '@/components/produktionen'
+import {
+  ProduktionenViewToggle,
+  AktuelleProduktionWidget,
+} from '@/components/produktionen'
 
 export default async function ProduktionenPage() {
   const [produktionen, profile] = await Promise.all([
@@ -37,6 +40,11 @@ export default async function ProduktionenPage() {
               + Neue Produktion
             </Link>
           )}
+        </div>
+
+        {/* Quick Access to Current Production */}
+        <div className="mb-8">
+          <AktuelleProduktionWidget produktionen={produktionen} />
         </div>
 
         {/* Dashboard with View Toggle */}

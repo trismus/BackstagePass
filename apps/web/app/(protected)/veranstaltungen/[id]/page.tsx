@@ -5,9 +5,11 @@ import {
   getAnmeldungCount,
 } from '@/lib/actions/veranstaltungen'
 import { getAnmeldungenForEvent } from '@/lib/actions/anmeldungen'
+import { getRessourcenReservierungen } from '@/lib/actions/ressourcen-bedarf'
 import { StatusBadge, TypBadge } from '@/components/veranstaltungen/StatusBadge'
 import { TeilnehmerListe } from '@/components/veranstaltungen/TeilnehmerListe'
 import { VeranstaltungForm } from '@/components/veranstaltungen/VeranstaltungForm'
+import { RessourcenBedarfManager } from '@/components/veranstaltungen/RessourcenBedarfManager'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -61,6 +63,7 @@ export default async function VeranstaltungDetailPage({
 
   const anmeldungen = await getAnmeldungenForEvent(id)
   const anmeldungCount = await getAnmeldungCount(id)
+  const ressourcenReservierungen = await getRessourcenReservierungen(id)
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -145,6 +148,15 @@ export default async function VeranstaltungDetailPage({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Ressourcenbedarf */}
+        <div className="mb-6">
+          <RessourcenBedarfManager
+            veranstaltungId={id}
+            reservierungen={ressourcenReservierungen}
+            canEdit={true}
+          />
         </div>
 
         {/* Teilnehmer */}
