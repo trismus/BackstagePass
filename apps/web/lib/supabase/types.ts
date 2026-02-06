@@ -1154,6 +1154,41 @@ export type StueckRolleMitSzenen = StueckRolle & {
 }
 
 // =============================================================================
+// Requisiten (Issue #192)
+// =============================================================================
+
+export type RequisitenStatus = 'gesucht' | 'gefunden' | 'beschafft' | 'vorhanden'
+
+export const REQUISITEN_STATUS_LABELS: Record<RequisitenStatus, string> = {
+  gesucht: 'Gesucht',
+  gefunden: 'Gefunden',
+  beschafft: 'Beschafft',
+  vorhanden: 'Vorhanden',
+}
+
+export type Requisite = {
+  id: string
+  stueck_id: string
+  name: string
+  beschreibung: string | null
+  szene_id: string | null
+  verantwortlich_id: string | null
+  status: RequisitenStatus
+  notizen: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type RequisiteInsert = Omit<Requisite, 'id' | 'created_at' | 'updated_at'>
+export type RequisiteUpdate = Partial<RequisiteInsert>
+
+// Extended type with person and scene details
+export type RequisiteMitDetails = Requisite & {
+  verantwortlich: Pick<Person, 'id' | 'vorname' | 'nachname'> | null
+  szene: Pick<Szene, 'id' | 'nummer' | 'titel'> | null
+}
+
+// =============================================================================
 // Besetzungen (Issue #102)
 // =============================================================================
 
@@ -2423,6 +2458,11 @@ export type Database = {
         Row: SzeneRolle
         Insert: SzeneRolleInsert
         Update: Partial<SzeneRolleInsert>
+      }
+      requisiten: {
+        Row: Requisite
+        Insert: RequisiteInsert
+        Update: RequisiteUpdate
       }
       besetzungen: {
         Row: Besetzung

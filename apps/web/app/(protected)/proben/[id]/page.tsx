@@ -13,7 +13,7 @@ import {
   getProtokollTemplates,
 } from '@/lib/actions/proben-protokoll'
 import { canEdit as checkCanEdit } from '@/lib/supabase/auth-helpers'
-import { ProbeStatusBadge, TeilnehmerList, ProbenProtokoll } from '@/components/proben'
+import { ProbeStatusBadge, TeilnehmerList, ProbenProtokoll, DownloadProbenSzenenButton } from '@/components/proben'
 import type { ProbeSzene, Szene, Person } from '@/lib/supabase/types'
 
 interface ProbeDetailPageProps {
@@ -169,10 +169,14 @@ export default async function ProbeDetailPage({
       {/* Szenen der Probe */}
       {probeSzenen.length > 0 && (
         <div className="rounded-lg bg-white shadow">
-          <div className="border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Zu probende Szenen
             </h2>
+            <DownloadProbenSzenenButton
+              probeId={id}
+              hasScenes={probeSzenen.length > 0}
+            />
           </div>
           <ul className="divide-y divide-gray-200">
             {probeSzenen.map(

@@ -728,3 +728,117 @@ ${'='.repeat(60)}
 
   return { success: true, content, filename }
 }
+
+/**
+ * Generate text content for scenes of a specific rehearsal (Issue #193)
+ * Allows actors to download only the scenes that will be rehearsed
+ */
+export async function downloadProbenSzenen(
+  probeId: string
+): Promise<{ success: boolean; content?: string; filename?: string; error?: string }> {
+  const supabase = await createClient()
+
+  // Get the probe with its scenes
+  const { data: probe, error: probeError } = await supabase
+    .from('proben')
+    .select(`
+      *,
+      stueck:stuecke(id, titel, autor),
+      proben_szenen(
+        reihenfolge,
+        szene:szenen(id, nummer, titel, beschreibung, text, dauer_minuten)
+      )
+    `)
+    .eq('id', probeId)
+    .single()
+
+  if (probeError || !probe) {
+    return { success: false, error: 'Probe nicht gefunden' }
+  }
+
+  type ProbeWithSzenen = {
+    id: string
+    titel: string
+    datum: string
+    startzeit: string | null
+    ort: string | null
+    stueck: { id: string; titel: string; autor: string | null } | null
+    proben_szenen: Array<{
+      reihenfolge: number | null
+      szene: {
+        id: string
+        nummer: number
+        titel: string
+        beschreibung: string | null
+        text: string | null
+        dauer_minuten: number | null
+      } | null
+    }>
+  }
+
+  const typedProbe = probe as unknown as ProbeWithSzenen
+
+  if (!typedProbe.stueck) {
+    return { success: false, error: 'Stück nicht gefunden' }
+  }
+
+  // Sort scenes by reihenfolge, then by nummer
+  const sortedSzenen = typedProbe.proben_szenen
+    .filter((ps): ps is typeof ps & { szene: NonNullable<typeof ps.szene> } => ps.szene !== null)
+    .sort((a, b) => {
+      if (a.reihenfolge !== null && b.reihenfolge !== null) {
+        return a.reihenfolge - b.reihenfolge
+      }
+      return a.szene.nummer - b.szene.nummer
+    })
+
+  if (sortedSzenen.length === 0) {
+    return { success: false, error: 'Keine Szenen für diese Probe ausgewählt' }
+  }
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('de-CH', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  let content = `${typedProbe.stueck.titel}
+${typedProbe.stueck.autor ? `von ${typedProbe.stueck.autor}` : ''}
+
+${'='.repeat(60)}
+PROBE: ${typedProbe.titel}
+Datum: ${formatDate(typedProbe.datum)}
+${typedProbe.startzeit ? `Uhrzeit: ${typedProbe.startzeit}` : ''}
+${typedProbe.ort ? `Ort: ${typedProbe.ort}` : ''}
+${'='.repeat(60)}
+
+Szenen für diese Probe (${sortedSzenen.length}):
+${sortedSzenen.map((ps, i) => `  ${i + 1}. Szene ${ps.szene.nummer}: ${ps.szene.titel}`).join('\n')}
+
+${'='.repeat(60)}
+
+`
+
+  for (const probenSzene of sortedSzenen) {
+    const szene = probenSzene.szene
+    content += `
+Szene ${szene.nummer}: ${szene.titel}
+${szene.beschreibung ? `${szene.beschreibung}\n` : ''}
+${szene.dauer_minuten ? `Dauer: ${szene.dauer_minuten} Minuten\n` : ''}
+${'-'.repeat(60)}
+
+${szene.text || '(Noch kein Text vorhanden)'}
+
+${'='.repeat(60)}
+
+`
+  }
+
+  const dateForFilename = typedProbe.datum.replace(/-/g, '')
+  const filename = `${typedProbe.stueck.titel.replace(/[^a-zA-Z0-9]/g, '_')}_Probe_${dateForFilename}.txt`
+
+  return { success: true, content, filename }
+}

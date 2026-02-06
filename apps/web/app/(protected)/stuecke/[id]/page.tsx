@@ -7,12 +7,14 @@ import {
   getRollen,
   getSzenenRollen,
 } from '@/lib/actions/stuecke'
-import { getUserProfile } from '@/lib/supabase/server'
+import { getRequisiten } from '@/lib/actions/requisiten'
+import { createClient, getUserProfile } from '@/lib/supabase/server'
 import { canEdit as checkCanEdit } from '@/lib/supabase/auth-helpers'
 import {
   StatusBadge,
   SzenenList,
   RollenList,
+  RequisitenList,
   SzenenRollenMatrix,
 } from '@/components/stuecke'
 import { DownloadStueckButton } from '@/components/stuecke/DownloadStueckButton'
@@ -25,13 +27,23 @@ export default async function StueckDetailPage({
   params,
 }: StueckDetailPageProps) {
   const { id } = await params
-  const [stueck, szenen, rollen, szenenRollen, profile] = await Promise.all([
+  const supabase = await createClient()
+
+  const [stueck, szenen, rollen, szenenRollen, requisiten, profile, personenResult] = await Promise.all([
     getStueck(id),
     getSzenen(id),
     getRollen(id),
     getSzenenRollen(id),
+    getRequisiten(id),
     getUserProfile(),
+    supabase
+      .from('personen')
+      .select('id, vorname, nachname')
+      .eq('aktiv', true)
+      .order('nachname'),
   ])
+
+  const personen = personenResult.data || []
 
   if (!stueck) {
     notFound()
@@ -112,6 +124,12 @@ export default async function StueckDetailPage({
               </span>
               <span className="ml-2 text-gray-500">Rollen</span>
             </div>
+            <div>
+              <span className="text-2xl font-bold text-gray-900">
+                {requisiten.length}
+              </span>
+              <span className="ml-2 text-gray-500">Requisiten</span>
+            </div>
           </div>
         </div>
 
@@ -129,6 +147,17 @@ export default async function StueckDetailPage({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <SzenenList stueckId={id} szenen={szenen} canEdit={canEdit} />
           <RollenList stueckId={id} rollen={rollen} canEdit={canEdit} />
+        </div>
+
+        {/* Requisiten */}
+        <div className="mt-6">
+          <RequisitenList
+            stueckId={id}
+            requisiten={requisiten}
+            szenen={szenen.map((s) => ({ id: s.id, nummer: s.nummer, titel: s.titel }))}
+            personen={personen}
+            canEdit={canEdit}
+          />
         </div>
       </div>
     </main>
