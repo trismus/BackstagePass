@@ -102,6 +102,7 @@ export const mockAnmeldung = {
   external_name: null,
   external_email: null,
   external_telefon: null,
+  abmeldung_token: 'abmeldung-token-1',
   status: 'angemeldet' as const,
   created_at: '2026-01-01T00:00:00Z',
 }
