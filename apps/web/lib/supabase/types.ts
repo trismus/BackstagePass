@@ -1670,6 +1670,38 @@ export type HelferAnmeldungMitDetails = HelferAnmeldung & {
 }
 
 // =============================================================================
+// Atomic Booking RPC Return Types (Issue #248)
+// =============================================================================
+
+export type BookHelferSlotResult = {
+  success: boolean
+  anmeldung_id?: string
+  status?: HelferAnmeldungStatus
+  is_waitlist?: boolean
+  error?: string
+}
+
+export type BookHelferSlotsResult = {
+  success: boolean
+  results?: BookHelferSlotResult[]
+  error?: string
+}
+
+export type HelferTimeConflict = {
+  instanz_a: string
+  rolle_a: string
+  event_a: string
+  instanz_b: string
+  rolle_b: string
+  event_b: string
+}
+
+export type CheckHelferTimeConflictsResult = {
+  has_conflicts: boolean
+  conflicts: HelferTimeConflict[]
+}
+
+// =============================================================================
 // Produktionen (Issue #156)
 // =============================================================================
 
