@@ -61,7 +61,6 @@ export async function getHelferlisteData(
     .from('veranstaltungen')
     .select('id, titel, datum, startzeit, endzeit, ort, helfer_status, public_helfer_token')
     .eq('id', veranstaltungId)
-    .eq('typ', 'auffuehrung')
     .single()
 
   if (veranstaltungError || !veranstaltung) {
