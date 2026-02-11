@@ -1,4 +1,68 @@
-import type { DesignSettings } from './design-settings'
+// =============================================================================
+// Types
+// =============================================================================
+
+export interface DesignSettings {
+  id: string
+  // Typografie
+  font_primary: string
+  font_secondary: string | null
+  font_size_base: string
+  // Farben
+  color_primary: string
+  color_secondary: string
+  color_accent: string
+  color_background: string
+  color_text: string
+  color_success: string
+  color_warning: string
+  color_error: string
+  // UI Parameter
+  border_radius: string
+  button_style: 'filled' | 'outline'
+  shadow_level: 'none' | 'soft' | 'strong'
+  spacing_scale: 'compact' | 'normal' | 'relaxed'
+  // Branding
+  logo_url: string | null
+  favicon_url: string | null
+  // Metadata
+  created_at: string
+  updated_at: string
+  updated_by: string | null
+}
+
+export type DesignSettingsUpdate = Partial<Omit<DesignSettings, 'id' | 'created_at' | 'updated_at' | 'updated_by'>>
+
+export interface DesignSettingsHistoryEntry {
+  id: string
+  settings_snapshot: DesignSettings
+  changed_at: string
+  changed_by: string | null
+}
+
+// =============================================================================
+// Default Settings (used when DB not initialized)
+// =============================================================================
+
+export const DEFAULT_DESIGN_SETTINGS: Omit<DesignSettings, 'id' | 'created_at' | 'updated_at' | 'updated_by'> = {
+  font_primary: 'Inter',
+  font_secondary: null,
+  font_size_base: '16px',
+  color_primary: '#6366f1',
+  color_secondary: '#8b5cf6',
+  color_accent: '#f59e0b',
+  color_background: '#ffffff',
+  color_text: '#171717',
+  color_success: '#22c55e',
+  color_warning: '#f59e0b',
+  color_error: '#ef4444',
+  border_radius: 'rounded-lg',
+  button_style: 'filled',
+  shadow_level: 'soft',
+  spacing_scale: 'normal',
+  logo_url: null,
+  favicon_url: null,
+}
 
 // =============================================================================
 // Generate CSS Variables from Settings
