@@ -1659,6 +1659,10 @@ export type HelferEventMitRollen = HelferEvent & {
   rollen: RollenInstanzMitAnmeldungen[]
 }
 
+export type PublicHelferEventData = HelferEventMitRollen & {
+  infoBloecke: InfoBlock[]
+}
+
 export type HelferAnmeldungMitDetails = HelferAnmeldung & {
   rollen_instanz: HelferRollenInstanz & {
     template: Pick<HelferRollenTemplate, 'id' | 'name'> | null

@@ -368,10 +368,10 @@ describe('Helferliste Actions', () => {
   })
 
   describe('getPublicEventByToken', () => {
-    it('returns public event with public roles only', async () => {
+    it('returns public event with public roles and empty infoBloecke', async () => {
       const fromMock = vi.fn()
       fromMock
-        // Get event
+        // Get event (no veranstaltung_id → no info_bloecke query)
         .mockReturnValueOnce({
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
@@ -400,6 +400,62 @@ describe('Helferliste Actions', () => {
 
       expect(result).not.toBeNull()
       expect(result?.rollen).toHaveLength(1)
+      expect(result?.infoBloecke).toEqual([])
+    })
+
+    it('returns infoBloecke when event has veranstaltung_id', async () => {
+      const mockInfoBlock = {
+        id: 'info-1',
+        veranstaltung_id: 'veranstaltung-1',
+        titel: 'Helferessen',
+        beschreibung: 'Spaghetti für alle',
+        startzeit: '16:30:00',
+        endzeit: '17:15:00',
+        sortierung: 1,
+        created_at: '2026-01-01T00:00:00Z',
+      }
+
+      const fromMock = vi.fn()
+      fromMock
+        // Get event (with veranstaltung_id)
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { ...mockHelferEvent, veranstaltung_id: 'veranstaltung-1', veranstaltung: { id: 'veranstaltung-1', titel: 'Test' } },
+            error: null,
+          }),
+        })
+        // Get public roles
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [{
+              ...mockRollenInstanz,
+              template: mockRollenTemplate,
+              anmeldungen: [],
+            }],
+            error: null,
+          }),
+        })
+        // Get info_bloecke
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [mockInfoBlock],
+            error: null,
+          }),
+        })
+
+      mockSupabase.from = fromMock
+
+      const result = await getPublicEventByToken('abc123')
+
+      expect(result).not.toBeNull()
+      expect(result?.infoBloecke).toHaveLength(1)
+      expect(result?.infoBloecke[0].titel).toBe('Helferessen')
     })
 
     it('returns null for invalid token', async () => {
