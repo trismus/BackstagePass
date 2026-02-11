@@ -260,6 +260,7 @@ describe('Helferliste Actions', () => {
             anmeldung_id: 'new-anmeldung-1',
             status: 'angemeldet',
             is_waitlist: false,
+            abmeldung_token: 'abmeldung-token-new',
           },
           error: null,
         })
@@ -269,6 +270,7 @@ describe('Helferliste Actions', () => {
       expect(result.success).toBe(true)
       expect(result.id).toBe('new-anmeldung-1')
       expect(result.isWaitlist).toBe(false)
+      expect(result.abmeldungToken).toBe('abmeldung-token-new')
       expect(mockSupabase.rpc).toHaveBeenCalledWith('check_helfer_time_conflicts', {
         p_rollen_instanz_ids: ['instanz-1'],
         p_profile_id: 'user-1',
@@ -431,6 +433,7 @@ describe('Helferliste Actions', () => {
             anmeldung_id: 'new-anmeldung',
             status: 'angemeldet',
             is_waitlist: false,
+            abmeldung_token: 'abmeldung-token-ext',
           },
           error: null,
         })
@@ -443,6 +446,7 @@ describe('Helferliste Actions', () => {
       expect(result.success).toBe(true)
       expect(result.id).toBe('new-anmeldung')
       expect(result.isWaitlist).toBe(false)
+      expect(result.abmeldungToken).toBe('abmeldung-token-ext')
       expect(mockSupabase.rpc).toHaveBeenCalledWith(
         'find_or_create_external_helper',
         expect.objectContaining({ p_email: 'helper@example.com' })
@@ -463,6 +467,7 @@ describe('Helferliste Actions', () => {
             anmeldung_id: 'waitlist-anmeldung',
             status: 'warteliste',
             is_waitlist: true,
+            abmeldung_token: 'abmeldung-token-wl',
           },
           error: null,
         })
@@ -474,6 +479,7 @@ describe('Helferliste Actions', () => {
 
       expect(result.success).toBe(true)
       expect(result.isWaitlist).toBe(true)
+      expect(result.abmeldungToken).toBe('abmeldung-token-wl')
     })
 
     it('rejects registration for non-public roles via atomic booking', async () => {

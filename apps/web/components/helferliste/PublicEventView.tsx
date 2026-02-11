@@ -2,11 +2,24 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { anmeldenPublic } from '@/lib/actions/helferliste'
+import {
+  generateICalEvent,
+  icalToDataUrl,
+  generateIcalFilename,
+} from '@/lib/utils/ical-generator'
 import type {
   HelferEventMitRollen,
   RollenInstanzMitAnmeldungen,
 } from '@/lib/supabase/types'
+
+interface EventInfo {
+  name: string
+  datum_start: string
+  datum_end: string
+  ort: string | null
+}
 
 interface PublicEventViewProps {
   event: HelferEventMitRollen
@@ -23,23 +36,37 @@ export function PublicEventView({ event }: PublicEventViewProps) {
     )
   }
 
+  const eventInfo: EventInfo = {
+    name: event.name,
+    datum_start: event.datum_start,
+    datum_end: event.datum_end,
+    ort: event.ort ?? null,
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold text-gray-900">Verfügbare Rollen</h2>
       {event.rollen.map((rolle) => (
-        <PublicRolleCard key={rolle.id} rolle={rolle} />
+        <PublicRolleCard key={rolle.id} rolle={rolle} eventInfo={eventInfo} />
       ))}
     </div>
   )
 }
 
-function PublicRolleCard({ rolle }: { rolle: RollenInstanzMitAnmeldungen }) {
+function PublicRolleCard({
+  rolle,
+  eventInfo,
+}: {
+  rolle: RollenInstanzMitAnmeldungen
+  eventInfo: EventInfo
+}) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isWaitlist, setIsWaitlist] = useState(false)
+  const [abmeldungToken, setAbmeldungToken] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -76,13 +103,51 @@ function PublicRolleCard({ rolle }: { rolle: RollenInstanzMitAnmeldungen }) {
 
     setSuccess(true)
     setIsWaitlist(result.isWaitlist ?? false)
+    setAbmeldungToken(result.abmeldungToken ?? null)
     setIsSubmitting(false)
     router.refresh()
+  }
+
+  const handleIcsDownload = () => {
+    const startDate = new Date(rolle.zeitblock_start || eventInfo.datum_start)
+    const endDate = new Date(rolle.zeitblock_end || eventInfo.datum_end)
+
+    const icsContent = generateICalEvent({
+      title: `Helfereinsatz: ${rollenName} - ${eventInfo.name}`,
+      description: `Rolle: ${rollenName}\nVeranstaltung: ${eventInfo.name}`,
+      location: eventInfo.ort || undefined,
+      startDate,
+      endDate,
+    })
+
+    const dataUrl = icalToDataUrl(icsContent)
+    const filename = generateIcalFilename(eventInfo.name, rollenName)
+
+    const link = document.createElement('a')
+    link.href = dataUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   if (success) {
     return (
       <div className="rounded-lg bg-white p-6 shadow">
+        {/* Status Badge */}
+        <div className="mb-4 flex items-center justify-center">
+          <span
+            className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+              isWaitlist
+                ? 'bg-warning-100 text-warning-800'
+                : 'bg-success-100 text-success-800'
+            }`}
+          >
+            {isWaitlist ? 'Warteliste' : 'Bestätigt'}
+          </span>
+        </div>
+
+        {/* Success Icon */}
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success-100">
             <svg
@@ -99,15 +164,99 @@ function PublicRolleCard({ rolle }: { rolle: RollenInstanzMitAnmeldungen }) {
               />
             </svg>
           </div>
-          <h3 className="font-medium text-gray-900">
+          <h3 className="text-lg font-medium text-gray-900">
             {isWaitlist ? 'Auf Warteliste gesetzt!' : 'Anmeldung erfolgreich!'}
           </h3>
-          <p className="mt-1 text-sm text-gray-600">
-            {isWaitlist
-              ? `Du stehst auf der Warteliste für "${rollenName}". Wir melden uns, sobald ein Platz frei wird.`
-              : `Du hast dich für "${rollenName}" angemeldet.`}
-          </p>
         </div>
+
+        {/* Event Details */}
+        <div className="mt-6 rounded-lg bg-gray-50 p-4">
+          <dl className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Veranstaltung</dt>
+              <dd className="font-medium text-gray-900">{eventInfo.name}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Datum</dt>
+              <dd className="font-medium text-gray-900">
+                {new Date(eventInfo.datum_start).toLocaleDateString('de-CH', {
+                  weekday: 'short',
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Zeit</dt>
+              <dd className="font-medium text-gray-900">
+                {formatDateTime(rolle.zeitblock_start || eventInfo.datum_start)}
+                {' - '}
+                {formatDateTime(rolle.zeitblock_end || eventInfo.datum_end)}
+              </dd>
+            </div>
+            {eventInfo.ort && (
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Ort</dt>
+                <dd className="font-medium text-gray-900">{eventInfo.ort}</dd>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Rolle</dt>
+              <dd className="font-medium text-gray-900">{rollenName}</dd>
+            </div>
+          </dl>
+        </div>
+
+        {/* Waitlist note */}
+        {isWaitlist && (
+          <div className="mt-4 rounded-lg border border-warning-200 bg-warning-50 p-3">
+            <p className="text-sm text-warning-800">
+              Du stehst auf der Warteliste. Wir melden uns, sobald ein Platz frei wird.
+            </p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="mt-6 space-y-3">
+          {/* ICS Download */}
+          <button
+            onClick={handleIcsDownload}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Zum Kalender hinzufügen (.ics)
+          </button>
+
+          {/* Cancellation Link */}
+          {abmeldungToken && (
+            <Link
+              href={`/helfer/helferliste/abmeldung/${abmeldungToken}` as never}
+              className="block w-full rounded-lg border border-error-200 bg-white px-4 py-2 text-center text-sm font-medium text-error-600 transition-colors hover:bg-error-50"
+            >
+              Anmeldung stornieren
+            </Link>
+          )}
+        </div>
+
+        {/* Hint */}
+        {formData.email && (
+          <p className="mt-4 text-center text-xs text-gray-500">
+            Du erhältst eine Bestätigung per E-Mail an {formData.email}.
+          </p>
+        )}
       </div>
     )
   }

@@ -468,7 +468,7 @@ export async function getOwnAnmeldungen(): Promise<
  */
 export async function anmelden(
   rollenInstanzId: string
-): Promise<{ success: boolean; error?: string; id?: string; isWaitlist?: boolean }> {
+): Promise<{ success: boolean; error?: string; id?: string; isWaitlist?: boolean; abmeldungToken?: string }> {
   const profile = await getUserProfile()
   if (!profile) {
     return { success: false, error: 'Nicht eingeloggt' }
@@ -517,7 +517,7 @@ export async function anmelden(
 
   revalidatePath('/helferliste')
   revalidatePath('/mein-bereich')
-  return { success: true, id: booking.anmeldung_id, isWaitlist: booking.is_waitlist }
+  return { success: true, id: booking.anmeldung_id, isWaitlist: booking.is_waitlist, abmeldungToken: booking.abmeldung_token }
 }
 
 /**
@@ -670,7 +670,7 @@ export async function anmeldenPublic(
     email?: string
     telefon?: string
   }
-): Promise<{ success: boolean; error?: string; id?: string; isWaitlist?: boolean }> {
+): Promise<{ success: boolean; error?: string; id?: string; isWaitlist?: boolean; abmeldungToken?: string }> {
   const supabase = await createClient()
 
   // If email provided, find or create the external helper profile
@@ -737,5 +737,6 @@ export async function anmeldenPublic(
     success: true,
     id: booking.anmeldung_id,
     isWaitlist: booking.is_waitlist,
+    abmeldungToken: booking.abmeldung_token,
   }
 }

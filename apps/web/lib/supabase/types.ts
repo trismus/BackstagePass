@@ -1629,6 +1629,7 @@ export type HelferAnmeldung = {
   external_name: string | null       // Legacy: inline name for external helpers
   external_email: string | null      // Legacy: inline email
   external_telefon: string | null    // Legacy: inline phone
+  abmeldung_token: string | null     // Public cancellation token (US-7)
   status: HelferAnmeldungStatus
   created_at: string
 }
@@ -1678,6 +1679,7 @@ export type BookHelferSlotResult = {
   anmeldung_id?: string
   status?: HelferAnmeldungStatus
   is_waitlist?: boolean
+  abmeldung_token?: string
   error?: string
 }
 
