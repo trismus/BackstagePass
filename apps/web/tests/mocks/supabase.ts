@@ -52,6 +52,7 @@ export function createMockClient(overrides?: {
       const result = overrides?.fromResults?.[table] || defaultResult
       return createMockQueryBuilder(result)
     }),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     auth: {
       getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),

@@ -246,65 +246,59 @@ describe('Helferliste Actions', () => {
   })
 
   describe('anmelden', () => {
-    it('registers user for a role', async () => {
-      // Mock: check existing registration
-      const fromMock = vi.fn()
-      fromMock
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+    it('registers user for a role via atomic booking', async () => {
+      mockSupabase.rpc
+        // Mock: check_helfer_time_conflicts (no conflicts)
+        .mockResolvedValueOnce({
+          data: { has_conflicts: false, conflicts: [] },
+          error: null,
         })
-        // Mock: check double booking - get instanz
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: {
-              ...mockRollenInstanz,
-              helfer_event: { datum_start: mockHelferEvent.datum_start, datum_end: mockHelferEvent.datum_end },
-            },
-            error: null,
-          }),
+        // Mock: book_helfer_slot (success)
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            anmeldung_id: 'new-anmeldung-1',
+            status: 'angemeldet',
+            is_waitlist: false,
+          },
+          error: null,
         })
-        // Mock: check double booking - get existing anmeldungen
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          neq: vi.fn().mockResolvedValue({ data: [], error: null }),
-        })
-        // Mock: insert registration
-        .mockReturnValueOnce({
-          insert: vi.fn().mockReturnThis(),
-          select: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'new-anmeldung-1' },
-            error: null,
-          }),
-        })
-
-      mockSupabase.from = fromMock
 
       const result = await anmelden('instanz-1')
 
       expect(result.success).toBe(true)
       expect(result.id).toBe('new-anmeldung-1')
+      expect(result.isWaitlist).toBe(false)
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('check_helfer_time_conflicts', {
+        p_rollen_instanz_ids: ['instanz-1'],
+        p_profile_id: 'user-1',
+      })
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('book_helfer_slot', {
+        p_rollen_instanz_id: 'instanz-1',
+        p_profile_id: 'user-1',
+      })
     })
 
-    it('prevents double registration', async () => {
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
-          data: mockAnmeldung,
+    it('prevents double registration via atomic booking', async () => {
+      mockSupabase.rpc
+        // Mock: check_helfer_time_conflicts (no conflicts)
+        .mockResolvedValueOnce({
+          data: { has_conflicts: false, conflicts: [] },
           error: null,
-        }),
-      })
+        })
+        // Mock: book_helfer_slot (duplicate)
+        .mockResolvedValueOnce({
+          data: {
+            success: false,
+            error: 'Bereits für diese Rolle angemeldet',
+          },
+          error: null,
+        })
 
       const result = await anmelden('instanz-1')
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Bereits angemeldet')
+      expect(result.error).toBe('Bereits für diese Rolle angemeldet')
     })
   })
 
@@ -423,91 +417,75 @@ describe('Helferliste Actions', () => {
   })
 
   describe('anmeldenPublic', () => {
-    it('registers external helper', async () => {
-      const fromMock = vi.fn()
-      fromMock
-        // Verify role is public
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'instanz-1', sichtbarkeit: 'public', anzahl_benoetigt: 5 },
-            error: null,
-          }),
-        })
-        // Check capacity
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          neq: vi.fn().mockResolvedValue({ count: 2, error: null }),
-        })
-        // Insert
-        .mockReturnValueOnce({
-          insert: vi.fn().mockReturnThis(),
-          select: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'new-anmeldung' },
-            error: null,
-          }),
-        })
-
-      mockSupabase.from = fromMock
-
-      const result = await anmeldenPublic('instanz-1', {
-        name: 'External Helper',
-        email: 'helper@example.com',
-      })
-
-      expect(result.success).toBe(true)
-    })
-
-    it('adds to waitlist when full', async () => {
-      const fromMock = vi.fn()
-      fromMock
-        // Verify role is public
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'instanz-1', sichtbarkeit: 'public', anzahl_benoetigt: 2 },
-            error: null,
-          }),
-        })
-        // Check capacity - full
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          neq: vi.fn().mockResolvedValue({ count: 2, error: null }),
-        })
-        // Insert to waitlist
-        .mockReturnValueOnce({
-          insert: vi.fn().mockReturnThis(),
-          select: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { id: 'waitlist-anmeldung' },
-            error: null,
-          }),
-        })
-
-      mockSupabase.from = fromMock
-
-      const result = await anmeldenPublic('instanz-1', {
-        name: 'External Helper',
-        email: 'helper@example.com',
-      })
-
-      expect(result.success).toBe(true)
-    })
-
-    it('rejects registration for non-public roles', async () => {
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
-          data: { id: 'instanz-1', sichtbarkeit: 'intern', anzahl_benoetigt: 2 },
+    it('registers external helper via atomic booking', async () => {
+      mockSupabase.rpc
+        // Mock: find_or_create_external_helper
+        .mockResolvedValueOnce({
+          data: 'helper-uuid-1',
           error: null,
-        }),
+        })
+        // Mock: book_helfer_slot (success)
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            anmeldung_id: 'new-anmeldung',
+            status: 'angemeldet',
+            is_waitlist: false,
+          },
+          error: null,
+        })
+
+      const result = await anmeldenPublic('instanz-1', {
+        name: 'External Helper',
+        email: 'helper@example.com',
       })
+
+      expect(result.success).toBe(true)
+      expect(result.id).toBe('new-anmeldung')
+      expect(result.isWaitlist).toBe(false)
+      expect(mockSupabase.rpc).toHaveBeenCalledWith(
+        'find_or_create_external_helper',
+        expect.objectContaining({ p_email: 'helper@example.com' })
+      )
+    })
+
+    it('adds to waitlist when full via atomic booking', async () => {
+      mockSupabase.rpc
+        // Mock: find_or_create_external_helper
+        .mockResolvedValueOnce({
+          data: 'helper-uuid-1',
+          error: null,
+        })
+        // Mock: book_helfer_slot (waitlist)
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            anmeldung_id: 'waitlist-anmeldung',
+            status: 'warteliste',
+            is_waitlist: true,
+          },
+          error: null,
+        })
+
+      const result = await anmeldenPublic('instanz-1', {
+        name: 'External Helper',
+        email: 'helper@example.com',
+      })
+
+      expect(result.success).toBe(true)
+      expect(result.isWaitlist).toBe(true)
+    })
+
+    it('rejects registration for non-public roles via atomic booking', async () => {
+      mockSupabase.rpc
+        // Mock: book_helfer_slot (role not public)
+        .mockResolvedValueOnce({
+          data: {
+            success: false,
+            error: 'Rolle nicht öffentlich zugänglich',
+          },
+          error: null,
+        })
 
       const result = await anmeldenPublic('instanz-1', {
         name: 'External Helper',

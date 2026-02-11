@@ -15,6 +15,8 @@ import type {
   RollenInstanzMitAnmeldungen,
   HelferAnmeldung,
   HelferAnmeldungMitDetails,
+  BookHelferSlotResult,
+  CheckHelferTimeConflictsResult,
 } from '../supabase/types'
 import {
   notifyRegistrationConfirmed,
@@ -462,10 +464,11 @@ export async function getOwnAnmeldungen(): Promise<
 
 /**
  * Register for a role (internal - authenticated user)
+ * Uses atomic DB function to prevent race conditions
  */
 export async function anmelden(
   rollenInstanzId: string
-): Promise<{ success: boolean; error?: string; id?: string }> {
+): Promise<{ success: boolean; error?: string; id?: string; isWaitlist?: boolean }> {
   const profile = await getUserProfile()
   if (!profile) {
     return { success: false, error: 'Nicht eingeloggt' }
@@ -473,47 +476,48 @@ export async function anmelden(
 
   const supabase = await createClient()
 
-  // Check if already registered
-  const { data: existing } = await supabase
-    .from('helfer_anmeldungen')
-    .select('id')
-    .eq('rollen_instanz_id', rollenInstanzId)
-    .eq('profile_id', profile.id)
-    .single()
+  // Check for time conflicts via DB function
+  const { data: conflictCheck } = await supabase.rpc('check_helfer_time_conflicts', {
+    p_rollen_instanz_ids: [rollenInstanzId],
+    p_profile_id: profile.id,
+  })
 
-  if (existing) {
-    return { success: false, error: 'Bereits angemeldet' }
+  const conflicts = conflictCheck as CheckHelferTimeConflictsResult | null
+  if (conflicts?.has_conflicts) {
+    const conflict = conflicts.conflicts[0]
+    return {
+      success: false,
+      error: `Zeitüberschneidung mit "${conflict?.rolle_b || 'anderem Einsatz'}"`,
+    }
   }
 
-  // Check for double-booking
-  const overlapCheck = await checkDoubleBooking(profile.id, rollenInstanzId)
-  if (overlapCheck.hasOverlap) {
-    return { success: false, error: overlapCheck.message }
-  }
-
-  const { data: result, error } = await supabase
-    .from('helfer_anmeldungen')
-    .insert({
-      rollen_instanz_id: rollenInstanzId,
-      profile_id: profile.id,
-      status: 'angemeldet',
-    } as never)
-    .select('id')
-    .single()
+  // Atomic booking via DB function (handles capacity + duplicate check)
+  const { data: result, error } = await supabase.rpc('book_helfer_slot', {
+    p_rollen_instanz_id: rollenInstanzId,
+    p_profile_id: profile.id,
+  })
 
   if (error) {
-    console.error('Error creating anmeldung:', error)
+    console.error('Error booking helfer slot:', error)
+    if (error.code === '23505') {
+      return { success: false, error: 'Bereits angemeldet' }
+    }
     return { success: false, error: error.message }
   }
 
+  const booking = result as BookHelferSlotResult
+  if (!booking.success) {
+    return { success: false, error: booking.error }
+  }
+
   // Send confirmation email (async, don't block)
-  if (result?.id) {
-    notifyRegistrationConfirmed(result.id, false).catch(console.error)
+  if (booking.anmeldung_id) {
+    notifyRegistrationConfirmed(booking.anmeldung_id, booking.is_waitlist ?? false).catch(console.error)
   }
 
   revalidatePath('/helferliste')
   revalidatePath('/mein-bereich')
-  return { success: true, id: result?.id }
+  return { success: true, id: booking.anmeldung_id, isWaitlist: booking.is_waitlist }
 }
 
 /**
@@ -588,103 +592,6 @@ export async function updateAnmeldungStatus(
 }
 
 // =============================================================================
-// Double-Booking Prevention
-// =============================================================================
-
-/**
- * Check if a user has overlapping registrations
- */
-async function checkDoubleBooking(
-  profileId: string,
-  rollenInstanzId: string
-): Promise<{ hasOverlap: boolean; message?: string }> {
-  const supabase = await createClient()
-
-  // Get the role instance details
-  const { data: instanz } = await supabase
-    .from('helfer_rollen_instanzen')
-    .select(
-      `
-      zeitblock_start,
-      zeitblock_end,
-      helfer_event:helfer_events(datum_start, datum_end)
-    `
-    )
-    .eq('id', rollenInstanzId)
-    .single()
-
-  if (!instanz) {
-    return { hasOverlap: false }
-  }
-
-  // Determine time range to check
-  // Note: Supabase returns single relations as objects when using .single()
-  const helferEvent = instanz.helfer_event as unknown as {
-    datum_start: string
-    datum_end: string
-  } | null
-  const startTime = instanz.zeitblock_start || helferEvent?.datum_start
-  const endTime = instanz.zeitblock_end || helferEvent?.datum_end
-
-  if (!startTime || !endTime) {
-    return { hasOverlap: false }
-  }
-
-  // Get user's other registrations with overlapping times
-  const { data: existingAnmeldungen } = await supabase
-    .from('helfer_anmeldungen')
-    .select(
-      `
-      id,
-      rollen_instanz:helfer_rollen_instanzen(
-        zeitblock_start,
-        zeitblock_end,
-        helfer_event:helfer_events(name, datum_start, datum_end)
-      )
-    `
-    )
-    .eq('profile_id', profileId)
-    .neq('status', 'abgelehnt')
-
-  if (!existingAnmeldungen || existingAnmeldungen.length === 0) {
-    return { hasOverlap: false }
-  }
-
-  for (const anmeldung of existingAnmeldungen) {
-    // Note: Supabase joins return objects for single relations
-    const ri = anmeldung.rollen_instanz as unknown as {
-      zeitblock_start: string | null
-      zeitblock_end: string | null
-      helfer_event: {
-        name: string
-        datum_start: string
-        datum_end: string
-      } | null
-    } | null
-    if (!ri) continue
-
-    const riEvent = ri.helfer_event
-    const existingStart = ri.zeitblock_start || riEvent?.datum_start
-    const existingEnd = ri.zeitblock_end || riEvent?.datum_end
-
-    if (!existingStart || !existingEnd) continue
-
-    // Check for overlap
-    if (
-      new Date(startTime) < new Date(existingEnd) &&
-      new Date(endTime) > new Date(existingStart)
-    ) {
-      return {
-        hasOverlap: true,
-        message: `Zeitüberschneidung mit "${riEvent?.name || 'anderem Einsatz'}"`,
-      }
-    }
-  }
-
-  return { hasOverlap: false }
-}
-
-// =============================================================================
 // Public Access (via token)
 // =============================================================================
 
@@ -754,6 +661,7 @@ export async function getPublicEventByToken(
 
 /**
  * Register for a public role (external helper)
+ * Uses atomic DB function to prevent race conditions
  */
 export async function anmeldenPublic(
   rollenInstanzId: string,
@@ -762,76 +670,72 @@ export async function anmeldenPublic(
     email?: string
     telefon?: string
   }
-): Promise<{ success: boolean; error?: string; id?: string }> {
+): Promise<{ success: boolean; error?: string; id?: string; isWaitlist?: boolean }> {
   const supabase = await createClient()
 
-  // Verify the role is public
-  const { data: instanz } = await supabase
-    .from('helfer_rollen_instanzen')
-    .select('id, sichtbarkeit, anzahl_benoetigt')
-    .eq('id', rollenInstanzId)
-    .single()
+  // If email provided, find or create the external helper profile
+  let externalHelperId: string | null = null
+  if (data.email) {
+    const nameParts = data.name.trim().split(/\s+/)
+    const vorname = nameParts[0] || data.name
+    const nachname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : vorname
 
-  if (!instanz || instanz.sichtbarkeit !== 'public') {
-    return { success: false, error: 'Rolle nicht öffentlich zugänglich' }
-  }
+    const { data: helperId, error: helperError } = await supabase
+      .rpc('find_or_create_external_helper', {
+        p_email: data.email,
+        p_vorname: vorname,
+        p_nachname: nachname,
+        p_telefon: data.telefon || null,
+      })
 
-  // Check capacity
-  const { count } = await supabase
-    .from('helfer_anmeldungen')
-    .select('id', { count: 'exact', head: true })
-    .eq('rollen_instanz_id', rollenInstanzId)
-    .neq('status', 'abgelehnt')
-
-  if (count !== null && count >= instanz.anzahl_benoetigt) {
-    // Auto-add to waitlist
-    const { data: result, error } = await supabase
-      .from('helfer_anmeldungen')
-      .insert({
-        rollen_instanz_id: rollenInstanzId,
-        external_name: data.name,
-        external_email: data.email || null,
-        external_telefon: data.telefon || null,
-        status: 'warteliste',
-      } as never)
-      .select('id')
-      .single()
-
-    if (error) {
-      console.error('Error creating public anmeldung:', error)
-      return { success: false, error: error.message }
+    if (helperError) {
+      console.error('Error finding/creating helper profile:', helperError)
+      return { success: false, error: 'Fehler bei der Registrierung' }
     }
 
-    // Send confirmation email for waitlist (async)
-    if (result?.id && data.email) {
-      notifyRegistrationConfirmed(result.id, true).catch(console.error)
-    }
-
-    return { success: true, id: result?.id }
+    externalHelperId = helperId as string
   }
 
-  const { data: result, error } = await supabase
-    .from('helfer_anmeldungen')
-    .insert({
-      rollen_instanz_id: rollenInstanzId,
-      external_name: data.name,
-      external_email: data.email || null,
-      external_telefon: data.telefon || null,
-      status: 'angemeldet',
-    } as never)
-    .select('id')
-    .single()
+  // Atomic booking via DB function (handles capacity + waitlist automatically)
+  const rpcParams: Record<string, unknown> = {
+    p_rollen_instanz_id: rollenInstanzId,
+  }
+
+  if (externalHelperId) {
+    rpcParams.p_external_helper_id = externalHelperId
+  } else {
+    rpcParams.p_external_name = data.name
+    rpcParams.p_external_email = data.email || null
+    rpcParams.p_external_telefon = data.telefon || null
+  }
+
+  const { data: result, error } = await supabase.rpc('book_helfer_slot', rpcParams)
 
   if (error) {
-    console.error('Error creating public anmeldung:', error)
-    return { success: false, error: error.message }
+    console.error('Error booking helfer slot:', error)
+    if (error.code === '23505') {
+      return { success: false, error: 'Bereits für diese Rolle angemeldet' }
+    }
+    return { success: false, error: 'Fehler bei der Anmeldung' }
   }
 
-  // Send confirmation email (async)
-  if (result?.id && data.email) {
-    notifyRegistrationConfirmed(result.id, false).catch(console.error)
+  const booking = result as BookHelferSlotResult
+  if (!booking.success) {
+    return { success: false, error: booking.error }
+  }
+
+  // Send confirmation email (async, don't block)
+  if (booking.anmeldung_id && data.email) {
+    notifyRegistrationConfirmed(
+      booking.anmeldung_id,
+      booking.is_waitlist ?? false
+    ).catch(console.error)
   }
 
   revalidatePath('/helferliste')
-  return { success: true, id: result?.id }
+  return {
+    success: true,
+    id: booking.anmeldung_id,
+    isWaitlist: booking.is_waitlist,
+  }
 }

@@ -39,6 +39,7 @@ function PublicRolleCard({ rolle }: { rolle: RollenInstanzMitAnmeldungen }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [isWaitlist, setIsWaitlist] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -74,6 +75,7 @@ function PublicRolleCard({ rolle }: { rolle: RollenInstanzMitAnmeldungen }) {
     }
 
     setSuccess(true)
+    setIsWaitlist(result.isWaitlist ?? false)
     setIsSubmitting(false)
     router.refresh()
   }
@@ -97,10 +99,13 @@ function PublicRolleCard({ rolle }: { rolle: RollenInstanzMitAnmeldungen }) {
               />
             </svg>
           </div>
-          <h3 className="font-medium text-gray-900">Anmeldung erfolgreich!</h3>
+          <h3 className="font-medium text-gray-900">
+            {isWaitlist ? 'Auf Warteliste gesetzt!' : 'Anmeldung erfolgreich!'}
+          </h3>
           <p className="mt-1 text-sm text-gray-600">
-            Du hast dich für &quot;{rollenName}&quot; angemeldet.
-            {isFull && ' Du bist auf der Warteliste.'}
+            {isWaitlist
+              ? `Du stehst auf der Warteliste für "${rollenName}". Wir melden uns, sobald ein Platz frei wird.`
+              : `Du hast dich für "${rollenName}" angemeldet.`}
           </p>
         </div>
       </div>
