@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { anmeldenPublic } from '@/lib/actions/helferliste'
@@ -10,9 +10,14 @@ import {
   generateIcalFilename,
 } from '@/lib/utils/ical-generator'
 import type {
-  HelferEventMitRollen,
+  PublicHelferEventData,
   RollenInstanzMitAnmeldungen,
+  InfoBlock,
 } from '@/lib/supabase/types'
+
+// =============================================================================
+// Types
+// =============================================================================
 
 interface EventInfo {
   name: string
@@ -21,11 +26,105 @@ interface EventInfo {
   ort: string | null
 }
 
-interface PublicEventViewProps {
-  event: HelferEventMitRollen
+interface ZeitblockGroup {
+  key: string
+  label: string
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  rollen: RollenInstanzMitAnmeldungen[]
 }
 
+interface PublicEventViewProps {
+  event: PublicHelferEventData
+}
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+function formatTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString('de-CH', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function groupRollenByZeitblock(
+  rollen: RollenInstanzMitAnmeldungen[]
+): ZeitblockGroup[] {
+  const groupMap = new Map<string, ZeitblockGroup>()
+
+  for (const rolle of rollen) {
+    const key =
+      rolle.zeitblock_start && rolle.zeitblock_end
+        ? `${rolle.zeitblock_start}|${rolle.zeitblock_end}`
+        : 'allgemein'
+
+    if (!groupMap.has(key)) {
+      const label =
+        rolle.zeitblock_start && rolle.zeitblock_end
+          ? `${formatTime(rolle.zeitblock_start)} – ${formatTime(rolle.zeitblock_end)}`
+          : 'Allgemein'
+
+      groupMap.set(key, {
+        key,
+        label,
+        zeitblock_start: rolle.zeitblock_start,
+        zeitblock_end: rolle.zeitblock_end,
+        rollen: [],
+      })
+    }
+    groupMap.get(key)!.rollen.push(rolle)
+  }
+
+  return Array.from(groupMap.values()).sort((a, b) => {
+    if (a.key === 'allgemein') return 1
+    if (b.key === 'allgemein') return -1
+    return (a.zeitblock_start ?? '').localeCompare(b.zeitblock_start ?? '')
+  })
+}
+
+// =============================================================================
+// Main Component
+// =============================================================================
+
 export function PublicEventView({ event }: PublicEventViewProps) {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedZeitblock, setSelectedZeitblock] = useState<string | null>(
+    null
+  )
+
+  const eventInfo: EventInfo = {
+    name: event.name,
+    datum_start: event.datum_start,
+    datum_end: event.datum_end,
+    ort: event.ort ?? null,
+  }
+
+  const groups = useMemo(
+    () => groupRollenByZeitblock(event.rollen),
+    [event.rollen]
+  )
+
+  const filteredGroups = useMemo(() => {
+    return groups
+      .map((group) => ({
+        ...group,
+        rollen: group.rollen.filter((rolle) => {
+          const name =
+            rolle.template?.name || rolle.custom_name || ''
+          return name.toLowerCase().includes(searchQuery.toLowerCase())
+        }),
+      }))
+      .filter((group) => {
+        if (selectedZeitblock !== null && group.key !== selectedZeitblock)
+          return false
+        return group.rollen.length > 0
+      })
+  }, [groups, searchQuery, selectedZeitblock])
+
+  const showFilters = groups.length > 1 || event.rollen.length > 3
+
   if (event.rollen.length === 0) {
     return (
       <div className="rounded-lg bg-white p-8 text-center shadow">
@@ -36,22 +135,193 @@ export function PublicEventView({ event }: PublicEventViewProps) {
     )
   }
 
-  const eventInfo: EventInfo = {
-    name: event.name,
-    datum_start: event.datum_start,
-    datum_end: event.datum_end,
-    ort: event.ort ?? null,
-  }
-
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">Verfügbare Rollen</h2>
-      {event.rollen.map((rolle) => (
-        <PublicRolleCard key={rolle.id} rolle={rolle} eventInfo={eventInfo} />
+    <div className="space-y-6">
+      {/* Info Blocks */}
+      {event.infoBloecke.length > 0 && (
+        <InfoBlocksSection infoBloecke={event.infoBloecke} />
+      )}
+
+      {/* Section Header */}
+      <h2 className="text-lg font-semibold text-gray-900">
+        Verfügbare Rollen
+      </h2>
+
+      {/* Filters */}
+      {showFilters && (
+        <FilterBar
+          groups={groups}
+          searchQuery={searchQuery}
+          selectedZeitblock={selectedZeitblock}
+          onSearchChange={setSearchQuery}
+          onZeitblockChange={setSelectedZeitblock}
+        />
+      )}
+
+      {/* Grouped Roles */}
+      {filteredGroups.length > 0 ? (
+        <div className="space-y-6">
+          {filteredGroups.map((group) => (
+            <ZeitblockGroupSection
+              key={group.key}
+              group={group}
+              eventInfo={eventInfo}
+              showHeader={groups.length > 1}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg bg-white p-8 text-center shadow">
+          <p className="text-gray-500">Keine Rollen gefunden.</p>
+          <button
+            onClick={() => {
+              setSearchQuery('')
+              setSelectedZeitblock(null)
+            }}
+            className="mt-2 text-sm font-medium text-primary-600 hover:text-primary-700"
+          >
+            Filter zurücksetzen
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// =============================================================================
+// Info Blocks Section
+// =============================================================================
+
+function InfoBlocksSection({ infoBloecke }: { infoBloecke: InfoBlock[] }) {
+  return (
+    <div className="space-y-3">
+      {infoBloecke.map((info) => (
+        <div
+          key={info.id}
+          className="rounded-xl border border-info-200 bg-info-50 p-4"
+        >
+          <h4 className="font-medium text-info-900">{info.titel}</h4>
+          {info.beschreibung && (
+            <p className="mt-1 text-sm text-info-700">{info.beschreibung}</p>
+          )}
+          <p className="mt-2 text-xs text-info-600">
+            {info.startzeit.slice(0, 5)} – {info.endzeit.slice(0, 5)} Uhr
+          </p>
+        </div>
       ))}
     </div>
   )
 }
+
+// =============================================================================
+// Filter Bar
+// =============================================================================
+
+function FilterBar({
+  groups,
+  searchQuery,
+  selectedZeitblock,
+  onSearchChange,
+  onZeitblockChange,
+}: {
+  groups: ZeitblockGroup[]
+  searchQuery: string
+  selectedZeitblock: string | null
+  onSearchChange: (q: string) => void
+  onZeitblockChange: (key: string | null) => void
+}) {
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="Rolle suchen..."
+        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500 sm:w-48"
+      />
+      {groups.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => onZeitblockChange(null)}
+            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+              selectedZeitblock === null
+                ? 'bg-primary-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Alle
+          </button>
+          {groups.map((group) => (
+            <button
+              key={group.key}
+              onClick={() => onZeitblockChange(group.key)}
+              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                selectedZeitblock === group.key
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {group.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// =============================================================================
+// Zeitblock Group Section
+// =============================================================================
+
+function ZeitblockGroupSection({
+  group,
+  eventInfo,
+  showHeader,
+}: {
+  group: ZeitblockGroup
+  eventInfo: EventInfo
+  showHeader: boolean
+}) {
+  const totalSlots = group.rollen.reduce(
+    (sum, r) => sum + r.anzahl_benoetigt,
+    0
+  )
+  const totalFree = group.rollen.reduce(
+    (sum, r) => sum + Math.max(0, r.anzahl_benoetigt - r.angemeldet_count),
+    0
+  )
+
+  return (
+    <div>
+      {showHeader && (
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">{group.label}</h3>
+          <span
+            className={`text-sm font-medium ${totalFree > 0 ? 'text-success-600' : 'text-gray-400'}`}
+          >
+            {totalFree > 0
+              ? `${totalFree} von ${totalSlots} ${totalFree === 1 ? 'Platz' : 'Plätze'} frei`
+              : 'Alle belegt'}
+          </span>
+        </div>
+      )}
+      <div className="space-y-4">
+        {group.rollen.map((rolle) => (
+          <PublicRolleCard
+            key={rolle.id}
+            rolle={rolle}
+            eventInfo={eventInfo}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// =============================================================================
+// Role Card (with Registration Form + Confirmation Screen from US-7)
+// =============================================================================
 
 function PublicRolleCard({
   rolle,
@@ -212,7 +482,8 @@ function PublicRolleCard({
         {isWaitlist && (
           <div className="mt-4 rounded-lg border border-warning-200 bg-warning-50 p-3">
             <p className="text-sm text-warning-800">
-              Du stehst auf der Warteliste. Wir melden uns, sobald ein Platz frei wird.
+              Du stehst auf der Warteliste. Wir melden uns, sobald ein Platz
+              frei wird.
             </p>
           </div>
         )}
@@ -243,7 +514,9 @@ function PublicRolleCard({
           {/* Cancellation Link */}
           {abmeldungToken && (
             <Link
-              href={`/helfer/helferliste/abmeldung/${abmeldungToken}` as never}
+              href={
+                `/helfer/helferliste/abmeldung/${abmeldungToken}` as never
+              }
               className="block w-full rounded-lg border border-error-200 bg-white px-4 py-2 text-center text-sm font-medium text-error-600 transition-colors hover:bg-error-50"
             >
               Anmeldung stornieren
@@ -278,7 +551,9 @@ function PublicRolleCard({
           <span
             className={`text-sm font-medium ${isFull ? 'text-warning-600' : 'text-success-600'}`}
           >
-            {isFull ? 'Voll (Warteliste möglich)' : `${spotsLeft} Plätze frei`}
+            {isFull
+              ? 'Voll (Warteliste möglich)'
+              : `${spotsLeft} von ${rolle.anzahl_benoetigt} ${spotsLeft === 1 ? 'Platz' : 'Plätze'} frei`}
           </span>
         </div>
       </div>

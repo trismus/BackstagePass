@@ -17,6 +17,8 @@ import type {
   HelferAnmeldungMitDetails,
   BookHelferSlotResult,
   CheckHelferTimeConflictsResult,
+  InfoBlock,
+  PublicHelferEventData,
 } from '../supabase/types'
 import {
   notifyRegistrationConfirmed,
@@ -600,7 +602,7 @@ export async function updateAnmeldungStatus(
  */
 export async function getPublicEventByToken(
   token: string
-): Promise<HelferEventMitRollen | null> {
+): Promise<PublicHelferEventData | null> {
   const supabase = await createClient()
 
   // Get event by public token
@@ -652,11 +654,26 @@ export async function getPublicEventByToken(
       ).length || 0,
   }))
 
+  // Fetch info blocks if event is linked to a veranstaltung
+  let infoBloecke: InfoBlock[] = []
+  if (event.veranstaltung_id) {
+    const { data: infoData } = await supabase
+      .from('info_bloecke')
+      .select('*')
+      .eq('veranstaltung_id', event.veranstaltung_id)
+      .order('sortierung', { ascending: true })
+
+    if (infoData) {
+      infoBloecke = infoData as InfoBlock[]
+    }
+  }
+
   return {
     ...event,
     veranstaltung: event.veranstaltung || null,
     rollen: rollenMitCount as RollenInstanzMitAnmeldungen[],
-  } as HelferEventMitRollen
+    infoBloecke,
+  } as PublicHelferEventData
 }
 
 /**
