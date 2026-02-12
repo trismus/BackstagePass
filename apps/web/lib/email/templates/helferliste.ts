@@ -385,3 +385,142 @@ BackstagePass - Theatergruppe Widen
 
   return { subject, html, text }
 }
+
+/**
+ * Email: Cancellation confirmation
+ * Sent to the helper after they cancel their registration.
+ */
+export function cancellationConfirmationEmail(
+  recipientName: string,
+  event: EventInfo
+): { subject: string; html: string; text: string } {
+  const subject = `Abmeldung bestätigt: ${event.name}`
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><style>${baseStyles}</style></head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>BackstagePass</h1>
+        </div>
+        <div class="content">
+          <p>Hallo ${recipientName},</p>
+          <p>Deine Anmeldung wurde erfolgreich storniert:</p>
+
+          <div class="info-box">
+            <h3 style="margin-top: 0;">${event.name}</h3>
+            <p><strong>Datum:</strong> ${event.datum}</p>
+            ${event.ort ? `<p><strong>Ort:</strong> ${event.ort}</p>` : ''}
+            ${event.rolle ? `<p><strong>Rolle:</strong> ${event.rolle}</p>` : ''}
+            ${event.zeitblock ? `<p><strong>Zeit:</strong> ${event.zeitblock}</p>` : ''}
+          </div>
+
+          <p>Danke, dass du uns rechtzeitig Bescheid gegeben hast. So können wir den Platz an jemand anderen vergeben.</p>
+        </div>
+        <div class="footer">
+          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
+          <p>Theatergruppe Widen</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  const text = `
+Hallo ${recipientName},
+
+Deine Anmeldung wurde erfolgreich storniert:
+
+Event: ${event.name}
+Datum: ${event.datum}
+${event.ort ? `Ort: ${event.ort}` : ''}
+${event.rolle ? `Rolle: ${event.rolle}` : ''}
+${event.zeitblock ? `Zeit: ${event.zeitblock}` : ''}
+
+Danke, dass du uns rechtzeitig Bescheid gegeben hast.
+
+--
+BackstagePass - Theatergruppe Widen
+  `
+
+  return { subject, html, text }
+}
+
+/**
+ * Email: Waitlist promotion notification
+ * Sent when a helper is auto-promoted from warteliste to angemeldet.
+ */
+export function waitlistPromotionEmail(
+  recipientName: string,
+  event: EventInfo,
+  abmeldungLink?: string
+): { subject: string; html: string; text: string } {
+  const subject = `Platz frei geworden: ${event.name}`
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><style>${baseStyles}</style></head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>BackstagePass</h1>
+        </div>
+        <div class="content">
+          <p>Hallo ${recipientName},</p>
+          <p>Es ist ein Platz frei geworden! Deine Anmeldung wurde von der Warteliste bestätigt:</p>
+
+          <div class="info-box">
+            <h3 style="margin-top: 0;">${event.name}</h3>
+            <p><strong>Datum:</strong> ${event.datum}</p>
+            ${event.ort ? `<p><strong>Ort:</strong> ${event.ort}</p>` : ''}
+            ${event.rolle ? `<p><strong>Rolle:</strong> ${event.rolle}</p>` : ''}
+            ${event.zeitblock ? `<p><strong>Zeit:</strong> ${event.zeitblock}</p>` : ''}
+            <p>
+              <span class="status-badge status-angemeldet">
+                Angemeldet
+              </span>
+            </p>
+          </div>
+
+          <p>Wir freuen uns auf dich!</p>
+
+          ${abmeldungLink ? `
+          <p style="font-size: 13px; color: #666;">
+            Falls du doch nicht teilnehmen kannst, kannst du dich hier abmelden:
+            <a href="${abmeldungLink}" style="color: #dc2626;">Anmeldung stornieren</a>
+          </p>
+          ` : ''}
+        </div>
+        <div class="footer">
+          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
+          <p>Theatergruppe Widen</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  const text = `
+Hallo ${recipientName},
+
+Es ist ein Platz frei geworden! Deine Anmeldung wurde von der Warteliste bestätigt:
+
+Event: ${event.name}
+Datum: ${event.datum}
+${event.ort ? `Ort: ${event.ort}` : ''}
+${event.rolle ? `Rolle: ${event.rolle}` : ''}
+${event.zeitblock ? `Zeit: ${event.zeitblock}` : ''}
+Status: Angemeldet
+
+Wir freuen uns auf dich!
+${abmeldungLink ? `\nFalls du doch nicht teilnehmen kannst: ${abmeldungLink}` : ''}
+
+--
+BackstagePass - Theatergruppe Widen
+  `
+
+  return { subject, html, text }
+}

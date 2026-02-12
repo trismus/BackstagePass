@@ -22,7 +22,7 @@ async function getAnmeldungByToken(token: string) {
         zeitblock_start,
         zeitblock_end,
         template:helfer_rollen_templates(name),
-        helfer_event:helfer_events(id, name, datum_start, datum_end, ort)
+        helfer_event:helfer_events(id, name, datum_start, datum_end, ort, abmeldung_frist)
       ),
       profile:profiles(display_name)
     `)
@@ -59,6 +59,7 @@ export default async function HelferlisteCancellationPage({
       datum_start: string
       datum_end: string
       ort: string | null
+      abmeldung_frist: string | null
     } | null
   } | null
 
@@ -67,20 +68,35 @@ export default async function HelferlisteCancellationPage({
   const rollenName = rollenInstanz?.template?.name || 'Unbekannte Rolle'
   const helferName = profile?.display_name || anmeldung.external_name
 
-  // Check 6-hour rule
+  // Check deadline (configurable abmeldung_frist, fallback to 6-hour rule)
   if (helferEvent) {
-    const eventStart = new Date(helferEvent.datum_start)
     const now = new Date()
-    const hoursUntilEvent = (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60)
+    let isTooLate = false
+    let deadlineMessage = ''
 
-    if (hoursUntilEvent < 6) {
+    if (helferEvent.abmeldung_frist) {
+      const frist = new Date(helferEvent.abmeldung_frist)
+      if (now > frist) {
+        isTooLate = true
+        deadlineMessage = 'Die Abmeldefrist für diese Veranstaltung ist abgelaufen. Eine Online-Abmeldung ist nicht mehr möglich.'
+      }
+    } else {
+      const eventStart = new Date(helferEvent.datum_start)
+      const hoursUntilEvent = (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60)
+      if (hoursUntilEvent < 6) {
+        isTooLate = true
+        deadlineMessage = 'Die Veranstaltung beginnt in weniger als 6 Stunden. Eine Online-Abmeldung ist nicht mehr möglich.'
+      }
+    }
+
+    if (isTooLate) {
       return (
         <div className="mx-auto max-w-lg px-4 py-12">
           <Card>
             <CardHeader>
               <CardTitle>Abmeldung nicht mehr möglich</CardTitle>
               <CardDescription>
-                Die Veranstaltung beginnt in weniger als 6 Stunden. Eine Online-Abmeldung ist nicht mehr möglich.
+                {deadlineMessage}
               </CardDescription>
             </CardHeader>
             <CardContent>

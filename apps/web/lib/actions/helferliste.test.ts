@@ -25,6 +25,8 @@ vi.mock('./helferliste-notifications', () => ({
   notifyRegistrationConfirmed: vi.fn().mockResolvedValue({ success: true }),
   notifyStatusChange: vi.fn().mockResolvedValue({ success: true }),
   notifyMultiRegistrationConfirmed: vi.fn().mockResolvedValue({ success: true }),
+  notifyCancellationConfirmed: vi.fn().mockResolvedValue({ success: true }),
+  notifyWaitlistPromotion: vi.fn().mockResolvedValue({ success: true }),
 }))
 
 // Import after mocking

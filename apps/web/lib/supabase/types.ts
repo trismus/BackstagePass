@@ -1577,6 +1577,7 @@ export type HelferEvent = {
   datum_start: string
   datum_end: string
   ort: string | null
+  abmeldung_frist: string | null         // Per-event cancellation deadline (US-10)
   public_token: string
   max_anmeldungen_pro_helfer: number | null
   created_at: string
@@ -1585,9 +1586,10 @@ export type HelferEvent = {
 
 export type HelferEventInsert = Omit<
   HelferEvent,
-  'id' | 'public_token' | 'max_anmeldungen_pro_helfer' | 'created_at' | 'updated_at'
+  'id' | 'public_token' | 'max_anmeldungen_pro_helfer' | 'abmeldung_frist' | 'created_at' | 'updated_at'
 > & {
   max_anmeldungen_pro_helfer?: number | null
+  abmeldung_frist?: string | null
 }
 export type HelferEventUpdate = Partial<HelferEventInsert>
 

@@ -10,6 +10,8 @@ import {
   registrationConfirmationEmail,
   statusUpdateEmail,
   multiRegistrationConfirmationEmail,
+  cancellationConfirmationEmail,
+  waitlistPromotionEmail,
   type ShiftInfo,
 } from '../email/templates/helferliste'
 import {
@@ -523,4 +525,170 @@ export async function notifyMultiRegistrationConfirmed(
   return emailResult.success
     ? { success: true }
     : { success: false, error: emailResult.error }
+}
+
+// =============================================================================
+// Cancellation & Waitlist Promotion Notifications (US-10)
+// =============================================================================
+
+/**
+ * Send cancellation confirmation email.
+ * Called AFTER the anmeldung row is deleted, so all data is passed in.
+ */
+export async function notifyCancellationConfirmed(params: {
+  recipientEmail: string
+  recipientName: string
+  eventName: string
+  eventDatumStart: string
+  eventOrt: string | null
+  rolleName: string | null
+  zeitblockStart: string | null
+  zeitblockEnd: string | null
+}): Promise<{ success: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { success: true }
+  }
+
+  const { subject, html, text } = cancellationConfirmationEmail(
+    params.recipientName,
+    {
+      name: params.eventName,
+      datum: formatDate(params.eventDatumStart),
+      ort: params.eventOrt || undefined,
+      rolle: params.rolleName || undefined,
+      zeitblock:
+        formatTimeRange(params.zeitblockStart, params.zeitblockEnd) || undefined,
+    }
+  )
+
+  const result = await sendEmail({
+    to: params.recipientEmail,
+    subject,
+    html,
+    text,
+  })
+
+  return result.success
+    ? { success: true }
+    : { success: false, error: result.error }
+}
+
+/**
+ * Send waitlist promotion email after auto-promoting a helper.
+ */
+export async function notifyWaitlistPromotion(
+  anmeldungId: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Fetch the promoted registration with details
+  const { data: anmeldung } = await supabase
+    .from('helfer_anmeldungen')
+    .select(
+      `
+      id,
+      profile_id,
+      external_helper_id,
+      external_name,
+      external_email,
+      abmeldung_token,
+      rollen_instanz:helfer_rollen_instanzen(
+        zeitblock_start,
+        zeitblock_end,
+        template:helfer_rollen_templates(name),
+        helfer_event:helfer_events(name, datum_start, ort)
+      )
+    `
+    )
+    .eq('id', anmeldungId)
+    .single()
+
+  if (!anmeldung) {
+    return { success: false, error: 'Anmeldung nicht gefunden' }
+  }
+
+  // Resolve email: profile → externe_helfer_profile → external_email
+  let recipientEmail: string | null = null
+  let recipientName = 'Helfer'
+
+  if (anmeldung.profile_id) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email, display_name')
+      .eq('id', anmeldung.profile_id)
+      .single()
+
+    if (profile?.email) {
+      recipientEmail = profile.email
+      recipientName = profile.display_name || 'Helfer'
+    }
+  } else if (anmeldung.external_helper_id) {
+    const { data: helper } = await supabase
+      .from('externe_helfer_profile')
+      .select('email, vorname, nachname')
+      .eq('id', anmeldung.external_helper_id)
+      .single()
+
+    if (helper?.email) {
+      recipientEmail = helper.email
+      recipientName = `${helper.vorname} ${helper.nachname}`
+    }
+  } else if (anmeldung.external_email) {
+    recipientEmail = anmeldung.external_email
+    recipientName = anmeldung.external_name || 'Helfer'
+  }
+
+  if (!recipientEmail) {
+    return { success: true } // No email to send to
+  }
+
+  // Extract nested data
+  const rollenInstanz = anmeldung.rollen_instanz as unknown as {
+    zeitblock_start: string | null
+    zeitblock_end: string | null
+    template: { name: string } | null
+    helfer_event: {
+      name: string
+      datum_start: string
+      ort: string | null
+    } | null
+  } | null
+
+  const helferEvent = rollenInstanz?.helfer_event
+  if (!helferEvent) {
+    return { success: false, error: 'Event nicht gefunden' }
+  }
+
+  const abmeldungLink = buildAbmeldungLink(anmeldung.abmeldung_token)
+
+  const { subject, html, text } = waitlistPromotionEmail(
+    recipientName,
+    {
+      name: helferEvent.name,
+      datum: formatDate(helferEvent.datum_start),
+      ort: helferEvent.ort || undefined,
+      rolle: rollenInstanz?.template?.name || undefined,
+      zeitblock:
+        formatTimeRange(
+          rollenInstanz?.zeitblock_start || null,
+          rollenInstanz?.zeitblock_end || null
+        ) || undefined,
+    },
+    abmeldungLink || undefined
+  )
+
+  const result = await sendEmail({
+    to: recipientEmail,
+    subject,
+    html,
+    text,
+  })
+
+  return result.success
+    ? { success: true }
+    : { success: false, error: result.error }
 }
