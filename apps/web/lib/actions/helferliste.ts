@@ -25,6 +25,7 @@ import type {
 import {
   notifyRegistrationConfirmed,
   notifyStatusChange,
+  notifyMultiRegistrationConfirmed,
 } from './helferliste-notifications'
 import { externeHelferRegistrierungFormSchema } from '../validations/externe-helfer'
 
@@ -905,15 +906,25 @@ export async function anmeldenPublicMulti(
     return { success: false, error: booking.error, results: booking.results }
   }
 
-  // Send confirmation emails async (don't block)
+  // Send single batched confirmation email async (don't block)
   if (booking.results) {
-    for (const slot of booking.results) {
-      if (slot.anmeldung_id) {
-        notifyRegistrationConfirmed(
-          slot.anmeldung_id,
-          slot.is_waitlist ?? false
-        ).catch(console.error)
-      }
+    const anmeldungIds = booking.results
+      .filter((slot) => slot.anmeldung_id)
+      .map((slot) => slot.anmeldung_id!)
+
+    if (anmeldungIds.length > 0) {
+      const { data: dashboardToken } = await supabase.rpc(
+        'get_externe_helfer_dashboard_token',
+        { p_helper_id: externalHelperId }
+      )
+
+      notifyMultiRegistrationConfirmed(
+        anmeldungIds,
+        externalHelperId,
+        dashboardToken as string,
+        validated.email,
+        `${validated.vorname} ${validated.nachname}`
+      ).catch(console.error)
     }
   }
 

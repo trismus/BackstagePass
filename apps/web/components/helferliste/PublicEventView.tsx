@@ -8,6 +8,7 @@ import {
   generateICalEvent,
   icalToDataUrl,
   generateIcalFilename,
+  mergeICalEvents,
 } from '@/lib/utils/ical-generator'
 import type {
   PublicHelferEventData,
@@ -1076,27 +1077,3 @@ function triggerDownload(dataUrl: string, filename: string) {
   document.body.removeChild(link)
 }
 
-function mergeICalEvents(icsContents: string[]): string {
-  if (icsContents.length === 0) return ''
-  if (icsContents.length === 1) return icsContents[0]
-
-  // Extract VEVENT blocks from each ICS content and merge into one VCALENDAR
-  const vevents: string[] = []
-  let preamble = ''
-
-  for (let i = 0; i < icsContents.length; i++) {
-    const content = icsContents[i]
-    const veventMatch = content.match(
-      /BEGIN:VEVENT[\s\S]*?END:VEVENT/
-    )
-    if (veventMatch) {
-      vevents.push(veventMatch[0])
-    }
-    if (i === 0) {
-      // Use preamble from first event (VCALENDAR header + VTIMEZONE)
-      preamble = content.substring(0, content.indexOf('BEGIN:VEVENT'))
-    }
-  }
-
-  return preamble + vevents.join('\r\n') + '\r\nEND:VCALENDAR'
-}

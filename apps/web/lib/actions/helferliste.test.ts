@@ -24,6 +24,7 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('./helferliste-notifications', () => ({
   notifyRegistrationConfirmed: vi.fn().mockResolvedValue({ success: true }),
   notifyStatusChange: vi.fn().mockResolvedValue({ success: true }),
+  notifyMultiRegistrationConfirmed: vi.fn().mockResolvedValue({ success: true }),
 }))
 
 // Import after mocking
@@ -624,6 +625,11 @@ describe('Helferliste Actions', () => {
           },
           error: null,
         })
+        // Mock: get_externe_helfer_dashboard_token
+        .mockResolvedValueOnce({
+          data: 'dashboard-token-uuid',
+          error: null,
+        })
 
       const result = await anmeldenPublicMulti(
         ['instanz-1', 'instanz-2'],
@@ -640,6 +646,17 @@ describe('Helferliste Actions', () => {
           p_rollen_instanz_ids: ['instanz-1', 'instanz-2'],
           p_external_helper_id: 'helper-uuid-1',
         })
+      )
+
+      // Verify batched notification is called once (not per-slot)
+      const { notifyMultiRegistrationConfirmed } = await import('./helferliste-notifications')
+      expect(notifyMultiRegistrationConfirmed).toHaveBeenCalledTimes(1)
+      expect(notifyMultiRegistrationConfirmed).toHaveBeenCalledWith(
+        ['anmeldung-1', 'anmeldung-2'],
+        'helper-uuid-1',
+        'dashboard-token-uuid',
+        'max@example.com',
+        'Max Muster'
       )
     })
 
@@ -798,6 +815,11 @@ describe('Helferliste Actions', () => {
               },
             ],
           },
+          error: null,
+        })
+        // Mock: get_externe_helfer_dashboard_token
+        .mockResolvedValueOnce({
+          data: 'dashboard-token-uuid',
           error: null,
         })
 

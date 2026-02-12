@@ -1474,6 +1474,7 @@ export type ExterneHelferProfil = {
   nachname: string
   telefon: string | null
   notizen: string | null
+  dashboard_token: string               // Public dashboard access token (US-8)
   erstellt_am: string
   letzter_einsatz: string | null
 }
