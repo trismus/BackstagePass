@@ -1577,14 +1577,17 @@ export type HelferEvent = {
   datum_end: string
   ort: string | null
   public_token: string
+  max_anmeldungen_pro_helfer: number | null
   created_at: string
   updated_at: string
 }
 
 export type HelferEventInsert = Omit<
   HelferEvent,
-  'id' | 'public_token' | 'created_at' | 'updated_at'
->
+  'id' | 'public_token' | 'max_anmeldungen_pro_helfer' | 'created_at' | 'updated_at'
+> & {
+  max_anmeldungen_pro_helfer?: number | null
+}
 export type HelferEventUpdate = Partial<HelferEventInsert>
 
 export type HelferRollenTemplate = {

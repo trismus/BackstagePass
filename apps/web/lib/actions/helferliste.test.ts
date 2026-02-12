@@ -40,6 +40,7 @@ import {
   updateAnmeldungStatus,
   getPublicEventByToken,
   anmeldenPublic,
+  anmeldenPublicMulti,
 } from './helferliste'
 
 describe('Helferliste Actions', () => {
@@ -555,6 +556,326 @@ describe('Helferliste Actions', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Rolle nicht öffentlich zugänglich')
+    })
+  })
+
+  describe('anmeldenPublicMulti', () => {
+    it('books multiple slots atomically via book_helfer_slots', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        // Query helfer_rollen_instanzen (for max limit check)
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue({
+            data: [{ helfer_event_id: 'event-1' }],
+            error: null,
+          }),
+        })
+        // Query helfer_events (for max_anmeldungen_pro_helfer)
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { max_anmeldungen_pro_helfer: null },
+            error: null,
+          }),
+        })
+      mockSupabase.from = fromMock
+
+      mockSupabase.rpc
+        // Mock: find_or_create_external_helper
+        .mockResolvedValueOnce({
+          data: 'helper-uuid-1',
+          error: null,
+        })
+        // Mock: check_helfer_time_conflicts (no conflicts)
+        .mockResolvedValueOnce({
+          data: { has_conflicts: false, conflicts: [] },
+          error: null,
+        })
+        // Mock: book_helfer_slots (success)
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            results: [
+              {
+                success: true,
+                anmeldung_id: 'anmeldung-1',
+                status: 'angemeldet',
+                is_waitlist: false,
+                abmeldung_token: 'token-1',
+              },
+              {
+                success: true,
+                anmeldung_id: 'anmeldung-2',
+                status: 'angemeldet',
+                is_waitlist: false,
+                abmeldung_token: 'token-2',
+              },
+            ],
+          },
+          error: null,
+        })
+
+      const result = await anmeldenPublicMulti(
+        ['instanz-1', 'instanz-2'],
+        { name: 'Multi Helper', email: 'multi@example.com' }
+      )
+
+      expect(result.success).toBe(true)
+      expect(result.results).toHaveLength(2)
+      expect(result.results?.[0].anmeldung_id).toBe('anmeldung-1')
+      expect(result.results?.[1].anmeldung_id).toBe('anmeldung-2')
+      expect(mockSupabase.rpc).toHaveBeenCalledWith(
+        'book_helfer_slots',
+        expect.objectContaining({
+          p_rollen_instanz_ids: ['instanz-1', 'instanz-2'],
+          p_external_helper_id: 'helper-uuid-1',
+        })
+      )
+    })
+
+    it('returns conflicts when time overlap with existing registrations', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue({
+            data: [{ helfer_event_id: 'event-1' }],
+            error: null,
+          }),
+        })
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { max_anmeldungen_pro_helfer: null },
+            error: null,
+          }),
+        })
+      mockSupabase.from = fromMock
+
+      mockSupabase.rpc
+        // Mock: find_or_create_external_helper
+        .mockResolvedValueOnce({
+          data: 'helper-uuid-1',
+          error: null,
+        })
+        // Mock: check_helfer_time_conflicts (conflicts with existing)
+        .mockResolvedValueOnce({
+          data: {
+            has_conflicts: true,
+            conflicts: [
+              {
+                instanz_a: 'instanz-1',
+                rolle_a: 'Einlass',
+                event_a: 'Event A',
+                instanz_b: 'existing-instanz',
+                rolle_b: 'Kasse',
+                event_b: 'Event A',
+              },
+            ],
+          },
+          error: null,
+        })
+
+      const result = await anmeldenPublicMulti(
+        ['instanz-1', 'instanz-2'],
+        { name: 'Multi Helper', email: 'multi@example.com' }
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Zeitüberschneidung mit bestehenden Anmeldungen')
+      expect(result.conflicts).toHaveLength(1)
+    })
+
+    it('rolls back all bookings when one fails', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue({
+            data: [{ helfer_event_id: 'event-1' }],
+            error: null,
+          }),
+        })
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { max_anmeldungen_pro_helfer: null },
+            error: null,
+          }),
+        })
+      mockSupabase.from = fromMock
+
+      mockSupabase.rpc
+        // Mock: check_helfer_time_conflicts (no conflicts)
+        .mockResolvedValueOnce({
+          data: { has_conflicts: false, conflicts: [] },
+          error: null,
+        })
+        // Mock: book_helfer_slots (failure)
+        .mockResolvedValueOnce({
+          data: {
+            success: false,
+            error: 'Einige Anmeldungen sind fehlgeschlagen',
+            results: [
+              { success: true, anmeldung_id: 'a1', status: 'angemeldet', is_waitlist: false },
+              { success: false, error: 'Bereits für diese Rolle angemeldet' },
+            ],
+          },
+          error: null,
+        })
+
+      const result = await anmeldenPublicMulti(
+        ['instanz-1', 'instanz-2'],
+        { name: 'No Email Helper' }
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Einige Anmeldungen sind fehlgeschlagen')
+    })
+
+    it('works without email (external_name fallback)', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue({
+            data: [{ helfer_event_id: 'event-1' }],
+            error: null,
+          }),
+        })
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { max_anmeldungen_pro_helfer: null },
+            error: null,
+          }),
+        })
+      mockSupabase.from = fromMock
+
+      mockSupabase.rpc
+        // Mock: check_helfer_time_conflicts (no conflicts)
+        .mockResolvedValueOnce({
+          data: { has_conflicts: false, conflicts: [] },
+          error: null,
+        })
+        // Mock: book_helfer_slots (success)
+        .mockResolvedValueOnce({
+          data: {
+            success: true,
+            results: [
+              {
+                success: true,
+                anmeldung_id: 'anmeldung-no-email',
+                status: 'angemeldet',
+                is_waitlist: false,
+                abmeldung_token: 'token-no-email',
+              },
+            ],
+          },
+          error: null,
+        })
+
+      const result = await anmeldenPublicMulti(
+        ['instanz-1'],
+        { name: 'No Email Helper' }
+      )
+
+      expect(result.success).toBe(true)
+      expect(mockSupabase.rpc).toHaveBeenCalledWith(
+        'book_helfer_slots',
+        expect.objectContaining({
+          p_external_name: 'No Email Helper',
+          p_external_email: null,
+          p_external_telefon: null,
+        })
+      )
+    })
+
+    it('respects max_anmeldungen_pro_helfer limit', async () => {
+      const fromMock = vi.fn()
+      fromMock
+        // Query helfer_rollen_instanzen
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockResolvedValue({
+            data: [{ helfer_event_id: 'event-1' }],
+            error: null,
+          }),
+        })
+        // Query helfer_events (max limit = 2)
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { max_anmeldungen_pro_helfer: 2 },
+            error: null,
+          }),
+        })
+        // Query existing anmeldungen (1 existing)
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          neq: vi.fn().mockResolvedValue({
+            count: 1,
+            data: null,
+            error: null,
+          }),
+        })
+        // Query helfer_rollen_instanzen for event IDs
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({
+            data: [{ id: 'instanz-existing' }, { id: 'instanz-1' }, { id: 'instanz-2' }],
+            error: null,
+          }),
+        })
+      mockSupabase.from = fromMock
+
+      mockSupabase.rpc
+        // Mock: find_or_create_external_helper
+        .mockResolvedValueOnce({
+          data: 'helper-uuid-1',
+          error: null,
+        })
+
+      const result = await anmeldenPublicMulti(
+        ['instanz-1', 'instanz-2'],
+        { name: 'Limit Helper', email: 'limit@example.com' }
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Maximal 2 Anmeldungen pro Helfer erlaubt')
+    })
+
+    it('rejects empty role selection', async () => {
+      const result = await anmeldenPublicMulti(
+        [],
+        { name: 'Empty Helper' }
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Mindestens eine Rolle muss ausgewählt werden')
+    })
+
+    it('rejects empty name', async () => {
+      const result = await anmeldenPublicMulti(
+        ['instanz-1'],
+        { name: '  ' }
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Name ist erforderlich')
     })
   })
 })
