@@ -583,6 +583,7 @@ function ContactFormStep({
   eventInfo: EventInfo
 }) {
   const router = useRouter()
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const {
     state,
     setStep,
@@ -598,24 +599,37 @@ function ContactFormStep({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!state.contactData.name.trim()) {
-      setError('Name ist erforderlich')
+    setFieldErrors({})
+    setError(null)
+
+    // Client-side quick check
+    const errors: Record<string, string> = {}
+    if (!state.contactData.vorname.trim()) errors.vorname = 'Vorname ist erforderlich'
+    if (!state.contactData.nachname.trim()) errors.nachname = 'Nachname ist erforderlich'
+    if (!state.contactData.email.trim()) errors.email = 'E-Mail ist erforderlich'
+    if (!state.contactData.datenschutz) errors.datenschutz = 'Bitte akzeptiere die Datenschutzerklärung'
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setError(Object.values(errors)[0])
       return
     }
 
     setSubmitting(true)
-    setError(null)
 
     const result = await anmeldenPublicMulti(
       Array.from(state.selectedIds),
       {
-        name: state.contactData.name.trim(),
-        email: state.contactData.email.trim() || undefined,
+        vorname: state.contactData.vorname.trim(),
+        nachname: state.contactData.nachname.trim(),
+        email: state.contactData.email.trim(),
         telefon: state.contactData.telefon.trim() || undefined,
+        datenschutz: state.contactData.datenschutz,
       }
     )
 
     if (!result.success) {
+      if (result.fieldErrors) setFieldErrors(result.fieldErrors)
       setError(result.error || 'Fehler bei der Anmeldung')
       setSubmitting(false)
       return
@@ -624,6 +638,8 @@ function ContactFormStep({
     setBookingResults(result.results || [], result.conflicts)
     router.refresh()
   }
+
+  const canSubmit = state.contactData.datenschutz && !state.isSubmitting
 
   return (
     <div className="space-y-6">
@@ -662,22 +678,56 @@ function ContactFormStep({
 
       {/* Contact Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="contact-name"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Name *
-          </label>
-          <input
-            type="text"
-            id="contact-name"
-            required
-            value={state.contactData.name}
-            onChange={(e) => setContactData({ name: e.target.value })}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
-            placeholder="Dein Name"
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="contact-vorname"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Vorname *
+            </label>
+            <input
+              type="text"
+              id="contact-vorname"
+              required
+              value={state.contactData.vorname}
+              onChange={(e) => setContactData({ vorname: e.target.value })}
+              className={`mt-1 block w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-primary-500 ${
+                fieldErrors.vorname
+                  ? 'border-error-500 focus:border-error-500'
+                  : 'border-gray-300 focus:border-primary-500'
+              }`}
+              placeholder="Vorname"
+            />
+            {fieldErrors.vorname && (
+              <p className="mt-1 text-sm text-error-600">{fieldErrors.vorname}</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="contact-nachname"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Nachname *
+            </label>
+            <input
+              type="text"
+              id="contact-nachname"
+              required
+              value={state.contactData.nachname}
+              onChange={(e) => setContactData({ nachname: e.target.value })}
+              className={`mt-1 block w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-primary-500 ${
+                fieldErrors.nachname
+                  ? 'border-error-500 focus:border-error-500'
+                  : 'border-gray-300 focus:border-primary-500'
+              }`}
+              placeholder="Nachname"
+            />
+            {fieldErrors.nachname && (
+              <p className="mt-1 text-sm text-error-600">{fieldErrors.nachname}</p>
+            )}
+          </div>
         </div>
 
         <div>
@@ -685,16 +735,24 @@ function ContactFormStep({
             htmlFor="contact-email"
             className="block text-sm font-medium text-gray-700"
           >
-            E-Mail (optional)
+            E-Mail *
           </label>
           <input
             type="email"
             id="contact-email"
+            required
             value={state.contactData.email}
             onChange={(e) => setContactData({ email: e.target.value })}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+            className={`mt-1 block w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-primary-500 ${
+              fieldErrors.email
+                ? 'border-error-500 focus:border-error-500'
+                : 'border-gray-300 focus:border-primary-500'
+            }`}
             placeholder="name@beispiel.ch"
           />
+          {fieldErrors.email && (
+            <p className="mt-1 text-sm text-error-600">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div>
@@ -714,6 +772,32 @@ function ContactFormStep({
           />
         </div>
 
+        {/* DSGVO Checkbox */}
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="datenschutz"
+            checked={state.contactData.datenschutz}
+            onChange={(e) => setContactData({ datenschutz: e.target.checked })}
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          />
+          <label htmlFor="datenschutz" className="text-sm text-gray-600">
+            Ich akzeptiere die{' '}
+            <a
+              href="/datenschutz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 hover:underline"
+            >
+              Datenschutzerklärung
+            </a>{' '}
+            und stimme der Verarbeitung meiner Daten zu. *
+          </label>
+        </div>
+        {fieldErrors.datenschutz && (
+          <p className="-mt-2 text-sm text-error-600">{fieldErrors.datenschutz}</p>
+        )}
+
         <div className="flex gap-3">
           <button
             type="button"
@@ -725,7 +809,7 @@ function ContactFormStep({
           </button>
           <button
             type="submit"
-            disabled={state.isSubmitting}
+            disabled={!canSubmit}
             className="flex-1 rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
           >
             {state.isSubmitting

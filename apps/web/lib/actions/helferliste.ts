@@ -26,6 +26,7 @@ import {
   notifyRegistrationConfirmed,
   notifyStatusChange,
 } from './helferliste-notifications'
+import { externeHelferRegistrierungFormSchema } from '../validations/externe-helfer'
 
 // =============================================================================
 // Helfer Events
@@ -763,17 +764,21 @@ export async function anmeldenPublic(
 /**
  * Register for multiple public roles at once (external helper)
  * Uses atomic DB function book_helfer_slots() for all-or-nothing booking
+ * Validates with externeHelferRegistrierungFormSchema (DSGVO consent required)
  */
 export async function anmeldenPublicMulti(
   rollenInstanzIds: string[],
   data: {
-    name: string
-    email?: string
+    vorname: string
+    nachname: string
+    email: string
     telefon?: string
+    datenschutz: boolean
   }
 ): Promise<{
   success: boolean
   error?: string
+  fieldErrors?: Record<string, string>
   results?: BookHelferSlotResult[]
   conflicts?: HelferTimeConflict[]
 }> {
@@ -781,37 +786,43 @@ export async function anmeldenPublicMulti(
     return { success: false, error: 'Mindestens eine Rolle muss ausgewählt werden' }
   }
 
-  if (!data.name.trim()) {
-    return { success: false, error: 'Name ist erforderlich' }
+  // Server-side validation with Zod schema
+  const parsed = externeHelferRegistrierungFormSchema.safeParse(data)
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0]?.toString()
+      if (key && !fieldErrors[key]) {
+        fieldErrors[key] = issue.message
+      }
+    }
+    return {
+      success: false,
+      error: Object.values(fieldErrors)[0] || 'Ungültige Eingabe',
+      fieldErrors,
+    }
   }
 
+  const validated = parsed.data
   const supabase = await createClient()
 
-  // If email provided, find or create the external helper profile
-  let externalHelperId: string | null = null
-  if (data.email) {
-    const nameParts = data.name.trim().split(/\s+/)
-    const vorname = nameParts[0] || data.name
-    const nachname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : vorname
+  // Find or create the external helper profile (email is now required)
+  const { data: helperId, error: helperError } = await supabase
+    .rpc('find_or_create_external_helper', {
+      p_email: validated.email,
+      p_vorname: validated.vorname,
+      p_nachname: validated.nachname,
+      p_telefon: data.telefon || null,
+    })
 
-    const { data: helperId, error: helperError } = await supabase
-      .rpc('find_or_create_external_helper', {
-        p_email: data.email,
-        p_vorname: vorname,
-        p_nachname: nachname,
-        p_telefon: data.telefon || null,
-      })
-
-    if (helperError) {
-      console.error('Error finding/creating helper profile:', helperError)
-      return { success: false, error: 'Fehler bei der Registrierung' }
-    }
-
-    externalHelperId = helperId as string
+  if (helperError) {
+    console.error('Error finding/creating helper profile:', helperError)
+    return { success: false, error: 'Fehler bei der Registrierung' }
   }
 
+  const externalHelperId = helperId as string
+
   // Check max_anmeldungen_pro_helfer limit
-  // Get the event for the first role to check the limit
   const { data: instanzData } = await supabase
     .from('helfer_rollen_instanzen')
     .select('helfer_event_id')
@@ -827,27 +838,22 @@ export async function anmeldenPublicMulti(
 
     const maxLimit = (eventData as HelferEvent | null)?.max_anmeldungen_pro_helfer
     if (maxLimit !== null && maxLimit !== undefined) {
-      // Count existing registrations for this helper in this event
-      let existingCount = 0
-      if (externalHelperId) {
-        const { count } = await supabase
-          .from('helfer_anmeldungen')
-          .select('id', { count: 'exact', head: true })
-          .eq('external_helper_id', externalHelperId)
-          .in(
-            'rollen_instanz_id',
-            (
-              await supabase
-                .from('helfer_rollen_instanzen')
-                .select('id')
-                .eq('helfer_event_id', instanzData[0].helfer_event_id)
-            ).data?.map((r: { id: string }) => r.id) || []
-          )
-          .neq('status', 'abgelehnt')
+      const { count } = await supabase
+        .from('helfer_anmeldungen')
+        .select('id', { count: 'exact', head: true })
+        .eq('external_helper_id', externalHelperId)
+        .in(
+          'rollen_instanz_id',
+          (
+            await supabase
+              .from('helfer_rollen_instanzen')
+              .select('id')
+              .eq('helfer_event_id', instanzData[0].helfer_event_id)
+          ).data?.map((r: { id: string }) => r.id) || []
+        )
+        .neq('status', 'abgelehnt')
 
-        existingCount = count || 0
-      }
-
+      const existingCount = count || 0
       if (existingCount + rollenInstanzIds.length > maxLimit) {
         return {
           success: false,
@@ -858,21 +864,16 @@ export async function anmeldenPublicMulti(
   }
 
   // Check for time conflicts via DB function
-  const conflictParams: Record<string, unknown> = {
-    p_rollen_instanz_ids: rollenInstanzIds,
-  }
-  if (externalHelperId) {
-    conflictParams.p_external_helper_id = externalHelperId
-  }
-
   const { data: conflictCheck } = await supabase.rpc(
     'check_helfer_time_conflicts',
-    conflictParams
+    {
+      p_rollen_instanz_ids: rollenInstanzIds,
+      p_external_helper_id: externalHelperId,
+    }
   )
 
   const conflicts = conflictCheck as CheckHelferTimeConflictsResult | null
   if (conflicts?.has_conflicts) {
-    // Only block if conflicts are with existing registrations (not among selected)
     const existingConflicts = conflicts.conflicts.filter(
       (c) =>
         !rollenInstanzIds.includes(c.instanz_a) ||
@@ -888,19 +889,11 @@ export async function anmeldenPublicMulti(
   }
 
   // Atomic multi-slot booking via DB function
-  const rpcParams: Record<string, unknown> = {
+  const { data: result, error } = await supabase.rpc('book_helfer_slots', {
     p_rollen_instanz_ids: rollenInstanzIds,
-  }
-
-  if (externalHelperId) {
-    rpcParams.p_external_helper_id = externalHelperId
-  } else {
-    rpcParams.p_external_name = data.name
-    rpcParams.p_external_email = data.email || null
-    rpcParams.p_external_telefon = data.telefon || null
-  }
-
-  const { data: result, error } = await supabase.rpc('book_helfer_slots', rpcParams)
+    p_external_helper_id: externalHelperId,
+    p_datenschutz_akzeptiert: new Date().toISOString(),
+  })
 
   if (error) {
     console.error('Error booking helfer slots:', error)
@@ -913,7 +906,7 @@ export async function anmeldenPublicMulti(
   }
 
   // Send confirmation emails async (don't block)
-  if (data.email && booking.results) {
+  if (booking.results) {
     for (const slot of booking.results) {
       if (slot.anmeldung_id) {
         notifyRegistrationConfirmed(
