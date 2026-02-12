@@ -560,6 +560,13 @@ describe('Helferliste Actions', () => {
   })
 
   describe('anmeldenPublicMulti', () => {
+    const validContactData = {
+      vorname: 'Max',
+      nachname: 'Muster',
+      email: 'max@example.com',
+      datenschutz: true,
+    }
+
     it('books multiple slots atomically via book_helfer_slots', async () => {
       const fromMock = vi.fn()
       fromMock
@@ -620,7 +627,7 @@ describe('Helferliste Actions', () => {
 
       const result = await anmeldenPublicMulti(
         ['instanz-1', 'instanz-2'],
-        { name: 'Multi Helper', email: 'multi@example.com' }
+        validContactData
       )
 
       expect(result.success).toBe(true)
@@ -683,7 +690,7 @@ describe('Helferliste Actions', () => {
 
       const result = await anmeldenPublicMulti(
         ['instanz-1', 'instanz-2'],
-        { name: 'Multi Helper', email: 'multi@example.com' }
+        validContactData
       )
 
       expect(result.success).toBe(false)
@@ -713,6 +720,11 @@ describe('Helferliste Actions', () => {
       mockSupabase.from = fromMock
 
       mockSupabase.rpc
+        // Mock: find_or_create_external_helper
+        .mockResolvedValueOnce({
+          data: 'helper-uuid-1',
+          error: null,
+        })
         // Mock: check_helfer_time_conflicts (no conflicts)
         .mockResolvedValueOnce({
           data: { has_conflicts: false, conflicts: [] },
@@ -733,14 +745,14 @@ describe('Helferliste Actions', () => {
 
       const result = await anmeldenPublicMulti(
         ['instanz-1', 'instanz-2'],
-        { name: 'No Email Helper' }
+        validContactData
       )
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Einige Anmeldungen sind fehlgeschlagen')
     })
 
-    it('works without email (external_name fallback)', async () => {
+    it('passes datenschutz_akzeptiert timestamp to RPC', async () => {
       const fromMock = vi.fn()
       fromMock
         .mockReturnValueOnce({
@@ -762,6 +774,11 @@ describe('Helferliste Actions', () => {
       mockSupabase.from = fromMock
 
       mockSupabase.rpc
+        // Mock: find_or_create_external_helper
+        .mockResolvedValueOnce({
+          data: 'helper-uuid-1',
+          error: null,
+        })
         // Mock: check_helfer_time_conflicts (no conflicts)
         .mockResolvedValueOnce({
           data: { has_conflicts: false, conflicts: [] },
@@ -774,28 +791,25 @@ describe('Helferliste Actions', () => {
             results: [
               {
                 success: true,
-                anmeldung_id: 'anmeldung-no-email',
+                anmeldung_id: 'anmeldung-1',
                 status: 'angemeldet',
                 is_waitlist: false,
-                abmeldung_token: 'token-no-email',
+                abmeldung_token: 'token-1',
               },
             ],
           },
           error: null,
         })
 
-      const result = await anmeldenPublicMulti(
+      await anmeldenPublicMulti(
         ['instanz-1'],
-        { name: 'No Email Helper' }
+        validContactData
       )
 
-      expect(result.success).toBe(true)
       expect(mockSupabase.rpc).toHaveBeenCalledWith(
         'book_helfer_slots',
         expect.objectContaining({
-          p_external_name: 'No Email Helper',
-          p_external_email: null,
-          p_external_telefon: null,
+          p_datenschutz_akzeptiert: expect.any(String),
         })
       )
     })
@@ -851,7 +865,7 @@ describe('Helferliste Actions', () => {
 
       const result = await anmeldenPublicMulti(
         ['instanz-1', 'instanz-2'],
-        { name: 'Limit Helper', email: 'limit@example.com' }
+        { ...validContactData, email: 'limit@example.com' }
       )
 
       expect(result.success).toBe(false)
@@ -861,21 +875,44 @@ describe('Helferliste Actions', () => {
     it('rejects empty role selection', async () => {
       const result = await anmeldenPublicMulti(
         [],
-        { name: 'Empty Helper' }
+        validContactData
       )
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Mindestens eine Rolle muss ausgewählt werden')
     })
 
-    it('rejects empty name', async () => {
+    it('rejects when datenschutz is false', async () => {
       const result = await anmeldenPublicMulti(
         ['instanz-1'],
-        { name: '  ' }
+        { ...validContactData, datenschutz: false }
       )
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Name ist erforderlich')
+      expect(result.fieldErrors).toBeDefined()
+      expect(result.fieldErrors?.datenschutz).toBeDefined()
+    })
+
+    it('rejects invalid email format', async () => {
+      const result = await anmeldenPublicMulti(
+        ['instanz-1'],
+        { ...validContactData, email: 'not-an-email' }
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.fieldErrors).toBeDefined()
+      expect(result.fieldErrors?.email).toBeDefined()
+    })
+
+    it('rejects empty vorname', async () => {
+      const result = await anmeldenPublicMulti(
+        ['instanz-1'],
+        { ...validContactData, vorname: '' }
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.fieldErrors).toBeDefined()
+      expect(result.fieldErrors?.vorname).toBeDefined()
     })
   })
 })

@@ -22,7 +22,7 @@ export type WizardStep = 'select' | 'contact' | 'confirmation'
 export interface MultiSelectState {
   step: WizardStep
   selectedIds: Set<string>
-  contactData: { name: string; email: string; telefon: string }
+  contactData: { vorname: string; nachname: string; email: string; telefon: string; datenschutz: boolean }
   clientConflicts: HelferTimeConflict[]
   bookingResults: BookHelferSlotResult[]
   isSubmitting: boolean
@@ -84,7 +84,7 @@ function detectClientConflicts(
 const initialState: MultiSelectState = {
   step: 'select',
   selectedIds: new Set(),
-  contactData: { name: '', email: '', telefon: '' },
+  contactData: { vorname: '', nachname: '', email: '', telefon: '', datenschutz: false },
   clientConflicts: [],
   bookingResults: [],
   isSubmitting: false,

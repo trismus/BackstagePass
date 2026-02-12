@@ -1633,6 +1633,7 @@ export type HelferAnmeldung = {
   external_email: string | null      // Legacy: inline email
   external_telefon: string | null    // Legacy: inline phone
   abmeldung_token: string | null     // Public cancellation token (US-7)
+  datenschutz_akzeptiert: string | null // GDPR consent timestamp (US-3)
   status: HelferAnmeldungStatus
   created_at: string
 }
