@@ -69,6 +69,7 @@ export const mockHelferEvent = {
   datum_start: '2026-03-01T18:00:00Z',
   datum_end: '2026-03-01T22:00:00Z',
   ort: 'Gemeindesaal',
+  abmeldung_frist: null,
   status: 'aktiv' as const,
   public_token: 'abc123',
   created_at: '2026-01-01T00:00:00Z',

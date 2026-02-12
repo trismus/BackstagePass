@@ -25,6 +25,9 @@ export function HelferEventForm({ event }: HelferEventFormProps) {
       ? new Date(event.datum_end).toISOString().slice(0, 16)
       : '',
     ort: event?.ort || '',
+    abmeldung_frist: event?.abmeldung_frist
+      ? new Date(event.abmeldung_frist).toISOString().slice(0, 16)
+      : '',
     veranstaltung_id: event?.veranstaltung_id || '',
   })
 
@@ -38,6 +41,9 @@ export function HelferEventForm({ event }: HelferEventFormProps) {
         ...formData,
         datum_start: new Date(formData.datum_start).toISOString(),
         datum_end: new Date(formData.datum_end).toISOString(),
+        abmeldung_frist: formData.abmeldung_frist
+          ? new Date(formData.abmeldung_frist).toISOString()
+          : null,
         veranstaltung_id: formData.veranstaltung_id || null,
       }
 
@@ -183,6 +189,27 @@ export function HelferEventForm({ event }: HelferEventFormProps) {
           className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
           placeholder="z.B. Mehrzweckhalle Widen"
         />
+      </div>
+
+      <div>
+        <label
+          htmlFor="abmeldung_frist"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Abmeldefrist
+        </label>
+        <input
+          type="datetime-local"
+          id="abmeldung_frist"
+          value={formData.abmeldung_frist}
+          onChange={(e) =>
+            setFormData({ ...formData, abmeldung_frist: e.target.value })
+          }
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Optional. Bis wann können sich Helfer abmelden? Standard: 6 Stunden vor Event-Beginn.
+        </p>
       </div>
 
       <div className="flex justify-end gap-3 border-t pt-4">
