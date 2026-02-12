@@ -1,12 +1,22 @@
 'use server'
 
 import { createClient } from '../supabase/server'
-import { sendEmail, isEmailConfigured } from '../email'
+import {
+  sendEmail,
+  isEmailServiceConfigured as isEmailConfigured,
+} from '../email/client'
 import {
   eventPublishedEmail,
   registrationConfirmationEmail,
   statusUpdateEmail,
+  multiRegistrationConfirmationEmail,
+  type ShiftInfo,
 } from '../email/templates/helferliste'
+import {
+  generateHelferSchichtIcal,
+  mergeICalEvents,
+  generateIcalFilename,
+} from '../utils/ical-generator'
 
 /**
  * Format date for display in emails
@@ -308,4 +318,209 @@ export async function notifyStatusChange(
   return result.success
     ? { success: true }
     : { success: false, error: result.error }
+}
+
+// =============================================================================
+// Multi-Registration Confirmation (US-8)
+// =============================================================================
+
+/**
+ * Build public cancellation link from abmeldung_token
+ */
+function buildAbmeldungLink(token: string | null): string {
+  if (!token) return ''
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  return `${baseUrl}/helfer/helferliste/abmeldung/${token}`
+}
+
+/**
+ * Extract YYYY-MM-DD from an ISO timestamp
+ */
+function formatISODate(dateStr: string): string {
+  return dateStr.substring(0, 10)
+}
+
+/**
+ * Extract HH:MM from an ISO timestamp
+ */
+function formatISOTime(dateStr: string): string {
+  const date = new Date(dateStr)
+  return date.toLocaleTimeString('de-CH', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/**
+ * Send a single batched confirmation email after multi-slot booking.
+ * Lists all shifts with per-shift cancellation links, dashboard link,
+ * ICS calendar attachment for confirmed shifts.
+ */
+export async function notifyMultiRegistrationConfirmed(
+  anmeldungIds: string[],
+  _externalHelperId: string,
+  dashboardToken: string,
+  recipientEmail: string,
+  recipientName: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Fetch all registrations with role/event details in one query
+  const { data: anmeldungen } = await supabase
+    .from('helfer_anmeldungen')
+    .select(
+      `
+      id,
+      status,
+      abmeldung_token,
+      rollen_instanz:helfer_rollen_instanzen(
+        zeitblock_start,
+        zeitblock_end,
+        template:helfer_rollen_templates(name),
+        custom_name,
+        helfer_event:helfer_events(
+          id, name, datum_start, datum_end, ort,
+          veranstaltung_id
+        )
+      )
+    `
+    )
+    .in('id', anmeldungIds)
+
+  if (!anmeldungen || anmeldungen.length === 0) {
+    return { success: false, error: 'Keine Anmeldungen gefunden' }
+  }
+
+  // Extract event info from first registration (all belong to same event)
+  type RollenInstanzNested = {
+    zeitblock_start: string | null
+    zeitblock_end: string | null
+    template: { name: string } | null
+    custom_name: string | null
+    helfer_event: {
+      id: string
+      name: string
+      datum_start: string
+      datum_end: string
+      ort: string | null
+      veranstaltung_id: string | null
+    } | null
+  }
+
+  const firstInstanz = anmeldungen[0].rollen_instanz as unknown as RollenInstanzNested | null
+  const helferEvent = firstInstanz?.helfer_event
+
+  if (!helferEvent) {
+    return { success: false, error: 'Event nicht gefunden' }
+  }
+
+  // Build shift data for email template
+  const shifts: ShiftInfo[] = anmeldungen.map((a) => {
+    const instanz = a.rollen_instanz as unknown as RollenInstanzNested | null
+    const rolle = instanz?.template?.name || instanz?.custom_name || 'Unbekannte Rolle'
+    return {
+      rolle,
+      zeitblock: formatTimeRange(
+        instanz?.zeitblock_start || null,
+        instanz?.zeitblock_end || null
+      ),
+      status: a.status === 'warteliste' ? 'warteliste' : 'angemeldet',
+      abmeldungLink: buildAbmeldungLink(a.abmeldung_token),
+    }
+  })
+
+  // Build dashboard link
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const dashboardLink = `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
+
+  // Fetch coordinator info (if event is linked to a veranstaltung)
+  let koordinator: { name: string; email: string; telefon?: string } | undefined
+  if (helferEvent.veranstaltung_id) {
+    const { data: veranstaltung } = await supabase
+      .from('veranstaltungen')
+      .select('koordinator_id')
+      .eq('id', helferEvent.veranstaltung_id)
+      .single()
+
+    if (veranstaltung?.koordinator_id) {
+      const { data: person } = await supabase
+        .from('personen')
+        .select('vorname, nachname, email, telefon')
+        .eq('id', veranstaltung.koordinator_id)
+        .single()
+
+      if (person?.email) {
+        koordinator = {
+          name: `${person.vorname} ${person.nachname}`,
+          email: person.email,
+          telefon: person.telefon || undefined,
+        }
+      }
+    }
+  }
+
+  // Generate ICS for confirmed (non-waitlist) shifts
+  const confirmedAnmeldungen = anmeldungen.filter((a) => a.status !== 'warteliste')
+  let icsContent: string | null = null
+
+  if (confirmedAnmeldungen.length > 0) {
+    const icsEvents = confirmedAnmeldungen.map((a) => {
+      const instanz = a.rollen_instanz as unknown as RollenInstanzNested | null
+      const rolle = instanz?.template?.name || instanz?.custom_name || 'Helfereinsatz'
+      const startStr = instanz?.zeitblock_start || helferEvent.datum_start
+      const endStr = instanz?.zeitblock_end || helferEvent.datum_end
+
+      return generateHelferSchichtIcal({
+        veranstaltung: helferEvent.name,
+        rolle,
+        datum: formatISODate(startStr),
+        startzeit: formatISOTime(startStr),
+        endzeit: formatISOTime(endStr),
+        ort: helferEvent.ort || undefined,
+        koordinatorName: koordinator?.name,
+        koordinatorEmail: koordinator?.email,
+      })
+    })
+
+    icsContent = mergeICalEvents(icsEvents)
+  }
+
+  // Generate email
+  const { subject, html, text } = multiRegistrationConfirmationEmail(
+    recipientName,
+    {
+      name: helferEvent.name,
+      datum: formatDate(helferEvent.datum_start),
+      ort: helferEvent.ort || undefined,
+    },
+    shifts,
+    dashboardLink,
+    koordinator
+  )
+
+  // Send with ICS attachment
+  const emailResult = await sendEmail({
+    to: recipientEmail,
+    subject,
+    html,
+    text,
+    replyTo: koordinator?.email,
+    attachments: icsContent
+      ? [
+          {
+            filename: generateIcalFilename(helferEvent.name, 'helfereinsaetze'),
+            content: icsContent,
+            contentType: 'text/calendar',
+          },
+        ]
+      : undefined,
+  })
+
+  return emailResult.success
+    ? { success: true }
+    : { success: false, error: emailResult.error }
 }
