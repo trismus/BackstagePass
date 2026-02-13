@@ -328,18 +328,21 @@ export async function reorderAgendaItems(
 
   const supabase = await createClient()
 
-  // Update each item's nummer
-  for (const item of items) {
-    const { error } = await supabase
-      .from('meeting_agenda')
-      .update({ nummer: item.nummer } as never)
-      .eq('id', item.id)
-      .eq('meeting_id', meetingId)
+  // Batch update all items concurrently instead of sequential loop
+  const updateResults = await Promise.all(
+    items.map((item) =>
+      supabase
+        .from('meeting_agenda')
+        .update({ nummer: item.nummer } as never)
+        .eq('id', item.id)
+        .eq('meeting_id', meetingId)
+    )
+  )
 
-    if (error) {
-      console.error('Error reordering agenda items:', error)
-      return { success: false, error: error.message }
-    }
+  const failed = updateResults.find((r) => r.error)
+  if (failed?.error) {
+    console.error('Error reordering agenda items:', failed.error)
+    return { success: false, error: failed.error.message }
   }
 
   revalidatePath('/meetings')
@@ -735,17 +738,22 @@ export async function generateMeetingsFromTemplate(
       continue
     }
 
-    // Create standard agenda items
+    // Batch insert standard agenda items
     if (template.standard_agenda && template.standard_agenda.length > 0) {
-      for (let i = 0; i < template.standard_agenda.length; i++) {
-        const item = template.standard_agenda[i]
-        await supabase.from('meeting_agenda').insert({
-          meeting_id: meeting.id,
-          nummer: i + 1,
-          titel: item.titel,
-          beschreibung: item.beschreibung || null,
-          dauer_minuten: item.dauer_minuten || null,
-        } as never)
+      const agendaRows = template.standard_agenda.map((item, i) => ({
+        meeting_id: meeting.id,
+        nummer: i + 1,
+        titel: item.titel,
+        beschreibung: item.beschreibung || null,
+        dauer_minuten: item.dauer_minuten || null,
+      }))
+
+      const { error: aError } = await supabase
+        .from('meeting_agenda')
+        .insert(agendaRows as never)
+
+      if (aError) {
+        console.error('Error creating agenda items:', aError)
       }
     }
 
