@@ -29,6 +29,29 @@ export interface HelpResult {
 }
 
 /**
+ * Escape HTML entities to prevent XSS
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
+ * Validate that a URL uses a safe protocol (not javascript:, data:, etc.)
+ */
+function isSafeUrl(url: string): boolean {
+  const trimmed = url.trim().toLowerCase()
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('#')) {
+    return true
+  }
+  return false
+}
+
+/**
  * Parse markdown to HTML
  * Lightweight parser without external dependencies
  */
@@ -65,11 +88,15 @@ function parseMarkdown(markdown: string): string {
   // Links - convert internal docs links to /hilfe routes
   html = html.replace(
     /\[([^\]]+)\]\(\.\/([^)]+)\.md\)/g,
-    '<a href="/hilfe/$2" class="text-primary-600 hover:text-primary-700 underline">$1</a>'
+    (_match: string, text: string, slug: string) =>
+      `<a href="/hilfe/${encodeURI(slug)}" class="text-primary-600 hover:text-primary-700 underline">${escapeHtml(text)}</a>`
   )
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="text-primary-600 hover:text-primary-700 underline" target="_blank" rel="noopener">$1</a>'
+    (_match: string, text: string, url: string) => {
+      if (!isSafeUrl(url)) return escapeHtml(text)
+      return `<a href="${encodeURI(url)}" class="text-primary-600 hover:text-primary-700 underline" target="_blank" rel="noopener">${escapeHtml(text)}</a>`
+    }
   )
 
   // Unordered lists
@@ -159,14 +186,14 @@ function parseTable(html: string): string {
       '<table class="min-w-full border-collapse my-4 text-sm">'
     table += '<thead><tr class="bg-gray-50">'
     for (const header of headers) {
-      table += `<th class="border border-gray-200 px-3 py-2 text-left font-medium text-gray-700">${header}</th>`
+      table += `<th class="border border-gray-200 px-3 py-2 text-left font-medium text-gray-700">${escapeHtml(header)}</th>`
     }
     table += '</tr></thead><tbody>'
 
     for (const row of rows) {
       table += '<tr>'
       for (const cell of row) {
-        table += `<td class="border border-gray-200 px-3 py-2 text-gray-600">${cell}</td>`
+        table += `<td class="border border-gray-200 px-3 py-2 text-gray-600">${escapeHtml(cell)}</td>`
       }
       table += '</tr>'
     }

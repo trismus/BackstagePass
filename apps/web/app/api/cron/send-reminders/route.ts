@@ -15,28 +15,24 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // Allow up to 60 seconds for processing
 
 export async function GET(request: Request) {
-  // Verify the request is from Vercel Cron
+  // Verify the request is authorized (all environments)
   const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
 
-  // In production, verify the cron secret
-  if (process.env.NODE_ENV === 'production') {
-    const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) {
+    console.error('[Cron] CRON_SECRET not configured')
+    return NextResponse.json(
+      { error: 'Server configuration error' },
+      { status: 500 }
+    )
+  }
 
-    if (!cronSecret) {
-      console.error('[Cron] CRON_SECRET not configured')
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      )
-    }
-
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      console.error('[Cron] Unauthorized request')
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    console.error('[Cron] Unauthorized request')
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
   }
 
   try {
