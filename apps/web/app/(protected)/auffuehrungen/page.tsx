@@ -4,6 +4,7 @@ import { getUserProfile } from '@/lib/supabase/server'
 import { getVeranstaltungen } from '@/lib/actions/veranstaltungen'
 import { AuffuehrungenTable } from '@/components/auffuehrungen/AuffuehrungenTable'
 import { canEdit } from '@/lib/supabase/auth-helpers'
+import { TourButton } from '@/components/tours'
 
 export default async function AuffuehrungenPage() {
   const profile = await getUserProfile()
@@ -31,12 +32,21 @@ export default async function AuffuehrungenPage() {
           </div>
           <div className="flex gap-3">
             {userCanEdit && (
-              <Link
-                href="/auffuehrungen/neu"
-                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
-              >
-                Neue Aufführung
-              </Link>
+              <>
+                <Link
+                  href="/auffuehrungen/neu"
+                  className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+                  data-tour="auffuehrung-neu-button"
+                >
+                  Neue Aufführung
+                </Link>
+                <TourButton
+                  tourId="auffuehrung:planen"
+                  label="Tour: Aufführung planen"
+                  variant="ghost"
+                  size="sm"
+                />
+              </>
             )}
             <Link
               href="/auffuehrungen/kalender"
