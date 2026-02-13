@@ -1715,6 +1715,33 @@ export type CheckHelferTimeConflictsResult = {
 }
 
 // =============================================================================
+// Helfer Dashboard (US-9)
+// =============================================================================
+
+export type HelferDashboardAnmeldung = {
+  id: string
+  status: HelferAnmeldungStatus
+  abmeldung_token: string | null
+  created_at: string
+  rolle_name: string
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  rollen_instanz_id: string
+  event_id: string
+  event_name: string
+  event_datum_start: string
+  event_datum_end: string
+  event_ort: string | null
+  event_public_token: string
+  event_abmeldung_frist: string | null
+}
+
+export type HelferDashboardData = {
+  helper: { vorname: string; nachname: string; email: string }
+  anmeldungen: HelferDashboardAnmeldung[]
+}
+
+// =============================================================================
 // Produktionen (Issue #156)
 // =============================================================================
 
