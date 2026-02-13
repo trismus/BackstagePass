@@ -97,6 +97,7 @@ export async function createVeranstaltung(
   }
 
   revalidatePath('/veranstaltungen')
+  revalidatePath('/auffuehrungen')
   return { success: true, id: result?.id }
 }
 
@@ -120,7 +121,9 @@ export async function updateVeranstaltung(
   }
 
   revalidatePath('/veranstaltungen')
+  revalidatePath('/auffuehrungen')
   revalidatePath(`/veranstaltungen/${id}`)
+  revalidatePath(`/auffuehrungen/${id}`)
   return { success: true }
 }
 
@@ -140,6 +143,7 @@ export async function deleteVeranstaltung(
   }
 
   revalidatePath('/veranstaltungen')
+  revalidatePath('/auffuehrungen')
   return { success: true }
 }
 
