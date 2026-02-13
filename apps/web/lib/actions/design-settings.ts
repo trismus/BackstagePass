@@ -17,7 +17,7 @@ export async function getDesignSettings(): Promise<DesignSettings> {
 
   const { data, error } = await supabase
     .from('design_settings')
-    .select('*')
+    .select('id, font_primary, font_secondary, font_size_base, color_primary, color_secondary, color_accent, color_background, color_text, color_success, color_warning, color_error, border_radius, button_style, shadow_level, spacing_scale, logo_url, favicon_url, created_at, updated_at, updated_by')
     .single()
 
   if (error || !data) {
@@ -92,7 +92,7 @@ export async function getDesignSettingsHistory(
 
   const { data, error } = await supabase
     .from('design_settings_history')
-    .select('*')
+    .select('id, settings_snapshot, changed_at, changed_by')
     .order('changed_at', { ascending: false })
     .limit(limit)
 

@@ -26,7 +26,7 @@ export async function getProduktionen(): Promise<Produktion[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -41,7 +41,7 @@ export async function getAktiveProduktionen(): Promise<Produktion[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .not('status', 'in', '("abgeschlossen","abgesagt")')
     .order('premiere', { ascending: true, nullsFirst: false })
 
@@ -64,7 +64,7 @@ export async function getAktuelleProduktionFuerDashboard(): Promise<{
   // Find the current production: laufend > premiere > proben > casting > planung
   const { data: produktionen } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .not('status', 'in', '("abgeschlossen","abgesagt","draft")')
     .order('premiere', { ascending: true, nullsFirst: false })
     .limit(5)
@@ -173,7 +173,7 @@ export async function getProduktion(id: string): Promise<Produktion | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -317,7 +317,7 @@ export async function getSerien(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrungsserien')
-    .select('*')
+    .select('id, produktion_id, name, beschreibung, status, standard_ort, standard_startzeit, template_id, stueck_id, datum_von, datum_bis, created_at, updated_at')
     .eq('produktion_id', produktionId)
     .order('created_at', { ascending: false })
 
@@ -335,7 +335,7 @@ export async function getSerie(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrungsserien')
-    .select('*')
+    .select('id, produktion_id, name, beschreibung, status, standard_ort, standard_startzeit, template_id, stueck_id, datum_von, datum_bis, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -449,7 +449,7 @@ export async function getSerienAuffuehrungen(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('serienauffuehrungen')
-    .select('*')
+    .select('id, serie_id, veranstaltung_id, datum, startzeit, ort, typ, ist_ausnahme, notizen, created_at, updated_at')
     .eq('serie_id', serieId)
     .order('datum', { ascending: true })
 
@@ -481,7 +481,7 @@ export async function getAllAuffuehrungenForProduktion(
   // Fetch all auffuehrungen for these serien
   const { data, error } = await supabase
     .from('serienauffuehrungen')
-    .select('*')
+    .select('id, serie_id, veranstaltung_id, datum, startzeit, ort, typ, ist_ausnahme, notizen, created_at, updated_at')
     .in('serie_id', serieIds)
     .order('datum', { ascending: true })
 

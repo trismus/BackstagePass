@@ -292,7 +292,7 @@ export async function processExpiredWaitlistNotifications(): Promise<{
   // Get expired notifications from view
   const { data: expired, error } = await adminClient
     .from('expired_waitlist_notifications')
-    .select('*')
+    .select('id, schicht_id, profile_id, external_helper_id, confirmation_token, antwort_deadline, benachrichtigt_am, rolle, veranstaltung_id, veranstaltung_titel, email, name')
 
   if (error) {
     console.error('[Waitlist] Error fetching expired notifications:', error)

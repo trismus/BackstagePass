@@ -27,7 +27,7 @@ export async function getPersonen(): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
     .order('nachname', { ascending: true })
 
   if (error) {
@@ -51,7 +51,7 @@ export async function getPerson(id: string): Promise<Person | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -76,7 +76,7 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
     .or(
       `vorname.ilike.%${query}%,nachname.ilike.%${query}%,email.ilike.%${query}%`
     )
@@ -345,7 +345,7 @@ export async function getPersonenFiltered(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('*')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
 
   if (filter === 'aktiv') {
     query = query.eq('aktiv', true)
@@ -447,7 +447,7 @@ export async function getPersonenAdvanced(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('*')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
 
   // Status filter
   if (status === 'aktiv') {

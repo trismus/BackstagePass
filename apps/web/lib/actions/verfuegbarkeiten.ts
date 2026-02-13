@@ -25,7 +25,7 @@ export async function getVerfuegbarkeitenForMitglied(
 
   const { data, error } = await supabase
     .from('verfuegbarkeiten')
-    .select('*')
+    .select('id, mitglied_id, datum_von, datum_bis, zeitfenster_von, zeitfenster_bis, status, wiederholung, grund, notiz, created_at, updated_at')
     .eq('mitglied_id', mitgliedId)
     .order('datum_von', { ascending: true })
 
@@ -100,7 +100,7 @@ export async function getMeineKommendeVerfuegbarkeiten(): Promise<
 
   const { data, error } = await supabase
     .from('verfuegbarkeiten')
-    .select('*')
+    .select('id, mitglied_id, datum_von, datum_bis, zeitfenster_von, zeitfenster_bis, status, wiederholung, grund, notiz, created_at, updated_at')
     .eq('mitglied_id', personId)
     .gte('datum_bis', today)
     .order('datum_von', { ascending: true })
@@ -123,7 +123,7 @@ export async function getVerfuegbarkeitById(
 
   const { data, error } = await supabase
     .from('verfuegbarkeiten')
-    .select('*')
+    .select('id, mitglied_id, datum_von, datum_bis, zeitfenster_von, zeitfenster_bis, status, wiederholung, grund, notiz, created_at, updated_at')
     .eq('id', id)
     .single()
 

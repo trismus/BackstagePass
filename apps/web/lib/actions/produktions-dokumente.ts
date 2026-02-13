@@ -21,7 +21,7 @@ export async function getProduktionsDokumente(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktions_dokumente')
-    .select('*')
+    .select('id, produktion_id, name, kategorie, datei_pfad, datei_name, datei_groesse, mime_type, version, vorgaenger_id, status, hochgeladen_von, created_at, updated_at')
     .eq('produktion_id', produktionId)
     .order('kategorie', { ascending: true })
     .order('name', { ascending: true })

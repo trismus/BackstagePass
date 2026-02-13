@@ -140,7 +140,7 @@ export async function getExterneHelferProfil(
 
   const { data, error } = await supabase
     .from('externe_helfer_profile')
-    .select('*')
+    .select('id, email, vorname, nachname, telefon, notizen, dashboard_token, erstellt_am, letzter_einsatz')
     .eq('id', id)
     .single()
 
@@ -162,7 +162,7 @@ export async function getExterneHelferProfilByEmail(
 
   const { data, error } = await supabase
     .from('externe_helfer_profile')
-    .select('*')
+    .select('id, email, vorname, nachname, telefon, notizen, dashboard_token, erstellt_am, letzter_einsatz')
     .ilike('email', email.toLowerCase().trim())
     .single()
 
@@ -239,7 +239,7 @@ export async function searchExterneHelfer(
 
   const { data, error } = await supabase
     .from('externe_helfer_profile')
-    .select('*')
+    .select('id, email, vorname, nachname, telefon, notizen, dashboard_token, erstellt_am, letzter_einsatz')
     .or(`vorname.ilike.${searchTerm},nachname.ilike.${searchTerm},email.ilike.${searchTerm}`)
     .order('nachname', { ascending: true })
     .limit(20)

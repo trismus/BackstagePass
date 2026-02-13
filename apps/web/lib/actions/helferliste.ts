@@ -109,7 +109,7 @@ export async function getHelferEvent(id: string): Promise<HelferEvent | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helfer_events')
-    .select('*')
+    .select('id, typ, veranstaltung_id, name, beschreibung, datum_start, datum_end, ort, abmeldung_frist, public_token, max_anmeldungen_pro_helfer, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -330,7 +330,7 @@ export async function createRollenInstanzenFromTemplates(
   // Get templates
   const { data: templates, error: templatesError } = await supabase
     .from('helfer_rollen_templates')
-    .select('*')
+    .select('id, name, beschreibung, default_anzahl, created_at, updated_at')
     .in('id', templateIds)
 
   if (templatesError || !templates) {
@@ -421,7 +421,7 @@ export async function getAnmeldungen(
 
   const { data, error } = await supabase
     .from('helfer_anmeldungen')
-    .select('*')
+    .select('id, rollen_instanz_id, profile_id, external_helper_id, external_name, external_email, external_telefon, abmeldung_token, datenschutz_akzeptiert, status, created_at')
     .eq('rollen_instanz_id', rollenInstanzId)
     .order('created_at', { ascending: true })
 
@@ -663,7 +663,7 @@ export async function getPublicEventByToken(
   if (event.veranstaltung_id) {
     const { data: infoData } = await supabase
       .from('info_bloecke')
-      .select('*')
+      .select('id, veranstaltung_id, titel, beschreibung, startzeit, endzeit, sortierung, created_at')
       .eq('veranstaltung_id', event.veranstaltung_id)
       .order('sortierung', { ascending: true })
 

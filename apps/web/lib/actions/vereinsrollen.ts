@@ -20,7 +20,7 @@ export async function getVereinsrollen(): Promise<Vereinsrolle[]> {
 
   const { data, error } = await supabase
     .from('vereinsrollen')
-    .select('*')
+    .select('id, name, beschreibung, farbe, sortierung, aktiv, created_at, updated_at')
     .eq('aktiv', true)
     .order('sortierung', { ascending: true })
 
@@ -39,7 +39,7 @@ export async function getVereinsrolleById(
 
   const { data, error } = await supabase
     .from('vereinsrollen')
-    .select('*')
+    .select('id, name, beschreibung, farbe, sortierung, aktiv, created_at, updated_at')
     .eq('id', id)
     .single()
 

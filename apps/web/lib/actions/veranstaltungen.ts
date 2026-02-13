@@ -15,7 +15,7 @@ export async function getVeranstaltungen(): Promise<Veranstaltung[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .order('datum', { ascending: true })
 
   if (error) {
@@ -37,7 +37,7 @@ export async function getUpcomingVeranstaltungen(
 
   let query = supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .gte('datum', today)
     .neq('status', 'abgesagt')
     .order('datum', { ascending: true })
@@ -65,7 +65,7 @@ export async function getVeranstaltung(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .eq('id', id)
     .single()
 

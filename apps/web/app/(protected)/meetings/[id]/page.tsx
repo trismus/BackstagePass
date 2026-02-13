@@ -24,7 +24,7 @@ export default async function MeetingDetailPage({ params }: MeetingDetailPagePro
   // Hole alle Personen fuer Auswahllisten
   const { data: personen } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
     .eq('aktiv', true)
     .order('nachname')
 

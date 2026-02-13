@@ -209,7 +209,7 @@ export async function getAnmeldung(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('anmeldungen')
-    .select('*')
+    .select('id, veranstaltung_id, person_id, status, anmeldedatum, notizen, absage_grund, created_at, updated_at')
     .eq('veranstaltung_id', veranstaltungId)
     .eq('person_id', personId)
     .single()
