@@ -36,12 +36,12 @@ export async function getMeetingByVeranstaltung(
   const { data, error } = await supabase
     .from('meetings')
     .select(`
-      *,
+      id, veranstaltung_id, meeting_typ, leiter_id, protokoll, protokoll_status, protokollant_id, wiederkehrend_template_id, created_at, updated_at,
       veranstaltung:veranstaltungen(*),
       leiter:personen!meetings_leiter_id_fkey(id, vorname, nachname),
       protokollant:personen!meetings_protokollant_id_fkey(id, vorname, nachname),
-      agenda:meeting_agenda(*),
-      beschluesse:meeting_beschluesse(*)
+      agenda:meeting_agenda(id, meeting_id, nummer, titel, beschreibung, dauer_minuten, verantwortlich_id, status, notizen, created_at, updated_at),
+      beschluesse:meeting_beschluesse(id, meeting_id, agenda_item_id, nummer, titel, beschreibung, abstimmung_ja, abstimmung_nein, abstimmung_enthaltung, status, zustaendig_id, faellig_bis, created_at, updated_at)
     `)
     .eq('veranstaltung_id', veranstaltungId)
     .single()
@@ -67,7 +67,7 @@ export async function getMeetings(options?: {
   let query = supabase
     .from('meetings')
     .select(`
-      *,
+      id, veranstaltung_id, meeting_typ, leiter_id, protokoll, protokoll_status, protokollant_id, wiederkehrend_template_id, created_at, updated_at,
       veranstaltung:veranstaltungen(*)
     `)
     .order('created_at', { ascending: false })
@@ -217,7 +217,7 @@ export async function getMeetingAgenda(
   const { data, error } = await supabase
     .from('meeting_agenda')
     .select(`
-      *,
+      id, meeting_id, nummer, titel, beschreibung, dauer_minuten, verantwortlich_id, status, notizen, created_at, updated_at,
       verantwortlich:personen(id, vorname, nachname)
     `)
     .eq('meeting_id', meetingId)
@@ -364,7 +364,7 @@ export async function getMeetingBeschluesse(
   const { data, error } = await supabase
     .from('meeting_beschluesse')
     .select(`
-      *,
+      id, meeting_id, agenda_item_id, nummer, titel, beschreibung, abstimmung_ja, abstimmung_nein, abstimmung_enthaltung, status, zustaendig_id, faellig_bis, created_at, updated_at,
       zustaendig:personen(id, vorname, nachname)
     `)
     .eq('meeting_id', meetingId)
@@ -486,7 +486,7 @@ export async function getMeineBeschluesse(): Promise<
   const { data, error } = await supabase
     .from('meeting_beschluesse')
     .select(`
-      *,
+      id, meeting_id, agenda_item_id, nummer, titel, beschreibung, abstimmung_ja, abstimmung_nein, abstimmung_enthaltung, status, zustaendig_id, faellig_bis, created_at, updated_at,
       meeting:meetings(
         veranstaltung:veranstaltungen(id, titel, datum)
       )
@@ -518,7 +518,7 @@ export async function getMeetingTemplates(): Promise<MeetingTemplate[]> {
 
   const { data, error } = await supabase
     .from('meeting_templates')
-    .select('*')
+    .select('id, name, beschreibung, meeting_typ, default_ort, default_startzeit, default_dauer_minuten, default_leiter_id, wiederholung_typ, wiederholung_tag, standard_agenda, aktiv, created_by, created_at, updated_at')
     .eq('aktiv', true)
     .order('name')
 
@@ -540,7 +540,7 @@ export async function getMeetingTemplate(
 
   const { data, error } = await supabase
     .from('meeting_templates')
-    .select('*')
+    .select('id, name, beschreibung, meeting_typ, default_ort, default_startzeit, default_dauer_minuten, default_leiter_id, wiederholung_typ, wiederholung_tag, standard_agenda, aktiv, created_by, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -779,7 +779,7 @@ export async function exportMeetingAsText(
   // Get meeting with all details
   const { data: meeting } = await supabase
     .from('meetings')
-    .select('*')
+    .select('id, veranstaltung_id, meeting_typ, leiter_id, protokoll, protokoll_status, protokollant_id, wiederkehrend_template_id, created_at, updated_at')
     .eq('id', meetingId)
     .single()
 
@@ -790,7 +790,7 @@ export async function exportMeetingAsText(
   // Get veranstaltung
   const { data: veranstaltung } = await supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .eq('id', meeting.veranstaltung_id)
     .single()
 

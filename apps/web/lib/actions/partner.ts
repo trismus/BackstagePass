@@ -11,7 +11,7 @@ export async function getPartner(): Promise<Partner[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('partner')
-    .select('*')
+    .select('id, name, kontakt_name, kontakt_email, kontakt_telefon, adresse, notizen, aktiv, created_at, updated_at')
     .order('name', { ascending: true })
 
   if (error) {
@@ -29,7 +29,7 @@ export async function getActivePartner(): Promise<Partner[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('partner')
-    .select('*')
+    .select('id, name, kontakt_name, kontakt_email, kontakt_telefon, adresse, notizen, aktiv, created_at, updated_at')
     .eq('aktiv', true)
     .order('name', { ascending: true })
 
@@ -48,7 +48,7 @@ export async function getPartnerById(id: string): Promise<Partner | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('partner')
-    .select('*')
+    .select('id, name, kontakt_name, kontakt_email, kontakt_telefon, adresse, notizen, aktiv, created_at, updated_at')
     .eq('id', id)
     .single()
 

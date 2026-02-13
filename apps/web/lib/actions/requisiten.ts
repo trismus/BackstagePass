@@ -44,7 +44,7 @@ export async function getRequisite(id: string): Promise<Requisite | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('requisiten')
-    .select('*')
+    .select('id, stueck_id, name, beschreibung, szene_id, verantwortlich_id, status, notizen, created_at, updated_at')
     .eq('id', id)
     .single()
 

@@ -46,7 +46,7 @@ export async function getHelferschichtenForPerson(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helferschichten')
-    .select('*')
+    .select('id, helfereinsatz_id, person_id, helferrolle_id, startzeit, endzeit, stunden_gearbeitet, status, notizen, created_at, updated_at')
     .eq('person_id', personId)
     .order('created_at', { ascending: false })
 

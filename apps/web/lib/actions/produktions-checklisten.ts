@@ -69,7 +69,7 @@ export async function getChecklistItems(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktions_checklisten')
-    .select('*')
+    .select('id, produktion_id, phase, label, pflicht, erledigt, erledigt_von, erledigt_am, sort_order, created_at')
     .eq('produktion_id', produktionId)
     .order('phase', { ascending: true })
     .order('sort_order', { ascending: true })

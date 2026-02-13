@@ -109,7 +109,7 @@ export async function getHelferlisteData(
   // Get info_bloecke
   const { data: infoBloecke, error: infoError } = await supabase
     .from('info_bloecke')
-    .select('*')
+    .select('id, veranstaltung_id, titel, beschreibung, startzeit, endzeit, sortierung, created_at')
     .eq('veranstaltung_id', veranstaltungId)
     .order('sortierung', { ascending: true })
 

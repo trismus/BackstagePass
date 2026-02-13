@@ -25,7 +25,7 @@ export async function getAllEmailTemplates(): Promise<EmailTemplate[]> {
 
   const { data, error } = await supabase
     .from('email_templates')
-    .select('*')
+    .select('id, typ, subject, body_html, body_text, placeholders, aktiv, created_at, updated_at')
     .order('typ')
 
   if (error) {
@@ -46,7 +46,7 @@ export async function getEmailTemplate(
 
   const { data, error } = await supabase
     .from('email_templates')
-    .select('*')
+    .select('id, typ, subject, body_html, body_text, placeholders, aktiv, created_at, updated_at')
     .eq('typ', typ)
     .single()
 
@@ -69,7 +69,7 @@ export async function getEmailTemplateInternal(
 
   const { data, error } = await supabase
     .from('email_templates')
-    .select('*')
+    .select('id, typ, subject, body_html, body_text, placeholders, aktiv, created_at, updated_at')
     .eq('typ', typ)
     .eq('aktiv', true)
     .single()

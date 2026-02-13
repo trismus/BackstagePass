@@ -30,7 +30,7 @@ export async function getUserNotifications(
 
   let query = supabase
     .from('benachrichtigungen')
-    .select('*')
+    .select('id, profile_id, typ, titel, nachricht, referenz_typ, referenz_id, metadata, gelesen, gelesen_am, action_url, created_at')
     .eq('profile_id', profile.id)
     .order('created_at', { ascending: false })
 
@@ -63,7 +63,7 @@ export async function getUnreadNotificationCount(): Promise<number> {
 
   const { count, error } = await supabase
     .from('benachrichtigungen')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('profile_id', profile.id)
     .eq('gelesen', false)
 
@@ -182,7 +182,7 @@ export async function getNotificationSettings(): Promise<BenachrichtigungsEinste
 
   const { data, error } = await supabase
     .from('benachrichtigungs_einstellungen')
-    .select('*')
+    .select('id, profile_id, email_48h_erinnerung, email_6h_erinnerung, email_24h_probe_erinnerung, email_wochenzusammenfassung, email_aenderungsbenachrichtigung, inapp_termin_erinnerung, inapp_aenderungen, inapp_neue_termine, eigene_erinnerungszeiten, ruhezeit_von, ruhezeit_bis, created_at, updated_at')
     .eq('profile_id', profile.id)
     .single()
 

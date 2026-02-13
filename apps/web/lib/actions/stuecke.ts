@@ -28,7 +28,7 @@ export async function getStuecke(): Promise<Stueck[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('stuecke')
-    .select('*')
+    .select('id, titel, beschreibung, autor, status, premiere_datum, created_at, updated_at')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -46,7 +46,7 @@ export async function getActiveStuecke(): Promise<Stueck[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('stuecke')
-    .select('*')
+    .select('id, titel, beschreibung, autor, status, premiere_datum, created_at, updated_at')
     .neq('status', 'archiviert')
     .order('premiere_datum', { ascending: true, nullsFirst: false })
 
@@ -65,7 +65,7 @@ export async function getStueck(id: string): Promise<Stueck | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('stuecke')
-    .select('*')
+    .select('id, titel, beschreibung, autor, status, premiere_datum, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -175,7 +175,7 @@ export async function getSzenen(stueckId: string): Promise<Szene[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('szenen')
-    .select('*')
+    .select('id, stueck_id, nummer, titel, beschreibung, text, dauer_minuten, created_at, updated_at')
     .eq('stueck_id', stueckId)
     .order('nummer', { ascending: true })
 
@@ -194,7 +194,7 @@ export async function getSzene(id: string): Promise<Szene | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('szenen')
-    .select('*')
+    .select('id, stueck_id, nummer, titel, beschreibung, text, dauer_minuten, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -336,7 +336,7 @@ export async function getRollen(stueckId: string): Promise<StueckRolle[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('rollen')
-    .select('*')
+    .select('id, stueck_id, name, beschreibung, typ, created_at, updated_at')
     .eq('stueck_id', stueckId)
     .order('typ', { ascending: true })
     .order('name', { ascending: true })
@@ -356,7 +356,7 @@ export async function getRolle(id: string): Promise<StueckRolle | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('rollen')
-    .select('*')
+    .select('id, stueck_id, name, beschreibung, typ, created_at, updated_at')
     .eq('id', id)
     .single()
 

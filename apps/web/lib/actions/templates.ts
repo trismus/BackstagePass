@@ -39,7 +39,7 @@ export async function getTemplates(): Promise<AuffuehrungTemplate[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_templates')
-    .select('*')
+    .select('id, name, beschreibung, archiviert, created_at, updated_at')
     .eq('archiviert', false)
     .order('name', { ascending: true })
 
@@ -58,7 +58,7 @@ export async function getAllTemplates(): Promise<AuffuehrungTemplate[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_templates')
-    .select('*')
+    .select('id, name, beschreibung, archiviert, created_at, updated_at')
     .order('name', { ascending: true })
 
   if (error) {
@@ -80,7 +80,7 @@ export async function getTemplate(
   // Get template
   const { data: template, error: templateError } = await supabase
     .from('auffuehrung_templates')
-    .select('*')
+    .select('id, name, beschreibung, archiviert, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -92,14 +92,14 @@ export async function getTemplate(
   // Get zeitbloecke
   const { data: zeitbloecke } = await supabase
     .from('template_zeitbloecke')
-    .select('*')
+    .select('id, template_id, name, offset_minuten, dauer_minuten, typ, sortierung')
     .eq('template_id', id)
     .order('sortierung', { ascending: true })
 
   // Get schichten
   const { data: schichten } = await supabase
     .from('template_schichten')
-    .select('*')
+    .select('id, template_id, zeitblock_name, rolle, anzahl_benoetigt')
     .eq('template_id', id)
 
   // Get ressourcen with details
@@ -116,14 +116,14 @@ export async function getTemplate(
   // Get info_bloecke
   const { data: info_bloecke } = await supabase
     .from('template_info_bloecke')
-    .select('*')
+    .select('id, template_id, titel, beschreibung, offset_minuten, dauer_minuten, sortierung, created_at')
     .eq('template_id', id)
     .order('sortierung', { ascending: true })
 
   // Get sachleistungen
   const { data: sachleistungen } = await supabase
     .from('template_sachleistungen')
-    .select('*')
+    .select('id, template_id, name, anzahl, beschreibung, created_at')
     .eq('template_id', id)
 
   return {
@@ -682,7 +682,7 @@ export async function createTemplateFromVeranstaltung(
   // Get existing zeitbloecke
   const { data: zeitbloecke } = await supabase
     .from('zeitbloecke')
-    .select('*')
+    .select('id, veranstaltung_id, name, startzeit, endzeit, typ, sortierung, created_at')
     .eq('veranstaltung_id', veranstaltungId)
     .order('sortierung', { ascending: true })
 

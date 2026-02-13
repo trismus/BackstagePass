@@ -189,7 +189,7 @@ export async function getHelferrollen(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helferrollen')
-    .select('*')
+    .select('id, helfereinsatz_id, rolle, anzahl_benoetigt, created_at')
     .eq('helfereinsatz_id', helfereinsatzId)
     .order('rolle', { ascending: true })
 

@@ -13,7 +13,7 @@ export async function getStundenkontoForPerson(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('stundenkonto')
-    .select('*')
+    .select('id, person_id, typ, referenz_id, stunden, beschreibung, erfasst_von, created_at')
     .eq('person_id', personId)
     .order('created_at', { ascending: false })
 
@@ -145,7 +145,7 @@ export async function getStundenkontoSummary(personId: string): Promise<{
   // Get all entries
   const { data: allData } = await supabase
     .from('stundenkonto')
-    .select('*')
+    .select('id, person_id, typ, referenz_id, stunden, beschreibung, erfasst_von, created_at')
     .eq('person_id', personId)
     .order('created_at', { ascending: false })
 

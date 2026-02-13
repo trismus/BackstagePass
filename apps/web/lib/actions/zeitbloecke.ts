@@ -22,7 +22,7 @@ export async function getZeitbloecke(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('zeitbloecke')
-    .select('*')
+    .select('id, veranstaltung_id, name, startzeit, endzeit, typ, sortierung, created_at')
     .eq('veranstaltung_id', veranstaltungId)
     .order('sortierung', { ascending: true })
 
@@ -41,7 +41,7 @@ export async function getZeitblock(id: string): Promise<Zeitblock | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('zeitbloecke')
-    .select('*')
+    .select('id, veranstaltung_id, name, startzeit, endzeit, typ, sortierung, created_at')
     .eq('id', id)
     .single()
 
