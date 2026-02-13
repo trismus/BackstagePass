@@ -7,6 +7,11 @@ import type {
   VeranstaltungInsert,
   VeranstaltungUpdate,
 } from '../supabase/types'
+import {
+  veranstaltungSchema,
+  veranstaltungUpdateSchema,
+} from '../validations/veranstaltungen'
+import { validateInput } from '../validations/modul2'
 
 /**
  * Get all veranstaltungen
@@ -84,6 +89,12 @@ export async function getVeranstaltung(
 export async function createVeranstaltung(
   data: VeranstaltungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(veranstaltungSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('veranstaltungen')
@@ -109,6 +120,12 @@ export async function updateVeranstaltung(
   id: string,
   data: VeranstaltungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(veranstaltungUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('veranstaltungen')
