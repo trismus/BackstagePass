@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { createAdminClient } from '../supabase/admin'
+import { requirePermission } from '../supabase/auth-helpers'
 import { dummyPersonen, getPersonById, searchPersonen } from '../personen/data'
 import type {
   Person,
@@ -17,6 +18,8 @@ const USE_DUMMY_DATA = !process.env.NEXT_PUBLIC_SUPABASE_URL
  * Get all personen
  */
 export async function getPersonen(): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     return dummyPersonen
   }
@@ -39,6 +42,8 @@ export async function getPersonen(): Promise<Person[]> {
  * Get a single person by ID
  */
 export async function getPerson(id: string): Promise<Person | null> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     return getPersonById(id) || null
   }
@@ -62,6 +67,8 @@ export async function getPerson(id: string): Promise<Person | null> {
  * Search personen by query
  */
 export async function searchPersonenAction(query: string): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     return searchPersonen(query)
   }
@@ -89,6 +96,8 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
 export async function createPerson(
   personData: PersonInsert
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     // In dummy mode, just pretend it worked
     revalidatePath('/mitglieder')
@@ -118,6 +127,8 @@ export async function createPersonWithAccount(
   personData: PersonInsert,
   appRole: UserRole
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (!personData.email) {
     return { success: false, error: 'E-Mail ist erforderlich für App-Zugang' }
   }
@@ -192,6 +203,8 @@ export async function updatePerson(
   id: string,
   personData: PersonUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     revalidatePath(`/mitglieder/${id}`)
@@ -220,6 +233,8 @@ export async function updatePerson(
 export async function deletePerson(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:delete')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     return { success: true }
@@ -317,6 +332,8 @@ export type ArchiveFilter = 'alle' | 'aktiv' | 'archiviert'
 export async function getPersonenFiltered(
   filter: ArchiveFilter = 'aktiv'
 ): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     const filtered = dummyPersonen.filter((p) => {
       if (filter === 'aktiv') return p.aktiv
@@ -368,6 +385,8 @@ export interface MitgliederFilterParams {
 export async function getPersonenAdvanced(
   params: MitgliederFilterParams = {}
 ): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   const {
     search = '',
     status = 'aktiv',
@@ -479,6 +498,8 @@ export async function getPersonenAdvanced(
  * Get unique skills from all personen (for filter dropdown)
  */
 export async function getAllSkills(): Promise<string[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     const allSkills = new Set<string>()
     dummyPersonen.forEach((p) => {
@@ -514,6 +535,8 @@ export async function archiveMitglied(
   id: string,
   austrittsgrund?: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     return { success: true }
@@ -553,6 +576,8 @@ export async function archiveMitglied(
 export async function reactivateMitglied(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     return { success: true }
@@ -588,6 +613,8 @@ export async function getMitgliederStatistik(): Promise<{
   archivierte: number
   gesamt: number
 }> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     const aktive = dummyPersonen.filter((p) => p.aktiv).length
     const archivierte = dummyPersonen.filter((p) => !p.aktiv).length

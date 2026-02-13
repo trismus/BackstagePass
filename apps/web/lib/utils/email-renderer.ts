@@ -7,18 +7,45 @@
 import type { EmailPlaceholderData } from '@/lib/supabase/types'
 
 /**
- * Replace placeholders in a string with actual values
+ * Escape HTML entities to prevent XSS in email templates
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
+ * Placeholder keys that contain trusted URLs/HTML (not user input)
+ */
+const TRUSTED_PLACEHOLDERS = new Set([
+  'absage_link',
+  'public_link',
+])
+
+/**
+ * Replace placeholders in a string with actual values.
+ * When escapeForHtml is true, user-provided values are HTML-escaped
+ * to prevent XSS in email HTML bodies.
  */
 export function replacePlaceholders(
   template: string,
-  data: EmailPlaceholderData
+  data: EmailPlaceholderData,
+  escapeForHtml: boolean = false
 ): string {
   let result = template
 
   // Replace all placeholders with their values or empty string if not provided
   for (const [key, value] of Object.entries(data)) {
     const placeholder = `{{${key}}}`
-    result = result.replace(new RegExp(placeholder, 'g'), value || '')
+    const raw = value || ''
+    const safeValue = escapeForHtml && !TRUSTED_PLACEHOLDERS.has(key)
+      ? escapeHtml(raw)
+      : raw
+    result = result.replace(new RegExp(placeholder, 'g'), safeValue)
   }
 
   // Remove any remaining unreplaced placeholders (set to empty)
@@ -36,7 +63,7 @@ export function renderEmailTemplate(
 ): { subject: string; html: string; text: string } {
   return {
     subject: replacePlaceholders(template.subject, data),
-    html: replacePlaceholders(template.body_html, data),
+    html: replacePlaceholders(template.body_html, data, true),
     text: replacePlaceholders(template.body_text, data),
   }
 }
