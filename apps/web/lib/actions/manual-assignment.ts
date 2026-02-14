@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, getUserProfile } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
+import { sanitizeSearchQuery } from '../utils/search'
 // Types used for reference but not directly imported
 // Person, Profile, ExterneHelferProfil are used in runtime queries
 
@@ -54,7 +55,7 @@ export async function searchHelfer(
   }
 
   const supabase = await createClient()
-  const searchPattern = `%${query}%`
+  const searchPattern = `%${sanitizeSearchQuery(query)}%`
 
   // Search internal profiles (via personen table)
   const { data: personen } = await supabase
