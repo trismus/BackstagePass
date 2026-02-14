@@ -3,6 +3,13 @@
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../supabase/admin'
 import { externeHelferRegistrierungSchema } from '../validations/externe-helfer'
+import { sendEmail } from '../email/client'
+import {
+  multiRegistrationConfirmationEmail,
+  type ShiftInfo,
+} from '../email/templates/helferliste'
+import { getKoordinatorInfo } from './email-sender'
+import { formatDateForEmail, formatTimeForEmail } from '../utils/email-renderer'
 import type {
   PublicVeranstaltungData,
   PublicSchichtData,
@@ -268,6 +275,16 @@ export async function registerForMultipleShifts(
 
   if (anySuccess) {
     revalidatePath('/mitmachen')
+
+    // Fire-and-forget confirmation email
+    const successSchichtIds = results.filter((r) => r.success).map((r) => r.schichtId)
+    sendConfirmationEmail(
+      supabase,
+      successSchichtIds,
+      results,
+      validData,
+      dashboardToken || undefined
+    ).catch(console.error)
   }
 
   return {
@@ -370,4 +387,98 @@ async function registerSingleShift(
   }
 
   return { success: true, waitlist: isWaitlist }
+}
+
+// =============================================================================
+// Helper: Send Confirmation Email
+// =============================================================================
+
+async function sendConfirmationEmail(
+  supabase: ReturnType<typeof createAdminClient>,
+  successSchichtIds: string[],
+  results: MultiRegistrationResult['results'],
+  helperData: { email: string; vorname: string; nachname: string },
+  dashboardToken: string | undefined
+): Promise<void> {
+  if (!successSchichtIds.length || !helperData.email) return
+
+  // Fetch schichten with zeitblock and veranstaltung data
+  const { data: schichten } = await supabase
+    .from('auffuehrung_schichten')
+    .select(`
+      id,
+      rolle,
+      veranstaltung_id,
+      zeitblock:zeitbloecke(id, name, startzeit, endzeit),
+      zuweisungen:auffuehrung_zuweisungen(abmeldung_token, external_helper_id)
+    `)
+    .in('id', successSchichtIds)
+
+  if (!schichten?.length) return
+
+  // Get veranstaltung info from the first schicht
+  const veranstaltungId = schichten[0].veranstaltung_id
+  const { data: veranstaltung } = await supabase
+    .from('veranstaltungen')
+    .select('id, titel, datum, ort, koordinator_id')
+    .eq('id', veranstaltungId)
+    .single()
+
+  if (!veranstaltung) return
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+  // Build shift info for email
+  const shifts: ShiftInfo[] = schichten.map((s) => {
+    const zeitblock = s.zeitblock as unknown as {
+      id: string; name: string; startzeit: string; endzeit: string
+    } | null
+    const zuweisungen = (s.zuweisungen as unknown as {
+      abmeldung_token: string | null; external_helper_id: string
+    }[]) || []
+    // Find the abmeldung_token for this helper's zuweisung
+    const abmeldungToken = zuweisungen[zuweisungen.length - 1]?.abmeldung_token
+    const resultEntry = results.find((r) => r.schichtId === s.id)
+
+    return {
+      rolle: s.rolle,
+      zeitblock: zeitblock
+        ? `${zeitblock.name} (${formatTimeForEmail(zeitblock.startzeit)}–${formatTimeForEmail(zeitblock.endzeit)})`
+        : '',
+      status: resultEntry?.waitlist ? 'warteliste' as const : 'angemeldet' as const,
+      abmeldungLink: abmeldungToken
+        ? `${baseUrl}/helfer/abmeldung/${abmeldungToken}`
+        : '',
+    }
+  })
+
+  const koordinator = await getKoordinatorInfo(veranstaltung.koordinator_id)
+
+  const dashboardLink = dashboardToken
+    ? `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
+    : `${baseUrl}/mitmachen`
+
+  const { subject, html, text } = multiRegistrationConfirmationEmail(
+    `${helperData.vorname} ${helperData.nachname}`,
+    {
+      name: veranstaltung.titel,
+      datum: formatDateForEmail(veranstaltung.datum),
+      ort: veranstaltung.ort || undefined,
+    },
+    shifts,
+    dashboardLink,
+    {
+      name: koordinator.name,
+      email: koordinator.email,
+      telefon: koordinator.telefon || undefined,
+    }
+  )
+
+  await sendEmail({
+    to: helperData.email,
+    subject,
+    html,
+    text,
+    replyTo: koordinator.email,
+  })
 }

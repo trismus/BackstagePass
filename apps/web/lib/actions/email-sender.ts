@@ -71,7 +71,7 @@ async function updateEmailLogStatus(
 /**
  * Get veranstaltung coordinator info
  */
-async function getKoordinatorInfo(koordinatorId: string | null): Promise<{
+export async function getKoordinatorInfo(koordinatorId: string | null): Promise<{
   name: string
   email: string
   telefon: string

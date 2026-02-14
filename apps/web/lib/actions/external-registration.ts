@@ -4,6 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../supabase/admin'
 import { canRegisterForHelferliste } from './helfer-status'
 import { externeHelferRegistrierungSchema } from '../validations/externe-helfer'
+import { sendEmail } from '../email/client'
+import { multiRegistrationConfirmationEmail } from '../email/templates/helferliste'
+import { getKoordinatorInfo } from './email-sender'
+import { formatDateForEmail, formatTimeForEmail } from '../utils/email-renderer'
 import type {
   Veranstaltung,
   AuffuehrungSchicht,
@@ -222,7 +226,7 @@ export async function registerExternalHelper(
   // Validate token and get veranstaltung
   const { data: veranstaltung, error: veranstaltungError } = await supabase
     .from('veranstaltungen')
-    .select('id, helfer_status')
+    .select('id, helfer_status, titel, datum, ort, koordinator_id')
     .eq('public_helfer_token', token)
     .single()
 
@@ -239,7 +243,7 @@ export async function registerExternalHelper(
   // Verify schicht exists and is public
   const { data: schicht, error: schichtError } = await supabase
     .from('auffuehrung_schichten')
-    .select('id, veranstaltung_id, anzahl_benoetigt, sichtbarkeit')
+    .select('id, rolle, veranstaltung_id, anzahl_benoetigt, sichtbarkeit, zeitblock_id')
     .eq('id', schichtId)
     .single()
 
@@ -310,6 +314,16 @@ export async function registerExternalHelper(
   // Revalidate paths
   revalidatePath(`/helfer/anmeldung/${token}`)
 
+  // Fire-and-forget confirmation email
+  sendExternalRegistrationEmail(
+    supabase,
+    veranstaltung,
+    schicht,
+    helperId,
+    validData,
+    isWaitlist
+  ).catch(console.error)
+
   return { success: true, waitlist: isWaitlist }
 }
 
@@ -344,4 +358,89 @@ export async function checkExistingRegistration(
     .single()
 
   return { registered: !!zuweisung }
+}
+
+// =============================================================================
+// Helper: Send Registration Confirmation Email
+// =============================================================================
+
+async function sendExternalRegistrationEmail(
+  supabase: ReturnType<typeof createAdminClient>,
+  veranstaltung: { id: string; titel: string; datum: string; ort: string | null; koordinator_id: string | null },
+  schicht: { id: string; rolle: string; zeitblock_id: string | null },
+  helperId: string,
+  helperData: { email: string; vorname: string; nachname: string },
+  isWaitlist: boolean
+): Promise<void> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+  // Get dashboard token
+  const { data: dashboardToken } = await supabase.rpc(
+    'get_externe_helfer_dashboard_token',
+    { p_helper_id: helperId }
+  )
+
+  // Get zeitblock info if available
+  let zeitblockLabel = ''
+  if (schicht.zeitblock_id) {
+    const { data: zeitblock } = await supabase
+      .from('zeitbloecke')
+      .select('name, startzeit, endzeit')
+      .eq('id', schicht.zeitblock_id)
+      .single()
+
+    if (zeitblock) {
+      zeitblockLabel = `${zeitblock.name} (${formatTimeForEmail(zeitblock.startzeit)}–${formatTimeForEmail(zeitblock.endzeit)})`
+    }
+  }
+
+  // Get abmeldung_token from the created zuweisung
+  const { data: zuweisung } = await supabase
+    .from('auffuehrung_zuweisungen')
+    .select('abmeldung_token')
+    .eq('schicht_id', schicht.id)
+    .eq('external_helper_id', helperId)
+    .neq('status', 'abgesagt')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  const koordinator = await getKoordinatorInfo(veranstaltung.koordinator_id)
+
+  const dashboardLink = dashboardToken
+    ? `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
+    : baseUrl
+
+  const { subject, html, text } = multiRegistrationConfirmationEmail(
+    `${helperData.vorname} ${helperData.nachname}`,
+    {
+      name: veranstaltung.titel,
+      datum: formatDateForEmail(veranstaltung.datum),
+      ort: veranstaltung.ort || undefined,
+    },
+    [
+      {
+        rolle: schicht.rolle,
+        zeitblock: zeitblockLabel,
+        status: isWaitlist ? 'warteliste' : 'angemeldet',
+        abmeldungLink: zuweisung?.abmeldung_token
+          ? `${baseUrl}/helfer/abmeldung/${zuweisung.abmeldung_token}`
+          : '',
+      },
+    ],
+    dashboardLink,
+    {
+      name: koordinator.name,
+      email: koordinator.email,
+      telefon: koordinator.telefon || undefined,
+    }
+  )
+
+  await sendEmail({
+    to: helperData.email,
+    subject,
+    html,
+    text,
+    replyTo: koordinator.email,
+  })
 }
