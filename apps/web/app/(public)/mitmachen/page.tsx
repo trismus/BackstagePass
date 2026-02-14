@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { getPublicShiftOverview } from '@/lib/actions/public-overview'
 import { PublicOverviewView } from '@/components/public-overview'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Mitmachen | Theatergruppe Widen',
   description:
