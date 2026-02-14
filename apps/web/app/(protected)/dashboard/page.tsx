@@ -3,6 +3,7 @@ import { getUser, getUserProfile } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { isManagement } from '@/lib/supabase/auth-helpers'
 import { HelpButton } from '@/components/help'
+import { TourButton } from '@/components/tours'
 import {
   VorstandModul,
   ModulStat,
@@ -136,17 +137,27 @@ export default async function DashboardPage() {
               <h1 className="text-2xl font-semibold text-neutral-900">
                 Vorstand Dashboard
               </h1>
-              <HelpButton contextKey="dashboard" />
+              <div data-tour="help-button">
+                <HelpButton contextKey="dashboard" />
+              </div>
             </div>
             <p className="mt-1 text-neutral-600">
               Willkommen zurück
               {profile?.display_name ? `, ${profile.display_name}` : ''}!
             </p>
           </div>
+          <div>
+            <TourButton
+              tourId="dashboard:vorstand-overview"
+              label="Dashboard-Tour"
+              variant="secondary"
+              size="sm"
+            />
+          </div>
         </div>
 
         {/* 3-Säulen Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3" data-tour="dashboard-modules">
           {/* Modul 1: Mitglieder & Helfer */}
           <VorstandModul
             titel="Mitglieder & Helfer"
@@ -314,7 +325,7 @@ export default async function DashboardPage() {
         />
 
         {/* Quick Actions */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-6">
+        <div className="rounded-xl border border-neutral-200 bg-white p-6" data-tour="quick-actions">
           <h2 className="mb-4 font-semibold text-neutral-900">
             Schnellaktionen
           </h2>
