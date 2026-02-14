@@ -140,7 +140,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
                     Live-Board
                   </Link>
                   <Link
-                    href={`/veranstaltungen/${id}/bearbeiten` as never}
+                    href={`/veranstaltungen/${id}?edit=true` as never}
                     className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                   >
                     Bearbeiten
