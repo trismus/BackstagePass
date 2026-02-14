@@ -37,6 +37,7 @@ export default async function MockupDetailPage({ params }: MockupPageProps) {
             {page.title}
           </h1>
 
+          {/* SECURITY: page.body is trusted static HTML from lib/mockup/data.ts (developer-only content) */}
           <div
             className="prose prose-gray max-w-none"
             dangerouslySetInnerHTML={{ __html: page.body }}

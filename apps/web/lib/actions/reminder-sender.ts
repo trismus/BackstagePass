@@ -110,18 +110,26 @@ async function getInfoBlockTimes(veranstaltungId: string): Promise<{
 /**
  * Mark a reminder as sent
  */
-async function markReminderSent(
-  zuweisungId: string,
+async function markRemindersSentBatch(
+  zuweisungIds: string[],
   reminderTyp: '48h' | '6h'
 ): Promise<void> {
+  if (zuweisungIds.length === 0) return
+
   const supabase = await createClient()
 
-  await supabase
+  const rows = zuweisungIds.map((id) => ({
+    anmeldung_id: id,
+    reminder_typ: reminderTyp,
+  }))
+
+  const { error } = await supabase
     .from('reminders_sent')
-    .insert({
-      anmeldung_id: zuweisungId,
-      reminder_typ: reminderTyp,
-    } as never)
+    .insert(rows as never)
+
+  if (error) {
+    console.error('[Reminders] Error batch-marking reminders as sent:', error)
+  }
 }
 
 /**
@@ -224,10 +232,11 @@ export async function send48hReminders(): Promise<ReminderResult> {
       )
 
       if (sendResult.success) {
-        // Mark all reminders for this helper as sent
-        for (const reminder of reminders) {
-          await markReminderSent(reminder.zuweisung_id, '48h')
-        }
+        // Batch mark all reminders for this helper as sent
+        await markRemindersSentBatch(
+          reminders.map((r) => r.zuweisung_id),
+          '48h'
+        )
         result.sent += reminders.length
       } else {
         result.failed += reminders.length
@@ -283,10 +292,11 @@ export async function send6hReminders(): Promise<ReminderResult> {
       )
 
       if (sendResult.success) {
-        // Mark all reminders for this helper as sent
-        for (const reminder of reminders) {
-          await markReminderSent(reminder.zuweisung_id, '6h')
-        }
+        // Batch mark all reminders for this helper as sent
+        await markRemindersSentBatch(
+          reminders.map((r) => r.zuweisung_id),
+          '6h'
+        )
         result.sent += reminders.length
       } else {
         result.failed += reminders.length

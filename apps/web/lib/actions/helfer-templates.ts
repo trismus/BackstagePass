@@ -18,7 +18,7 @@ export async function getHelferRollenTemplates(): Promise<
 
   const { data, error } = await supabase
     .from('helfer_rollen_templates')
-    .select('*')
+    .select('id, name, beschreibung, default_anzahl, created_at, updated_at')
     .order('name', { ascending: true })
 
   if (error) {
@@ -39,7 +39,7 @@ export async function getHelferRollenTemplate(
 
   const { data, error } = await supabase
     .from('helfer_rollen_templates')
-    .select('*')
+    .select('id, name, beschreibung, default_anzahl, created_at, updated_at')
     .eq('id', id)
     .single()
 

@@ -24,7 +24,7 @@ export async function getProduktionsBesetzungen(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktions_besetzungen')
-    .select('*')
+    .select('id, produktion_id, rolle_id, person_id, typ, status, notizen, created_at, updated_at')
     .eq('produktion_id', produktionId)
     .order('created_at', { ascending: true })
 
@@ -45,7 +45,7 @@ export async function getRollenMitProduktionsBesetzungen(
   // Fetch roles for this Stück
   const { data: rollen, error: rollenError } = await supabase
     .from('rollen')
-    .select('*')
+    .select('id, stueck_id, name, typ, beschreibung, created_at, updated_at')
     .eq('stueck_id', stueckId)
     .order('typ', { ascending: true })
     .order('name', { ascending: true })
@@ -60,7 +60,7 @@ export async function getRollenMitProduktionsBesetzungen(
   // Fetch besetzungen for this Produktion
   const { data: besetzungen, error: besetzungenError } = await supabase
     .from('produktions_besetzungen')
-    .select('*')
+    .select('id, produktion_id, rolle_id, person_id, typ, status, notizen, created_at, updated_at')
     .eq('produktion_id', produktionId)
 
   if (besetzungenError) {

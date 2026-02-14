@@ -23,7 +23,7 @@ export async function getPartnerKontingente(
 
   let query = supabase
     .from('partner_kontingente')
-    .select('*')
+    .select('id, partner_id, serie_id, soll_stunden, notizen, created_at, updated_at')
     .order('created_at', { ascending: true })
 
   if (serieId) {
@@ -47,7 +47,7 @@ export async function getPartnerKontingentById(
 
   const { data, error } = await supabase
     .from('partner_kontingente')
-    .select('*')
+    .select('id, partner_id, serie_id, soll_stunden, notizen, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -147,7 +147,7 @@ export async function getKontingentZuweisungen(
 
   const { data, error } = await supabase
     .from('partner_kontingent_zuweisungen')
-    .select('*')
+    .select('id, kontingent_id, zuweisung_id, stunden, created_at')
     .eq('kontingent_id', kontingentId)
     .order('created_at', { ascending: true })
 
@@ -224,7 +224,7 @@ export async function getKontingentUebersicht(
 
   let query = supabase
     .from('partner_kontingent_uebersicht')
-    .select('*')
+    .select('id, partner_id, partner_name, serie_id, serie_name, soll_stunden, ist_stunden, differenz, erfuellungsgrad, notizen')
     .order('partner_name', { ascending: true })
 
   if (serieId) {

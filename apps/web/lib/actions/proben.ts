@@ -29,7 +29,7 @@ export async function getProbenForStueck(stueckId: string): Promise<Probe[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('proben')
-    .select('*')
+    .select('id, stueck_id, titel, beschreibung, datum, startzeit, endzeit, ort, status, notizen, created_at, updated_at')
     .eq('stueck_id', stueckId)
     .order('datum', { ascending: true })
     .order('startzeit', { ascending: true })
@@ -206,7 +206,7 @@ async function getProbeBasic(id: string): Promise<Probe | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('proben')
-    .select('*')
+    .select('id, stueck_id, titel, beschreibung, datum, startzeit, endzeit, ort, status, notizen, created_at, updated_at')
     .eq('id', id)
     .single()
 

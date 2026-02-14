@@ -1,22 +1,12 @@
 /**
  * Email Service Client
  *
- * Uses Resend for sending transactional emails.
- * Falls back gracefully if API key is not configured.
+ * Uses Nodemailer for sending transactional emails via SMTP (e.g. Gmail).
+ * Falls back gracefully if SMTP credentials are not configured.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ResendClient = any
-
-// Check if Resend is available (for optional dependency handling)
-let ResendClass: ResendClient = null
-try {
-  // Dynamic import to handle cases where resend is not installed
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  ResendClass = require('resend').Resend
-} catch {
-  // Resend not installed - will use mock/log mode
-}
+import nodemailer from 'nodemailer'
+import type { Transporter } from 'nodemailer'
 
 interface EmailSendOptions {
   to: string | string[]
@@ -46,29 +36,38 @@ function getSenderAddress(): string {
 }
 
 /**
- * Get Resend client instance
+ * Create SMTP transporter
  */
-function getResendClient(): ResendClient {
-  const apiKey = process.env.RESEND_API_KEY
+function createTransporter(): Transporter | null {
+  const host = process.env.SMTP_HOST
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
 
-  if (!apiKey || !ResendClass) {
+  if (!host || !user || !pass) {
     return null
   }
 
-  return new ResendClass(apiKey)
+  const port = parseInt(process.env.SMTP_PORT || '587', 10)
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  })
 }
 
 /**
- * Send an email using Resend
+ * Send an email using SMTP
  */
 export async function sendEmail(options: EmailSendOptions): Promise<EmailSendResult> {
   const { to, subject, html, text, from, replyTo, attachments } = options
 
-  const resend = getResendClient()
+  const transporter = createTransporter()
 
-  // If no Resend client available, log the email (development mode)
-  if (!resend) {
-    console.warn('[Email] Resend not configured. Would send email:', {
+  // If no transporter available, log the email (development mode)
+  if (!transporter) {
+    console.warn('[Email] SMTP not configured. Would send email:', {
       to,
       subject,
       from: from || getSenderAddress(),
@@ -89,31 +88,23 @@ export async function sendEmail(options: EmailSendOptions): Promise<EmailSendRes
   }
 
   try {
-    const result = await resend.emails.send({
+    const result = await transporter.sendMail({
       from: from || getSenderAddress(),
-      to: Array.isArray(to) ? to : [to],
+      to: Array.isArray(to) ? to.join(', ') : to,
       subject,
       html,
       text,
-      reply_to: replyTo,
+      replyTo,
       attachments: attachments?.map((a) => ({
         filename: a.filename,
-        content: typeof a.content === 'string' ? Buffer.from(a.content) : a.content,
-        content_type: a.contentType,
+        content: a.content,
+        contentType: a.contentType,
       })),
     })
 
-    if (result.error) {
-      console.error('[Email] Resend error:', result.error)
-      return {
-        success: false,
-        error: result.error.message,
-      }
-    }
-
     return {
       success: true,
-      messageId: result.data?.id,
+      messageId: result.messageId,
     }
   } catch (error) {
     console.error('[Email] Failed to send:', error)
@@ -169,7 +160,7 @@ export async function sendEmailWithRetry(
  * Check if email service is configured
  */
 export function isEmailServiceConfigured(): boolean {
-  return !!process.env.RESEND_API_KEY && !!ResendClass
+  return !!process.env.SMTP_HOST && !!process.env.SMTP_USER && !!process.env.SMTP_PASS
 }
 
 /**
@@ -180,13 +171,12 @@ export function getEmailServiceStatus(): {
   provider: string
   mode: 'production' | 'development' | 'disabled'
 } {
-  const hasApiKey = !!process.env.RESEND_API_KEY
-  const hasResend = !!ResendClass
+  const hasSmtp = isEmailServiceConfigured()
 
-  if (hasApiKey && hasResend) {
+  if (hasSmtp) {
     return {
       configured: true,
-      provider: 'Resend',
+      provider: 'SMTP',
       mode: 'production',
     }
   }

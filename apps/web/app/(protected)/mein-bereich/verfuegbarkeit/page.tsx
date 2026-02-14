@@ -45,7 +45,7 @@ export default async function MeineVerfuegbarkeitPage() {
   // Also get past entries for the complete list
   const { data: allVerfuegbarkeiten } = await supabase
     .from('verfuegbarkeiten')
-    .select('*')
+    .select('id, mitglied_id, datum_von, datum_bis, zeitfenster_von, zeitfenster_bis, status, wiederholung, grund, notiz, created_at, updated_at')
     .eq('mitglied_id', person.id)
     .order('datum_von', { ascending: false })
 

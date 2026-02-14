@@ -16,7 +16,7 @@ export async function getRaeume(): Promise<Raum[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('raeume')
-    .select('*')
+    .select('id, name, typ, kapazitaet, beschreibung, aktiv, created_at, updated_at')
     .order('name', { ascending: true })
 
   if (error) {
@@ -34,7 +34,7 @@ export async function getAktiveRaeume(): Promise<Raum[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('raeume')
-    .select('*')
+    .select('id, name, typ, kapazitaet, beschreibung, aktiv, created_at, updated_at')
     .eq('aktiv', true)
     .order('name', { ascending: true })
 
@@ -53,7 +53,7 @@ export async function getRaum(id: string): Promise<Raum | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('raeume')
-    .select('*')
+    .select('id, name, typ, kapazitaet, beschreibung, aktiv, created_at, updated_at')
     .eq('id', id)
     .single()
 

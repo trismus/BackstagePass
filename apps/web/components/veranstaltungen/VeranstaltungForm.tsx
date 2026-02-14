@@ -90,6 +90,7 @@ export function VeranstaltungForm({
         : await updateVeranstaltung(veranstaltung!.id, data)
 
     if (result.success) {
+      router.refresh()
       router.push(returnUrl as never)
     } else {
       setError(result.error || 'Ein Fehler ist aufgetreten')
@@ -105,6 +106,7 @@ export function VeranstaltungForm({
     const result = await deleteVeranstaltung(veranstaltung.id)
 
     if (result.success) {
+      router.refresh()
       router.push(returnUrl as never)
     } else {
       setError(result.error || 'Ein Fehler ist aufgetreten')

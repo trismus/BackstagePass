@@ -20,7 +20,7 @@ export async function getRessourcen(): Promise<Ressource[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .order('name', { ascending: true })
 
   if (error) {
@@ -38,7 +38,7 @@ export async function getAktiveRessourcen(): Promise<Ressource[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .eq('aktiv', true)
     .order('name', { ascending: true })
 
@@ -59,7 +59,7 @@ export async function getRessourcenByKategorie(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .eq('kategorie', kategorie)
     .eq('aktiv', true)
     .order('name', { ascending: true })
@@ -79,7 +79,7 @@ export async function getRessource(id: string): Promise<Ressource | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .eq('id', id)
     .single()
 

@@ -27,7 +27,7 @@ export async function getProtokollTemplates(): Promise<ProtokollTemplate[]> {
 
   const { data, error } = await supabase
     .from('protokoll_templates')
-    .select('*')
+    .select('id, name, beschreibung, struktur, ist_standard, created_by, created_at, updated_at')
     .order('ist_standard', { ascending: false })
     .order('name')
 
@@ -47,7 +47,7 @@ export async function getDefaultProtokollTemplate(): Promise<ProtokollTemplate |
 
   const { data, error } = await supabase
     .from('protokoll_templates')
-    .select('*')
+    .select('id, name, beschreibung, struktur, ist_standard, created_by, created_at, updated_at')
     .eq('ist_standard', true)
     .single()
 
