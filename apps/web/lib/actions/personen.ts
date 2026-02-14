@@ -11,6 +11,7 @@ import type {
   PersonUpdate,
   UserRole,
 } from '../supabase/types'
+import { sanitizeSearchQuery } from '../utils/search'
 
 const USE_DUMMY_DATA = !process.env.NEXT_PUBLIC_SUPABASE_URL
 
@@ -78,7 +79,7 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
     .from('personen')
     .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
     .or(
-      `vorname.ilike.%${query}%,nachname.ilike.%${query}%,email.ilike.%${query}%`
+      `vorname.ilike.%${sanitizeSearchQuery(query)}%,nachname.ilike.%${sanitizeSearchQuery(query)}%,email.ilike.%${sanitizeSearchQuery(query)}%`
     )
     .order('nachname', { ascending: true })
 
@@ -458,8 +459,9 @@ export async function getPersonenAdvanced(
 
   // Search filter (use ilike for case-insensitive search)
   if (search) {
+    const sanitized = sanitizeSearchQuery(search)
     query = query.or(
-      `vorname.ilike.%${search}%,nachname.ilike.%${search}%,email.ilike.%${search}%`
+      `vorname.ilike.%${sanitized}%,nachname.ilike.%${sanitized}%,email.ilike.%${sanitized}%`
     )
   }
 
