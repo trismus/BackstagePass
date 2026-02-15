@@ -189,6 +189,14 @@ export const templateSchichtSchema = z.object({
     .default(1),
 })
 
+export const templateZeitblockUpdateSchema = templateZeitblockSchema
+  .omit({ template_id: true })
+  .partial()
+
+export const templateSchichtUpdateSchema = templateSchichtSchema
+  .omit({ template_id: true })
+  .partial()
+
 export const templateRessourceSchema = z.object({
   template_id: z.string().uuid('Ungültige Template-ID'),
   ressource_id: z.string().uuid('Ungültige Ressource'),
