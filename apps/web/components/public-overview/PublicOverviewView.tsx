@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Tabs } from '@/components/ui/Tabs'
 import { EventGroup } from './EventGroup'
 import { OverviewRegistrationForm } from './OverviewRegistrationForm'
 import { OverviewSuccessScreen } from './OverviewSuccessScreen'
@@ -35,16 +34,6 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
     }
     return map
   }, [data])
-
-  // Build tabs from events
-  const tabs = useMemo(
-    () =>
-      data.events.map((event) => ({
-        id: event.veranstaltung.id,
-        label: event.veranstaltung.titel,
-      })),
-    [data]
-  )
 
   const handleToggleSchicht = (schichtId: string) => {
     setSelectedIds((prev) => {
@@ -136,40 +125,22 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
         </div>
       </div>
 
-      {/* Event Tabs */}
-      {tabs.length > 1 ? (
-        <Tabs tabs={tabs} defaultTab={tabs[0]?.id} fullWidth>
-          {(activeTab) => {
-            const event = data.events.find(
-              (e) => e.veranstaltung.id === activeTab
-            )
-            if (!event) return null
-            return (
-              <EventGroup
-                event={event}
-                selectedSchichtIds={selectedIds}
-                onToggleSchicht={handleToggleSchicht}
-              />
-            )
-          }}
-        </Tabs>
-      ) : (
-        <div className="space-y-6">
-          {data.events.map((event) => (
-            <EventGroup
-              key={event.veranstaltung.id}
-              event={event}
-              selectedSchichtIds={selectedIds}
-              onToggleSchicht={handleToggleSchicht}
-            />
-          ))}
-        </div>
-      )}
+      {/* All Events */}
+      <div className="space-y-6">
+        {data.events.map((event) => (
+          <EventGroup
+            key={event.veranstaltung.id}
+            event={event}
+            selectedSchichtIds={selectedIds}
+            onToggleSchicht={handleToggleSchicht}
+          />
+        ))}
+      </div>
 
       {/* Sticky Footer Bar */}
       {selectedIds.size > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
-          <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <div className="mx-auto flex max-w-6xl items-center justify-between">
             <p className="text-sm font-medium text-gray-700">
               {selectedIds.size}{' '}
               {selectedIds.size === 1 ? 'Schicht' : 'Schichten'} ausgewählt
