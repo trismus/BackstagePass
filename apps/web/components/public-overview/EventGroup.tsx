@@ -16,19 +16,7 @@ export function EventGroup({
   onToggleSchicht,
 }: EventGroupProps) {
   const { veranstaltung, zeitbloecke } = event
-  const [showFullByBlock, setShowFullByBlock] = useState<Set<string>>(new Set())
-
-  const toggleShowFull = (zeitblockId: string) => {
-    setShowFullByBlock((prev) => {
-      const next = new Set(prev)
-      if (next.has(zeitblockId)) {
-        next.delete(zeitblockId)
-      } else {
-        next.add(zeitblockId)
-      }
-      return next
-    })
-  }
+  const [showFull, setShowFull] = useState(false)
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -44,12 +32,13 @@ export function EventGroup({
     return timeStr.slice(0, 5)
   }
 
-  // Calculate total free slots across all shifts
-  const totalFree = zeitbloecke.reduce(
-    (sum, zb) =>
-      sum + zb.schichten.reduce((s, sch) => s + Math.max(0, sch.freie_plaetze), 0),
-    0
+  // Flatten all shifts across Zeitblöcke
+  const allSchichten = zeitbloecke.flatMap((zb) =>
+    zb.schichten.map((s) => ({ ...s, zeitblockName: zb.name, zeitblockStart: zb.startzeit, zeitblockEnd: zb.endzeit }))
   )
+  const availableSchichten = allSchichten.filter((s) => s.freie_plaetze > 0)
+  const fullSchichten = allSchichten.filter((s) => s.freie_plaetze <= 0)
+  const totalFree = availableSchichten.reduce((sum, s) => sum + s.freie_plaetze, 0)
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -83,61 +72,40 @@ export function EventGroup({
         </div>
       </div>
 
-      {/* Zeitbloecke with Schichten */}
-      <div className="divide-y divide-gray-100">
-        {zeitbloecke.map((zeitblock) => {
-          const availableSchichten = zeitblock.schichten.filter(
-            (s) => s.freie_plaetze > 0
-          )
-          const fullSchichten = zeitblock.schichten.filter(
-            (s) => s.freie_plaetze <= 0
-          )
-          const showingFull = showFullByBlock.has(zeitblock.id)
-
-          return (
-            <div key={zeitblock.id} className="px-5 py-4">
-              <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-gray-700">
-                  {zeitblock.name}
-                </h4>
-                <span className="text-xs text-gray-400">
-                  {zeitblock.startzeit.slice(0, 5)} -{' '}
-                  {zeitblock.endzeit.slice(0, 5)} Uhr
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5">
-                {availableSchichten.map((schicht) => (
-                  <SelectableSchichtCard
-                    key={schicht.id}
-                    schicht={schicht}
-                    isSelected={selectedSchichtIds.has(schicht.id)}
-                    onToggle={onToggleSchicht}
-                  />
-                ))}
-                {showingFull &&
-                  fullSchichten.map((schicht) => (
-                    <SelectableSchichtCard
-                      key={schicht.id}
-                      schicht={schicht}
-                      isSelected={false}
-                      onToggle={onToggleSchicht}
-                    />
-                  ))}
-              </div>
-              {fullSchichten.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => toggleShowFull(zeitblock.id)}
-                  className="mt-2 text-xs text-gray-400 hover:text-gray-600"
-                >
-                  {showingFull
-                    ? 'Belegte Rollen ausblenden'
-                    : `${fullSchichten.length} belegte ${fullSchichten.length === 1 ? 'Rolle' : 'Rollen'} anzeigen`}
-                </button>
-              )}
-            </div>
-          )
-        })}
+      {/* All shifts in one grid */}
+      <div className="px-5 py-4">
+        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5">
+          {availableSchichten.map((schicht) => (
+            <SelectableSchichtCard
+              key={schicht.id}
+              schicht={schicht}
+              isSelected={selectedSchichtIds.has(schicht.id)}
+              onToggle={onToggleSchicht}
+              zeitblockLabel={`${schicht.zeitblockStart.slice(0, 5)}–${schicht.zeitblockEnd.slice(0, 5)}`}
+            />
+          ))}
+          {showFull &&
+            fullSchichten.map((schicht) => (
+              <SelectableSchichtCard
+                key={schicht.id}
+                schicht={schicht}
+                isSelected={false}
+                onToggle={onToggleSchicht}
+                zeitblockLabel={`${schicht.zeitblockStart.slice(0, 5)}–${schicht.zeitblockEnd.slice(0, 5)}`}
+              />
+            ))}
+        </div>
+        {fullSchichten.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowFull((prev) => !prev)}
+            className="mt-2 text-xs text-gray-400 hover:text-gray-600"
+          >
+            {showFull
+              ? 'Belegte Rollen ausblenden'
+              : `${fullSchichten.length} belegte ${fullSchichten.length === 1 ? 'Rolle' : 'Rollen'} anzeigen`}
+          </button>
+        )}
       </div>
     </div>
   )

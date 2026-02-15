@@ -6,12 +6,14 @@ interface SelectableSchichtCardProps {
   schicht: PublicSchichtData
   isSelected: boolean
   onToggle: (schichtId: string) => void
+  zeitblockLabel?: string
 }
 
 export function SelectableSchichtCard({
   schicht,
   isSelected,
   onToggle,
+  zeitblockLabel,
 }: SelectableSchichtCardProps) {
   const isFull = schicht.freie_plaetze <= 0
   const slotsText = isFull
@@ -22,6 +24,9 @@ export function SelectableSchichtCard({
     return (
       <div className="flex flex-col items-center justify-center rounded-md border border-gray-100 bg-gray-50 px-2 py-2 text-center text-gray-400">
         <span className="text-xs leading-tight">{schicht.rolle}</span>
+        {zeitblockLabel && (
+          <span className="mt-0.5 text-[10px]">{zeitblockLabel}</span>
+        )}
         <span className="mt-0.5 text-[10px]">{slotsText}</span>
       </div>
     )
@@ -65,6 +70,9 @@ export function SelectableSchichtCard({
       <span className="text-xs font-medium leading-tight text-gray-900">
         {schicht.rolle}
       </span>
+      {zeitblockLabel && (
+        <span className="mt-0.5 text-[10px] text-gray-400">{zeitblockLabel}</span>
+      )}
       <span className="mt-0.5 text-[10px] text-gray-500">{slotsText}</span>
     </button>
   )
