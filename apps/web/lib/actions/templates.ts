@@ -9,8 +9,10 @@ import type {
   TemplateMitDetails,
   TemplateZeitblock,
   TemplateZeitblockInsert,
+  TemplateZeitblockUpdate,
   TemplateSchicht,
   TemplateSchichtInsert,
+  TemplateSchichtUpdate,
   TemplateRessourceInsert,
   TemplateInfoBlock,
   TemplateInfoBlockInsert,
@@ -25,7 +27,9 @@ import {
   templateSchema,
   templateUpdateSchema,
   templateZeitblockSchema,
+  templateZeitblockUpdateSchema,
   templateSchichtSchema,
+  templateSchichtUpdateSchema,
   templateRessourceSchema,
   templateInfoBlockSchema,
   templateSachleistungSchema,
@@ -274,6 +278,31 @@ export async function removeTemplateZeitblock(
   return { success: true }
 }
 
+export async function updateTemplateZeitblock(
+  id: string,
+  templateId: string,
+  data: TemplateZeitblockUpdate
+): Promise<{ success: boolean; error?: string }> {
+  const validation = validateInput(templateZeitblockUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_zeitbloecke')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template zeitblock:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren des Zeitblocks' }
+  }
+
+  revalidatePath(`/templates/${templateId}`)
+  return { success: true }
+}
+
 // =============================================================================
 // Template Schichten
 // =============================================================================
@@ -316,6 +345,31 @@ export async function removeTemplateSchicht(
   if (error) {
     console.error('Error removing template schicht:', error)
     return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/templates/${templateId}`)
+  return { success: true }
+}
+
+export async function updateTemplateSchicht(
+  id: string,
+  templateId: string,
+  data: TemplateSchichtUpdate
+): Promise<{ success: boolean; error?: string }> {
+  const validation = validateInput(templateSchichtUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_schichten')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template schicht:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren der Schicht' }
   }
 
   revalidatePath(`/templates/${templateId}`)

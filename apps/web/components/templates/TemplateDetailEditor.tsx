@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import {
   addTemplateZeitblock,
   removeTemplateZeitblock,
+  updateTemplateZeitblock,
   addTemplateSchicht,
   removeTemplateSchicht,
+  updateTemplateSchicht,
   addTemplateRessource,
   removeTemplateRessource,
   addTemplateInfoBlock,
@@ -16,6 +18,8 @@ import {
 } from '@/lib/actions/templates'
 import type {
   TemplateMitDetails,
+  TemplateZeitblock,
+  TemplateSchicht,
   Ressource,
   ZeitblockTyp,
 } from '@/lib/supabase/types'
@@ -49,12 +53,29 @@ export function TemplateDetailEditor({
   const [zbTyp, setZbTyp] = useState<ZeitblockTyp>('standard')
   const [zbLoading, setZbLoading] = useState(false)
 
+  // Zeitblock Edit State
+  const [editZbId, setEditZbId] = useState<string | null>(null)
+  const [editZbName, setEditZbName] = useState('')
+  const [editZbOffset, setEditZbOffset] = useState('')
+  const [editZbDauer, setEditZbDauer] = useState('')
+  const [editZbTyp, setEditZbTyp] = useState<ZeitblockTyp>('standard')
+  const [editZbLoading, setEditZbLoading] = useState(false)
+  const [editZbError, setEditZbError] = useState<string | null>(null)
+
   // Schicht Form State
   const [showSchichtForm, setShowSchichtForm] = useState(false)
   const [schichtRolle, setSchichtRolle] = useState('')
   const [schichtZeitblock, setSchichtZeitblock] = useState('')
   const [schichtAnzahl, setSchichtAnzahl] = useState('1')
   const [schichtLoading, setSchichtLoading] = useState(false)
+
+  // Schicht Edit State
+  const [editSchichtId, setEditSchichtId] = useState<string | null>(null)
+  const [editSchichtRolle, setEditSchichtRolle] = useState('')
+  const [editSchichtZeitblock, setEditSchichtZeitblock] = useState('')
+  const [editSchichtAnzahl, setEditSchichtAnzahl] = useState('1')
+  const [editSchichtLoading, setEditSchichtLoading] = useState(false)
+  const [editSchichtError, setEditSchichtError] = useState<string | null>(null)
 
   // Ressource Form State
   const [showRessourceForm, setShowRessourceForm] = useState(false)
@@ -110,6 +131,38 @@ export function TemplateDetailEditor({
     router.refresh()
   }
 
+  function startEditZeitblock(zb: TemplateZeitblock) {
+    setEditZbId(zb.id)
+    setEditZbName(zb.name)
+    setEditZbOffset(String(zb.offset_minuten))
+    setEditZbDauer(String(zb.dauer_minuten))
+    setEditZbTyp(zb.typ)
+    setEditZbError(null)
+  }
+
+  async function handleEditZeitblock(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editZbId) return
+
+    setEditZbLoading(true)
+    setEditZbError(null)
+
+    const result = await updateTemplateZeitblock(editZbId, template.id, {
+      name: editZbName,
+      offset_minuten: parseInt(editZbOffset, 10),
+      dauer_minuten: parseInt(editZbDauer, 10),
+      typ: editZbTyp,
+    })
+
+    if (result.success) {
+      setEditZbId(null)
+      router.refresh()
+    } else {
+      setEditZbError(result.error || 'Ein Fehler ist aufgetreten')
+    }
+    setEditZbLoading(false)
+  }
+
   // Schicht handlers
   async function handleAddSchicht(e: React.FormEvent) {
     e.preventDefault()
@@ -132,6 +185,36 @@ export function TemplateDetailEditor({
     if (!confirm(`Schicht "${rolle}" entfernen?`)) return
     await removeTemplateSchicht(id, template.id)
     router.refresh()
+  }
+
+  function startEditSchicht(s: TemplateSchicht) {
+    setEditSchichtId(s.id)
+    setEditSchichtRolle(s.rolle)
+    setEditSchichtZeitblock(s.zeitblock_name || '')
+    setEditSchichtAnzahl(String(s.anzahl_benoetigt))
+    setEditSchichtError(null)
+  }
+
+  async function handleEditSchicht(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editSchichtId) return
+
+    setEditSchichtLoading(true)
+    setEditSchichtError(null)
+
+    const result = await updateTemplateSchicht(editSchichtId, template.id, {
+      rolle: editSchichtRolle,
+      zeitblock_name: editSchichtZeitblock || null,
+      anzahl_benoetigt: parseInt(editSchichtAnzahl, 10) || 1,
+    })
+
+    if (result.success) {
+      setEditSchichtId(null)
+      router.refresh()
+    } else {
+      setEditSchichtError(result.error || 'Ein Fehler ist aufgetreten')
+    }
+    setEditSchichtLoading(false)
   }
 
   // Ressource handlers
@@ -298,25 +381,118 @@ export function TemplateDetailEditor({
         )}
 
         <div className="divide-y divide-gray-200">
-          {template.zeitbloecke.map((zb) => (
-            <div key={zb.id} className="flex items-center justify-between p-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{zb.name}</span>
-                  <ZeitblockTypBadge typ={zb.typ} />
-                </div>
-                <span className="text-sm text-gray-500">
-                  Offset: {zb.offset_minuten} Min, Dauer: {zb.dauer_minuten} Min
-                </span>
-              </div>
-              <button
-                onClick={() => handleRemoveZeitblock(zb.id, zb.name)}
-                className="text-sm text-red-600 hover:text-red-800"
+          {template.zeitbloecke.map((zb) =>
+            editZbId === zb.id ? (
+              <form
+                key={zb.id}
+                onSubmit={handleEditZeitblock}
+                className="space-y-3 bg-blue-50 p-4"
               >
-                Entfernen
-              </button>
-            </div>
-          ))}
+                {editZbError && (
+                  <div className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                    {editZbError}
+                  </div>
+                )}
+                <input
+                  type="text"
+                  placeholder="Name *"
+                  required
+                  value={editZbName}
+                  onChange={(e) => setEditZbName(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Offset (Min)
+                    </label>
+                    <input
+                      type="number"
+                      value={editZbOffset}
+                      onChange={(e) => setEditZbOffset(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Dauer (Min)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editZbDauer}
+                      onChange={(e) => setEditZbDauer(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Typ
+                    </label>
+                    <select
+                      value={editZbTyp}
+                      onChange={(e) =>
+                        setEditZbTyp(e.target.value as ZeitblockTyp)
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    >
+                      {zeitblockTypen.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={editZbLoading}
+                    className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white disabled:bg-blue-400"
+                  >
+                    {editZbLoading ? 'Speichern...' : 'Speichern'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditZbId(null)}
+                    className="px-3 py-1.5 text-sm text-gray-600"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div
+                key={zb.id}
+                className="flex items-center justify-between p-4"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-900">{zb.name}</span>
+                    <ZeitblockTypBadge typ={zb.typ} />
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    Offset: {zb.offset_minuten} Min, Dauer: {zb.dauer_minuten}{' '}
+                    Min
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => startEditZeitblock(zb)}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    onClick={() => handleRemoveZeitblock(zb.id, zb.name)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              </div>
+            )
+          )}
           {template.zeitbloecke.length === 0 && (
             <div className="p-8 text-center text-gray-500">
               Keine Zeitblöcke
@@ -396,27 +572,112 @@ export function TemplateDetailEditor({
         )}
 
         <div className="divide-y divide-gray-200">
-          {template.schichten.map((s) => (
-            <div key={s.id} className="flex items-center justify-between p-4">
-              <div>
-                <span className="font-medium text-gray-900">{s.rolle}</span>
-                <span className="ml-2 text-sm text-gray-500">
-                  ({s.anzahl_benoetigt}x)
-                </span>
-                {s.zeitblock_name && (
-                  <span className="ml-2 text-sm text-gray-400">
-                    - {s.zeitblock_name}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => handleRemoveSchicht(s.id, s.rolle)}
-                className="text-sm text-red-600 hover:text-red-800"
+          {template.schichten.map((s) =>
+            editSchichtId === s.id ? (
+              <form
+                key={s.id}
+                onSubmit={handleEditSchicht}
+                className="space-y-3 bg-blue-50 p-4"
               >
-                Entfernen
-              </button>
-            </div>
-          ))}
+                {editSchichtError && (
+                  <div className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                    {editSchichtError}
+                  </div>
+                )}
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500">
+                    Rolle
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Rolle *"
+                    required
+                    value={editSchichtRolle}
+                    onChange={(e) => setEditSchichtRolle(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Zeitblock
+                    </label>
+                    <select
+                      value={editSchichtZeitblock}
+                      onChange={(e) => setEditSchichtZeitblock(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">Kein Zeitblock</option>
+                      {template.zeitbloecke.map((zb) => (
+                        <option key={zb.id} value={zb.name}>
+                          {zb.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Anzahl benötigt
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editSchichtAnzahl}
+                      onChange={(e) => setEditSchichtAnzahl(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={editSchichtLoading}
+                    className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white disabled:bg-blue-400"
+                  >
+                    {editSchichtLoading ? 'Speichern...' : 'Speichern'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditSchichtId(null)}
+                    className="px-3 py-1.5 text-sm text-gray-600"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div
+                key={s.id}
+                className="flex items-center justify-between p-4"
+              >
+                <div>
+                  <span className="font-medium text-gray-900">{s.rolle}</span>
+                  <span className="ml-2 text-sm text-gray-500">
+                    ({s.anzahl_benoetigt}x)
+                  </span>
+                  {s.zeitblock_name && (
+                    <span className="ml-2 text-sm text-gray-400">
+                      - {s.zeitblock_name}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => startEditSchicht(s)}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    onClick={() => handleRemoveSchicht(s.id, s.rolle)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              </div>
+            )
+          )}
           {template.schichten.length === 0 && (
             <div className="p-8 text-center text-gray-500">Keine Schichten</div>
           )}
