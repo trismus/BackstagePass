@@ -105,7 +105,7 @@ export function EventGroup({
                   {zeitblock.endzeit.slice(0, 5)} Uhr
                 </span>
               </div>
-              <div className="space-y-1.5">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                 {availableSchichten.map((schicht) => (
                   <SelectableSchichtCard
                     key={schicht.id}
@@ -123,18 +123,18 @@ export function EventGroup({
                       onToggle={onToggleSchicht}
                     />
                   ))}
-                {fullSchichten.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => toggleShowFull(zeitblock.id)}
-                    className="mt-1 text-xs text-gray-400 hover:text-gray-600"
-                  >
-                    {showingFull
-                      ? 'Belegte Rollen ausblenden'
-                      : `${fullSchichten.length} belegte ${fullSchichten.length === 1 ? 'Rolle' : 'Rollen'} anzeigen`}
-                  </button>
-                )}
               </div>
+              {fullSchichten.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => toggleShowFull(zeitblock.id)}
+                  className="mt-2 text-xs text-gray-400 hover:text-gray-600"
+                >
+                  {showingFull
+                    ? 'Belegte Rollen ausblenden'
+                    : `${fullSchichten.length} belegte ${fullSchichten.length === 1 ? 'Rolle' : 'Rollen'} anzeigen`}
+                </button>
+              )}
             </div>
           )
         })}
