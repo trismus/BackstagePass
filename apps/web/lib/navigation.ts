@@ -97,6 +97,12 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
         icon: 'partner',
         permission: 'partner:read',
       },
+      {
+        href: '/alle-helfer',
+        label: 'Alle Helfer',
+        icon: 'users',
+        permission: 'mitglieder:read',
+      },
     ],
   },
   {
@@ -364,6 +370,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
   const roleRoutes: Record<string, UserRole[]> = {
     '/dashboard': ['ADMIN', 'VORSTAND'],
     '/mitglieder': ['ADMIN', 'VORSTAND'],
+    '/alle-helfer': ['ADMIN', 'VORSTAND'],
     '/partner': ['ADMIN', 'VORSTAND', 'PARTNER'],
     '/helfer': ['ADMIN', 'VORSTAND', 'HELFER'],
     '/partner-portal': ['ADMIN', 'VORSTAND', 'PARTNER'],
@@ -433,6 +440,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
   mitglieder: 'Mitglieder',
   partner: 'Partner',
+  'alle-helfer': 'Alle Helfer',
   kalender: 'Kalender',
   veranstaltungen: 'Veranstaltungen',
   auffuehrungen: 'Aufführungen',
