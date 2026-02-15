@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { Tabs } from '@/components/ui/Tabs'
 import { EventGroup } from './EventGroup'
 import { OverviewRegistrationForm } from './OverviewRegistrationForm'
 import { OverviewSuccessScreen } from './OverviewSuccessScreen'
@@ -34,6 +35,16 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
     }
     return map
   }, [data])
+
+  // Build tabs from events
+  const tabs = useMemo(
+    () =>
+      data.events.map((event) => ({
+        id: event.veranstaltung.id,
+        label: event.veranstaltung.titel,
+      })),
+    [data]
+  )
 
   const handleToggleSchicht = (schichtId: string) => {
     setSelectedIds((prev) => {
@@ -125,17 +136,35 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
         </div>
       </div>
 
-      {/* Event Cards */}
-      <div className="space-y-6">
-        {data.events.map((event) => (
-          <EventGroup
-            key={event.veranstaltung.id}
-            event={event}
-            selectedSchichtIds={selectedIds}
-            onToggleSchicht={handleToggleSchicht}
-          />
-        ))}
-      </div>
+      {/* Event Tabs */}
+      {tabs.length > 1 ? (
+        <Tabs tabs={tabs} defaultTab={tabs[0]?.id} fullWidth>
+          {(activeTab) => {
+            const event = data.events.find(
+              (e) => e.veranstaltung.id === activeTab
+            )
+            if (!event) return null
+            return (
+              <EventGroup
+                event={event}
+                selectedSchichtIds={selectedIds}
+                onToggleSchicht={handleToggleSchicht}
+              />
+            )
+          }}
+        </Tabs>
+      ) : (
+        <div className="space-y-6">
+          {data.events.map((event) => (
+            <EventGroup
+              key={event.veranstaltung.id}
+              event={event}
+              selectedSchichtIds={selectedIds}
+              onToggleSchicht={handleToggleSchicht}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Sticky Footer Bar */}
       {selectedIds.size > 0 && (
