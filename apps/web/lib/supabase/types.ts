@@ -684,9 +684,10 @@ export type AuffuehrungZuweisungInsert = Omit<
 }
 export type AuffuehrungZuweisungUpdate = Partial<AuffuehrungZuweisungInsert>
 
-// Extended type with person details
+// Extended type with person/external helper details
 export type ZuweisungMitPerson = AuffuehrungZuweisung & {
-  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'> | null
+  external_helper: Pick<ExterneHelferProfil, 'id' | 'vorname' | 'nachname' | 'email'> | null
 }
 
 // Extended type with full shift details
