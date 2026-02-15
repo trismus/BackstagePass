@@ -20,9 +20,9 @@ export function SelectableSchichtCard({
 
   if (isFull) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-gray-100 bg-gray-50 px-3 py-3 text-center text-gray-400">
-        <span className="text-sm leading-tight">{schicht.rolle}</span>
-        <span className="mt-1 text-xs">{slotsText}</span>
+      <div className="flex flex-col items-center justify-center rounded-md border border-gray-100 bg-gray-50 px-2 py-2 text-center text-gray-400">
+        <span className="text-xs leading-tight">{schicht.rolle}</span>
+        <span className="mt-0.5 text-[10px]">{slotsText}</span>
       </div>
     )
   }
@@ -31,7 +31,7 @@ export function SelectableSchichtCard({
     <button
       type="button"
       onClick={() => onToggle(schicht.id)}
-      className={`relative flex flex-col items-center justify-center rounded-lg border px-3 py-3 text-center transition-all ${
+      className={`relative flex flex-col items-center justify-center rounded-md border px-2 py-2 text-center transition-all ${
         isSelected
           ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
           : 'border-gray-200 bg-white hover:border-primary-300 hover:shadow-sm'
@@ -39,7 +39,7 @@ export function SelectableSchichtCard({
     >
       {/* Selection indicator */}
       <div
-        className={`absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-sm border transition-colors ${
+        className={`absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-sm border transition-colors ${
           isSelected
             ? 'border-primary-600 bg-primary-600'
             : 'border-gray-300 bg-white'
@@ -47,7 +47,7 @@ export function SelectableSchichtCard({
       >
         {isSelected && (
           <svg
-            className="h-3 w-3 text-white"
+            className="h-2.5 w-2.5 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -62,10 +62,10 @@ export function SelectableSchichtCard({
         )}
       </div>
 
-      <span className="text-sm font-medium leading-tight text-gray-900">
+      <span className="text-xs font-medium leading-tight text-gray-900">
         {schicht.rolle}
       </span>
-      <span className="mt-1 text-xs text-gray-500">{slotsText}</span>
+      <span className="mt-0.5 text-[10px] text-gray-500">{slotsText}</span>
     </button>
   )
 }
