@@ -10,6 +10,9 @@ import {
   ModulAktivitaet,
   HandlungsbedarfCard,
   ProduktionDashboardWidget,
+  CircularProgress,
+  BarChart,
+  MetricCard,
 } from '@/components/dashboard'
 import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
 
@@ -154,6 +157,65 @@ export default async function DashboardPage() {
               size="sm"
             />
           </div>
+        </div>
+
+        {/* Modern Widgets Section */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Bar Chart: Veranstaltungen diese Woche */}
+          <div className="rounded-xl border border-neutral-200 bg-white p-6">
+            <BarChart
+              title="Veranstaltungen diese Woche"
+              data={[
+                { label: 'Mo', value: 2 },
+                { label: 'Di', value: 1 },
+                { label: 'Mi', value: 3 },
+                { label: 'Do', value: 1 },
+                { label: 'Fr', value: 2 },
+                { label: 'Sa', value: 4 },
+                { label: 'So', value: 1 },
+              ]}
+              color="primary"
+              height={140}
+            />
+          </div>
+
+          {/* Circular Progress: Mitglieder-Aktivität */}
+          <div className="rounded-xl border border-neutral-200 bg-white p-6">
+            <CircularProgress
+              title="Mitglieder-Aktivität"
+              value={mitgliederAktiv || 0}
+              max={mitgliederTotal || 1}
+              subtitle={`${mitgliederAktiv || 0} von ${mitgliederTotal || 0} aktiv`}
+              size="md"
+              color="success"
+            />
+          </div>
+
+          {/* Metric Card: Offene Aufgaben */}
+          <MetricCard
+            title="Offene Helfer-Positionen"
+            value={offeneHelferPositionen}
+            subtitle={offeneHelferPositionen > 0 ? 'Benötigen Zuweisung' : 'Alle besetzt'}
+            variant={offeneHelferPositionen > 0 ? 'warning' : 'success'}
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            }
+          />
+
+          {/* Metric Card: Anstehende Events */}
+          <MetricCard
+            title="Nächste 7 Tage"
+            value={upcomingEvents?.length || 0}
+            subtitle="Anstehende Veranstaltungen"
+            variant="default"
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            }
+          />
         </div>
 
         {/* 3-Säulen Grid */}
