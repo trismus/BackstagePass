@@ -175,7 +175,14 @@ export function SchichtZuweisungListe({
                       className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
                     >
                       <span className="text-sm text-gray-900">
-                        {z.person.vorname} {z.person.nachname}
+                        {z.person
+                          ? `${z.person.vorname} ${z.person.nachname}`
+                          : z.external_helper
+                            ? `${z.external_helper.vorname} ${z.external_helper.nachname}`
+                            : 'Unbekannt'}
+                        {!z.person && (
+                          <span className="ml-1 text-xs text-gray-500">(Extern)</span>
+                        )}
                       </span>
                       <div className="flex items-center gap-2">
                         {canEdit ? (
