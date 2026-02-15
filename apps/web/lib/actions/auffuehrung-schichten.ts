@@ -217,7 +217,8 @@ export async function getZuweisungen(
     .select(
       `
       *,
-      person:personen(id, vorname, nachname, email)
+      person:personen(id, vorname, nachname, email),
+      external_helper:externe_helfer_profile(id, vorname, nachname, email)
     `
     )
     .eq('schicht_id', schichtId)
@@ -256,7 +257,8 @@ export async function getZuweisungenForVeranstaltung(
     .select(
       `
       *,
-      person:personen(id, vorname, nachname, email)
+      person:personen(id, vorname, nachname, email),
+      external_helper:externe_helfer_profile(id, vorname, nachname, email)
     `
     )
     .in('schicht_id', schichtIds)

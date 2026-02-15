@@ -125,7 +125,7 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
         </div>
       </div>
 
-      {/* Event Cards */}
+      {/* All Events */}
       <div className="space-y-6">
         {data.events.map((event) => (
           <EventGroup
@@ -140,7 +140,7 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
       {/* Sticky Footer Bar */}
       {selectedIds.size > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm">
-          <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <div className="mx-auto flex max-w-6xl items-center justify-between">
             <p className="text-sm font-medium text-gray-700">
               {selectedIds.size}{' '}
               {selectedIds.size === 1 ? 'Schicht' : 'Schichten'} ausgewählt

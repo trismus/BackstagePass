@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
+import { sanitizeSearchQuery } from '../utils/search'
 import type {
   ExterneHelferProfil,
   ExterneHelferProfilMitEinsaetze,
@@ -235,7 +236,7 @@ export async function searchExterneHelfer(
 
   const supabase = await createClient()
 
-  const searchTerm = `%${query}%`
+  const searchTerm = `%${sanitizeSearchQuery(query)}%`
 
   const { data, error } = await supabase
     .from('externe_helfer_profile')

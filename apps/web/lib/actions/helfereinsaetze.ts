@@ -9,6 +9,12 @@ import type {
   Helferrolle,
   HelferrolleInsert,
 } from '../supabase/types'
+import {
+  helfereinsatzSchema,
+  helfereinsatzUpdateSchema,
+  helferrolleSchema,
+} from '../validations/helfereinsaetze'
+import { validateInput } from '../validations/modul2'
 
 /**
  * Get all helfereinsaetze with partner info
@@ -102,6 +108,21 @@ export async function createHelfereinsatz(
   data: HelfereinsatzInsert,
   rollen?: HelferrolleInsert[]
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Validate input
+  const validation = validateInput(helfereinsatzSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  if (rollen) {
+    for (const rolle of rollen) {
+      const rolleValidation = validateInput(helferrolleSchema, rolle)
+      if (!rolleValidation.success) {
+        return { success: false, error: rolleValidation.error }
+      }
+    }
+  }
+
   const supabase = await createClient()
 
   // Insert helfereinsatz
@@ -145,6 +166,12 @@ export async function updateHelfereinsatz(
   id: string,
   data: HelfereinsatzUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = validateInput(helfereinsatzUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('helfereinsaetze')
