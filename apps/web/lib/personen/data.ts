@@ -26,6 +26,9 @@ const defaultExtendedFields = {
   archiviert_von: null,
   // Profile link
   profile_id: null,
+  // Invitation tracking (Issue #325)
+  invited_at: null,
+  invitation_accepted_at: null,
 }
 
 export const dummyPersonen: Person[] = [

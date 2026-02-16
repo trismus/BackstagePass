@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { RolleBadge } from './RolleBadge'
+import { InvitationStatusBadge } from './InvitationStatusBadge'
 import { ExportDialog } from './ExportDialog'
 import type { Person, Rolle } from '@/lib/supabase/types'
 import type {
@@ -362,21 +363,24 @@ export function MitgliederTable({
                     {formatDate(person.mitglied_seit)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        person.aktiv
-                          ? 'bg-green-100 text-green-800'
-                          : person.archiviert_am
+                    {!person.aktiv ? (
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          person.archiviert_am
                             ? 'bg-gray-100 text-gray-800'
                             : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {person.aktiv
-                        ? 'Aktiv'
-                        : person.archiviert_am
-                          ? 'Archiviert'
-                          : 'Inaktiv'}
-                    </span>
+                        }`}
+                      >
+                        {person.archiviert_am ? 'Archiviert' : 'Inaktiv'}
+                      </span>
+                    ) : (
+                      <InvitationStatusBadge
+                        profileId={person.profile_id}
+                        invitedAt={person.invited_at}
+                        invitationAcceptedAt={person.invitation_accepted_at}
+                        email={person.email}
+                      />
+                    )}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-3">
