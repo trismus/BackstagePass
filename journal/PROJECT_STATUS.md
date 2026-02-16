@@ -186,6 +186,24 @@
 
 ## Changelog
 
+### 2026-02-16: Dashboard-Restructuring & Vorstand Mein Bereich
+
+#### Stundenkonto aus MITGLIED_AKTIV entfernt (PR #323)
+- StundenWidget, Stunden-Statistiken und Quick-Links aus dem Mitglieder-Dashboard entfernt
+- `/mein-bereich/stundenkonto` mit Management-Rollencheck abgesichert
+- Stundenkonto ist ab sofort nur noch für ADMIN/VORSTAND zugänglich
+
+#### Neue `/vorstand/`-Sektion für persönliche Management-Seiten (PR #323)
+- `/vorstand/termine` — Persönlicher Kalender (nutzt `PersonalCalendar`)
+- `/vorstand/stundenkonto` — Eigenes Stundenkonto (nutzt `StundenkontoTable`)
+- `/vorstand/einsaetze` — Kombinierte Ansicht beider Helfer-Systeme (neu + legacy)
+- "Mein Bereich"-Sektion in der Management-Sidebar
+- Middleware + Route-Access-Control für `/vorstand`-Prefix
+- Alle 16 Testfälle bestanden (Issue #329)
+
+#### Branch-Cleanup
+- 43 veraltete Remote-Branches gelöscht (40 merged + 3 stale unmerged)
+
 ### 2026-02-16: Dashboard-Konsolidierung & Template-Editor Complete
 
 #### Dashboard & Mein-Bereich Merge (PR #317)
@@ -280,6 +298,9 @@ Progress by Milestone:
 ## Aktuelle Entwicklungen (Feb 2026)
 
 ### Abgeschlossene Features
+- ✅ Dashboard-Restructuring: Stundenkonto aus MITGLIED_AKTIV entfernt
+- ✅ Vorstand "Mein Bereich" mit Termine, Stundenkonto, Einsätze
+- ✅ Kombinierte Einsätze-Ansicht (neues + legacy Helfer-System)
 - ✅ Template-Editor vollständig editierbar (alle Elemente inline)
 - ✅ Dashboard-Konsolidierung (einheitliche Startseite für alle Rollen)
 - ✅ Helfer-Dashboard mit persönlicher Einsatzübersicht
