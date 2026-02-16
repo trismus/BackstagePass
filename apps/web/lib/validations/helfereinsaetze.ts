@@ -1,10 +1,15 @@
 import { z } from 'zod'
 
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') =>
+  z.string().regex(UUID_REGEX, message)
+
 export const helfereinsatzSchema = z.object({
   titel: z.string().min(1, 'Titel ist erforderlich').max(200, 'Titel zu lang'),
   datum: z.string().min(1, 'Datum ist erforderlich'),
   status: z.enum(['offen', 'bestaetigt', 'abgeschlossen', 'abgesagt']),
-  partner_id: z.string().uuid('Ungültige Partner-ID').nullable().optional(),
+  partner_id: uuid('Ungültige Partner-ID').nullable().optional(),
   beschreibung: z
     .string()
     .max(2000, 'Beschreibung zu lang')
@@ -23,7 +28,7 @@ export const helfereinsatzSchema = z.object({
 export const helfereinsatzUpdateSchema = helfereinsatzSchema.partial()
 
 export const helferrolleSchema = z.object({
-  helfereinsatz_id: z.string().uuid('Ungültige Helfereinsatz-ID'),
+  helfereinsatz_id: uuid('Ungültige Helfereinsatz-ID'),
   rolle: z
     .string()
     .min(1, 'Rolle ist erforderlich')

@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') =>
+  z.string().regex(UUID_REGEX, message)
+
 // =============================================================================
 // Produktion Validations
 // =============================================================================
@@ -14,7 +19,7 @@ export const produktionSchema = z.object({
     .max(2000, 'Beschreibung zu lang')
     .nullable()
     .optional(),
-  stueck_id: z.string().uuid().nullable().optional(),
+  stueck_id: uuid().nullable().optional(),
   status: z
     .enum([
       'draft',
@@ -34,7 +39,7 @@ export const produktionSchema = z.object({
   proben_start: z.string().nullable().optional(),
   premiere: z.string().nullable().optional(),
   derniere: z.string().nullable().optional(),
-  produktionsleitung_id: z.string().uuid().nullable().optional(),
+  produktionsleitung_id: uuid().nullable().optional(),
 })
 
 export const produktionUpdateSchema = produktionSchema.partial()
@@ -44,7 +49,7 @@ export const produktionUpdateSchema = produktionSchema.partial()
 // =============================================================================
 
 export const serieSchema = z.object({
-  produktion_id: z.string().uuid('Ungültige Produktions-ID'),
+  produktion_id: uuid('Ungültige Produktions-ID'),
   name: z.string().min(1, 'Name ist erforderlich').max(200, 'Name zu lang'),
   beschreibung: z
     .string()
@@ -63,7 +68,7 @@ export const serieSchema = z.object({
     .max(120)
     .nullable()
     .optional(),
-  template_id: z.string().uuid().nullable().optional(),
+  template_id: uuid().nullable().optional(),
 })
 
 export const serieUpdateSchema = serieSchema
