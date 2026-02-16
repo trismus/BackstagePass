@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { addTemplateInfoBlock, removeTemplateInfoBlock } from '@/lib/actions/templates'
+import { addTemplateInfoBlock, removeTemplateInfoBlock, updateTemplateInfoBlock } from '@/lib/actions/templates'
 import type { TemplateInfoBlock } from '@/lib/supabase/types'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, ConfirmDialog } from '@/components/ui'
 
@@ -16,6 +16,17 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editData, setEditData] = useState({
+    titel: '',
+    beschreibung: '',
+    startzeit: '',
+    endzeit: '',
+  })
 
   const [formData, setFormData] = useState({
     titel: '',
@@ -80,6 +91,46 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
     } finally {
       setIsDeleting(false)
       setDeletingId(null)
+    }
+  }
+
+  const startEdit = (ib: TemplateInfoBlock) => {
+    setEditingId(ib.id)
+    setEditData({
+      titel: ib.titel,
+      beschreibung: ib.beschreibung ?? '',
+      startzeit: ib.startzeit,
+      endzeit: ib.endzeit,
+    })
+    setEditError(null)
+  }
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingId) return
+
+    setIsEditSubmitting(true)
+    setEditError(null)
+
+    try {
+      const result = await updateTemplateInfoBlock(editingId, templateId, {
+        titel: editData.titel.trim(),
+        beschreibung: editData.beschreibung.trim() || null,
+        startzeit: editData.startzeit,
+        endzeit: editData.endzeit,
+      })
+
+      if (!result.success) {
+        setEditError(result.error ?? 'Fehler beim Aktualisieren')
+        return
+      }
+
+      setEditingId(null)
+    } catch (err) {
+      console.error('Error updating info block:', err)
+      setEditError('Ein unerwarteter Fehler ist aufgetreten')
+    } finally {
+      setIsEditSubmitting(false)
     }
   }
 
@@ -212,35 +263,113 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
                 <tbody className="divide-y divide-neutral-100">
                   {infoBloecke
                     .sort((a, b) => a.sortierung - b.sortierung)
-                    .map((ib, index) => (
-                      <tr key={ib.id} className="hover:bg-neutral-50">
-                        <td className="py-3 text-sm text-neutral-600">
-                          {index + 1}
-                        </td>
-                        <td className="py-3 font-medium text-neutral-900">
-                          {ib.titel}
-                        </td>
-                        <td className="max-w-xs truncate py-3 text-sm text-neutral-600">
-                          {ib.beschreibung ?? '-'}
-                        </td>
-                        <td className="py-3 text-sm text-neutral-600">
-                          {ib.startzeit}
-                        </td>
-                        <td className="py-3 text-sm text-neutral-600">
-                          {ib.endzeit}
-                        </td>
-                        <td className="py-3 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-error-600 hover:text-error-700"
-                            onClick={() => setDeletingId(ib.id)}
-                          >
-                            Entfernen
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                    .map((ib, index) =>
+                      editingId === ib.id ? (
+                        <tr key={ib.id}>
+                          <td colSpan={6} className="p-0">
+                            <form onSubmit={handleEdit} className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+                              {editError && (
+                                <div className="mb-4 rounded-lg bg-error-50 p-3 text-sm text-error-700">
+                                  {editError}
+                                </div>
+                              )}
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <Input
+                                  label="Titel"
+                                  name="edit-titel"
+                                  value={editData.titel}
+                                  onChange={(e) => setEditData((prev) => ({ ...prev, titel: e.target.value }))}
+                                  required
+                                />
+                                <div className="w-full">
+                                  <label
+                                    htmlFor="edit-beschreibung"
+                                    className="mb-1 block text-sm font-medium text-neutral-700"
+                                  >
+                                    Beschreibung
+                                  </label>
+                                  <input
+                                    id="edit-beschreibung"
+                                    name="edit-beschreibung"
+                                    value={editData.beschreibung}
+                                    onChange={(e) => setEditData((prev) => ({ ...prev, beschreibung: e.target.value }))}
+                                    className="block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black"
+                                    placeholder="Optionale Beschreibung..."
+                                  />
+                                </div>
+                                <Input
+                                  label="Startzeit"
+                                  name="edit-startzeit"
+                                  type="time"
+                                  value={editData.startzeit}
+                                  onChange={(e) => setEditData((prev) => ({ ...prev, startzeit: e.target.value }))}
+                                  required
+                                />
+                                <Input
+                                  label="Endzeit"
+                                  name="edit-endzeit"
+                                  type="time"
+                                  value={editData.endzeit}
+                                  onChange={(e) => setEditData((prev) => ({ ...prev, endzeit: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="mt-4 flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setEditingId(null)}
+                                  disabled={isEditSubmitting}
+                                >
+                                  Abbrechen
+                                </Button>
+                                <Button type="submit" size="sm" loading={isEditSubmitting}>
+                                  Speichern
+                                </Button>
+                              </div>
+                            </form>
+                          </td>
+                        </tr>
+                      ) : (
+                        <tr key={ib.id} className="hover:bg-neutral-50">
+                          <td className="py-3 text-sm text-neutral-600">
+                            {index + 1}
+                          </td>
+                          <td className="py-3 font-medium text-neutral-900">
+                            {ib.titel}
+                          </td>
+                          <td className="max-w-xs truncate py-3 text-sm text-neutral-600">
+                            {ib.beschreibung ?? '-'}
+                          </td>
+                          <td className="py-3 text-sm text-neutral-600">
+                            {ib.startzeit}
+                          </td>
+                          <td className="py-3 text-sm text-neutral-600">
+                            {ib.endzeit}
+                          </td>
+                          <td className="py-3 text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startEdit(ib)}
+                              >
+                                Bearbeiten
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-error-600 hover:text-error-700"
+                                onClick={() => setDeletingId(ib.id)}
+                              >
+                                Entfernen
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )}
                 </tbody>
               </table>
             </div>

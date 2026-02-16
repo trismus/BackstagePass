@@ -221,6 +221,10 @@ export const templateInfoBlockSchema = z.object({
   sortierung: z.number().int().min(0).optional(),
 })
 
+export const templateInfoBlockUpdateSchema = templateInfoBlockSchema
+  .omit({ template_id: true })
+  .partial()
+
 // =============================================================================
 // Template Sachleistung Validations (Issue #202)
 // =============================================================================

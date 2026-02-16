@@ -13,6 +13,7 @@ import {
   removeTemplateRessource,
   addTemplateInfoBlock,
   removeTemplateInfoBlock,
+  updateTemplateInfoBlock,
   addTemplateSachleistung,
   removeTemplateSachleistung,
 } from '@/lib/actions/templates'
@@ -22,6 +23,7 @@ import type {
   TemplateSchicht,
   Ressource,
   ZeitblockTyp,
+  TemplateInfoBlock,
 } from '@/lib/supabase/types'
 import { ZeitblockTypBadge } from '@/components/auffuehrungen/ZeitblockTypBadge'
 
@@ -92,6 +94,15 @@ export function TemplateDetailEditor({
   const [ibStartzeit, setIbStartzeit] = useState('18:00')
   const [ibEndzeit, setIbEndzeit] = useState('18:30')
   const [ibLoading, setIbLoading] = useState(false)
+
+  // Info-Block Edit State
+  const [editIbId, setEditIbId] = useState<string | null>(null)
+  const [editIbTitel, setEditIbTitel] = useState('')
+  const [editIbBeschreibung, setEditIbBeschreibung] = useState('')
+  const [editIbStartzeit, setEditIbStartzeit] = useState('')
+  const [editIbEndzeit, setEditIbEndzeit] = useState('')
+  const [editIbLoading, setEditIbLoading] = useState(false)
+  const [editIbError, setEditIbError] = useState<string | null>(null)
 
   // Sachleistung Form State
   const [showSachleistungForm, setShowSachleistungForm] = useState(false)
@@ -271,6 +282,38 @@ export function TemplateDetailEditor({
     if (!confirm(`Info-Block "${titel}" entfernen?`)) return
     await removeTemplateInfoBlock(id, template.id)
     router.refresh()
+  }
+
+  function startEditInfoBlock(ib: TemplateInfoBlock) {
+    setEditIbId(ib.id)
+    setEditIbTitel(ib.titel)
+    setEditIbBeschreibung(ib.beschreibung || '')
+    setEditIbStartzeit(ib.startzeit)
+    setEditIbEndzeit(ib.endzeit)
+    setEditIbError(null)
+  }
+
+  async function handleEditInfoBlock(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editIbId) return
+
+    setEditIbLoading(true)
+    setEditIbError(null)
+
+    const result = await updateTemplateInfoBlock(editIbId, template.id, {
+      titel: editIbTitel,
+      beschreibung: editIbBeschreibung || null,
+      startzeit: editIbStartzeit,
+      endzeit: editIbEndzeit,
+    })
+
+    if (result.success) {
+      setEditIbId(null)
+      router.refresh()
+    } else {
+      setEditIbError(result.error || 'Ein Fehler ist aufgetreten')
+    }
+    setEditIbLoading(false)
   }
 
   // Sachleistung handlers
@@ -885,25 +928,104 @@ export function TemplateDetailEditor({
         )}
 
         <div className="divide-y divide-gray-200">
-          {template.info_bloecke?.map((ib) => (
-            <div key={ib.id} className="flex items-center justify-between p-4">
-              <div>
-                <span className="font-medium text-gray-900">{ib.titel}</span>
-                <div className="text-sm text-gray-500">
-                  {ib.startzeit} - {ib.endzeit}
-                </div>
-                {ib.beschreibung && (
-                  <div className="text-sm text-gray-400">{ib.beschreibung}</div>
-                )}
-              </div>
-              <button
-                onClick={() => handleRemoveInfoBlock(ib.id, ib.titel)}
-                className="text-sm text-red-600 hover:text-red-800"
+          {template.info_bloecke?.map((ib) =>
+            editIbId === ib.id ? (
+              <form
+                key={ib.id}
+                onSubmit={handleEditInfoBlock}
+                className="space-y-3 bg-amber-50 p-4"
               >
-                Entfernen
-              </button>
-            </div>
-          ))}
+                {editIbError && (
+                  <div className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                    {editIbError}
+                  </div>
+                )}
+                <input
+                  type="text"
+                  placeholder="Titel *"
+                  required
+                  value={editIbTitel}
+                  onChange={(e) => setEditIbTitel(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+                <textarea
+                  placeholder="Beschreibung (optional)"
+                  value={editIbBeschreibung}
+                  onChange={(e) => setEditIbBeschreibung(e.target.value)}
+                  rows={2}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Startzeit
+                    </label>
+                    <input
+                      type="time"
+                      value={editIbStartzeit}
+                      onChange={(e) => setEditIbStartzeit(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Endzeit
+                    </label>
+                    <input
+                      type="time"
+                      value={editIbEndzeit}
+                      onChange={(e) => setEditIbEndzeit(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={editIbLoading}
+                    className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm text-white disabled:bg-amber-400"
+                  >
+                    {editIbLoading ? 'Speichern...' : 'Speichern'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditIbId(null)}
+                    className="px-3 py-1.5 text-sm text-gray-600"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div key={ib.id} className="flex items-center justify-between p-4">
+                <div>
+                  <span className="font-medium text-gray-900">{ib.titel}</span>
+                  <div className="text-sm text-gray-500">
+                    {ib.startzeit} - {ib.endzeit}
+                  </div>
+                  {ib.beschreibung && (
+                    <div className="text-sm text-gray-400">{ib.beschreibung}</div>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => startEditInfoBlock(ib)}
+                    className="text-sm text-amber-600 hover:text-amber-800"
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    onClick={() => handleRemoveInfoBlock(ib.id, ib.titel)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              </div>
+            )
+          )}
           {(!template.info_bloecke || template.info_bloecke.length === 0) && (
             <div className="p-8 text-center text-gray-500">
               Keine Info-Blöcke
