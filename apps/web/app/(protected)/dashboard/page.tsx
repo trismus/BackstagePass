@@ -18,6 +18,7 @@ import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
 import { getStundenkontoSummary } from '@/lib/actions/stundenkonto'
 import { getRollenHistorie, getHelfereinsatzHistorie } from '@/lib/actions/historie'
+import { getUpcomingMitgliederHelferEvents } from '@/lib/actions/helferliste'
 import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
 import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
 import { RollenHistorie } from '@/components/mein-bereich/RollenHistorie'
@@ -26,6 +27,7 @@ import {
   UpcomingEventsWidget,
   StundenWidget,
   HelferEinsaetzeWidget,
+  MitgliederHelferEventsWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
 import type { KalenderTermin } from '@/components/mein-bereich/MiniKalender'
 
@@ -480,6 +482,11 @@ export default async function DashboardPage({
         .limit(5)
     : { data: [] }
 
+  // Get member-only helper events (helferliste system)
+  const mitgliederHelferEvents = !isPassiveMember
+    ? await getUpcomingMitgliederHelferEvents()
+    : []
+
   // Get history data (only for active members)
   const rollenHistorie = !isPassiveMember ? await getRollenHistorie() : []
   const helfereinsatzHistorie =
@@ -676,7 +683,7 @@ export default async function DashboardPage({
             {/* Content Widgets */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
-              <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
+              <MitgliederHelferEventsWidget events={mitgliederHelferEvents} />
             </div>
 
             {/* Stunden Widget - Full Width */}
