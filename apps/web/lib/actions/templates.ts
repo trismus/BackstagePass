@@ -19,6 +19,7 @@ import type {
   TemplateInfoBlockUpdate,
   TemplateSachleistung,
   TemplateSachleistungInsert,
+  TemplateSachleistungUpdate,
   ZeitblockInsert,
   AuffuehrungSchichtInsert,
   InfoBlockInsert,
@@ -35,6 +36,7 @@ import {
   templateInfoBlockSchema,
   templateInfoBlockUpdateSchema,
   templateSachleistungSchema,
+  templateSachleistungUpdateSchema,
   validateInput,
 } from '../validations/modul2'
 
@@ -541,6 +543,31 @@ export async function removeTemplateSachleistung(
   if (error) {
     console.error('Error removing template sachleistung:', error)
     return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/templates/${templateId}`)
+  return { success: true }
+}
+
+export async function updateTemplateSachleistung(
+  id: string,
+  templateId: string,
+  data: TemplateSachleistungUpdate
+): Promise<{ success: boolean; error?: string }> {
+  const validation = validateInput(templateSachleistungUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_sachleistungen')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template sachleistung:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren der Sachleistung' }
   }
 
   revalidatePath(`/templates/${templateId}`)

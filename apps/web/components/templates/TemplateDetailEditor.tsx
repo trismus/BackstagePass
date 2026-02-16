@@ -16,6 +16,7 @@ import {
   updateTemplateInfoBlock,
   addTemplateSachleistung,
   removeTemplateSachleistung,
+  updateTemplateSachleistung,
 } from '@/lib/actions/templates'
 import type {
   TemplateMitDetails,
@@ -24,6 +25,7 @@ import type {
   Ressource,
   ZeitblockTyp,
   TemplateInfoBlock,
+  TemplateSachleistung,
 } from '@/lib/supabase/types'
 import { ZeitblockTypBadge } from '@/components/auffuehrungen/ZeitblockTypBadge'
 
@@ -110,6 +112,14 @@ export function TemplateDetailEditor({
   const [slAnzahl, setSlAnzahl] = useState('1')
   const [slBeschreibung, setSlBeschreibung] = useState('')
   const [slLoading, setSlLoading] = useState(false)
+
+  // Sachleistung Edit State
+  const [editSlId, setEditSlId] = useState<string | null>(null)
+  const [editSlName, setEditSlName] = useState('')
+  const [editSlAnzahl, setEditSlAnzahl] = useState('1')
+  const [editSlBeschreibung, setEditSlBeschreibung] = useState('')
+  const [editSlLoading, setEditSlLoading] = useState(false)
+  const [editSlError, setEditSlError] = useState<string | null>(null)
 
   // Filter out already added ressourcen
   const addedRessourceIds = template.ressourcen.map((r) => r.ressource_id)
@@ -338,6 +348,36 @@ export function TemplateDetailEditor({
     if (!confirm(`Sachleistung "${name}" entfernen?`)) return
     await removeTemplateSachleistung(id, template.id)
     router.refresh()
+  }
+
+  function startEditSachleistung(sl: TemplateSachleistung) {
+    setEditSlId(sl.id)
+    setEditSlName(sl.name)
+    setEditSlAnzahl(String(sl.anzahl))
+    setEditSlBeschreibung(sl.beschreibung || '')
+    setEditSlError(null)
+  }
+
+  async function handleEditSachleistung(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editSlId) return
+
+    setEditSlLoading(true)
+    setEditSlError(null)
+
+    const result = await updateTemplateSachleistung(editSlId, template.id, {
+      name: editSlName,
+      anzahl: parseInt(editSlAnzahl, 10) || 1,
+      beschreibung: editSlBeschreibung || null,
+    })
+
+    if (result.success) {
+      setEditSlId(null)
+      router.refresh()
+    } else {
+      setEditSlError(result.error || 'Ein Fehler ist aufgetreten')
+    }
+    setEditSlLoading(false)
   }
 
   return (
@@ -1109,27 +1149,99 @@ export function TemplateDetailEditor({
         )}
 
         <div className="divide-y divide-gray-200">
-          {template.sachleistungen?.map((sl) => (
-            <div key={sl.id} className="flex items-center justify-between p-4">
-              <div>
-                <span className="font-medium text-gray-900">{sl.name}</span>
-                <span className="ml-2 text-sm text-gray-500">
-                  ({sl.anzahl}x)
-                </span>
-                {sl.beschreibung && (
-                  <span className="ml-2 text-sm text-gray-400">
-                    - {sl.beschreibung}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => handleRemoveSachleistung(sl.id, sl.name)}
-                className="text-sm text-red-600 hover:text-red-800"
+          {template.sachleistungen?.map((sl) =>
+            editSlId === sl.id ? (
+              <form
+                key={sl.id}
+                onSubmit={handleEditSachleistung}
+                className="space-y-3 bg-green-50 p-4"
               >
-                Entfernen
-              </button>
-            </div>
-          ))}
+                {editSlError && (
+                  <div className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                    {editSlError}
+                  </div>
+                )}
+                <input
+                  type="text"
+                  placeholder="Name *"
+                  required
+                  value={editSlName}
+                  onChange={(e) => setEditSlName(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Anzahl
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editSlAnzahl}
+                      onChange={(e) => setEditSlAnzahl(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Beschreibung
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Optional"
+                      value={editSlBeschreibung}
+                      onChange={(e) => setEditSlBeschreibung(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={editSlLoading}
+                    className="rounded-lg bg-green-600 px-3 py-1.5 text-sm text-white disabled:bg-green-400"
+                  >
+                    {editSlLoading ? 'Speichern...' : 'Speichern'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditSlId(null)}
+                    className="px-3 py-1.5 text-sm text-gray-600"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div key={sl.id} className="flex items-center justify-between p-4">
+                <div>
+                  <span className="font-medium text-gray-900">{sl.name}</span>
+                  <span className="ml-2 text-sm text-gray-500">
+                    ({sl.anzahl}x)
+                  </span>
+                  {sl.beschreibung && (
+                    <span className="ml-2 text-sm text-gray-400">
+                      - {sl.beschreibung}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => startEditSachleistung(sl)}
+                    className="text-sm text-green-600 hover:text-green-800"
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    onClick={() => handleRemoveSachleistung(sl.id, sl.name)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              </div>
+            )
+          )}
           {(!template.sachleistungen ||
             template.sachleistungen.length === 0) && (
             <div className="p-8 text-center text-gray-500">
