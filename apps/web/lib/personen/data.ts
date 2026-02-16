@@ -24,6 +24,8 @@ const defaultExtendedFields = {
   // Archive fields (Issue #5)
   archiviert_am: null,
   archiviert_von: null,
+  // Profile link
+  profile_id: null,
 }
 
 export const dummyPersonen: Person[] = [

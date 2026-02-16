@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPerson } from '@/lib/actions/personen'
 import { MitgliedForm } from '@/components/mitglieder/MitgliedForm'
+import { InviteButton } from '@/components/mitglieder/InviteButton'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -31,6 +32,17 @@ export default async function MitgliedEditPage({ params }: PageProps) {
           </h1>
           <p className="mt-1 text-gray-600">Mitglied bearbeiten</p>
         </div>
+
+        {/* Invite banner for members without app access */}
+        {!person.profile_id && person.email && (
+          <div className="mb-6">
+            <InviteButton
+              personId={id}
+              personRolle={person.rolle}
+              personEmail={person.email}
+            />
+          </div>
+        )}
 
         {/* Form */}
         <div className="rounded-lg bg-white p-6 shadow">
