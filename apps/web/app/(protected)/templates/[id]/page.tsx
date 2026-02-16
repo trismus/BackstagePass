@@ -64,7 +64,7 @@ export default async function TemplateDetailPage({ params }: PageProps) {
 
           {/* Right Column - Details */}
           <div className="lg:col-span-2">
-            <TemplateDetailEditor template={template} ressourcen={ressourcen} />
+            <TemplateDetailEditor templateId={id} template={template} ressourcen={ressourcen} />
           </div>
         </div>
 
