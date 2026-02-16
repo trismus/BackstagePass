@@ -67,6 +67,7 @@ export function TemplateDetailEditor({
   const [schichtRolle, setSchichtRolle] = useState('')
   const [schichtZeitblock, setSchichtZeitblock] = useState('')
   const [schichtAnzahl, setSchichtAnzahl] = useState('1')
+  const [schichtNurMitglieder, setSchichtNurMitglieder] = useState(false)
   const [schichtLoading, setSchichtLoading] = useState(false)
 
   // Schicht Edit State
@@ -74,6 +75,7 @@ export function TemplateDetailEditor({
   const [editSchichtRolle, setEditSchichtRolle] = useState('')
   const [editSchichtZeitblock, setEditSchichtZeitblock] = useState('')
   const [editSchichtAnzahl, setEditSchichtAnzahl] = useState('1')
+  const [editSchichtNurMitglieder, setEditSchichtNurMitglieder] = useState(false)
   const [editSchichtLoading, setEditSchichtLoading] = useState(false)
   const [editSchichtError, setEditSchichtError] = useState<string | null>(null)
 
@@ -172,10 +174,12 @@ export function TemplateDetailEditor({
       zeitblock_name: schichtZeitblock || null,
       rolle: schichtRolle,
       anzahl_benoetigt: parseInt(schichtAnzahl, 10),
+      nur_mitglieder: schichtNurMitglieder,
     })
     setSchichtRolle('')
     setSchichtZeitblock('')
     setSchichtAnzahl('1')
+    setSchichtNurMitglieder(false)
     setShowSchichtForm(false)
     setSchichtLoading(false)
     router.refresh()
@@ -192,6 +196,7 @@ export function TemplateDetailEditor({
     setEditSchichtRolle(s.rolle)
     setEditSchichtZeitblock(s.zeitblock_name || '')
     setEditSchichtAnzahl(String(s.anzahl_benoetigt))
+    setEditSchichtNurMitglieder(s.nur_mitglieder)
     setEditSchichtError(null)
   }
 
@@ -206,6 +211,7 @@ export function TemplateDetailEditor({
       rolle: editSchichtRolle,
       zeitblock_name: editSchichtZeitblock || null,
       anzahl_benoetigt: parseInt(editSchichtAnzahl, 10) || 1,
+      nur_mitglieder: editSchichtNurMitglieder,
     })
 
     if (result.success) {
@@ -553,6 +559,15 @@ export function TemplateDetailEditor({
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
             </div>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={schichtNurMitglieder}
+                onChange={(e) => setSchichtNurMitglieder(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              Nur Vereinsmitglieder
+            </label>
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -629,6 +644,15 @@ export function TemplateDetailEditor({
                     />
                   </div>
                 </div>
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={editSchichtNurMitglieder}
+                    onChange={(e) => setEditSchichtNurMitglieder(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  Nur Vereinsmitglieder
+                </label>
                 <div className="flex gap-2">
                   <button
                     type="submit"
@@ -659,6 +683,11 @@ export function TemplateDetailEditor({
                   {s.zeitblock_name && (
                     <span className="ml-2 text-sm text-gray-400">
                       - {s.zeitblock_name}
+                    </span>
+                  )}
+                  {s.nur_mitglieder && (
+                    <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                      nur Mitglieder
                     </span>
                   )}
                 </div>

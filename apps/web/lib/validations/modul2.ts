@@ -187,6 +187,7 @@ export const templateSchichtSchema = z.object({
     .int()
     .min(1, 'Mindestens 1 Person benötigt')
     .default(1),
+  nur_mitglieder: z.boolean().optional().default(false),
 })
 
 export const templateZeitblockUpdateSchema = templateZeitblockSchema
