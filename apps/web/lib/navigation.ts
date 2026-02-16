@@ -258,6 +258,7 @@ const HELFER_NAVIGATION: NavSection[] = [
   {
     title: 'Meine Einsätze',
     items: [
+      { href: '/helfer/meine-einsaetze', label: 'Meine Einsätze', icon: 'check' },
       { href: '/helfer/schichten', label: 'Meine Schichten', icon: 'list' },
       {
         href: '/helfer/einsaetze',
@@ -461,6 +462,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   stundenkonto: 'Stundenkonto',
   anmeldungen: 'Anmeldungen',
   helfer: 'Helfer',
+  'meine-einsaetze': 'Meine Einsätze',
   schichten: 'Meine Schichten',
   einsaetze: 'Verfügbare Einsätze',
   'partner-portal': 'Partner-Portal',
