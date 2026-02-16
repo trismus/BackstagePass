@@ -298,14 +298,14 @@ export async function registerForSlot(
     return { success: false, error: 'Fehler bei der Anmeldung' }
   }
 
-  // Send confirmation email (async, don't wait)
+  // Send confirmation email
   if (insertedZuweisung?.id) {
-    // Dynamic import to avoid circular dependencies
-    import('./email-sender').then(({ sendBookingConfirmation }) => {
-      sendBookingConfirmation(insertedZuweisung.id).catch((err) => {
-        console.error('Error sending confirmation email:', err)
-      })
-    })
+    try {
+      const { sendBookingConfirmation } = await import('./email-sender')
+      await sendBookingConfirmation(insertedZuweisung.id)
+    } catch (err) {
+      console.error('Error sending confirmation email:', err)
+    }
   }
 
   // Revalidate paths
