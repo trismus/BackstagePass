@@ -27,6 +27,7 @@ const protectedPrefixes = [
   '/partner-portal',
   '/willkommen',
   '/admin',
+  '/vorstand',
   '/profile',
 ]
 

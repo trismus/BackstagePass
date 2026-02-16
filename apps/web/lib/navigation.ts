@@ -157,6 +157,14 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
     ],
   },
   {
+    title: 'Mein Bereich',
+    items: [
+      { href: '/vorstand/termine', label: 'Meine Termine', icon: 'calendar' },
+      { href: '/vorstand/stundenkonto', label: 'Stundenkonto', icon: 'clock' },
+      { href: '/vorstand/einsaetze', label: 'Meine Einsätze', icon: 'check' },
+    ],
+  },
+  {
     title: 'Ansichten',
     items: [
       { href: '/dashboard?ansicht=mitglied', label: 'Mitglieder-Ansicht', icon: 'eye' },
@@ -197,11 +205,6 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
         href: '/mein-bereich/termine',
         label: 'Meine Termine',
         icon: 'calendar',
-      },
-      {
-        href: '/mein-bereich/stundenkonto',
-        label: 'Stundenkonto',
-        icon: 'clock',
       },
       {
         href: '/mein-bereich/anmeldungen',
@@ -377,6 +380,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
     '/helfer': ['ADMIN', 'VORSTAND', 'HELFER'],
     '/partner-portal': ['ADMIN', 'VORSTAND', 'PARTNER'],
     '/admin': ['ADMIN'],
+    '/vorstand': ['ADMIN', 'VORSTAND'],
     '/helfereinsaetze': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
     '/helferliste': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
     '/mein-bereich': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'MITGLIED_PASSIV'],
@@ -457,6 +461,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   admin: 'Admin',
   users: 'Benutzer',
   audit: 'Audit Log',
+  vorstand: 'Vorstand',
   'mein-bereich': 'Mein Bereich',
   termine: 'Meine Termine',
   stundenkonto: 'Stundenkonto',
@@ -464,7 +469,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   helfer: 'Helfer',
   'meine-einsaetze': 'Meine Einsätze',
   schichten: 'Meine Schichten',
-  einsaetze: 'Verfügbare Einsätze',
+  einsaetze: 'Meine Einsätze',
   'partner-portal': 'Partner-Portal',
   daten: 'Meine Daten',
   kontakt: 'Kontakt',

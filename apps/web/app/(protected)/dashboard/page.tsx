@@ -16,7 +16,6 @@ import {
 } from '@/components/dashboard'
 import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
-import { getStundenkontoSummary } from '@/lib/actions/stundenkonto'
 import { getRollenHistorie, getHelfereinsatzHistorie } from '@/lib/actions/historie'
 import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
 import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
@@ -24,7 +23,6 @@ import { RollenHistorie } from '@/components/mein-bereich/RollenHistorie'
 import { HelfereinsatzHistorie } from '@/components/mein-bereich/HelfereinsatzHistorie'
 import {
   UpcomingEventsWidget,
-  StundenWidget,
   HelferEinsaetzeWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
 import type { KalenderTermin } from '@/components/mein-bereich/MiniKalender'
@@ -463,10 +461,6 @@ export default async function DashboardPage({
 
   // Get data if person is linked
   const anmeldungen = person ? await getAnmeldungenForPerson(person.id) : []
-  const stundenSummary =
-    person && !isPassiveMember
-      ? await getStundenkontoSummary(person.id)
-      : { total: 0, thisYear: 0, lastEntries: [] }
 
   // Get available helper events (only for active members)
   const { data: verfuegbareEinsaetze } = !isPassiveMember
@@ -585,14 +579,6 @@ export default async function DashboardPage({
                   <span className="font-semibold text-neutral-900">{upcomingAnmeldungen.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-600">Stunden gesamt</span>
-                  <span className="font-semibold text-neutral-900">{stundenSummary.total.toFixed(1)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-600">Dieses Jahr</span>
-                  <span className="font-semibold text-green-600">{stundenSummary.thisYear.toFixed(1)}</span>
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-sm text-neutral-600">Offene Einsätze</span>
                   <span className="font-semibold text-blue-600">{verfuegbareEinsaetze?.length ?? 0}</span>
                 </div>
@@ -624,17 +610,6 @@ export default async function DashboardPage({
                     </svg>
                   </span>
                   Helfereinsätze
-                </Link>
-                <Link
-                  href="/mein-bereich/stundenkonto"
-                  className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
-                >
-                  <span className="text-green-500">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </span>
-                  Stundenkonto
                 </Link>
                 <Link
                   href="/mein-bereich/verfuegbarkeit"
@@ -669,8 +644,6 @@ export default async function DashboardPage({
             <EditableProfileCard
               person={person}
               role={profile.role}
-              stundenTotal={stundenSummary.total}
-              stundenThisYear={stundenSummary.thisYear}
             />
 
             {/* Content Widgets */}
@@ -678,13 +651,6 @@ export default async function DashboardPage({
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
               <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
             </div>
-
-            {/* Stunden Widget - Full Width */}
-            <StundenWidget
-              total={stundenSummary.total}
-              thisYear={stundenSummary.thisYear}
-              lastEntries={stundenSummary.lastEntries}
-            />
 
             {/* History Section */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
