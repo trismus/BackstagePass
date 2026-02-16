@@ -119,6 +119,7 @@ export function TemplateDetailEditor({
   const [slAnzahl, setSlAnzahl] = useState('1')
   const [slBeschreibung, setSlBeschreibung] = useState('')
   const [slLoading, setSlLoading] = useState(false)
+  const [slError, setSlError] = useState<string | null>(null)
 
   // Sachleistung Edit State
   const [editSlId, setEditSlId] = useState<string | null>(null)
@@ -363,18 +364,25 @@ export function TemplateDetailEditor({
   async function handleAddSachleistung(e: React.FormEvent) {
     e.preventDefault()
     setSlLoading(true)
-    await addTemplateSachleistung({
+    setSlError(null)
+
+    const result = await addTemplateSachleistung({
       template_id: template.id,
       name: slName,
-      anzahl: parseInt(slAnzahl, 10),
+      anzahl: parseInt(slAnzahl, 10) || 1,
       beschreibung: slBeschreibung || null,
     })
-    setSlName('')
-    setSlAnzahl('1')
-    setSlBeschreibung('')
-    setShowSachleistungForm(false)
+
+    if (result.success) {
+      setSlName('')
+      setSlAnzahl('1')
+      setSlBeschreibung('')
+      setShowSachleistungForm(false)
+      router.refresh()
+    } else {
+      setSlError(result.error || 'Ein Fehler ist aufgetreten')
+    }
     setSlLoading(false)
-    router.refresh()
   }
 
   async function handleRemoveSachleistung(id: string, name: string) {
@@ -1183,6 +1191,11 @@ export function TemplateDetailEditor({
             onSubmit={handleAddSachleistung}
             className="space-y-3 border-b bg-green-50 p-4"
           >
+            {slError && (
+              <div className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                {slError}
+              </div>
+            )}
             <input
               type="text"
               placeholder="Name (z.B. Kuchen, Salat) *"
