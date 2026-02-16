@@ -14,6 +14,7 @@ import type {
   TemplateSchichtInsert,
   TemplateSchichtUpdate,
   TemplateRessourceInsert,
+  TemplateRessourceUpdate,
   TemplateInfoBlock,
   TemplateInfoBlockInsert,
   TemplateInfoBlockUpdate,
@@ -33,6 +34,7 @@ import {
   templateSchichtSchema,
   templateSchichtUpdateSchema,
   templateRessourceSchema,
+  templateRessourceUpdateSchema,
   templateInfoBlockSchema,
   templateInfoBlockUpdateSchema,
   templateSachleistungSchema,
@@ -422,6 +424,31 @@ export async function removeTemplateRessource(
   if (error) {
     console.error('Error removing template ressource:', error)
     return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/templates/${templateId}`)
+  return { success: true }
+}
+
+export async function updateTemplateRessource(
+  id: string,
+  templateId: string,
+  data: TemplateRessourceUpdate
+): Promise<{ success: boolean; error?: string }> {
+  const validation = validateInput(templateRessourceUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_ressourcen')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template ressource:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren der Ressource' }
   }
 
   revalidatePath(`/templates/${templateId}`)

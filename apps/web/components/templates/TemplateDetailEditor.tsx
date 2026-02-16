@@ -11,6 +11,7 @@ import {
   updateTemplateSchicht,
   addTemplateRessource,
   removeTemplateRessource,
+  updateTemplateRessource,
   addTemplateInfoBlock,
   removeTemplateInfoBlock,
   updateTemplateInfoBlock,
@@ -88,6 +89,12 @@ export function TemplateDetailEditor({
   const [ressourceId, setRessourceId] = useState('')
   const [ressourceMenge, setRessourceMenge] = useState('1')
   const [ressourceLoading, setRessourceLoading] = useState(false)
+
+  // Ressource Edit State
+  const [editResId, setEditResId] = useState<string | null>(null)
+  const [editResMenge, setEditResMenge] = useState('1')
+  const [editResLoading, setEditResLoading] = useState(false)
+  const [editResError, setEditResError] = useState<string | null>(null)
 
   // Info-Block Form State
   const [showInfoBlockForm, setShowInfoBlockForm] = useState(false)
@@ -265,6 +272,32 @@ export function TemplateDetailEditor({
     if (!confirm(`Ressource "${name}" entfernen?`)) return
     await removeTemplateRessource(id, template.id)
     router.refresh()
+  }
+
+  function startEditRessource(id: string, menge: number) {
+    setEditResId(id)
+    setEditResMenge(String(menge))
+    setEditResError(null)
+  }
+
+  async function handleEditRessource(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editResId) return
+
+    setEditResLoading(true)
+    setEditResError(null)
+
+    const result = await updateTemplateRessource(editResId, template.id, {
+      menge: parseInt(editResMenge, 10) || 1,
+    })
+
+    if (result.success) {
+      setEditResId(null)
+      router.refresh()
+    } else {
+      setEditResError(result.error || 'Ein Fehler ist aufgetreten')
+    }
+    setEditResLoading(false)
   }
 
   // Info-Block handlers
@@ -860,24 +893,79 @@ export function TemplateDetailEditor({
         )}
 
         <div className="divide-y divide-gray-200">
-          {template.ressourcen.map((r) => (
-            <div key={r.id} className="flex items-center justify-between p-4">
-              <div>
-                <span className="font-medium text-gray-900">
-                  {r.ressource?.name || 'Unbekannt'}
-                </span>
-                <span className="ml-2 text-sm text-gray-500">({r.menge}x)</span>
-              </div>
-              <button
-                onClick={() =>
-                  handleRemoveRessource(r.id, r.ressource?.name || 'Ressource')
-                }
-                className="text-sm text-red-600 hover:text-red-800"
+          {template.ressourcen.map((r) =>
+            editResId === r.id ? (
+              <form
+                key={r.id}
+                onSubmit={handleEditRessource}
+                className="space-y-3 bg-blue-50 p-4"
               >
-                Entfernen
-              </button>
-            </div>
-          ))}
+                {editResError && (
+                  <div className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                    {editResError}
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-gray-900">
+                    {r.ressource?.name || 'Unbekannt'}
+                  </span>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500">
+                      Menge
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editResMenge}
+                      onChange={(e) => setEditResMenge(e.target.value)}
+                      className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={editResLoading}
+                    className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white disabled:bg-blue-400"
+                  >
+                    {editResLoading ? 'Speichern...' : 'Speichern'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditResId(null)}
+                    className="px-3 py-1.5 text-sm text-gray-600"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div key={r.id} className="flex items-center justify-between p-4">
+                <div>
+                  <span className="font-medium text-gray-900">
+                    {r.ressource?.name || 'Unbekannt'}
+                  </span>
+                  <span className="ml-2 text-sm text-gray-500">({r.menge}x)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => startEditRessource(r.id, r.menge)}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleRemoveRessource(r.id, r.ressource?.name || 'Ressource')
+                    }
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              </div>
+            )
+          )}
           {template.ressourcen.length === 0 && (
             <div className="p-8 text-center text-gray-500">
               Keine Ressourcen

@@ -204,6 +204,10 @@ export const templateRessourceSchema = z.object({
   menge: z.number().int().min(1, 'Menge muss mindestens 1 sein').default(1),
 })
 
+export const templateRessourceUpdateSchema = templateRessourceSchema
+  .omit({ template_id: true })
+  .partial()
+
 // =============================================================================
 // Template Info-Block Validations (Issue #203)
 // =============================================================================
