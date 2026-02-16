@@ -955,8 +955,8 @@ export type TemplateZeitblock = {
   id: string
   template_id: string
   name: string
-  offset_minuten: number
-  dauer_minuten: number
+  startzeit: string
+  endzeit: string
   typ: ZeitblockTyp
   sortierung: number
 }
@@ -994,8 +994,8 @@ export type TemplateInfoBlock = {
   template_id: string
   titel: string
   beschreibung: string | null
-  offset_minuten: number
-  dauer_minuten: number
+  startzeit: string
+  endzeit: string
   sortierung: number
   created_at: string
 }

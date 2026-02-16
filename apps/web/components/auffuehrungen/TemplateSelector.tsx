@@ -10,10 +10,10 @@ import { Button, ConfirmDialog } from '@/components/ui'
 interface TemplateSelectorProps {
   veranstaltungId: string
   templates: AuffuehrungTemplate[]
-  startzeit: string
+  startzeit?: string
 }
 
-export function TemplateSelector({ veranstaltungId, templates, startzeit }: TemplateSelectorProps) {
+export function TemplateSelector({ veranstaltungId, templates }: TemplateSelectorProps) {
   const router = useRouter()
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [templateDetails, setTemplateDetails] = useState<TemplateMitDetails | null>(null)
@@ -63,26 +63,6 @@ export function TemplateSelector({ veranstaltungId, templates, startzeit }: Temp
     } finally {
       setIsGenerating(false)
     }
-  }
-
-  // Helper to format time
-  const formatOffset = (minutes: number): string => {
-    const hours = Math.floor(Math.abs(minutes) / 60)
-    const mins = Math.abs(minutes) % 60
-    const sign = minutes < 0 ? '-' : '+'
-    if (hours === 0) return `${sign}${mins}min`
-    if (mins === 0) return `${sign}${hours}h`
-    return `${sign}${hours}h ${mins}min`
-  }
-
-  // Calculate preview times based on startzeit
-  const calculateTime = (offsetMinutes: number): string => {
-    const [startH, startM] = startzeit.split(':').map(Number)
-    const totalMinutes = startH * 60 + startM + offsetMinutes
-    const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440
-    const hours = Math.floor(normalizedMinutes / 60)
-    const minutes = normalizedMinutes % 60
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
   }
 
   return (
@@ -180,7 +160,7 @@ export function TemplateSelector({ veranstaltungId, templates, startzeit }: Temp
           {templateDetails.zeitbloecke.length > 0 && (
             <div className="mt-4">
               <h5 className="mb-2 text-sm font-medium text-neutral-700">
-                Zeitbloecke (Vorschau mit Start {startzeit} Uhr)
+                Zeitbloecke
               </h5>
               <div className="space-y-1">
                 {templateDetails.zeitbloecke
@@ -193,10 +173,7 @@ export function TemplateSelector({ veranstaltungId, templates, startzeit }: Temp
                     >
                       <span className="font-medium text-neutral-900">{zb.name}</span>
                       <span className="text-neutral-500">
-                        {calculateTime(zb.offset_minuten)} - {calculateTime(zb.offset_minuten + zb.dauer_minuten)}
-                        <span className="ml-2 text-neutral-400">
-                          ({formatOffset(zb.offset_minuten)})
-                        </span>
+                        {zb.startzeit} - {zb.endzeit}
                       </span>
                     </div>
                   ))}

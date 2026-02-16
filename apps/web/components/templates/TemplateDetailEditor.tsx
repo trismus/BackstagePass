@@ -48,16 +48,16 @@ export function TemplateDetailEditor({
   // Zeitblock Form State
   const [showZeitblockForm, setShowZeitblockForm] = useState(false)
   const [zbName, setZbName] = useState('')
-  const [zbOffset, setZbOffset] = useState('0')
-  const [zbDauer, setZbDauer] = useState('30')
+  const [zbStartzeit, setZbStartzeit] = useState('19:00')
+  const [zbEndzeit, setZbEndzeit] = useState('20:00')
   const [zbTyp, setZbTyp] = useState<ZeitblockTyp>('standard')
   const [zbLoading, setZbLoading] = useState(false)
 
   // Zeitblock Edit State
   const [editZbId, setEditZbId] = useState<string | null>(null)
   const [editZbName, setEditZbName] = useState('')
-  const [editZbOffset, setEditZbOffset] = useState('')
-  const [editZbDauer, setEditZbDauer] = useState('')
+  const [editZbStartzeit, setEditZbStartzeit] = useState('')
+  const [editZbEndzeit, setEditZbEndzeit] = useState('')
   const [editZbTyp, setEditZbTyp] = useState<ZeitblockTyp>('standard')
   const [editZbLoading, setEditZbLoading] = useState(false)
   const [editZbError, setEditZbError] = useState<string | null>(null)
@@ -87,8 +87,8 @@ export function TemplateDetailEditor({
   const [showInfoBlockForm, setShowInfoBlockForm] = useState(false)
   const [ibTitel, setIbTitel] = useState('')
   const [ibBeschreibung, setIbBeschreibung] = useState('')
-  const [ibOffset, setIbOffset] = useState('0')
-  const [ibDauer, setIbDauer] = useState('30')
+  const [ibStartzeit, setIbStartzeit] = useState('18:00')
+  const [ibEndzeit, setIbEndzeit] = useState('18:30')
   const [ibLoading, setIbLoading] = useState(false)
 
   // Sachleistung Form State
@@ -111,14 +111,14 @@ export function TemplateDetailEditor({
     await addTemplateZeitblock({
       template_id: template.id,
       name: zbName,
-      offset_minuten: parseInt(zbOffset, 10),
-      dauer_minuten: parseInt(zbDauer, 10),
+      startzeit: zbStartzeit,
+      endzeit: zbEndzeit,
       typ: zbTyp,
       sortierung: template.zeitbloecke.length,
     })
     setZbName('')
-    setZbOffset('0')
-    setZbDauer('30')
+    setZbStartzeit('19:00')
+    setZbEndzeit('20:00')
     setZbTyp('standard')
     setShowZeitblockForm(false)
     setZbLoading(false)
@@ -134,8 +134,8 @@ export function TemplateDetailEditor({
   function startEditZeitblock(zb: TemplateZeitblock) {
     setEditZbId(zb.id)
     setEditZbName(zb.name)
-    setEditZbOffset(String(zb.offset_minuten))
-    setEditZbDauer(String(zb.dauer_minuten))
+    setEditZbStartzeit(zb.startzeit)
+    setEditZbEndzeit(zb.endzeit)
     setEditZbTyp(zb.typ)
     setEditZbError(null)
   }
@@ -149,8 +149,8 @@ export function TemplateDetailEditor({
 
     const result = await updateTemplateZeitblock(editZbId, template.id, {
       name: editZbName,
-      offset_minuten: parseInt(editZbOffset, 10),
-      dauer_minuten: parseInt(editZbDauer, 10),
+      startzeit: editZbStartzeit,
+      endzeit: editZbEndzeit,
       typ: editZbTyp,
     })
 
@@ -248,14 +248,14 @@ export function TemplateDetailEditor({
       template_id: template.id,
       titel: ibTitel,
       beschreibung: ibBeschreibung || null,
-      offset_minuten: parseInt(ibOffset, 10),
-      dauer_minuten: parseInt(ibDauer, 10),
+      startzeit: ibStartzeit,
+      endzeit: ibEndzeit,
       sortierung: template.info_bloecke?.length || 0,
     })
     setIbTitel('')
     setIbBeschreibung('')
-    setIbOffset('0')
-    setIbDauer('30')
+    setIbStartzeit('18:00')
+    setIbEndzeit('18:30')
     setShowInfoBlockForm(false)
     setIbLoading(false)
     router.refresh()
@@ -325,25 +325,26 @@ export function TemplateDetailEditor({
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="mb-1 block text-xs text-gray-500">
-                  Offset (Min)
+                  Startzeit
                 </label>
                 <input
-                  type="number"
-                  value={zbOffset}
-                  onChange={(e) => setZbOffset(e.target.value)}
+                  type="time"
+                  value={zbStartzeit}
+                  onChange={(e) => setZbStartzeit(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  required
                 />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-gray-500">
-                  Dauer (Min)
+                  Endzeit
                 </label>
                 <input
-                  type="number"
-                  min="1"
-                  value={zbDauer}
-                  onChange={(e) => setZbDauer(e.target.value)}
+                  type="time"
+                  value={zbEndzeit}
+                  onChange={(e) => setZbEndzeit(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  required
                 />
               </div>
               <div>
@@ -404,25 +405,26 @@ export function TemplateDetailEditor({
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="mb-1 block text-xs text-gray-500">
-                      Offset (Min)
+                      Startzeit
                     </label>
                     <input
-                      type="number"
-                      value={editZbOffset}
-                      onChange={(e) => setEditZbOffset(e.target.value)}
+                      type="time"
+                      value={editZbStartzeit}
+                      onChange={(e) => setEditZbStartzeit(e.target.value)}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      required
                     />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-gray-500">
-                      Dauer (Min)
+                      Endzeit
                     </label>
                     <input
-                      type="number"
-                      min="1"
-                      value={editZbDauer}
-                      onChange={(e) => setEditZbDauer(e.target.value)}
+                      type="time"
+                      value={editZbEndzeit}
+                      onChange={(e) => setEditZbEndzeit(e.target.value)}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      required
                     />
                   </div>
                   <div>
@@ -472,8 +474,7 @@ export function TemplateDetailEditor({
                     <ZeitblockTypBadge typ={zb.typ} />
                   </div>
                   <span className="text-sm text-gray-500">
-                    Offset: {zb.offset_minuten} Min, Dauer: {zb.dauer_minuten}{' '}
-                    Min
+                    {zb.startzeit} - {zb.endzeit}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -812,25 +813,26 @@ export function TemplateDetailEditor({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-1 block text-xs text-gray-500">
-                  Offset (Min)
+                  Startzeit
                 </label>
                 <input
-                  type="number"
-                  value={ibOffset}
-                  onChange={(e) => setIbOffset(e.target.value)}
+                  type="time"
+                  value={ibStartzeit}
+                  onChange={(e) => setIbStartzeit(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  required
                 />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-gray-500">
-                  Dauer (Min)
+                  Endzeit
                 </label>
                 <input
-                  type="number"
-                  min="1"
-                  value={ibDauer}
-                  onChange={(e) => setIbDauer(e.target.value)}
+                  type="time"
+                  value={ibEndzeit}
+                  onChange={(e) => setIbEndzeit(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  required
                 />
               </div>
             </div>
@@ -859,7 +861,7 @@ export function TemplateDetailEditor({
               <div>
                 <span className="font-medium text-gray-900">{ib.titel}</span>
                 <div className="text-sm text-gray-500">
-                  Offset: {ib.offset_minuten} Min, Dauer: {ib.dauer_minuten} Min
+                  {ib.startzeit} - {ib.endzeit}
                 </div>
                 {ib.beschreibung && (
                   <div className="text-sm text-gray-400">{ib.beschreibung}</div>

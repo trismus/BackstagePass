@@ -62,10 +62,6 @@ export async function generateSchichtenFromTemplate(
     return { success: false, error: 'Veranstaltung nicht gefunden' }
   }
 
-  if (!veranstaltung.startzeit) {
-    return { success: false, error: 'Veranstaltung hat keine Startzeit' }
-  }
-
   // Check if shifts already exist
   const { count: existingSchichtenCount } = await supabase
     .from('auffuehrung_schichten')
@@ -77,19 +73,6 @@ export async function generateSchichtenFromTemplate(
       success: false,
       error: `Diese Veranstaltung hat bereits ${existingSchichtenCount} Schichten. Bitte zuerst zuruecksetzen.`,
     }
-  }
-
-  // Parse the start time
-  const [startHours, startMinutes] = veranstaltung.startzeit.split(':').map(Number)
-  const startTotalMinutes = startHours * 60 + startMinutes
-
-  // Helper function to convert offset minutes to TIME string
-  const minutesToTime = (totalMinutes: number): string => {
-    // Handle wrap-around for times past midnight
-    const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440
-    const hours = Math.floor(normalizedMinutes / 60)
-    const minutes = normalizedMinutes % 60
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
   }
 
   let createdZeitbloecke = 0
@@ -107,8 +90,8 @@ export async function generateSchichtenFromTemplate(
       const zeitblockInserts: ZeitblockInsert[] = template.zeitbloecke.map((tz) => ({
         veranstaltung_id: veranstaltungId,
         name: tz.name,
-        startzeit: minutesToTime(startTotalMinutes + tz.offset_minuten),
-        endzeit: minutesToTime(startTotalMinutes + tz.offset_minuten + tz.dauer_minuten),
+        startzeit: tz.startzeit,
+        endzeit: tz.endzeit,
         typ: tz.typ,
         sortierung: tz.sortierung,
       }))
@@ -162,8 +145,8 @@ export async function generateSchichtenFromTemplate(
         veranstaltung_id: veranstaltungId,
         titel: ib.titel,
         beschreibung: ib.beschreibung,
-        startzeit: minutesToTime(startTotalMinutes + ib.offset_minuten),
-        endzeit: minutesToTime(startTotalMinutes + ib.offset_minuten + ib.dauer_minuten),
+        startzeit: ib.startzeit,
+        endzeit: ib.endzeit,
         sortierung: ib.sortierung,
       }))
 

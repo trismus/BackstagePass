@@ -96,7 +96,7 @@ export async function getTemplate(
   // Get zeitbloecke
   const { data: zeitbloecke } = await supabase
     .from('template_zeitbloecke')
-    .select('id, template_id, name, offset_minuten, dauer_minuten, typ, sortierung')
+    .select('id, template_id, name, startzeit, endzeit, typ, sortierung')
     .eq('template_id', id)
     .order('sortierung', { ascending: true })
 
@@ -120,7 +120,7 @@ export async function getTemplate(
   // Get info_bloecke
   const { data: info_bloecke } = await supabase
     .from('template_info_bloecke')
-    .select('id, template_id, titel, beschreibung, offset_minuten, dauer_minuten, sortierung, created_at')
+    .select('id, template_id, titel, beschreibung, startzeit, endzeit, sortierung, created_at')
     .eq('template_id', id)
     .order('sortierung', { ascending: true })
 
@@ -530,12 +530,12 @@ export async function removeTemplateSachleistung(
  *
  * @param templateId - The template to apply
  * @param veranstaltungId - The performance to apply the template to
- * @param startzeit - The start time of the performance (used to calculate zeitblock times)
+ * @param _startzeit - Unused (kept for API compatibility)
  */
 export async function applyTemplate(
   templateId: string,
   veranstaltungId: string,
-  startzeit: string
+  _startzeit: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
 
@@ -545,18 +545,7 @@ export async function applyTemplate(
     return { success: false, error: 'Template nicht gefunden' }
   }
 
-  // Parse the start time
-  const [startHours, startMinutes] = startzeit.split(':').map(Number)
-  const startTotalMinutes = startHours * 60 + startMinutes
-
-  // Helper function to convert offset minutes to TIME string
-  const minutesToTime = (totalMinutes: number): string => {
-    const hours = Math.floor(totalMinutes / 60) % 24
-    const minutes = totalMinutes % 60
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-  }
-
-  // Create zeitbloecke from template
+  // Create zeitbloecke from template (direct time copy)
   const zeitblockMap: Record<string, string> = {} // name -> id mapping for schichten
 
   if (template.zeitbloecke.length > 0) {
@@ -564,10 +553,8 @@ export async function applyTemplate(
       (tz) => ({
         veranstaltung_id: veranstaltungId,
         name: tz.name,
-        startzeit: minutesToTime(startTotalMinutes + tz.offset_minuten),
-        endzeit: minutesToTime(
-          startTotalMinutes + tz.offset_minuten + tz.dauer_minuten
-        ),
+        startzeit: tz.startzeit,
+        endzeit: tz.endzeit,
         typ: tz.typ,
         sortierung: tz.sortierung,
       })
@@ -637,17 +624,15 @@ export async function applyTemplate(
     }
   }
 
-  // Create info_bloecke from template (with calculated times from offsets)
+  // Create info_bloecke from template (direct time copy)
   if (template.info_bloecke && template.info_bloecke.length > 0) {
     const infoBlockInserts: InfoBlockInsert[] = template.info_bloecke.map(
       (ib) => ({
         veranstaltung_id: veranstaltungId,
         titel: ib.titel,
         beschreibung: ib.beschreibung,
-        startzeit: minutesToTime(startTotalMinutes + ib.offset_minuten),
-        endzeit: minutesToTime(
-          startTotalMinutes + ib.offset_minuten + ib.dauer_minuten
-        ),
+        startzeit: ib.startzeit,
+        endzeit: ib.endzeit,
         sortierung: ib.sortierung,
       })
     )
@@ -701,23 +686,6 @@ export async function createTemplateFromVeranstaltung(
 ): Promise<{ success: boolean; error?: string; id?: string }> {
   const supabase = await createClient()
 
-  // Get the veranstaltung start time
-  const { data: veranstaltung } = await supabase
-    .from('veranstaltungen')
-    .select('startzeit')
-    .eq('id', veranstaltungId)
-    .single()
-
-  if (!veranstaltung?.startzeit) {
-    return { success: false, error: 'Veranstaltung hat keine Startzeit' }
-  }
-
-  // Parse the start time
-  const [startHours, startMinutes] = veranstaltung.startzeit
-    .split(':')
-    .map(Number)
-  const startTotalMinutes = startHours * 60 + startMinutes
-
   // Create the template
   const { data: template, error: templateError } = await supabase
     .from('auffuehrung_templates')
@@ -740,26 +708,14 @@ export async function createTemplateFromVeranstaltung(
     .eq('veranstaltung_id', veranstaltungId)
     .order('sortierung', { ascending: true })
 
-  // Helper function to convert TIME to offset minutes
-  const timeToOffset = (time: string): number => {
-    const [hours, minutes] = time.split(':').map(Number)
-    return hours * 60 + minutes - startTotalMinutes
-  }
-
-  const timeToDuration = (start: string, end: string): number => {
-    const [startH, startM] = start.split(':').map(Number)
-    const [endH, endM] = end.split(':').map(Number)
-    return endH * 60 + endM - (startH * 60 + startM)
-  }
-
-  // Create template zeitbloecke
+  // Create template zeitbloecke (direct time copy)
   if (zeitbloecke && zeitbloecke.length > 0) {
     const templateZeitbloecke: TemplateZeitblockInsert[] = zeitbloecke.map(
       (zb) => ({
         template_id: template.id,
         name: zb.name,
-        offset_minuten: timeToOffset(zb.startzeit),
-        dauer_minuten: timeToDuration(zb.startzeit, zb.endzeit),
+        startzeit: zb.startzeit,
+        endzeit: zb.endzeit,
         typ: zb.typ,
         sortierung: zb.sortierung,
       })
