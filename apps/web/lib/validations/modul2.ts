@@ -240,6 +240,10 @@ export const templateSachleistungSchema = z.object({
     .optional(),
 })
 
+export const templateSachleistungUpdateSchema = templateSachleistungSchema
+  .omit({ template_id: true })
+  .partial()
+
 // =============================================================================
 // Helper function for validation
 // =============================================================================
