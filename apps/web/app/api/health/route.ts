@@ -34,11 +34,6 @@ export async function GET() {
   const requiredEnvVars = [
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'SMTP_HOST',
-    'SMTP_USER',
-    'SMTP_PASS',
-    'SMTP_PORT',
-    'EMAIL_FROM_ADDRESS',
   ]
 
   const envCheck: EnvCheck = {
