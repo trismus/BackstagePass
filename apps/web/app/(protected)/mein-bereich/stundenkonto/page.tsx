@@ -39,7 +39,7 @@ export default async function StundenkontoPage() {
         <div className="mx-auto max-w-4xl px-4 py-8">
           <div className="mb-6">
             <Link
-              href="/mein-bereich"
+              href="/dashboard"
               className="text-blue-600 hover:text-blue-800"
             >
               &larr; Zurück
@@ -64,7 +64,7 @@ export default async function StundenkontoPage() {
         {/* Back Link */}
         <div className="mb-6">
           <Link
-            href="/mein-bereich"
+            href="/dashboard"
             className="text-blue-600 hover:text-blue-800"
           >
             &larr; Zurück zur Übersicht

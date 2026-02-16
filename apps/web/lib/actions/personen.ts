@@ -265,6 +265,7 @@ export async function updateOwnProfile(
 ): Promise<{ success: boolean; error?: string }> {
   if (USE_DUMMY_DATA) {
     revalidatePath('/mein-bereich')
+    revalidatePath('/dashboard')
     return { success: true }
   }
 

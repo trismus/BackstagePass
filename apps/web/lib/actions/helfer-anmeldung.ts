@@ -314,6 +314,7 @@ export async function registerForSlot(
     revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}`)
   }
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
 
   return { success: true, warnings }
 }
@@ -385,6 +386,7 @@ export async function unregisterFromSlot(
     revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}`)
   }
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
 
   return { success: true }
 }

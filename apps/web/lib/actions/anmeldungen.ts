@@ -90,6 +90,7 @@ export async function anmelden(
   revalidatePath('/veranstaltungen')
   revalidatePath(`/veranstaltungen/${veranstaltungId}`)
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true, status }
 }
 
@@ -118,6 +119,7 @@ export async function abmelden(
   revalidatePath('/veranstaltungen')
   revalidatePath(`/veranstaltungen/${veranstaltungId}`)
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 

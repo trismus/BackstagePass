@@ -106,6 +106,7 @@ export async function zuweiseHelfer(
   revalidatePath('/helfereinsaetze')
   revalidatePath(`/helfereinsaetze/${helfereinsatzId}`)
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -136,6 +137,7 @@ export async function updateHelferschichtStatus(
 
   revalidatePath('/helfereinsaetze')
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -159,6 +161,7 @@ export async function updateHelferschicht(
 
   revalidatePath('/helfereinsaetze')
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -178,6 +181,7 @@ export async function removeHelfer(
 
   revalidatePath('/helfereinsaetze')
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 

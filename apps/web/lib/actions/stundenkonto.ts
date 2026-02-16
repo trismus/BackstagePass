@@ -76,6 +76,7 @@ export async function addStundenkorrektur(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   revalidatePath('/mein-bereich/stundenkonto')
   return { success: true }
 }
@@ -109,6 +110,7 @@ export async function addStundenFromSchicht(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 

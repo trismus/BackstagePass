@@ -55,8 +55,8 @@ export default async function MeineVerfuegbarkeitPage() {
       <div className="flex items-center justify-between">
         <div>
           <nav className="mb-2 text-sm text-neutral-500">
-            <Link href="/mein-bereich" className="hover:text-neutral-700">
-              Mein Bereich
+            <Link href="/dashboard" className="hover:text-neutral-700">
+              Dashboard
             </Link>
             <span className="mx-2">/</span>
             <span>Verfügbarkeit</span>
