@@ -970,6 +970,7 @@ export type TemplateSchicht = {
   zeitblock_name: string | null
   rolle: string
   anzahl_benoetigt: number
+  nur_mitglieder: boolean
 }
 
 export type TemplateSchichtInsert = Omit<TemplateSchicht, 'id'>

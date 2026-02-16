@@ -103,7 +103,7 @@ export async function getTemplate(
   // Get schichten
   const { data: schichten } = await supabase
     .from('template_schichten')
-    .select('id, template_id, zeitblock_name, rolle, anzahl_benoetigt')
+    .select('id, template_id, zeitblock_name, rolle, anzahl_benoetigt, nur_mitglieder')
     .eq('template_id', id)
 
   // Get ressourcen with details
@@ -586,6 +586,7 @@ export async function applyTemplate(
           : null,
         rolle: ts.rolle,
         anzahl_benoetigt: ts.anzahl_benoetigt,
+        sichtbarkeit: ts.nur_mitglieder ? 'intern' as const : 'public' as const,
       })
     )
 
@@ -744,6 +745,7 @@ export async function createTemplateFromVeranstaltung(
       zeitblock_name: (s.zeitblock as { name: string } | null)?.name || null,
       rolle: s.rolle,
       anzahl_benoetigt: s.anzahl_benoetigt,
+      nur_mitglieder: s.sichtbarkeit === 'intern',
     }))
 
     await supabase

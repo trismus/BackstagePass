@@ -121,6 +121,7 @@ export async function generateSchichtenFromTemplate(
         zeitblock_id: ts.zeitblock_name ? zeitblockMap[ts.zeitblock_name] ?? null : null,
         rolle: ts.rolle,
         anzahl_benoetigt: ts.anzahl_benoetigt,
+        sichtbarkeit: ts.nur_mitglieder ? 'intern' as const : 'public' as const,
       }))
 
       const { data: createdSchichtData, error: schichtError } = await supabase
