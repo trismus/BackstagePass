@@ -16,6 +16,7 @@ import type {
   TemplateRessourceInsert,
   TemplateInfoBlock,
   TemplateInfoBlockInsert,
+  TemplateInfoBlockUpdate,
   TemplateSachleistung,
   TemplateSachleistungInsert,
   ZeitblockInsert,
@@ -32,6 +33,7 @@ import {
   templateSchichtUpdateSchema,
   templateRessourceSchema,
   templateInfoBlockSchema,
+  templateInfoBlockUpdateSchema,
   templateSachleistungSchema,
   validateInput,
 } from '../validations/modul2'
@@ -466,6 +468,31 @@ export async function removeTemplateInfoBlock(
   if (error) {
     console.error('Error removing template info block:', error)
     return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/templates/${templateId}`)
+  return { success: true }
+}
+
+export async function updateTemplateInfoBlock(
+  id: string,
+  templateId: string,
+  data: TemplateInfoBlockUpdate
+): Promise<{ success: boolean; error?: string }> {
+  const validation = validateInput(templateInfoBlockUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_info_bloecke')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template info block:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren des Info-Blocks' }
   }
 
   revalidatePath(`/templates/${templateId}`)
