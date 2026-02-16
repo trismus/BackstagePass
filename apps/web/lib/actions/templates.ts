@@ -547,7 +547,7 @@ export async function addTemplateSachleistung(
   // Validate input
   const validation = validateInput(templateSachleistungSchema, data)
   if (!validation.success) {
-    return { success: false, error: `${validation.error} [template_id=${JSON.stringify(data.template_id)}, type=${typeof data.template_id}, keys=${Object.keys(data).join(',')}]` }
+    return { success: false, error: validation.error }
   }
 
   const supabase = await createClient()

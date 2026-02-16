@@ -1,5 +1,12 @@
 import { z } from 'zod'
 
+// Zod v4 .uuid() rejects non-RFC-4122 UUIDs (version digit must be 1-8).
+// Our seed data uses version-0 UUIDs, so we use a relaxed regex instead.
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') =>
+  z.string().regex(UUID_REGEX, message)
+
 // =============================================================================
 // Räume Validations
 // =============================================================================
@@ -55,7 +62,7 @@ const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/
 
 export const zeitblockSchema = z
   .object({
-    veranstaltung_id: z.string().uuid('Ungültige Veranstaltungs-ID'),
+    veranstaltung_id: uuid('Ungültige Veranstaltungs-ID'),
     name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
     startzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
     endzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
@@ -100,8 +107,8 @@ export const zeitblockUpdateSchema = z.object({
 // =============================================================================
 
 export const schichtSchema = z.object({
-  veranstaltung_id: z.string().uuid('Ungültige Veranstaltungs-ID'),
-  zeitblock_id: z.string().uuid().nullable().optional(),
+  veranstaltung_id: uuid('Ungültige Veranstaltungs-ID'),
+  zeitblock_id: uuid().nullable().optional(),
   rolle: z.string().min(1, 'Rolle ist erforderlich').max(100, 'Rolle zu lang'),
   anzahl_benoetigt: z
     .number()
@@ -119,8 +126,8 @@ export const schichtUpdateSchema = schichtSchema
 // =============================================================================
 
 export const zuweisungSchema = z.object({
-  schicht_id: z.string().uuid('Ungültige Schicht-ID'),
-  person_id: z.string().uuid('Ungültige Personen-ID'),
+  schicht_id: uuid('Ungültige Schicht-ID'),
+  person_id: uuid('Ungültige Personen-ID'),
   status: z
     .enum(['zugesagt', 'abgesagt', 'erschienen', 'nicht_erschienen'])
     .optional(),
@@ -139,14 +146,14 @@ export const zuweisungUpdateSchema = z.object({
 // =============================================================================
 
 export const raumReservierungSchema = z.object({
-  veranstaltung_id: z.string().uuid('Ungültige Veranstaltungs-ID'),
-  raum_id: z.string().uuid('Ungültiger Raum'),
+  veranstaltung_id: uuid('Ungültige Veranstaltungs-ID'),
+  raum_id: uuid('Ungültiger Raum'),
   notizen: z.string().max(500, 'Notizen zu lang').nullable().optional(),
 })
 
 export const ressourcenReservierungSchema = z.object({
-  veranstaltung_id: z.string().uuid('Ungültige Veranstaltungs-ID'),
-  ressource_id: z.string().uuid('Ungültige Ressource'),
+  veranstaltung_id: uuid('Ungültige Veranstaltungs-ID'),
+  ressource_id: uuid('Ungültige Ressource'),
   menge: z.number().int().min(1, 'Menge muss mindestens 1 sein').default(1),
   notizen: z.string().max(500, 'Notizen zu lang').nullable().optional(),
 })
@@ -168,7 +175,7 @@ export const templateSchema = z.object({
 export const templateUpdateSchema = templateSchema.partial()
 
 export const templateZeitblockSchema = z.object({
-  template_id: z.string().uuid('Ungültige Template-ID'),
+  template_id: uuid('Ungültige Template-ID'),
   name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
   startzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
   endzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
@@ -179,7 +186,7 @@ export const templateZeitblockSchema = z.object({
 })
 
 export const templateSchichtSchema = z.object({
-  template_id: z.string().uuid('Ungültige Template-ID'),
+  template_id: uuid('Ungültige Template-ID'),
   zeitblock_name: z.string().max(100).nullable().optional(),
   rolle: z.string().min(1, 'Rolle ist erforderlich').max(100, 'Rolle zu lang'),
   anzahl_benoetigt: z
@@ -199,8 +206,8 @@ export const templateSchichtUpdateSchema = templateSchichtSchema
   .partial()
 
 export const templateRessourceSchema = z.object({
-  template_id: z.string().uuid('Ungültige Template-ID'),
-  ressource_id: z.string().uuid('Ungültige Ressource'),
+  template_id: uuid('Ungültige Template-ID'),
+  ressource_id: uuid('Ungültige Ressource'),
   menge: z.number().int().min(1, 'Menge muss mindestens 1 sein').default(1),
 })
 
@@ -213,7 +220,7 @@ export const templateRessourceUpdateSchema = templateRessourceSchema
 // =============================================================================
 
 export const templateInfoBlockSchema = z.object({
-  template_id: z.string().uuid('Ungültige Template-ID'),
+  template_id: uuid('Ungültige Template-ID'),
   titel: z.string().min(1, 'Titel ist erforderlich').max(100, 'Titel zu lang'),
   beschreibung: z
     .string()
@@ -234,7 +241,7 @@ export const templateInfoBlockUpdateSchema = templateInfoBlockSchema
 // =============================================================================
 
 export const templateSachleistungSchema = z.object({
-  template_id: z.string().uuid('Ungültige Template-ID'),
+  template_id: uuid('Ungültige Template-ID'),
   name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
   anzahl: z.number().int().min(1, 'Anzahl muss mindestens 1 sein').default(1),
   beschreibung: z

@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') =>
+  z.string().regex(UUID_REGEX, message)
+
 export const veranstaltungSchema = z.object({
   titel: z.string().min(1, 'Titel ist erforderlich').max(200, 'Titel zu lang'),
   datum: z.string().min(1, 'Datum ist erforderlich'),
@@ -20,14 +25,10 @@ export const veranstaltungSchema = z.object({
     .min(1, 'Mindestens 1 Teilnehmer')
     .nullable()
     .optional(),
-  organisator_id: z
-    .string()
-    .uuid('Ungültige Organisator-ID')
+  organisator_id: uuid('Ungültige Organisator-ID')
     .nullable()
     .optional(),
-  helfer_template_id: z
-    .string()
-    .uuid('Ungültige Template-ID')
+  helfer_template_id: uuid('Ungültige Template-ID')
     .nullable()
     .optional(),
   helfer_status: z
@@ -43,9 +44,7 @@ export const veranstaltungSchema = z.object({
     .optional(),
   helfer_buchung_deadline: z.string().nullable().optional(),
   helfer_buchung_limit_aktiv: z.boolean().optional(),
-  koordinator_id: z
-    .string()
-    .uuid('Ungültige Koordinator-ID')
+  koordinator_id: uuid('Ungültige Koordinator-ID')
     .nullable()
     .optional(),
 })

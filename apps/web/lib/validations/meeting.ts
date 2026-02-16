@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') =>
+  z.string().regex(UUID_REGEX, message)
+
 // =============================================================================
 // Enum Schemas
 // =============================================================================
@@ -16,8 +21,8 @@ export type WiederholungTypMeetingSchema = z.infer<typeof wiederholungTypMeeting
 
 export const meetingSchema = z.object({
   meeting_typ: meetingTypSchema,
-  leiter_id: z.string().uuid().nullable().optional(),
-  protokollant_id: z.string().uuid().nullable().optional(),
+  leiter_id: uuid().nullable().optional(),
+  protokollant_id: uuid().nullable().optional(),
 })
 
 export type MeetingFormData = z.infer<typeof meetingSchema>
@@ -38,8 +43,8 @@ export const meetingVeranstaltungSchema = z.object({
 
   // Meeting fields
   meeting_typ: meetingTypSchema,
-  leiter_id: z.string().uuid().nullable().optional(),
-  protokollant_id: z.string().uuid().nullable().optional(),
+  leiter_id: uuid().nullable().optional(),
+  protokollant_id: uuid().nullable().optional(),
 })
 
 export type MeetingVeranstaltungFormData = z.infer<typeof meetingVeranstaltungSchema>
@@ -53,7 +58,7 @@ export const agendaItemSchema = z.object({
   titel: z.string().min(1, 'Titel ist erforderlich'),
   beschreibung: z.string().nullable().optional(),
   dauer_minuten: z.number().positive().nullable().optional(),
-  verantwortlich_id: z.string().uuid().nullable().optional(),
+  verantwortlich_id: uuid().nullable().optional(),
 })
 
 export type AgendaItemFormData = z.infer<typeof agendaItemSchema>
@@ -66,12 +71,12 @@ export const beschlussSchema = z.object({
   nummer: z.number().positive('Nummer muss positiv sein'),
   titel: z.string().min(1, 'Titel ist erforderlich'),
   beschreibung: z.string().nullable().optional(),
-  agenda_item_id: z.string().uuid().nullable().optional(),
+  agenda_item_id: uuid().nullable().optional(),
   abstimmung_ja: z.number().nonnegative().nullable().optional(),
   abstimmung_nein: z.number().nonnegative().nullable().optional(),
   abstimmung_enthaltung: z.number().nonnegative().nullable().optional(),
   status: z.enum(['beschlossen', 'abgelehnt', 'vertagt', 'umgesetzt']).default('beschlossen'),
-  zustaendig_id: z.string().uuid().nullable().optional(),
+  zustaendig_id: uuid().nullable().optional(),
   faellig_bis: z.string().nullable().optional(),
 })
 
@@ -88,7 +93,7 @@ export const meetingTemplateSchema = z.object({
   default_ort: z.string().nullable().optional(),
   default_startzeit: z.string().nullable().optional(),
   default_dauer_minuten: z.number().positive().default(60),
-  default_leiter_id: z.string().uuid().nullable().optional(),
+  default_leiter_id: uuid().nullable().optional(),
   wiederholung_typ: wiederholungTypMeetingSchema.nullable().optional(),
   wiederholung_tag: z.number().min(0).max(31).nullable().optional(),
   standard_agenda: z.array(z.object({
@@ -105,7 +110,7 @@ export type MeetingTemplateFormData = z.infer<typeof meetingTemplateSchema>
 // =============================================================================
 
 export const meetingGeneratorSchema = z.object({
-  template_id: z.string().uuid('Template ist erforderlich'),
+  template_id: uuid('Template ist erforderlich'),
   start_datum: z.string().min(1, 'Startdatum ist erforderlich'),
   end_datum: z.string().min(1, 'Enddatum ist erforderlich'),
   anzahl: z.number().positive().max(52, 'Maximal 52 Meetings erlaubt').optional(),
