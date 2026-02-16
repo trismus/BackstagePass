@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
 import { sanitizeSearchQuery } from '../utils/search'
@@ -166,4 +167,41 @@ export async function getAlleHelfer(
   })
 
   return filtered
+}
+
+/**
+ * Delete a helper from the consolidated list.
+ * - extern: deletes the externe_helfer_profile row
+ * - intern: deletes all auffuehrung_zuweisungen for that person
+ */
+export async function deleteHelferFromList(
+  id: string,
+  typ: HelferTyp
+): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:delete')
+
+  const supabase = await createClient()
+
+  if (typ === 'extern') {
+    const { error } = await supabase
+      .from('externe_helfer_profile')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+  } else {
+    const { error } = await supabase
+      .from('auffuehrung_zuweisungen')
+      .delete()
+      .eq('person_id', id)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  revalidatePath('/alle-helfer')
+  return { success: true }
 }
