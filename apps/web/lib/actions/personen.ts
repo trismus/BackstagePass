@@ -28,7 +28,7 @@ export async function getPersonen(): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
     .order('nachname', { ascending: true })
 
   if (error) {
@@ -52,7 +52,7 @@ export async function getPerson(id: string): Promise<Person | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
     .eq('id', id)
     .single()
 
@@ -77,7 +77,7 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
     .or(
       `vorname.ilike.%${sanitizeSearchQuery(query)}%,nachname.ilike.%${sanitizeSearchQuery(query)}%,email.ilike.%${sanitizeSearchQuery(query)}%`
     )
@@ -193,6 +193,85 @@ export async function createPersonWithAccount(
   }
 
   revalidatePath('/mitglieder')
+  revalidatePath('/admin/users')
+  return { success: true }
+}
+
+/**
+ * Invite an existing person to the app (create auth account)
+ * For members who were created without app access
+ */
+export async function inviteExistingPerson(
+  personId: string,
+  appRole: UserRole
+): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
+  if (USE_DUMMY_DATA) {
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Load the person
+  const { data: person, error: fetchError } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname, email, profile_id')
+    .eq('id', personId)
+    .single()
+
+  if (fetchError || !person) {
+    return { success: false, error: 'Person nicht gefunden' }
+  }
+
+  if (!person.email) {
+    return { success: false, error: 'E-Mail ist erforderlich für App-Zugang' }
+  }
+
+  if (person.profile_id) {
+    return { success: false, error: 'Person hat bereits einen App-Zugang' }
+  }
+
+  try {
+    const adminClient = createAdminClient()
+
+    const { data: inviteData, error: inviteError } =
+      await adminClient.auth.admin.inviteUserByEmail(person.email, {
+        data: {
+          display_name: `${person.vorname} ${person.nachname}`,
+        },
+      })
+
+    if (inviteError) {
+      console.error('Error inviting user:', inviteError)
+      return {
+        success: false,
+        error: `Einladung fehlgeschlagen: ${inviteError.message}`,
+      }
+    }
+
+    // Update the profile role (profile is created by trigger)
+    if (inviteData.user) {
+      const { error: profileError } = await adminClient
+        .from('profiles')
+        .update({ role: appRole })
+        .eq('id', inviteData.user.id)
+
+      if (profileError) {
+        console.error('Error updating profile role:', profileError)
+      }
+    }
+  } catch (err) {
+    console.error('Error in invite flow:', err)
+    return {
+      success: false,
+      error:
+        'App-Zugang konnte nicht erstellt werden. Ist SUPABASE_SERVICE_ROLE_KEY konfiguriert?',
+    }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath(`/mitglieder/${personId}`)
   revalidatePath('/admin/users')
   return { success: true }
 }
@@ -347,7 +426,7 @@ export async function getPersonenFiltered(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
 
   if (filter === 'aktiv') {
     query = query.eq('aktiv', true)
@@ -449,7 +528,7 @@ export async function getPersonenAdvanced(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
 
   // Status filter
   if (status === 'aktiv') {

@@ -76,9 +76,10 @@ export type Person = {
   archiviert_von: string | null
   created_at: string
   updated_at: string
+  profile_id: string | null
 }
 
-export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at'>
+export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at' | 'profile_id'>
 
 export type PersonUpdate = Partial<PersonInsert>
 
