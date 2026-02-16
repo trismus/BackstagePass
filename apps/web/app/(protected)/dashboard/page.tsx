@@ -24,7 +24,6 @@ import { RollenHistorie } from '@/components/mein-bereich/RollenHistorie'
 import { HelfereinsatzHistorie } from '@/components/mein-bereich/HelfereinsatzHistorie'
 import {
   UpcomingEventsWidget,
-  HelferEinsaetzeWidget,
   MitgliederHelferEventsWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
 import type { KalenderTermin } from '@/components/mein-bereich/MiniKalender'
