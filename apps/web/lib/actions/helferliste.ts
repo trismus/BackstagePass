@@ -523,6 +523,7 @@ export async function anmelden(
 
   revalidatePath('/helferliste')
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true, id: booking.anmeldung_id, isWaitlist: booking.is_waitlist, abmeldungToken: booking.abmeldung_token }
 }
 
@@ -566,6 +567,7 @@ export async function abmelden(
 
   revalidatePath('/helferliste')
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 

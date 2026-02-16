@@ -64,8 +64,8 @@ export type NavIcon =
 export const ROLE_START_PAGES: Record<UserRole, string> = {
   ADMIN: '/dashboard',
   VORSTAND: '/dashboard',
-  MITGLIED_AKTIV: '/mein-bereich',
-  MITGLIED_PASSIV: '/mein-bereich',
+  MITGLIED_AKTIV: '/dashboard',
+  MITGLIED_PASSIV: '/dashboard',
   HELFER: '/helfer',
   PARTNER: '/partner-portal',
   FREUNDE: '/willkommen',
@@ -187,7 +187,7 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
  */
 const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
   {
-    items: [{ href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' }],
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' }],
   },
   {
     title: 'Meine Aktivitäten',
@@ -235,7 +235,7 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
  */
 const MITGLIED_PASSIV_NAVIGATION: NavSection[] = [
   {
-    items: [{ href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' }],
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' }],
   },
   {
     title: 'Theater',
@@ -368,7 +368,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
 
   // Prüfe rollenspezifische Routen
   const roleRoutes: Record<string, UserRole[]> = {
-    '/dashboard': ['ADMIN', 'VORSTAND'],
+    '/dashboard': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'MITGLIED_PASSIV'],
     '/mitglieder': ['ADMIN', 'VORSTAND'],
     '/alle-helfer': ['ADMIN', 'VORSTAND'],
     '/partner': ['ADMIN', 'VORSTAND', 'PARTNER'],

@@ -103,6 +103,7 @@ export async function markNotificationRead(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -136,6 +137,7 @@ export async function markAllNotificationsRead(): Promise<{
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true, count: count || 0 }
 }
 
@@ -164,6 +166,7 @@ export async function deleteNotification(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 

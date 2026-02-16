@@ -20,10 +20,10 @@ export default async function EinstellungenPage() {
           </p>
         </div>
         <Link
-          href={'/mein-bereich' as Route}
+          href={'/dashboard' as Route}
           className="text-sm text-primary-600 hover:text-primary-700"
         >
-          Zurück zu Mein Bereich
+          Zurück zum Dashboard
         </Link>
       </div>
 

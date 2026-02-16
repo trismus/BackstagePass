@@ -344,6 +344,7 @@ export async function createStundenkontoEintraege(
 
   // Revalidate paths
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   revalidatePath('/mein-bereich/stundenkonto')
   revalidatePath(`/auffuehrungen/${veranstaltungId}`)
   revalidatePath(`/auffuehrungen/${veranstaltungId}/helfer-koordination`)
