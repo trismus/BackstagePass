@@ -84,9 +84,14 @@ const icons = {
 // Main Component
 // =============================================================================
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ansicht?: string }>
+}) {
   const profile = await getUserProfile()
   const supabase = await createClient()
+  const params = await searchParams
 
   const isVorstand = profile?.role ? isManagement(profile.role) : false
   const today = new Date().toISOString().split('T')[0]
@@ -95,7 +100,7 @@ export default async function DashboardPage() {
   // Vorstand Dashboard (3-Säulen-Layout)
   // =============================================================================
 
-  if (isVorstand) {
+  if (isVorstand && params.ansicht !== 'mitglied') {
     // Parallel data fetching for Vorstand
     const [
       { count: mitgliederTotal },

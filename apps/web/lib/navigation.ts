@@ -159,6 +159,7 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
   {
     title: 'Ansichten',
     items: [
+      { href: '/dashboard?ansicht=mitglied', label: 'Mitglieder-Ansicht', icon: 'eye' },
       { href: '/helfer', label: 'Helfer-Ansicht', icon: 'eye' },
       { href: '/partner-portal', label: 'Partner-Ansicht', icon: 'eye' },
     ],
