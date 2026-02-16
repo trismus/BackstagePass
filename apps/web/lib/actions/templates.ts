@@ -42,6 +42,12 @@ import {
   validateInput,
 } from '../validations/modul2'
 
+/** Revalidate both template pages (user-facing + admin) */
+function revalidateTemplate(templateId: string) {
+  revalidatePath(`/templates/${templateId}`)
+  revalidatePath(`/admin/schicht-templates/${templateId}`)
+}
+
 /**
  * Get all templates (non-archived)
  */
@@ -172,6 +178,7 @@ export async function createTemplate(
   }
 
   revalidatePath('/templates')
+  revalidatePath('/admin/schicht-templates')
   return { success: true, id: result?.id }
 }
 
@@ -201,7 +208,8 @@ export async function updateTemplate(
   }
 
   revalidatePath('/templates')
-  revalidatePath(`/templates/${id}`)
+  revalidatePath('/admin/schicht-templates')
+  revalidateTemplate(id)
   return { success: true }
 }
 
@@ -233,6 +241,7 @@ export async function deleteTemplate(
   }
 
   revalidatePath('/templates')
+  revalidatePath('/admin/schicht-templates')
   return { success: true }
 }
 
@@ -261,7 +270,7 @@ export async function addTemplateZeitblock(
     return { success: false, error: 'Fehler beim Hinzufügen des Zeitblocks' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -280,7 +289,7 @@ export async function removeTemplateZeitblock(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -305,7 +314,7 @@ export async function updateTemplateZeitblock(
     return { success: false, error: 'Fehler beim Aktualisieren des Zeitblocks' }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -334,7 +343,7 @@ export async function addTemplateSchicht(
     return { success: false, error: 'Fehler beim Hinzufügen der Schicht' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -353,7 +362,7 @@ export async function removeTemplateSchicht(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -378,7 +387,7 @@ export async function updateTemplateSchicht(
     return { success: false, error: 'Fehler beim Aktualisieren der Schicht' }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -407,7 +416,7 @@ export async function addTemplateRessource(
     return { success: false, error: 'Fehler beim Hinzufügen der Ressource' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -426,7 +435,7 @@ export async function removeTemplateRessource(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -451,7 +460,7 @@ export async function updateTemplateRessource(
     return { success: false, error: 'Fehler beim Aktualisieren der Ressource' }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -480,7 +489,7 @@ export async function addTemplateInfoBlock(
     return { success: false, error: 'Fehler beim Hinzufügen des Info-Blocks' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -499,7 +508,7 @@ export async function removeTemplateInfoBlock(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -524,7 +533,7 @@ export async function updateTemplateInfoBlock(
     return { success: false, error: 'Fehler beim Aktualisieren des Info-Blocks' }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -553,7 +562,7 @@ export async function addTemplateSachleistung(
     return { success: false, error: 'Fehler beim Hinzufügen der Sachleistung' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -572,7 +581,7 @@ export async function removeTemplateSachleistung(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -597,7 +606,7 @@ export async function updateTemplateSachleistung(
     return { success: false, error: 'Fehler beim Aktualisieren der Sachleistung' }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -856,5 +865,6 @@ export async function createTemplateFromVeranstaltung(
   }
 
   revalidatePath('/templates')
+  revalidatePath('/admin/schicht-templates')
   return { success: true, id: template.id }
 }
