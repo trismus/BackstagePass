@@ -31,6 +31,7 @@ import type {
 import { ZeitblockTypBadge } from '@/components/auffuehrungen/ZeitblockTypBadge'
 
 interface TemplateDetailEditorProps {
+  templateId: string
   template: TemplateMitDetails
   ressourcen: Ressource[]
 }
@@ -45,6 +46,7 @@ const zeitblockTypen: { value: ZeitblockTyp; label: string }[] = [
 ]
 
 export function TemplateDetailEditor({
+  templateId,
   template,
   ressourcen,
 }: TemplateDetailEditorProps) {
@@ -140,7 +142,7 @@ export function TemplateDetailEditor({
     e.preventDefault()
     setZbLoading(true)
     await addTemplateZeitblock({
-      template_id: template.id,
+      template_id: templateId,
       name: zbName,
       startzeit: zbStartzeit,
       endzeit: zbEndzeit,
@@ -158,7 +160,7 @@ export function TemplateDetailEditor({
 
   async function handleRemoveZeitblock(id: string, name: string) {
     if (!confirm(`Zeitblock "${name}" entfernen?`)) return
-    await removeTemplateZeitblock(id, template.id)
+    await removeTemplateZeitblock(id, templateId)
     router.refresh()
   }
 
@@ -178,7 +180,7 @@ export function TemplateDetailEditor({
     setEditZbLoading(true)
     setEditZbError(null)
 
-    const result = await updateTemplateZeitblock(editZbId, template.id, {
+    const result = await updateTemplateZeitblock(editZbId, templateId, {
       name: editZbName,
       startzeit: editZbStartzeit,
       endzeit: editZbEndzeit,
@@ -199,7 +201,7 @@ export function TemplateDetailEditor({
     e.preventDefault()
     setSchichtLoading(true)
     await addTemplateSchicht({
-      template_id: template.id,
+      template_id: templateId,
       zeitblock_name: schichtZeitblock || null,
       rolle: schichtRolle,
       anzahl_benoetigt: parseInt(schichtAnzahl, 10),
@@ -216,7 +218,7 @@ export function TemplateDetailEditor({
 
   async function handleRemoveSchicht(id: string, rolle: string) {
     if (!confirm(`Schicht "${rolle}" entfernen?`)) return
-    await removeTemplateSchicht(id, template.id)
+    await removeTemplateSchicht(id, templateId)
     router.refresh()
   }
 
@@ -236,7 +238,7 @@ export function TemplateDetailEditor({
     setEditSchichtLoading(true)
     setEditSchichtError(null)
 
-    const result = await updateTemplateSchicht(editSchichtId, template.id, {
+    const result = await updateTemplateSchicht(editSchichtId, templateId, {
       rolle: editSchichtRolle,
       zeitblock_name: editSchichtZeitblock || null,
       anzahl_benoetigt: parseInt(editSchichtAnzahl, 10) || 1,
@@ -258,7 +260,7 @@ export function TemplateDetailEditor({
     if (!ressourceId) return
     setRessourceLoading(true)
     await addTemplateRessource({
-      template_id: template.id,
+      template_id: templateId,
       ressource_id: ressourceId,
       menge: parseInt(ressourceMenge, 10),
     })
@@ -271,7 +273,7 @@ export function TemplateDetailEditor({
 
   async function handleRemoveRessource(id: string, name: string) {
     if (!confirm(`Ressource "${name}" entfernen?`)) return
-    await removeTemplateRessource(id, template.id)
+    await removeTemplateRessource(id, templateId)
     router.refresh()
   }
 
@@ -288,7 +290,7 @@ export function TemplateDetailEditor({
     setEditResLoading(true)
     setEditResError(null)
 
-    const result = await updateTemplateRessource(editResId, template.id, {
+    const result = await updateTemplateRessource(editResId, templateId, {
       menge: parseInt(editResMenge, 10) || 1,
     })
 
@@ -306,7 +308,7 @@ export function TemplateDetailEditor({
     e.preventDefault()
     setIbLoading(true)
     await addTemplateInfoBlock({
-      template_id: template.id,
+      template_id: templateId,
       titel: ibTitel,
       beschreibung: ibBeschreibung || null,
       startzeit: ibStartzeit,
@@ -324,7 +326,7 @@ export function TemplateDetailEditor({
 
   async function handleRemoveInfoBlock(id: string, titel: string) {
     if (!confirm(`Info-Block "${titel}" entfernen?`)) return
-    await removeTemplateInfoBlock(id, template.id)
+    await removeTemplateInfoBlock(id, templateId)
     router.refresh()
   }
 
@@ -344,7 +346,7 @@ export function TemplateDetailEditor({
     setEditIbLoading(true)
     setEditIbError(null)
 
-    const result = await updateTemplateInfoBlock(editIbId, template.id, {
+    const result = await updateTemplateInfoBlock(editIbId, templateId, {
       titel: editIbTitel,
       beschreibung: editIbBeschreibung || null,
       startzeit: editIbStartzeit,
@@ -367,7 +369,7 @@ export function TemplateDetailEditor({
     setSlError(null)
 
     const result = await addTemplateSachleistung({
-      template_id: template.id,
+      template_id: templateId,
       name: slName,
       anzahl: parseInt(slAnzahl, 10) || 1,
       beschreibung: slBeschreibung || null,
@@ -387,7 +389,7 @@ export function TemplateDetailEditor({
 
   async function handleRemoveSachleistung(id: string, name: string) {
     if (!confirm(`Sachleistung "${name}" entfernen?`)) return
-    await removeTemplateSachleistung(id, template.id)
+    await removeTemplateSachleistung(id, templateId)
     router.refresh()
   }
 
@@ -406,7 +408,7 @@ export function TemplateDetailEditor({
     setEditSlLoading(true)
     setEditSlError(null)
 
-    const result = await updateTemplateSachleistung(editSlId, template.id, {
+    const result = await updateTemplateSachleistung(editSlId, templateId, {
       name: editSlName,
       anzahl: parseInt(editSlAnzahl, 10) || 1,
       beschreibung: editSlBeschreibung || null,
