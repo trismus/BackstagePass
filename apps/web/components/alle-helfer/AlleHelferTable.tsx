@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import type {
@@ -9,6 +9,8 @@ import type {
   AlleHelferSortField,
   HelferTyp,
 } from '@/lib/actions/alle-helfer'
+import { deleteHelferFromList } from '@/lib/actions/alle-helfer'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { HelferExportDialog } from './HelferExportDialog'
 
 interface AlleHelferTableProps {
@@ -35,6 +37,8 @@ export function AlleHelferTable({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [copiedEmails, setCopiedEmails] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<HelferUebersicht | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   const {
     search = '',
@@ -120,6 +124,17 @@ export function AlleHelferTable({
     } catch (err) {
       console.error('Failed to copy emails:', err)
     }
+  }
+
+  const handleDelete = () => {
+    if (!deleteTarget) return
+    startTransition(async () => {
+      const result = await deleteHelferFromList(deleteTarget.id, deleteTarget.typ)
+      if (!result.success) {
+        console.error('Delete failed:', result.error)
+      }
+      setDeleteTarget(null)
+    })
   }
 
   const SortIcon = ({ field }: { field: AlleHelferSortField }) => {
@@ -277,13 +292,16 @@ export function AlleHelferTable({
               >
                 Letzter Einsatz <SortIcon field="letzter_einsatz" />
               </th>
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                <span className="sr-only">Aktionen</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {helfer.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-6 py-8 text-center text-gray-500"
                 >
                   Keine Helfer gefunden
@@ -340,6 +358,18 @@ export function AlleHelferTable({
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                       {formatDate(h.letzter_einsatz)}
                     </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget(h)}
+                        className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        title="Löschen"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 )
               })
@@ -361,6 +391,21 @@ export function AlleHelferTable({
           onClose={() => setShowExportDialog(false)}
         />
       )}
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Helfer löschen"
+        description={
+          deleteTarget?.typ === 'extern'
+            ? `${deleteTarget.vorname} ${deleteTarget.nachname} wirklich löschen? Das Helferprofil wird entfernt.`
+            : `${deleteTarget?.vorname ?? ''} ${deleteTarget?.nachname ?? ''} aus der Helferliste entfernen? Alle Schicht-Zuweisungen werden gelöscht. Die Person bleibt als Mitglied erhalten.`
+        }
+        confirmLabel={isPending ? 'Löschen...' : 'Löschen'}
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
