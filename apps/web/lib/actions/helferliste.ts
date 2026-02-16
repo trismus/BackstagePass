@@ -937,3 +937,98 @@ export async function anmeldenPublicMulti(
     conflicts: conflicts?.conflicts,
   }
 }
+
+// =============================================================================
+// Member Access (authenticated users)
+// =============================================================================
+
+/**
+ * Get upcoming helfer events with member-only roles for the dashboard
+ * Shows events that have roles marked as sichtbarkeit='intern'
+ */
+export async function getUpcomingMitgliederHelferEvents(): Promise<
+  Array<{
+    id: string
+    name: string
+    datum_start: string
+    datum_end: string
+    veranstaltung: { id: string; titel: string } | null
+    rollen_intern_count: number
+    rollen_intern_offen: number
+  }>
+> {
+  const supabase = await createClient()
+  const now = new Date().toISOString()
+
+  // Get upcoming events
+  const { data: events, error: eventsError } = await supabase
+    .from('helfer_events')
+    .select(
+      `
+      id,
+      name,
+      datum_start,
+      datum_end,
+      veranstaltung_id,
+      veranstaltung:veranstaltungen(id, titel)
+    `
+    )
+    .gte('datum_end', now)
+    .eq('status', 'publiziert')
+    .order('datum_start', { ascending: true })
+    .limit(10)
+
+  if (eventsError || !events) {
+    console.error('Error fetching upcoming mitglieder events:', eventsError)
+    return []
+  }
+
+  // For each event, get intern roles and calculate open spots
+  const eventsWithRollen = await Promise.all(
+    events.map(async (event) => {
+      const { data: rollen } = await supabase
+        .from('helfer_rollen_instanzen')
+        .select(
+          `
+          id,
+          benoetigte_personen,
+          sichtbarkeit,
+          anmeldungen:helfer_anmeldungen(id, status)
+        `
+        )
+        .eq('helfer_event_id', event.id)
+        .eq('sichtbarkeit', 'intern') // Only member-only roles
+
+      const internRollen = rollen || []
+      const rollenInternCount = internRollen.length
+
+      // Calculate open spots
+      let rollenInternOffen = 0
+      internRollen.forEach((rolle) => {
+        const bestaetigt = rolle.anmeldungen?.filter(
+          (a: { status: string }) => a.status === 'bestaetigt'
+        ).length || 0
+        const offen = Math.max(0, rolle.benoetigte_personen - bestaetigt)
+        rollenInternOffen += offen
+      })
+
+      // Extract veranstaltung from array (Supabase returns arrays for joins)
+      const veranstaltungData = Array.isArray(event.veranstaltung)
+        ? event.veranstaltung[0] || null
+        : event.veranstaltung || null
+
+      return {
+        id: event.id,
+        name: event.name,
+        datum_start: event.datum_start,
+        datum_end: event.datum_end,
+        veranstaltung: veranstaltungData,
+        rollen_intern_count: rollenInternCount,
+        rollen_intern_offen: rollenInternOffen,
+      }
+    })
+  )
+
+  // Only return events that have member-only roles
+  return eventsWithRollen.filter((e) => e.rollen_intern_count > 0)
+}
