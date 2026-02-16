@@ -10,15 +10,6 @@ interface InfoBloeckeEditorProps {
   infoBloecke: TemplateInfoBlock[]
 }
 
-function formatOffset(minutes: number): string {
-  const hours = Math.floor(Math.abs(minutes) / 60)
-  const mins = Math.abs(minutes) % 60
-  const sign = minutes < 0 ? '-' : '+'
-  if (hours === 0) return `${sign}${mins}min`
-  if (mins === 0) return `${sign}${hours}h`
-  return `${sign}${hours}h ${mins}min`
-}
-
 export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditorProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -29,8 +20,8 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
   const [formData, setFormData] = useState({
     titel: '',
     beschreibung: '',
-    offset_minuten: -60,
-    dauer_minuten: 30,
+    startzeit: '18:00',
+    endzeit: '18:30',
     sortierung: infoBloecke.length,
   })
 
@@ -38,8 +29,8 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
     setFormData({
       titel: '',
       beschreibung: '',
-      offset_minuten: -60,
-      dauer_minuten: 30,
+      startzeit: '18:00',
+      endzeit: '18:30',
       sortierung: infoBloecke.length,
     })
     setError(null)
@@ -55,8 +46,8 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
         template_id: templateId,
         titel: formData.titel.trim(),
         beschreibung: formData.beschreibung.trim() || null,
-        offset_minuten: formData.offset_minuten,
-        dauer_minuten: formData.dauer_minuten,
+        startzeit: formData.startzeit,
+        endzeit: formData.endzeit,
         sortierung: formData.sortierung,
       })
 
@@ -150,21 +141,20 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
                 </div>
 
                 <Input
-                  label="Offset (Minuten)"
-                  name="offset_minuten"
-                  type="number"
-                  value={formData.offset_minuten}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, offset_minuten: parseInt(e.target.value) || 0 }))}
-                  helperText="Negativ = vor Beginn"
+                  label="Startzeit"
+                  name="startzeit"
+                  type="time"
+                  value={formData.startzeit}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, startzeit: e.target.value }))}
+                  required
                 />
 
                 <Input
-                  label="Dauer (Minuten)"
-                  name="dauer_minuten"
-                  type="number"
-                  min={1}
-                  value={formData.dauer_minuten}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, dauer_minuten: parseInt(e.target.value) || 30 }))}
+                  label="Endzeit"
+                  name="endzeit"
+                  type="time"
+                  value={formData.endzeit}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, endzeit: e.target.value }))}
                   required
                 />
               </div>
@@ -209,10 +199,10 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
                       Beschreibung
                     </th>
                     <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                      Offset
+                      Startzeit
                     </th>
                     <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                      Dauer
+                      Endzeit
                     </th>
                     <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                       Aktionen
@@ -234,10 +224,10 @@ export function InfoBloeckeEditor({ templateId, infoBloecke }: InfoBloeckeEditor
                           {ib.beschreibung ?? '-'}
                         </td>
                         <td className="py-3 text-sm text-neutral-600">
-                          {formatOffset(ib.offset_minuten)}
+                          {ib.startzeit}
                         </td>
                         <td className="py-3 text-sm text-neutral-600">
-                          {ib.dauer_minuten} min
+                          {ib.endzeit}
                         </td>
                         <td className="py-3 text-right">
                           <Button

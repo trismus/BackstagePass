@@ -170,8 +170,8 @@ export const templateUpdateSchema = templateSchema.partial()
 export const templateZeitblockSchema = z.object({
   template_id: z.string().uuid('Ungültige Template-ID'),
   name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
-  offset_minuten: z.number().int().default(0),
-  dauer_minuten: z.number().int().min(1, 'Dauer muss mindestens 1 Minute sein'),
+  startzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
+  endzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
   typ: z
     .enum(['aufbau', 'einlass', 'vorfuehrung', 'pause', 'abbau', 'standard'])
     .optional(),
@@ -215,8 +215,8 @@ export const templateInfoBlockSchema = z.object({
     .max(500, 'Beschreibung zu lang')
     .nullable()
     .optional(),
-  offset_minuten: z.number().int().default(0),
-  dauer_minuten: z.number().int().min(1, 'Dauer muss mindestens 1 Minute sein'),
+  startzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
+  endzeit: z.string().regex(timeRegex, 'Ungültiges Zeitformat (HH:MM)'),
   sortierung: z.number().int().min(0).optional(),
 })
 

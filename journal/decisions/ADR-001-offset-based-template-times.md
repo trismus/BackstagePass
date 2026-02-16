@@ -1,6 +1,6 @@
 # ADR-001: Offset-Based Time System for Performance Templates
 
-**Status:** Accepted
+**Status:** Superseded (2026-02-16 - Umgestellt auf feste startzeit/endzeit, da Offset-Modell zu unverstaendlich fuer Benutzer)
 **Date:** 2026-02-05
 **Author:** Silke (Documentation Specialist) based on Martin's implementation
 **Issue:** #171
