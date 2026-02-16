@@ -1,6 +1,6 @@
 # BackstagePass - Projekt Status
 
-**Stand:** 2026-01-27
+**Stand:** 2026-02-16
 
 ---
 
@@ -13,9 +13,9 @@
 | **Modul 2** | ✅ Done | 0 | 4 | - |
 | **Modul 3** | In Progress | 6 | 4 | - |
 | **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
-| **UserExperience** | In Progress | 7 | 4 | - |
+| **UserExperience** | In Progress | 7 | 5 | - |
 
-**Gesamt:** 36 Open, 39 Closed
+**Gesamt:** 36 Open, 40 Closed
 
 ---
 
@@ -176,17 +176,57 @@
 | #140 | ✅ Closed | [UX] Header-Komponente anpassen |
 | #141 | ✅ Closed | [UX] Layout-Struktur für Bereiche implementieren |
 | #142 | 🟡 Open | [UX] Management-Dashboard erweitern |
-| #143 | 🟡 Open | [UX] Mein-Bereich Dashboard für aktive Mitglieder |
+| #143 | ✅ Closed | [UX] Mein-Bereich Dashboard für aktive Mitglieder (via #317) |
 | #144 | 🟡 Open | [UX] Mein-Bereich für passive Mitglieder |
-| #145 | 🟡 Open | [UX] Helfer-Dashboard erstellen |
+| #145 | ✅ Closed | [UX] Helfer-Dashboard erstellen (via #318) |
 | #146 | 🟡 Open | [UX] Partner-Portal erstellen |
 | #147 | 🟡 Open | [UX] Willkommen-Seite für Gäste/Freunde |
 
 ---
 
-## Changelog (2026-01-27)
+## Changelog
 
-### Helferliste Feature - Vollständig implementiert
+### 2026-02-16: Dashboard-Konsolidierung & Template-Editor Complete
+
+#### Dashboard & Mein-Bereich Merge (PR #317)
+Zentrale Dashboard-Seite für alle Rollen implementiert:
+- ADMIN/VORSTAND: Vorstand-Dashboard (3-Säulen-Layout)
+- MITGLIED_AKTIV: Persönliches Dashboard (Outlook-Style mit Kalender, Profil, Widgets)
+- MITGLIED_PASSIV: Vereinfachte Ansicht
+- `/mein-bereich` → Redirect zu `/dashboard`
+- Neue "Mitglieder-Ansicht" für Vorstand
+- 14 Dateien angepasst, 18 `revalidatePath` ergänzt
+
+#### Helfer-Dashboard (PR #318)
+Authentifizierter Bereich für HELFER-Rolle:
+- `/meine-einsaetze` - Persönliche Einsatzübersicht
+- Dashboard mit kommenden Schichten und Historie
+- Filter nach Status (bestätigt, ausstehend, abgelehnt)
+
+#### Template-Editor Vollständig Editierbar (PRs #307-#315)
+Alle Template-Elemente jetzt inline editierbar:
+- **nur_mitglieder-Flag** (#307): Schichten nur für Vereinsmitglieder markieren
+- **Info-Blöcke** (#308): Titel, Beschreibung, Start/Endzeit editieren
+- **Sachleistungen** (#309): Name, Anzahl, Beschreibung editieren
+- **Ressourcen** (#310): Menge editieren
+- **Zod v4 Bug-Fix** (#311-#315): UUID-Validierung für Seed-Daten korrigiert
+
+#### Email-Integration
+- SMTP-Konfiguration und Verification
+- Email-Versand für Helfer-Registrierung
+- Buchungsbestätigungen für Aufführungen
+
+### 2026-02-05: M1 - Datenmodell & Templates Complete
+
+#### Template-System Erweiterung (Issue #171)
+- Neue DB-Tabellen: `template_info_bloecke`, `info_bloecke`, `template_sachleistungen`, `sachleistungen`
+- Offset-basiertes Zeitsystem (siehe ADR-001)
+- TypeScript-Typen erweitert (`TemplateMitDetails`)
+- Server Actions für CRUD-Operationen
+- UI-Komponenten für Info-Blöcke und Sachleistungen
+- Seed-Daten: "Abendvorstellung" Template mit 10 Schichten + 2 Info-Blöcken
+
+### 2026-01-27: Helferliste Feature - Vollständig implementiert
 
 **Neue Dateien:**
 
@@ -225,7 +265,7 @@
 ## Statistik
 
 ```
-Total Issues:     75 (36 open, 39 closed)
+Total Issues:     76 (36 open, 40 closed)
 Milestones:       6
 
 Progress by Milestone:
@@ -234,9 +274,31 @@ Progress by Milestone:
 ├── Modul 2:      100% (4/4 closed) ✅
 ├── Modul 3:       40% (4/10 closed)
 ├── Helfer Liste:  85% (17/20 closed) ✅
-└── UserExperience: 45% (5/11 closed)
+└── UserExperience: 64% (7/11 closed)
 ```
+
+## Aktuelle Entwicklungen (Feb 2026)
+
+### Abgeschlossene Features
+- ✅ Template-Editor vollständig editierbar (alle Elemente inline)
+- ✅ Dashboard-Konsolidierung (einheitliche Startseite für alle Rollen)
+- ✅ Helfer-Dashboard mit persönlicher Einsatzübersicht
+- ✅ Email-Integration (SMTP, Registrierungsbestätigungen)
+- ✅ nur_mitglieder-Flag für Template-Schichten
+- ✅ Zod v4 Kompatibilität
+
+### In Bearbeitung
+- 🔄 Partner-Portal (#146)
+- 🔄 Passive Mitglieder Ansicht (#144)
+- 🔄 Willkommen-Seite für Gäste (#147)
+- 🔄 Management-Dashboard Erweiterungen (#142)
+
+### Technische Verbesserungen
+- Server Actions mit robustem Error Handling
+- revalidatePath für alle relevanten Routen
+- TypeScript-Typsicherheit durchgängig
+- Konsistente UI-Patterns über alle Module
 
 ---
 
-*Aktualisiert am 2026-01-27*
+*Aktualisiert am 2026-02-16*
