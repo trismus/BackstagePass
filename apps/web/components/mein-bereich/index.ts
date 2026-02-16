@@ -15,7 +15,6 @@ export type { HelfereinsatzHistorieProps } from './HelfereinsatzHistorie'
 
 export {
   UpcomingEventsWidget,
-  StundenWidget,
   HelferEinsaetzeWidget,
   QuickLinksWidget,
 } from './DashboardWidgets'

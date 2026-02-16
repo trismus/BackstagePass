@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
+import { isManagement } from '@/lib/supabase/permissions'
 import {
   getStundenkontoForPerson,
   getStundensaldo,
@@ -23,6 +25,11 @@ export default async function StundenkontoPage() {
         </div>
       </main>
     )
+  }
+
+  // Only management roles can access Stundenkonto
+  if (!isManagement(profile.role)) {
+    redirect('/dashboard' as never)
   }
 
   // Try to find the person linked to this user

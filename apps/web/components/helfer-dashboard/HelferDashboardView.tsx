@@ -10,6 +10,7 @@ import type {
 
 interface HelferDashboardViewProps {
   data: HelferDashboardData
+  showHeader?: boolean
 }
 
 function canCancelAnmeldung(anmeldung: HelferDashboardAnmeldung): boolean {
@@ -28,7 +29,7 @@ function canCancelAnmeldung(anmeldung: HelferDashboardAnmeldung): boolean {
   return hoursUntilEvent >= 6
 }
 
-export function HelferDashboardView({ data }: HelferDashboardViewProps) {
+export function HelferDashboardView({ data, showHeader = true }: HelferDashboardViewProps) {
   const [showPast, setShowPast] = useState(false)
 
   const now = new Date()
@@ -41,24 +42,28 @@ export function HelferDashboardView({ data }: HelferDashboardViewProps) {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900">Meine Einsätze</h1>
-        <p className="mt-1 text-neutral-600">
-          Übersicht deiner Helfer-Anmeldungen
-        </p>
-      </div>
+      {showHeader && (
+        <>
+          {/* Header */}
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900">Meine Einsätze</h1>
+            <p className="mt-1 text-neutral-600">
+              Übersicht deiner Helfer-Anmeldungen
+            </p>
+          </div>
 
-      {/* Helper Info */}
-      <Card>
-        <CardContent className="p-4">
-          <p className="text-sm text-neutral-600">Angemeldet als</p>
-          <p className="font-semibold text-neutral-900">
-            {data.helper.vorname} {data.helper.nachname}
-          </p>
-          <p className="text-sm text-neutral-500">{data.helper.email}</p>
-        </CardContent>
-      </Card>
+          {/* Helper Info */}
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-neutral-600">Angemeldet als</p>
+              <p className="font-semibold text-neutral-900">
+                {data.helper.vorname} {data.helper.nachname}
+              </p>
+              <p className="text-sm text-neutral-500">{data.helper.email}</p>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {/* Upcoming Shifts */}
       <section>
