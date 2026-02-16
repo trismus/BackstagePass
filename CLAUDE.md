@@ -71,8 +71,12 @@ apps/web/
 │   │   ├── raeume/         # Room management
 │   │   ├── ressourcen/     # Equipment management
 │   │   ├── templates/      # Performance templates
-│   │   ├── mein-bereich/   # Personal area (stundenkonto)
+│   │   ├── helferliste/    # Helper event management (new system)
+│   │   ├── mein-bereich/   # Personal area (redirects to dashboard)
+│   │   ├── meine-einsaetze/# Helper dashboard (HELFER role)
 │   │   └── admin/          # Admin-only (users, audit logs)
+│   ├── (public)/           # Public routes (no auth required)
+│   │   └── helfer/[token]/ # Public helper registration
 │   ├── actions/            # Server actions (auth.ts, profile.ts)
 │   └── api/                # API routes
 ├── components/             # React components by domain
@@ -159,7 +163,10 @@ export async function updatePerson(id: string, data: PersonUpdate) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
+
+  // Revalidate all pages that display this data
   revalidatePath('/mitglieder')
+  revalidatePath('/dashboard')  // If dashboard shows member data
 }
 ```
 
@@ -169,11 +176,61 @@ export async function updatePerson(id: string, data: PersonUpdate) {
 - Supabase data fetching happens in Server Components
 - Pass data to Client Components via props
 
+### Recent Patterns & Best Practices (Feb 2026)
+
+**Error Handling in Server Actions:**
+```typescript
+'use server'
+
+export async function someAction(data: FormData) {
+  try {
+    // ... perform action
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Action failed:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// In component - always check result
+const result = await someAction(formData)
+if (!result.success) {
+  setError(result.error)
+  return
+}
+```
+
+**Path Revalidation:**
+Always revalidate ALL pages that display the modified data:
+```typescript
+revalidatePath('/primary-page')
+revalidatePath('/dashboard')  // If dashboard shows this data
+revalidatePath('/admin/overview')  // If admin pages show this data
+```
+
+**Dashboard Pattern:**
+Single `/dashboard` route with role-based content:
+- ADMIN/VORSTAND: Management dashboard
+- MITGLIED_AKTIV: Personal dashboard (Outlook-style)
+- MITGLIED_PASSIV: Simplified view
+- HELFER: Use `/meine-einsaetze` instead
+
+**Template System Pattern:**
+Two-level architecture (template vs instance):
+- Template level: Offset-based times (`offset_minuten`)
+- Instance level: Absolute times (`start_zeit`)
+- Apply template: Calculate instance times from template offsets + performance start time
+
 ### Form Validation
 
 ```typescript
 // lib/validations/person.ts
 import { z } from 'zod'
+
+// Custom UUID validator (Zod v4 compatibility)
+// Zod v4 .uuid() is strict RFC 4122 - our seed data uses relaxed format
+const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') => z.string().regex(UUID_REGEX, message)
 
 export const personSchema = z.object({
   vorname: z.string().min(1, 'Vorname ist erforderlich'),
@@ -189,6 +246,8 @@ export async function createPerson(formData: PersonFormData) {
   // ... save to database
 }
 ```
+
+**Important:** Use the custom `uuid()` helper instead of `z.string().uuid()` for UUID validation (Zod v4 breaking change).
 
 ### Database
 - All tables use Row Level Security (RLS)
@@ -241,13 +300,16 @@ Types are manually maintained in `lib/supabase/types.ts` following the database 
 - `veranstaltungen` - Events (vereinsevent, probe, auffuehrung, sonstiges)
 - `anmeldungen` - Event registrations
 - `partner` - Partner organizations
-- `helfereinsaetze`, `helferrollen`, `helferschichten` - Helper system
+- `helfereinsaetze`, `helferrollen`, `helferschichten` - Helper system (legacy)
+- `helfer_events`, `helfer_rollen_templates`, `helfer_rollen_instanzen`, `helfer_anmeldungen` - Helferliste system (new)
 - `stundenkonto` - Hours ledger
 - `stuecke`, `szenen`, `rollen`, `besetzungen` - Play management
 - `proben`, `proben_szenen`, `proben_teilnehmer` - Rehearsals
 - `zeitbloecke`, `auffuehrung_schichten`, `auffuehrung_zuweisungen` - Performance scheduling
 - `raeume`, `ressourcen`, `raum_reservierungen`, `ressourcen_reservierungen` - Resources
-- `auffuehrung_templates`, `template_zeitbloecke`, `template_schichten` - Templates
+- `auffuehrung_templates`, `template_zeitbloecke`, `template_schichten` - Performance templates
+- `template_info_bloecke`, `info_bloecke` - Template and instance info blocks
+- `template_sachleistungen`, `sachleistungen` - Template and instance in-kind contributions
 
 ## Code Style
 
