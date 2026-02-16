@@ -40,6 +40,8 @@ export default async function MitgliedEditPage({ params }: PageProps) {
               personId={id}
               personRolle={person.rolle}
               personEmail={person.email}
+              invitedAt={person.invited_at}
+              invitationAcceptedAt={person.invitation_accepted_at}
             />
           </div>
         )}

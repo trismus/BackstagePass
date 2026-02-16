@@ -28,7 +28,7 @@ export async function getPersonen(): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
     .order('nachname', { ascending: true })
 
   if (error) {
@@ -52,7 +52,7 @@ export async function getPerson(id: string): Promise<Person | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
     .eq('id', id)
     .single()
 
@@ -77,7 +77,7 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
     .or(
       `vorname.ilike.%${sanitizeSearchQuery(query)}%,nachname.ilike.%${sanitizeSearchQuery(query)}%,email.ilike.%${sanitizeSearchQuery(query)}%`
     )
@@ -183,6 +183,12 @@ export async function createPersonWithAccount(
         // Don't fail - the user can still be updated later
       }
     }
+
+    // Track invitation timestamp
+    await adminClient
+      .from('personen')
+      .update({ invited_at: new Date().toISOString() } as never)
+      .eq('email', personData.email)
   } catch (err) {
     console.error('Error in invite flow:', err)
     return {
@@ -261,6 +267,12 @@ export async function inviteExistingPerson(
         console.error('Error updating profile role:', profileError)
       }
     }
+
+    // Track invitation timestamp
+    await adminClient
+      .from('personen')
+      .update({ invited_at: new Date().toISOString() } as never)
+      .eq('id', personId)
   } catch (err) {
     console.error('Error in invite flow:', err)
     return {
@@ -426,7 +438,7 @@ export async function getPersonenFiltered(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
 
   if (filter === 'aktiv') {
     query = query.eq('aktiv', true)
@@ -528,7 +540,7 @@ export async function getPersonenAdvanced(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
 
   // Status filter
   if (status === 'aktiv') {
@@ -723,4 +735,97 @@ export async function getMitgliederStatistik(): Promise<{
     archivierte,
     gesamt: aktive + archivierte,
   }
+}
+
+// =============================================================================
+// Invitation Resend (Issue #325)
+// =============================================================================
+
+const RESEND_COOLDOWN_DAYS = 7
+
+/**
+ * Resend an invitation to a person who was already invited but hasn't accepted
+ */
+export async function resendInvitation(
+  personId: string
+): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
+  if (USE_DUMMY_DATA) {
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Load the person
+  const { data: person, error: fetchError } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname, email, profile_id, invited_at, invitation_accepted_at')
+    .eq('id', personId)
+    .single()
+
+  if (fetchError || !person) {
+    return { success: false, error: 'Person nicht gefunden' }
+  }
+
+  if (!person.email) {
+    return { success: false, error: 'E-Mail ist erforderlich' }
+  }
+
+  if (person.invitation_accepted_at || person.profile_id) {
+    return { success: false, error: 'Einladung wurde bereits angenommen' }
+  }
+
+  if (!person.invited_at) {
+    return { success: false, error: 'Noch keine Einladung gesendet' }
+  }
+
+  // Check cooldown
+  const invitedDate = new Date(person.invited_at)
+  const daysSinceInvite = Math.floor(
+    (Date.now() - invitedDate.getTime()) / (1000 * 60 * 60 * 24)
+  )
+
+  if (daysSinceInvite < RESEND_COOLDOWN_DAYS) {
+    const remaining = RESEND_COOLDOWN_DAYS - daysSinceInvite
+    return {
+      success: false,
+      error: `Erneutes Senden erst in ${remaining} Tag${remaining !== 1 ? 'en' : ''} möglich`,
+    }
+  }
+
+  try {
+    const adminClient = createAdminClient()
+
+    const { error: inviteError } =
+      await adminClient.auth.admin.inviteUserByEmail(person.email, {
+        data: {
+          display_name: `${person.vorname} ${person.nachname}`,
+        },
+      })
+
+    if (inviteError) {
+      console.error('Error resending invitation:', inviteError)
+      return {
+        success: false,
+        error: `Einladung fehlgeschlagen: ${inviteError.message}`,
+      }
+    }
+
+    // Update invited_at timestamp
+    await adminClient
+      .from('personen')
+      .update({ invited_at: new Date().toISOString() } as never)
+      .eq('id', personId)
+  } catch (err) {
+    console.error('Error in resend flow:', err)
+    return {
+      success: false,
+      error: 'Einladung konnte nicht gesendet werden. Ist SUPABASE_SERVICE_ROLE_KEY konfiguriert?',
+    }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath(`/mitglieder/${personId}`)
+  return { success: true }
 }

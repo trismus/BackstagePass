@@ -77,9 +77,12 @@ export type Person = {
   created_at: string
   updated_at: string
   profile_id: string | null
+  // Invitation tracking (Issue #325)
+  invited_at: string | null
+  invitation_accepted_at: string | null
 }
 
-export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at' | 'profile_id'>
+export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at' | 'profile_id' | 'invited_at' | 'invitation_accepted_at'>
 
 export type PersonUpdate = Partial<PersonInsert>
 
