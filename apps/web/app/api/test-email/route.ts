@@ -1,20 +1,20 @@
 import { NextResponse } from 'next/server'
 import { sendEmail, isEmailServiceConfigured } from '@/lib/email/client'
-import { notifyRegistrationConfirmed } from '@/lib/actions/helferliste-notifications'
+import { sendBookingConfirmation } from '@/lib/actions/email-sender'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const anmeldungId = searchParams.get('anmeldung')
+  const zuweisungId = searchParams.get('zuweisung')
 
-  // If anmeldung ID provided, test the real notification flow
-  if (anmeldungId) {
+  // If zuweisung ID provided, test sendBookingConfirmation
+  if (zuweisungId) {
     try {
-      const result = await notifyRegistrationConfirmed(anmeldungId, false)
-      return NextResponse.json({ test: 'notifyRegistrationConfirmed', anmeldungId, result })
+      const result = await sendBookingConfirmation(zuweisungId)
+      return NextResponse.json({ test: 'sendBookingConfirmation', zuweisungId, result })
     } catch (err) {
       return NextResponse.json({
-        test: 'notifyRegistrationConfirmed',
-        anmeldungId,
+        test: 'sendBookingConfirmation',
+        zuweisungId,
         error: err instanceof Error ? err.message : String(err),
         stack: err instanceof Error ? err.stack : undefined,
       })
