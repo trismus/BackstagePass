@@ -58,7 +58,7 @@ export default async function TemplateDetailPage({ params }: PageProps) {
           <div>
             <div className="rounded-lg bg-white p-4 shadow">
               <h2 className="mb-4 font-medium text-gray-900">Grunddaten</h2>
-              <TemplateForm template={template} mode="edit" />
+              <TemplateForm template={template} templateId={id} mode="edit" />
             </div>
           </div>
 

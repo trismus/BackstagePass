@@ -8,9 +8,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, Button, Input } f
 
 interface TemplateFormProps {
   template?: AuffuehrungTemplate
+  templateId?: string
 }
 
-export function TemplateForm({ template }: TemplateFormProps) {
+export function TemplateForm({ template, templateId }: TemplateFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -31,12 +32,13 @@ export function TemplateForm({ template }: TemplateFormProps) {
           name: formData.name.trim(),
           beschreibung: formData.beschreibung.trim() || null,
         }
-        const result = await updateTemplate(template.id, updateData)
+        const tid = templateId || template.id
+        const result = await updateTemplate(tid, updateData)
         if (!result.success) {
           setError(result.error ?? 'Fehler beim Aktualisieren')
           return
         }
-        router.push(`/admin/schicht-templates/${template.id}` as never)
+        router.push(`/admin/schicht-templates/${tid}` as never)
       } else {
         const createData = {
           name: formData.name.trim(),
