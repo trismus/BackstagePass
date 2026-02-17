@@ -18,8 +18,11 @@ import type {
   Szene,
   TeilnehmerSuggestionResult,
   TeilnehmerVorschlag,
+  VerfuegbarkeitStatus,
+  OptimalProbeTermin,
 } from '../supabase/types'
 import { checkPersonConflicts } from './conflict-check'
+import { checkMultipleMembersAvailability } from './verfuegbarkeiten'
 
 // =============================================================================
 // Proben CRUD
@@ -839,4 +842,210 @@ export async function getProbenStatistik(stueckId: string): Promise<{
     abgeschlossen: proben.filter((p) => p.status === 'abgeschlossen').length,
     abgesagt: proben.filter((p) => p.status === 'abgesagt').length,
   }
+}
+
+// =============================================================================
+// Probe Verfügbarkeits-Check (Issue #350)
+// =============================================================================
+
+export async function checkProbeVerfuegbarkeit(
+  stueckId: string,
+  datum: string,
+  szenenIds?: string[]
+): Promise<{
+  warnings: {
+    personId: string
+    personName: string
+    status: VerfuegbarkeitStatus
+    grund: string | null
+  }[]
+}> {
+  const supabase = await createClient()
+
+  // Get cast members for the stueck (or specific scenes)
+  let besetzungenQuery = supabase
+    .from('besetzungen')
+    .select('person_id, rolle:rollen(stueck_id)')
+    .not('person_id', 'is', null)
+
+  if (szenenIds && szenenIds.length > 0) {
+    const { data: szenenRollen } = await supabase
+      .from('szenen_rollen')
+      .select('rolle_id')
+      .in('szene_id', szenenIds)
+    if (szenenRollen && szenenRollen.length > 0) {
+      const rolleIds = szenenRollen.map((sr) => sr.rolle_id)
+      besetzungenQuery = besetzungenQuery.in('rolle_id', rolleIds)
+    }
+  }
+
+  const { data: besetzungen } = await besetzungenQuery
+
+  if (!besetzungen || besetzungen.length === 0) {
+    return { warnings: [] }
+  }
+
+  // Filter to only this stueck's roles and get unique person IDs
+  const personIds = [
+    ...new Set(
+      besetzungen
+        .filter((b) => {
+          const rolle = b.rolle as unknown as Record<string, unknown> | null
+          return rolle?.stueck_id === stueckId
+        })
+        .map((b) => b.person_id as string)
+    ),
+  ]
+
+  if (personIds.length === 0) return { warnings: [] }
+
+  // Check availability for all on the given date
+  const availabilityMap = await checkMultipleMembersAvailability(personIds, datum)
+
+  // Get person names for warnings
+  const unavailable = personIds.filter((id) => {
+    const status = availabilityMap.get(id)
+    return status === 'nicht_verfuegbar' || status === 'eingeschraenkt'
+  })
+
+  if (unavailable.length === 0) return { warnings: [] }
+
+  const { data: personen } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname')
+    .in('id', unavailable)
+
+  // Get grund from verfuegbarkeiten
+  const { data: verfEntries } = await supabase
+    .from('verfuegbarkeiten')
+    .select('mitglied_id, status, grund')
+    .in('mitglied_id', unavailable)
+    .lte('datum_von', datum)
+    .gte('datum_bis', datum)
+
+  const grundMap = new Map<string, string | null>()
+  for (const v of verfEntries || []) {
+    if (!grundMap.has(v.mitglied_id) || v.status === 'nicht_verfuegbar') {
+      grundMap.set(v.mitglied_id, v.grund)
+    }
+  }
+
+  const personMap = new Map(
+    (personen || []).map((p) => [p.id, `${p.vorname} ${p.nachname}`])
+  )
+
+  const warnings = unavailable.map((id) => ({
+    personId: id,
+    personName: personMap.get(id) ?? 'Unbekannt',
+    status: availabilityMap.get(id) ?? ('eingeschraenkt' as VerfuegbarkeitStatus),
+    grund: grundMap.get(id) ?? null,
+  }))
+
+  return { warnings }
+}
+
+// =============================================================================
+// Optimale Probe-Termine (Issue #350)
+// =============================================================================
+
+const WOCHENTAG_NAMEN = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
+
+export async function suggestOptimalProbeTermin(
+  stueckId: string,
+  szenenIds: string[],
+  von: string,
+  bis: string
+): Promise<OptimalProbeTermin[]> {
+  const supabase = await createClient()
+
+  // Get cast members
+  let besetzungenQuery = supabase
+    .from('besetzungen')
+    .select('person_id, rolle:rollen(stueck_id, name)')
+    .not('person_id', 'is', null)
+
+  if (szenenIds.length > 0) {
+    const { data: szenenRollen } = await supabase
+      .from('szenen_rollen')
+      .select('rolle_id')
+      .in('szene_id', szenenIds)
+    if (szenenRollen && szenenRollen.length > 0) {
+      const rolleIds = szenenRollen.map((sr) => sr.rolle_id)
+      besetzungenQuery = besetzungenQuery.in('rolle_id', rolleIds)
+    }
+  }
+
+  const { data: besetzungen } = await besetzungenQuery
+
+  const personIds = [
+    ...new Set(
+      (besetzungen || [])
+        .filter((b) => {
+          const rolle = b.rolle as unknown as Record<string, unknown> | null
+          return rolle?.stueck_id === stueckId
+        })
+        .map((b) => b.person_id as string)
+    ),
+  ]
+
+  if (personIds.length === 0) return []
+
+  // Get person names for display
+  const { data: personen } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname')
+    .in('id', personIds)
+  const personNameMap = new Map(
+    (personen || []).map((p) => [p.id, `${p.vorname} ${p.nachname}`])
+  )
+
+  // Generate candidate dates (von → bis)
+  const startDate = new Date(von)
+  const endDate = new Date(bis)
+  const termine: OptimalProbeTermin[] = []
+
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const datum = d.toISOString().split('T')[0]
+    const wochentag = WOCHENTAG_NAMEN[d.getDay()]
+
+    const availMap = await checkMultipleMembersAvailability(personIds, datum)
+
+    let verfuegbareCount = 0
+    let eingeschraenktCount = 0
+    let nichtVerfuegbarCount = 0
+    const nichtVerfuegbar: { personId: string; personName: string; grund: string | null }[] = []
+
+    for (const pid of personIds) {
+      const status = availMap.get(pid) ?? 'verfuegbar'
+      if (status === 'verfuegbar') verfuegbareCount++
+      else if (status === 'eingeschraenkt') eingeschraenktCount++
+      else {
+        nichtVerfuegbarCount++
+        nichtVerfuegbar.push({
+          personId: pid,
+          personName: personNameMap.get(pid) ?? 'Unbekannt',
+          grund: null,
+        })
+      }
+    }
+
+    termine.push({
+      datum,
+      wochentag,
+      verfuegbareCount,
+      eingeschraenktCount,
+      nichtVerfuegbarCount,
+      totalCast: personIds.length,
+      verfuegbarkeitsProzent:
+        personIds.length > 0
+          ? Math.round((verfuegbareCount / personIds.length) * 100)
+          : 100,
+      nichtVerfuegbar,
+    })
+  }
+
+  // Sort by highest availability
+  return termine
+    .sort((a, b) => b.verfuegbarkeitsProzent - a.verfuegbarkeitsProzent)
+    .slice(0, 10)
 }

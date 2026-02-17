@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 // Simplified scene type for the generator
 type SimpleSzene = {
@@ -23,6 +23,8 @@ import {
   type GeneratedProbe,
   type ProbenplanTemplate,
 } from '@/lib/actions/probenplan'
+import { suggestOptimalProbeTermin } from '@/lib/actions/proben'
+import type { OptimalProbeTermin } from '@/lib/supabase/types'
 import { KonfliktAnzeige } from './KonfliktAnzeige'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
@@ -75,6 +77,30 @@ export function ProbenplanGenerator({
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null)
+
+  // Optimal dates
+  const [optimalTermine, setOptimalTermine] = useState<OptimalProbeTermin[]>([])
+  const [isLoadingTermine, setIsLoadingTermine] = useState(false)
+
+  const handleSuggestTermine = useCallback(async () => {
+    if (!selectedStueck || !formData.start_datum || !formData.end_datum) {
+      setError('Bitte Stück, Start- und Enddatum angeben')
+      return
+    }
+    setIsLoadingTermine(true)
+    setError(null)
+    const result = await suggestOptimalProbeTermin(
+      selectedStueck.id,
+      selectedSzenen,
+      formData.start_datum,
+      formData.end_datum
+    )
+    setOptimalTermine(result)
+    setIsLoadingTermine(false)
+    if (result.length === 0) {
+      setError('Keine optimalen Termine im angegebenen Zeitraum gefunden')
+    }
+  }, [selectedStueck, selectedSzenen, formData.start_datum, formData.end_datum])
 
   // Handle Stück selection
   const handleStueckChange = (stueckId: string) => {
@@ -622,7 +648,112 @@ export function ProbenplanGenerator({
                 Als Vorlage speichern
               </button>
             )}
+
+            {selectedStueck &&
+              formData.start_datum &&
+              formData.end_datum && (
+                <button
+                  type="button"
+                  onClick={handleSuggestTermine}
+                  disabled={isLoadingTermine}
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary-300 bg-primary-50 px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-100 disabled:opacity-50"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {isLoadingTermine
+                    ? 'Berechne...'
+                    : 'Optimale Termine vorschlagen'}
+                </button>
+              )}
           </div>
+
+          {/* Optimal Date Suggestions */}
+          {optimalTermine.length > 0 && (
+            <div className="rounded-lg bg-white p-6 shadow">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                Optimale Probentermine
+              </h2>
+              <p className="mb-3 text-sm text-gray-500">
+                Basierend auf der Verfügbarkeit der Besetzung — höchste
+                Verfügbarkeit zuerst.
+              </p>
+              <div className="space-y-2">
+                {optimalTermine.map((t) => (
+                  <div
+                    key={t.datum}
+                    className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3"
+                  >
+                    <div>
+                      <span className="font-medium text-gray-900">
+                        {t.wochentag},{' '}
+                        {new Date(t.datum).toLocaleDateString('de-CH', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        })}
+                      </span>
+                      <span className="ml-3 text-sm text-gray-500">
+                        {t.verfuegbareCount}/{t.totalCast} verfügbar
+                        {t.eingeschraenktCount > 0 &&
+                          `, ${t.eingeschraenktCount} eingeschränkt`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-2 w-24 overflow-hidden rounded-full bg-gray-200">
+                        <div
+                          className="bg-green-500"
+                          style={{
+                            width: `${(t.verfuegbareCount / t.totalCast) * 100}%`,
+                          }}
+                        />
+                        <div
+                          className="bg-amber-400"
+                          style={{
+                            width: `${(t.eingeschraenktCount / t.totalCast) * 100}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="w-12 text-right text-sm font-medium text-gray-700">
+                        {t.verfuegbarkeitsProzent}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {optimalTermine.some((t) => t.nichtVerfuegbar.length > 0) && (
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+                    Details zu nicht verfügbaren Personen
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    {optimalTermine
+                      .filter((t) => t.nichtVerfuegbar.length > 0)
+                      .map((t) => (
+                        <div key={t.datum} className="text-sm">
+                          <span className="font-medium text-gray-700">
+                            {new Date(t.datum).toLocaleDateString('de-CH')}:
+                          </span>{' '}
+                          <span className="text-gray-500">
+                            {t.nichtVerfuegbar.map((p) => p.personName).join(', ')}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </details>
+              )}
+            </div>
+          )}
 
           {/* Preview */}
           {preview && preview.length > 0 && (

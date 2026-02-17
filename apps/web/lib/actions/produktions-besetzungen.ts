@@ -12,6 +12,7 @@ import type {
   StueckRolle,
   Person,
   RolleMitProduktionsBesetzungen,
+  VerfuegbarkeitStatus,
 } from '../supabase/types'
 
 // =============================================================================
@@ -298,6 +299,8 @@ export type BesetzungsVorschlag = {
   matchingSkills: string[]
   hatKonflikt: boolean
   konfliktRolle: string | null
+  verfuegbarkeit: VerfuegbarkeitStatus
+  verfuegbarkeitDetails: string | null
 }
 
 export async function getBesetzungsVorschlaege(
@@ -357,6 +360,38 @@ export async function getBesetzungsVorschlaege(
     ...(rolle.beschreibung || '').toLowerCase().split(/\s+/),
   ].filter(Boolean)
 
+  // Fetch production dates for availability check
+  const { data: produktion } = await supabase
+    .from('produktionen')
+    .select('proben_start, derniere')
+    .eq('id', produktionId)
+    .single()
+
+  // Check availability for all candidates in production window
+  const verfuegbarkeitMap = new Map<string, { status: VerfuegbarkeitStatus; grund: string | null }>()
+  if (produktion?.proben_start && produktion?.derniere) {
+    const personIds = (personen as { id: string }[]).map((p) => p.id)
+    const { data: verfuegbarkeiten } = await supabase
+      .from('verfuegbarkeiten')
+      .select('mitglied_id, status, grund')
+      .in('mitglied_id', personIds)
+      .lte('datum_von', produktion.derniere)
+      .gte('datum_bis', produktion.proben_start)
+      .in('status', ['nicht_verfuegbar', 'eingeschraenkt'])
+
+    for (const v of verfuegbarkeiten || []) {
+      const current = verfuegbarkeitMap.get(v.mitglied_id)
+      if (
+        v.status === 'nicht_verfuegbar' &&
+        (!current || current.status !== 'nicht_verfuegbar')
+      ) {
+        verfuegbarkeitMap.set(v.mitglied_id, { status: 'nicht_verfuegbar', grund: v.grund })
+      } else if (v.status === 'eingeschraenkt' && !current) {
+        verfuegbarkeitMap.set(v.mitglied_id, { status: 'eingeschraenkt', grund: v.grund })
+      }
+    }
+  }
+
   // Score and rank personen
   const vorschlaege: BesetzungsVorschlag[] = (
     personen as Pick<Person, 'id' | 'vorname' | 'nachname' | 'skills'>[]
@@ -378,18 +413,33 @@ export async function getBesetzungsVorschlaege(
       ? rollenMap.get(konflikt.rolle_id) || null
       : null
 
+    const verfEntry = verfuegbarkeitMap.get(person.id)
+    const verfuegbarkeit: VerfuegbarkeitStatus = verfEntry?.status ?? 'verfuegbar'
+    const verfuegbarkeitDetails = verfEntry?.grund ?? null
+
     return {
       person,
       matchingSkills,
       hatKonflikt,
       konfliktRolle,
+      verfuegbarkeit,
+      verfuegbarkeitDetails,
     }
   })
 
-  // Sort: matching skills first, then no conflict, then alphabetically
+  const verfRank: Record<VerfuegbarkeitStatus, number> = {
+    verfuegbar: 0,
+    eingeschraenkt: 1,
+    nicht_verfuegbar: 2,
+  }
+
+  // Sort: matching skills → availability → no conflict → alphabetically
   return vorschlaege.sort((a, b) => {
     if (a.matchingSkills.length !== b.matchingSkills.length) {
       return b.matchingSkills.length - a.matchingSkills.length
+    }
+    if (a.verfuegbarkeit !== b.verfuegbarkeit) {
+      return verfRank[a.verfuegbarkeit] - verfRank[b.verfuegbarkeit]
     }
     if (a.hatKonflikt !== b.hatKonflikt) {
       return a.hatKonflikt ? 1 : -1

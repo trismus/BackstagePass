@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import type {
@@ -13,6 +13,7 @@ import {
   createProbe,
   updateProbe,
   updateProbeSzenen,
+  checkProbeVerfuegbarkeit,
 } from '@/lib/actions/proben'
 
 interface ProbeFormProps {
@@ -55,6 +56,31 @@ export function ProbeForm({
   })
 
   const [szenenIds, setSzenenIds] = useState<string[]>(selectedSzenenIds)
+
+  // Availability warnings
+  const [verfuegbarkeitWarnings, setVerfuegbarkeitWarnings] = useState<
+    { personId: string; personName: string; status: string; grund: string | null }[]
+  >([])
+  const [loadingVerfuegbarkeit, setLoadingVerfuegbarkeit] = useState(false)
+
+  const checkVerfuegbarkeit = useCallback(async () => {
+    if (!formData.datum) {
+      setVerfuegbarkeitWarnings([])
+      return
+    }
+    setLoadingVerfuegbarkeit(true)
+    const result = await checkProbeVerfuegbarkeit(
+      stueckId,
+      formData.datum,
+      szenenIds.length > 0 ? szenenIds : undefined
+    )
+    setVerfuegbarkeitWarnings(result.warnings)
+    setLoadingVerfuegbarkeit(false)
+  }, [stueckId, formData.datum, szenenIds])
+
+  useEffect(() => {
+    checkVerfuegbarkeit()
+  }, [checkVerfuegbarkeit])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -273,6 +299,51 @@ export function ProbeForm({
             </p>
           )}
         </div>
+      )}
+
+      {/* Verfügbarkeits-Warnung */}
+      {formData.datum && verfuegbarkeitWarnings.length > 0 && (
+        <div className="rounded-lg border border-warning-200 bg-warning-50 px-4 py-3">
+          <div className="flex items-start gap-2">
+            <svg
+              className="mt-0.5 h-5 w-5 shrink-0 text-warning-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-warning-800">
+                {verfuegbarkeitWarnings.length} Cast-Mitglied
+                {verfuegbarkeitWarnings.length !== 1 && 'er'} an diesem Datum
+                eingeschränkt oder nicht verfügbar:
+              </p>
+              <ul className="mt-1 space-y-0.5">
+                {verfuegbarkeitWarnings.map((w) => (
+                  <li key={w.personId} className="text-sm text-warning-700">
+                    <span className="font-medium">{w.personName}</span>
+                    {' — '}
+                    {w.status === 'nicht_verfuegbar'
+                      ? 'Nicht verfügbar'
+                      : 'Eingeschränkt'}
+                    {w.grund && ` (${w.grund})`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+      {loadingVerfuegbarkeit && formData.datum && (
+        <p className="text-sm text-gray-500">
+          Verfügbarkeiten werden geprüft...
+        </p>
       )}
 
       {/* Beschreibung */}
