@@ -148,7 +148,7 @@ async function getInfoBlockTimes(veranstaltungId: string): Promise<{
  * Build the cancellation link URL
  */
 function buildCancellationLink(token: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   return `${baseUrl}/helfer/abmeldung/${token}`
 }
 
@@ -156,7 +156,7 @@ function buildCancellationLink(token: string): string {
  * Build the public registration link URL
  */
 function buildPublicLink(token: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   return `${baseUrl}/helfer/anmeldung/${token}`
 }
 
@@ -500,7 +500,7 @@ export async function sendWaitlistAssignedEmail(
 
   const confirmToken = (entry as unknown as { confirmation_token?: string }).confirmation_token
   const confirmLink = confirmToken
-    ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/helfer/warteliste/bestaetigen/${confirmToken}`
+    ? `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/helfer/warteliste/bestaetigen/${confirmToken}`
     : ''
 
   return sendTemplatedEmail('waitlist_assigned', profile.email, {

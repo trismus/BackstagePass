@@ -426,7 +426,7 @@ async function sendConfirmationEmail(
 
   if (!veranstaltung) return
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   // Build shift info for email
   const shifts: ShiftInfo[] = schichten.map((s) => {

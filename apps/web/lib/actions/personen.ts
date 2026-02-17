@@ -136,12 +136,17 @@ async function performInvite(
   vorname: string,
   nachname: string
 ): Promise<{ user: User | null; error?: string }> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
   if (isEmailServiceConfigured()) {
     // Custom branded email path: generate link without sending Supabase email
     const { data, error } = await adminClient.auth.admin.generateLink({
       type: 'invite',
       email,
-      options: { data: { display_name: `${vorname} ${nachname}` } },
+      options: {
+        data: { display_name: `${vorname} ${nachname}` },
+        redirectTo: `${siteUrl}/passwort-setzen`,
+      },
     })
 
     if (error) return { user: null, error: error.message }
@@ -157,7 +162,10 @@ async function performInvite(
     // Fallback: Supabase default invitation email
     const { data, error } = await adminClient.auth.admin.inviteUserByEmail(
       email,
-      { data: { display_name: `${vorname} ${nachname}` } }
+      {
+        data: { display_name: `${vorname} ${nachname}` },
+        redirectTo: `${siteUrl}/passwort-setzen`,
+      }
     )
 
     if (error) return { user: null, error: error.message }
