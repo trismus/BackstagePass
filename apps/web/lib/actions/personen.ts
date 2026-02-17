@@ -354,7 +354,7 @@ export async function deletePerson(
  * Only allows updating certain fields and validates ownership
  */
 export async function updateOwnProfile(
-  personData: Pick<PersonUpdate, 'telefon' | 'strasse' | 'plz' | 'ort'>
+  personData: Pick<PersonUpdate, 'telefon' | 'strasse' | 'plz' | 'ort' | 'notfallkontakt_name' | 'notfallkontakt_telefon' | 'notfallkontakt_beziehung' | 'skills'>
 ): Promise<{ success: boolean; error?: string }> {
   if (USE_DUMMY_DATA) {
     revalidatePath('/mein-bereich')
@@ -403,6 +403,10 @@ export async function updateOwnProfile(
       strasse: personData.strasse,
       plz: personData.plz,
       ort: personData.ort,
+      notfallkontakt_name: personData.notfallkontakt_name,
+      notfallkontakt_telefon: personData.notfallkontakt_telefon,
+      notfallkontakt_beziehung: personData.notfallkontakt_beziehung,
+      skills: personData.skills,
     } as never)
     .eq('id', person.id)
 
@@ -412,6 +416,7 @@ export async function updateOwnProfile(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
