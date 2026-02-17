@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { inviteExistingPerson, resendInvitation } from '@/lib/actions/personen'
+import { inviteExistingPerson, resendInvitation, getDefaultAppRole } from '@/lib/actions/personen'
 import { Alert } from '@/components/ui/Alert'
 import type { Rolle, UserRole } from '@/lib/supabase/types'
 
@@ -13,21 +13,6 @@ const appRollenOptions: { value: UserRole; label: string; description: string }[
   { value: 'VORSTAND', label: 'Vorstand', description: 'Alle operativen Module' },
   { value: 'ADMIN', label: 'Administrator', description: 'Vollzugriff inkl. System' },
 ]
-
-function getDefaultAppRole(rolle: Rolle): UserRole {
-  switch (rolle) {
-    case 'vorstand':
-      return 'VORSTAND'
-    case 'mitglied':
-    case 'regie':
-    case 'technik':
-      return 'MITGLIED_AKTIV'
-    case 'gast':
-      return 'MITGLIED_PASSIV'
-    default:
-      return 'MITGLIED_AKTIV'
-  }
-}
 
 function daysSince(dateStr: string): number {
   return Math.floor(

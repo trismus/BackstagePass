@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useMemo, useCallback, useTransition, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { RolleBadge } from './RolleBadge'
@@ -11,8 +11,9 @@ import type {
   MitgliederFilterParams,
   ArchiveFilter,
   SortField,
+  BulkInviteResult,
 } from '@/lib/actions/personen'
-import { archiveMitglied, reactivateMitglied } from '@/lib/actions/personen'
+import { archiveMitglied, reactivateMitglied, bulkInvitePersons } from '@/lib/actions/personen'
 
 interface MitgliederTableProps {
   personen: Person[]
@@ -40,6 +41,9 @@ export function MitgliederTable({
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   const [showExportDialog, setShowExportDialog] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isBulkInviting, setIsBulkInviting] = useState(false)
+  const [bulkInviteResult, setBulkInviteResult] = useState<BulkInviteResult | null>(null)
 
   const {
     search = '',
@@ -49,6 +53,65 @@ export function MitgliederTable({
     sortBy = 'name',
     sortOrder = 'asc',
   } = filterParams
+
+  // Invitable: active persons with email and without profile_id or pending invite
+  const isInvitable = useCallback(
+    (p: Person) => !!p.email && !p.profile_id && p.aktiv && !p.invited_at,
+    []
+  )
+
+  const allInvitableIds = useMemo(
+    () => new Set(personen.filter(isInvitable).map((p) => p.id)),
+    [personen, isInvitable]
+  )
+
+  const allSelected =
+    allInvitableIds.size > 0 &&
+    [...allInvitableIds].every((id) => selectedIds.has(id))
+
+  const toggleSelectAll = useCallback(() => {
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(allInvitableIds))
+    }
+  }, [allSelected, allInvitableIds])
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  // Clear selection when filter params change
+  const filterKey = `${search}-${status}-${rolle.join(',')}-${skills.join(',')}`
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [filterKey])
+
+  const handleBulkInvite = async () => {
+    setIsBulkInviting(true)
+    try {
+      const result = await bulkInvitePersons(Array.from(selectedIds))
+      setBulkInviteResult(result)
+      setSelectedIds(new Set())
+    } finally {
+      setIsBulkInviting(false)
+    }
+  }
+
+  const handleCopyEmails = () => {
+    const emails = personen
+      .filter((p) => selectedIds.has(p.id) && p.email)
+      .map((p) => p.email!)
+    navigator.clipboard.writeText(emails.join(', '))
+  }
 
   // Build URL with updated params
   const updateParams = (updates: Partial<MitgliederFilterParams>) => {
@@ -269,11 +332,83 @@ export function MitgliederTable({
         </div>
       </div>
 
+      {/* Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+          <span className="text-sm font-medium text-blue-800">
+            {selectedIds.size} ausgewählt
+          </span>
+          <div className="h-4 w-px bg-blue-200" />
+          <button
+            type="button"
+            onClick={handleBulkInvite}
+            disabled={isBulkInviting}
+            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isBulkInviting ? 'Wird eingeladen...' : 'Einladen'}
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyEmails}
+            className="rounded border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            E-Mails kopieren
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="ml-auto text-sm text-blue-600 hover:text-blue-800"
+          >
+            Auswahl aufheben
+          </button>
+        </div>
+      )}
+
+      {/* Bulk Invite Result Dialog */}
+      {bulkInviteResult && (
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-green-800">
+                {bulkInviteResult.successful} von {bulkInviteResult.total} erfolgreich eingeladen
+              </p>
+              {bulkInviteResult.errors.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {bulkInviteResult.errors.map((err) => (
+                    <p key={err.personId} className="text-sm text-red-700">
+                      {err.name}: {err.error}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setBulkInviteResult(null)}
+              className="text-sm text-green-600 hover:text-green-800"
+            >
+              Schliessen
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="overflow-x-auto rounded-lg bg-white shadow">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="w-10 px-3 py-3">
+                {allInvitableIds.size > 0 && (
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    aria-label="Alle einladbaren auswählen"
+                  />
+                )}
+              </th>
               <th
                 className="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100"
                 onClick={() => toggleSort('name')}
@@ -309,7 +444,7 @@ export function MitgliederTable({
           <tbody className="divide-y divide-gray-200 bg-white">
             {personen.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                   {status === 'archiviert'
                     ? 'Keine archivierten Mitglieder'
                     : 'Keine Mitglieder gefunden'}
@@ -321,6 +456,17 @@ export function MitgliederTable({
                   key={person.id}
                   className={`hover:bg-gray-50 ${!person.aktiv ? 'bg-gray-50 opacity-75' : ''}`}
                 >
+                  <td className="w-10 px-3 py-4">
+                    {isInvitable(person) && (
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(person.id)}
+                        onChange={() => toggleSelect(person.id)}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        aria-label={`${person.vorname} ${person.nachname} auswählen`}
+                      />
+                    )}
+                  </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <div className="font-medium text-gray-900">
                       {person.vorname} {person.nachname}

@@ -9,6 +9,7 @@ import type {
   Person,
   PersonInsert,
   PersonUpdate,
+  Rolle,
   UserRole,
 } from '../supabase/types'
 import { sanitizeSearchQuery } from '../utils/search'
@@ -828,4 +829,129 @@ export async function resendInvitation(
   revalidatePath('/mitglieder')
   revalidatePath(`/mitglieder/${personId}`)
   return { success: true }
+}
+
+// =============================================================================
+// Bulk Invite (Issue #327)
+// =============================================================================
+
+/**
+ * Map a person's Vereins-Rolle to the default app role
+ */
+export function getDefaultAppRole(rolle: Rolle): UserRole {
+  switch (rolle) {
+    case 'vorstand':
+      return 'VORSTAND'
+    case 'mitglied':
+    case 'regie':
+    case 'technik':
+      return 'MITGLIED_AKTIV'
+    case 'gast':
+      return 'MITGLIED_PASSIV'
+    default:
+      return 'MITGLIED_AKTIV'
+  }
+}
+
+export interface BulkInviteResult {
+  total: number
+  successful: number
+  failed: number
+  errors: { personId: string; name: string; error: string }[]
+}
+
+/**
+ * Invite multiple persons to the app in bulk
+ * Only invites persons with email and without existing profile_id
+ */
+export async function bulkInvitePersons(
+  personIds: string[]
+): Promise<BulkInviteResult> {
+  await requirePermission('mitglieder:write')
+
+  if (personIds.length === 0) {
+    return { total: 0, successful: 0, failed: 0, errors: [] }
+  }
+
+  const supabase = await createClient()
+
+  // Fetch all persons in one query
+  const { data: persons, error: fetchError } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname, email, rolle, aktiv, profile_id, invited_at')
+    .in('id', personIds)
+
+  if (fetchError || !persons) {
+    return {
+      total: personIds.length,
+      successful: 0,
+      failed: personIds.length,
+      errors: [{ personId: '', name: '', error: 'Fehler beim Laden der Personen' }],
+    }
+  }
+
+  // Filter to only invitable persons (has email, no profile_id, active)
+  const invitable = persons.filter(
+    (p) => p.email && !p.profile_id && p.aktiv
+  )
+
+  const result: BulkInviteResult = {
+    total: invitable.length,
+    successful: 0,
+    failed: 0,
+    errors: [],
+  }
+
+  const adminClient = createAdminClient()
+
+  // Sequential invites to avoid rate limiting
+  for (const person of invitable) {
+    const name = `${person.vorname} ${person.nachname}`
+    try {
+      const appRole = getDefaultAppRole(person.rolle as Rolle)
+
+      const { data: inviteData, error: inviteError } =
+        await adminClient.auth.admin.inviteUserByEmail(person.email!, {
+          data: { display_name: name },
+        })
+
+      if (inviteError) {
+        result.failed++
+        result.errors.push({
+          personId: person.id,
+          name,
+          error: inviteError.message,
+        })
+        continue
+      }
+
+      // Update profile role
+      if (inviteData.user) {
+        await adminClient
+          .from('profiles')
+          .update({ role: appRole })
+          .eq('id', inviteData.user.id)
+      }
+
+      // Track invitation timestamp
+      await adminClient
+        .from('personen')
+        .update({ invited_at: new Date().toISOString() } as never)
+        .eq('id', person.id)
+
+      result.successful++
+    } catch (err) {
+      result.failed++
+      result.errors.push({
+        personId: person.id,
+        name,
+        error: err instanceof Error ? err.message : 'Unbekannter Fehler',
+      })
+    }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath('/admin/users')
+
+  return result
 }
