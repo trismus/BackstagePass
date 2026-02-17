@@ -1,6 +1,6 @@
 # BackstagePass - Projekt Status
 
-**Stand:** 2026-02-16
+**Stand:** 2026-02-17
 
 ---
 
@@ -181,10 +181,19 @@
 | #145 | ✅ Closed | [UX] Helfer-Dashboard erstellen (via #318) |
 | #146 | 🟡 Open | [UX] Partner-Portal erstellen |
 | #147 | 🟡 Open | [UX] Willkommen-Seite für Gäste/Freunde |
+| #328 | ✅ Closed | Onboarding-Flow nach erstem Login (PR #338) |
 
 ---
 
 ## Changelog
+
+### 2026-02-17: Onboarding-Flow nach erstem Login (#328)
+
+- `onboarding_completed` Boolean auf `profiles` Tabelle (Migration + Backfill)
+- Middleware-Redirect: Neue Benutzer werden zu `/willkommen` weitergeleitet
+- 2-Schritt OnboardingWizard: Begrüssung + optionales Profil (Telefon, Notfallkontakt, Skills)
+- `/willkommen` Seite umgebaut: Wizard / FREUNDE-Startseite / Redirect je nach Status
+- Supabase CLI eingerichtet, Migration-History repariert, Duplicate-Timestamp-Bug behoben
 
 ### 2026-02-16: Dashboard-Restructuring & Vorstand Mein Bereich
 
@@ -298,6 +307,7 @@ Progress by Milestone:
 ## Aktuelle Entwicklungen (Feb 2026)
 
 ### Abgeschlossene Features
+- ✅ Onboarding-Flow nach erstem Login (#328)
 - ✅ Dashboard-Restructuring: Stundenkonto aus MITGLIED_AKTIV entfernt
 - ✅ Vorstand "Mein Bereich" mit Termine, Stundenkonto, Einsätze
 - ✅ Kombinierte Einsätze-Ansicht (neues + legacy Helfer-System)
@@ -322,4 +332,4 @@ Progress by Milestone:
 
 ---
 
-*Aktualisiert am 2026-02-16*
+*Aktualisiert am 2026-02-17*
