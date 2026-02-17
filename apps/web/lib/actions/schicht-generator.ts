@@ -122,6 +122,7 @@ export async function generateSchichtenFromTemplate(
         rolle: ts.rolle,
         anzahl_benoetigt: ts.anzahl_benoetigt,
         sichtbarkeit: ts.nur_mitglieder ? 'intern' as const : 'public' as const,
+        benoetigte_skills: ts.benoetigte_skills ?? [],
       }))
 
       const { data: createdSchichtData, error: schichtError } = await supabase

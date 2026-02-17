@@ -42,6 +42,18 @@ export function SchichtDetailCard({
               </span>
             )}
           </div>
+          {schicht.benoetigte_skills && schicht.benoetigte_skills.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {schicht.benoetigte_skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Progress */}
           <div className="mt-2 flex items-center gap-3">

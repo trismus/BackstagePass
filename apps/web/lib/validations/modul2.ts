@@ -115,6 +115,7 @@ export const schichtSchema = z.object({
     .int()
     .min(1, 'Mindestens 1 Person benötigt')
     .default(1),
+  benoetigte_skills: z.array(z.string().max(50)).max(20).optional().default([]),
 })
 
 export const schichtUpdateSchema = schichtSchema
@@ -207,6 +208,7 @@ export const templateSchichtSchema = z.object({
     .min(1, 'Mindestens 1 Person benötigt')
     .default(1),
   nur_mitglieder: z.boolean().optional().default(false),
+  benoetigte_skills: z.array(z.string().max(50)).max(20).optional().default([]),
 })
 
 export const templateZeitblockUpdateSchema = templateZeitblockSchema

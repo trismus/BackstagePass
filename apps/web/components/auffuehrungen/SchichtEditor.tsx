@@ -8,6 +8,23 @@ import {
   deleteSchicht,
 } from '@/lib/actions/auffuehrung-schichten'
 import type { SchichtMitZeitblock, Zeitblock } from '@/lib/supabase/types'
+import { TagInput } from '@/components/ui/TagInput'
+
+const SKILL_SUGGESTIONS = [
+  'Licht',
+  'Ton',
+  'Bühnenbau',
+  'Kostüm',
+  'Maske',
+  'Requisite',
+  'Fotografie',
+  'Video',
+  'Kasse',
+  'Einlass',
+  'Service',
+  'Aufbau',
+  'Abbau',
+]
 
 interface SchichtEditorProps {
   veranstaltungId: string
@@ -30,12 +47,14 @@ export function SchichtEditor({
   const [rolle, setRolle] = useState('')
   const [zeitblockId, setZeitblockId] = useState('')
   const [anzahlBenoetigt, setAnzahlBenoetigt] = useState('1')
+  const [benoetigteSkills, setBenoetigteSkills] = useState<string[]>([])
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editRolle, setEditRolle] = useState('')
   const [editZeitblockId, setEditZeitblockId] = useState('')
   const [editAnzahlBenoetigt, setEditAnzahlBenoetigt] = useState('1')
+  const [editBenoetigteSkills, setEditBenoetigteSkills] = useState<string[]>([])
   const [editLoading, setEditLoading] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
 
@@ -44,6 +63,7 @@ export function SchichtEditor({
     setEditRolle(s.rolle)
     setEditZeitblockId(s.zeitblock_id || '')
     setEditAnzahlBenoetigt(String(s.anzahl_benoetigt))
+    setEditBenoetigteSkills(s.benoetigte_skills ?? [])
     setEditError(null)
   }
 
@@ -63,6 +83,7 @@ export function SchichtEditor({
       rolle: editRolle,
       zeitblock_id: editZeitblockId || null,
       anzahl_benoetigt: parseInt(editAnzahlBenoetigt, 10) || 1,
+      benoetigte_skills: editBenoetigteSkills,
     })
 
     if (result.success) {
@@ -84,12 +105,14 @@ export function SchichtEditor({
       zeitblock_id: zeitblockId || null,
       rolle,
       anzahl_benoetigt: parseInt(anzahlBenoetigt, 10) || 1,
+      benoetigte_skills: benoetigteSkills,
     })
 
     if (result.success) {
       setRolle('')
       setZeitblockId('')
       setAnzahlBenoetigt('1')
+      setBenoetigteSkills([])
       setShowForm(false)
       router.refresh()
     } else {
@@ -130,6 +153,17 @@ export function SchichtEditor({
                 value={editRolle}
                 onChange={(e) => setEditRolle(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="col-span-2">
+              <TagInput
+                label="Benötigte Skills"
+                value={editBenoetigteSkills}
+                onChange={setEditBenoetigteSkills}
+                suggestions={SKILL_SUGGESTIONS}
+                placeholder="Skill hinzufügen..."
+                maxTags={20}
+                maxTagLength={50}
               />
             </div>
             <div>
@@ -189,6 +223,18 @@ export function SchichtEditor({
           <span className="ml-2 text-sm text-gray-500">
             ({s.anzahl_benoetigt} benötigt)
           </span>
+          {s.benoetigte_skills && s.benoetigte_skills.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {s.benoetigte_skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         {canEdit && (
           <div className="flex items-center gap-3">
@@ -253,6 +299,17 @@ export function SchichtEditor({
                 value={rolle}
                 onChange={(e) => setRolle(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="col-span-2">
+              <TagInput
+                label="Benötigte Skills"
+                value={benoetigteSkills}
+                onChange={setBenoetigteSkills}
+                suggestions={SKILL_SUGGESTIONS}
+                placeholder="Skill hinzufügen..."
+                maxTags={20}
+                maxTagLength={50}
               />
             </div>
             <div>
