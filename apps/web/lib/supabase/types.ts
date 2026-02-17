@@ -2234,6 +2234,111 @@ export type ProduktionDashboardData = {
 }
 
 // =============================================================================
+// Person Engagement History (Issue #349)
+// =============================================================================
+
+export type StueckBesetzungHistorie = {
+  besetzungId: string
+  stueckId: string
+  stueckTitel: string
+  rolleName: string
+  rolleTyp: RollenTyp
+  besetzungTyp: BesetzungTyp
+  gueltigVon: string | null
+  gueltigBis: string | null
+}
+
+export type ProduktionsBesetzungHistorie = {
+  besetzungId: string
+  produktionId: string
+  produktionTitel: string
+  produktionStatus: ProduktionStatus
+  rolleName: string
+  rolleTyp: RollenTyp
+  besetzungTyp: BesetzungTyp
+  besetzungStatus: ProduktionsBesetzungStatus
+}
+
+export type ProduktionsStabHistorie = {
+  stabId: string
+  produktionId: string
+  produktionTitel: string
+  produktionStatus: ProduktionStatus
+  funktion: string
+  istLeitung: boolean
+  von: string | null
+  bis: string | null
+}
+
+export type AuffuehrungsZuweisungHistorie = {
+  zuweisungId: string
+  veranstaltungId: string
+  veranstaltungTitel: string
+  veranstaltungDatum: string
+  schichtRolle: string
+  zeitblockName: string | null
+  zeitblockStartzeit: string | null
+  zeitblockEndzeit: string | null
+  status: ZuweisungStatus
+  checkedInAt: string | null
+}
+
+export type ProbenTeilnahmeHistorie = {
+  teilnehmerId: string
+  probeId: string
+  probeTitel: string
+  probeDatum: string
+  stueckId: string
+  stueckTitel: string
+  status: TeilnehmerStatus
+}
+
+export type HelferAnmeldungHistorie = {
+  anmeldungId: string
+  eventId: string
+  eventName: string
+  eventDatum: string
+  rollenName: string
+  zeitblockStart: string | null
+  zeitblockEnd: string | null
+  status: HelferAnmeldungStatus
+}
+
+export type EngagementStatistik = {
+  totalAuffuehrungen: number
+  totalProben: number
+  probenAnwesenheitsquote: number
+  totalHelferEinsaetze: number
+  totalProduktionen: number
+  totalStueckBesetzungen: number
+}
+
+export type PersonEngagements = {
+  stueckBesetzungen: StueckBesetzungHistorie[]
+  produktionsBesetzungen: ProduktionsBesetzungHistorie[]
+  produktionsStab: ProduktionsStabHistorie[]
+  auffuehrungsZuweisungen: AuffuehrungsZuweisungHistorie[]
+  probenTeilnahmen: ProbenTeilnahmeHistorie[]
+  helferAnmeldungen: HelferAnmeldungHistorie[]
+  statistik: EngagementStatistik
+}
+
+// =============================================================================
+// Optimal Probe Termin Suggestion (Issue #350)
+// =============================================================================
+
+export type OptimalProbeTermin = {
+  datum: string
+  wochentag: string
+  verfuegbareCount: number
+  eingeschraenktCount: number
+  nichtVerfuegbarCount: number
+  totalCast: number
+  verfuegbarkeitsProzent: number
+  nichtVerfuegbar: { personId: string; personName: string; grund: string | null }[]
+}
+
+// =============================================================================
 // Gruppen (Teams, Gremien, Produktions-Casts) - Dashboards Milestone
 // =============================================================================
 
