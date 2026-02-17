@@ -9,6 +9,7 @@ import type {
   ProbeUpdate,
   ProbeMitDetails,
   KommendeProbe,
+  MeineProbe,
   ProbeSzene,
   ProbeSzeneInsert,
   ProbeTeilnehmer,
@@ -218,6 +219,63 @@ async function getProbeBasic(id: string): Promise<Probe | null> {
 
   if (error) return null
   return data as Probe
+}
+
+/**
+ * Get upcoming Proben for a person (Dashboard widget)
+ */
+export async function getMeineProben(personId: string): Promise<MeineProbe[]> {
+  const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  const { data, error } = await supabase
+    .from('proben_teilnehmer')
+    .select(`
+      id,
+      status,
+      probe:proben(id, titel, datum, startzeit, endzeit, ort,
+        stueck:stuecke(titel)
+      )
+    `)
+    .eq('person_id', personId)
+    .in('status', ['eingeladen', 'zugesagt'])
+
+  if (error) {
+    console.error('Error fetching meine proben:', error)
+    return []
+  }
+
+  if (!data) return []
+
+  // Filter for future proben, map to flat structure
+  const result: MeineProbe[] = []
+  for (const row of data) {
+    const probe = row.probe as unknown as {
+      id: string
+      titel: string
+      datum: string
+      startzeit: string | null
+      endzeit: string | null
+      ort: string | null
+      stueck: { titel: string } | null
+    } | null
+    if (!probe || probe.datum < today) continue
+    result.push({
+      id: row.id,
+      probe_id: probe.id,
+      titel: probe.titel,
+      stueck_titel: probe.stueck?.titel ?? null,
+      datum: probe.datum,
+      startzeit: probe.startzeit,
+      endzeit: probe.endzeit,
+      ort: probe.ort,
+      status: row.status as TeilnehmerStatus,
+    })
+  }
+
+  // Sort by datum ascending, limit 5
+  result.sort((a, b) => a.datum.localeCompare(b.datum))
+  return result.slice(0, 5)
 }
 
 // =============================================================================

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type {
   AnmeldungMitVeranstaltung,
+  MeineProbe,
 } from '@/lib/supabase/types'
 
 interface UpcomingEventsWidgetProps {
@@ -150,6 +151,84 @@ export function HelferEinsaetzeWidget({
           className="text-sm text-amber-600 hover:text-amber-800"
         >
           Alle Einsätze &rarr;
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+interface MeineProbenWidgetProps {
+  proben: MeineProbe[]
+}
+
+export function MeineProbenWidget({ proben }: MeineProbenWidgetProps) {
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('de-CH', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+    })
+  }
+
+  const formatTime = (start: string | null, end: string | null) => {
+    if (!start) return null
+    const s = start.slice(0, 5)
+    const e = end ? end.slice(0, 5) : null
+    return e ? `${s}–${e}` : s
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="border-b border-purple-100 bg-purple-50 px-4 py-3">
+        <h3 className="font-medium text-purple-900">Meine Proben</h3>
+      </div>
+      {proben.length > 0 ? (
+        <div className="divide-y divide-neutral-100">
+          {proben.map((p) => (
+            <Link
+              key={p.id}
+              href={`/proben/${p.probe_id}` as never}
+              className="block p-3 transition-colors hover:bg-neutral-50"
+            >
+              <div className="flex items-start justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-neutral-900">
+                    {p.stueck_titel ? `${p.stueck_titel}: ` : ''}{p.titel}
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    {p.ort || 'Kein Ort'}
+                    {formatTime(p.startzeit, p.endzeit) && ` • ${formatTime(p.startzeit, p.endzeit)}`}
+                  </p>
+                </div>
+                <div className="ml-2 flex flex-col items-end gap-1">
+                  <span className="text-xs text-neutral-500">
+                    {formatDate(p.datum)}
+                  </span>
+                  <span
+                    className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                      p.status === 'zugesagt'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}
+                  >
+                    {p.status === 'zugesagt' ? 'Zugesagt' : 'Eingeladen'}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="p-4 text-center text-sm text-neutral-500">
+          Keine anstehenden Proben
+        </div>
+      )}
+      <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
+        <Link
+          href="/proben"
+          className="text-sm text-purple-600 hover:text-purple-800"
+        >
+          Alle Proben &rarr;
         </Link>
       </div>
     </div>
