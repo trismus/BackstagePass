@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, getUserProfile } from '../supabase/server'
 import { isManagement } from '../supabase/auth-helpers'
+import { PROBENPLAN_ELIGIBLE_STATUS } from '../supabase/types'
 import type { Szene, ProbeInsert } from '../supabase/types'
 import {
   probenGeneratorSchema,
@@ -556,7 +557,7 @@ export async function getStueckeMitSzenen(): Promise<
       titel,
       szenen(*)
     `)
-    .in('status', ['in_proben', 'in_planung'])
+    .in('status', [...PROBENPLAN_ELIGIBLE_STATUS])
     .order('titel')
 
   if (error) {

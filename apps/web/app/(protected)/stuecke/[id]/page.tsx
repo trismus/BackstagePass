@@ -10,6 +10,7 @@ import {
 import { getRequisiten } from '@/lib/actions/requisiten'
 import { createClient, getUserProfile } from '@/lib/supabase/server'
 import { canEdit as checkCanEdit } from '@/lib/supabase/auth-helpers'
+import { PROBENPLAN_ELIGIBLE_STATUS } from '@/lib/supabase/types'
 import {
   StatusBadge,
   SzenenList,
@@ -132,6 +133,36 @@ export default async function StueckDetailPage({
             </div>
           </div>
         </div>
+
+        {/* Probenplan-Generator Hinweis */}
+        {PROBENPLAN_ELIGIBLE_STATUS.includes(stueck.status) && canEdit && (
+          <div className="mb-6 rounded-lg border border-primary-200 bg-primary-50 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <svg
+                className="h-5 w-5 flex-shrink-0 text-primary-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <p className="text-sm text-primary-800">
+                Für dieses Stück können automatisch Proben generiert werden.{' '}
+                <Link
+                  href={'/proben/generator' as Route}
+                  className="font-medium underline"
+                >
+                  Zum Probenplan-Generator
+                </Link>
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Szenen-Rollen-Matrix */}
         <div className="mb-6">

@@ -1093,6 +1093,21 @@ export type StueckStatus =
   | 'aktiv'
   | 'abgeschlossen'
   | 'archiviert'
+export const STUECK_STATUS_LABELS: Record<StueckStatus, string> = {
+  in_planung: 'In Planung',
+  in_proben: 'In Proben',
+  aktiv: 'Aktiv',
+  abgeschlossen: 'Abgeschlossen',
+  archiviert: 'Archiviert',
+}
+
+/** Stücke eligible for the Probenplan-Generator */
+export const PROBENPLAN_ELIGIBLE_STATUS: readonly StueckStatus[] = [
+  'in_planung',
+  'in_proben',
+  'aktiv',
+] as const
+
 export type RollenTyp = 'hauptrolle' | 'nebenrolle' | 'ensemble' | 'statisterie'
 
 export type Stueck = {
