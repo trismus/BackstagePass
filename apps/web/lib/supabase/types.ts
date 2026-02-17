@@ -1492,6 +1492,18 @@ export type KommendeProbe = Probe & {
   zusagen_count: number
 }
 
+export type MeineProbe = {
+  id: string // proben_teilnehmer.id
+  probe_id: string
+  titel: string
+  stueck_titel: string | null
+  datum: string
+  startzeit: string | null
+  endzeit: string | null
+  ort: string | null
+  status: TeilnehmerStatus
+}
+
 // =============================================================================
 // Externe Helfer Profile (Issue #208)
 // =============================================================================

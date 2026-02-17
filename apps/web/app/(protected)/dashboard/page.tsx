@@ -16,6 +16,7 @@ import {
 } from '@/components/dashboard'
 import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
+import { getMeineProben } from '@/lib/actions/proben'
 import { getRollenHistorie, getHelfereinsatzHistorie } from '@/lib/actions/historie'
 import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
 import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
@@ -24,6 +25,7 @@ import { HelfereinsatzHistorie } from '@/components/mein-bereich/HelfereinsatzHi
 import {
   UpcomingEventsWidget,
   HelferEinsaetzeWidget,
+  MeineProbenWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
 import { ProfileCompletionWidget } from '@/components/mein-bereich/ProfileCompletionWidget'
 import type { KalenderTermin } from '@/components/mein-bereich/MiniKalender'
@@ -462,6 +464,7 @@ export default async function DashboardPage({
 
   // Get data if person is linked
   const anmeldungen = person ? await getAnmeldungenForPerson(person.id) : []
+  const meineProben = person && !isPassiveMember ? await getMeineProben(person.id) : []
 
   // Get available helper events (only for active members)
   const { data: verfuegbareEinsaetze } = !isPassiveMember
@@ -493,6 +496,17 @@ export default async function DashboardPage({
       titel: a.veranstaltung.titel,
       typ: 'veranstaltung',
       href: `/veranstaltungen/${a.veranstaltung.id}`,
+    })
+  })
+
+  // Add proben as calendar events
+  meineProben.forEach((p) => {
+    kalenderTermine.push({
+      id: p.id,
+      datum: p.datum,
+      titel: p.stueck_titel ? `${p.stueck_titel}: ${p.titel}` : p.titel,
+      typ: 'probe',
+      href: `/proben/${p.probe_id}`,
     })
   })
 
@@ -583,6 +597,10 @@ export default async function DashboardPage({
                   <span className="font-semibold text-neutral-900">{upcomingAnmeldungen.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-600">Anstehende Proben</span>
+                  <span className="font-semibold text-purple-600">{meineProben.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
                   <span className="text-sm text-neutral-600">Offene Einsätze</span>
                   <span className="font-semibold text-blue-600">{verfuegbareEinsaetze?.length ?? 0}</span>
                 </div>
@@ -656,8 +674,9 @@ export default async function DashboardPage({
             </div>
 
             {/* Content Widgets */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
+              <MeineProbenWidget proben={meineProben} />
               <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
             </div>
 
