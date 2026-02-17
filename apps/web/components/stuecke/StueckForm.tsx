@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Stueck, StueckInsert, StueckStatus } from '@/lib/supabase/types'
+import { STUECK_STATUS_LABELS } from '@/lib/supabase/types'
 import { createStueck, updateStueck } from '@/lib/actions/stuecke'
 
 interface StueckFormProps {
@@ -10,13 +11,9 @@ interface StueckFormProps {
   stueck?: Stueck
 }
 
-const statusOptions: { value: StueckStatus; label: string }[] = [
-  { value: 'in_planung', label: 'In Planung' },
-  { value: 'in_proben', label: 'In Proben' },
-  { value: 'aktiv', label: 'Aktiv' },
-  { value: 'abgeschlossen', label: 'Abgeschlossen' },
-  { value: 'archiviert', label: 'Archiviert' },
-]
+const statusOptions = (
+  Object.entries(STUECK_STATUS_LABELS) as [StueckStatus, string][]
+).map(([value, label]) => ({ value, label }))
 
 export function StueckForm({ mode, stueck }: StueckFormProps) {
   const router = useRouter()

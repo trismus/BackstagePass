@@ -24,14 +24,14 @@ import {
   type ProbenplanTemplate,
 } from '@/lib/actions/probenplan'
 import { suggestOptimalProbeTermin } from '@/lib/actions/proben'
-import type { OptimalProbeTermin } from '@/lib/supabase/types'
+import type { OptimalProbeTermin, StueckStatus } from '@/lib/supabase/types'
 import { KonfliktAnzeige } from './KonfliktAnzeige'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 type StueckMitSzenen = {
   id: string
   titel: string
-  status: string
+  status: StueckStatus
   szenen: SimpleSzene[]
 }
 

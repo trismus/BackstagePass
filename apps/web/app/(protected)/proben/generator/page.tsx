@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { ProbenplanGenerator } from '@/components/proben/ProbenplanGenerator'
+import { PROBENPLAN_ELIGIBLE_STATUS } from '@/lib/supabase/types'
 import Link from 'next/link'
 import type { Route } from 'next'
 
@@ -19,7 +20,7 @@ export default async function ProbenGeneratorPage() {
       status,
       szenen(id, nummer, titel, dauer_minuten)
     `)
-    .in('status', ['in_proben', 'in_planung'])
+    .in('status', [...PROBENPLAN_ELIGIBLE_STATUS])
     .order('titel')
 
   // Fetch saved templates
@@ -79,7 +80,7 @@ export default async function ProbenGeneratorPage() {
           </h3>
           <p className="mt-2 text-gray-500">
             Um den Probenplan-Generator zu nutzen, muss mindestens ein Stück den
-            Status «In Proben» oder «In Planung» haben.
+            Status «In Proben», «In Planung» oder «Aktiv» haben.
           </p>
           <Link
             href={'/stuecke' as Route}
