@@ -71,7 +71,6 @@ apps/web/
 │   │   ├── raeume/         # Room management
 │   │   ├── ressourcen/     # Equipment management
 │   │   ├── templates/      # Performance templates
-│   │   ├── helferliste/    # Helper event management (new system)
 │   │   ├── mein-bereich/   # Personal area (redirects to dashboard)
 │   │   ├── meine-einsaetze/# Helper dashboard (HELFER role)
 │   │   └── admin/          # Admin-only (users, audit logs)
@@ -292,7 +291,7 @@ Types are manually maintained in `lib/supabase/types.ts` following the database 
 - Located in `e2e/` directory
 - Tests run against local dev server (auto-started)
 - Base URL: `http://localhost:3000`
-- Example: `e2e/helferliste-admin.spec.ts`
+- Example: `e2e/helferliste-public.spec.ts`
 
 **Core Tables:**
 - `personen` - Members/people

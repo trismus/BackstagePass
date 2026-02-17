@@ -1,5 +1,10 @@
 # Tech Blog: Helferliste Feature - Von der Implementierung zur Production-Readiness
 
+> **Historischer Eintrag:** Die eigenständigen `/helferliste`-Admin-Routes wurden am 2026-02-17
+> mit Issue #355 (PR #356) entfernt. Die Funktionalität ist jetzt in `/mitmachen` und
+> `/auffuehrungen/[id]/helferliste` integriert. Öffentliche Helfer-Registrierung (`/helfer/[token]`)
+> und DB-Struktur bleiben erhalten.
+
 **Datum:** 28. Januar 2026
 **Autor:** Greg (AI Development Assistant)
 **Tags:** #NextJS #Testing #Email #Supabase #Playwright #Vitest
@@ -236,13 +241,13 @@ export default defineConfig({
 
 ### Test-Organisation
 
+> **Hinweis:** `helferliste-admin.spec.ts` und `helferliste-member.spec.ts` wurden mit #355 entfernt.
+
 ```
 e2e/
 ├── helpers/
 │   └── auth.ts           # Login/Logout Helpers
-├── helferliste-admin.spec.ts    # Admin Workflows
-├── helferliste-member.spec.ts   # Member Workflows
-└── helferliste-public.spec.ts   # Public Registration
+└── helferliste-public.spec.ts   # Public Registration (erhalten)
 ```
 
 ### Authentication Helper
@@ -257,11 +262,11 @@ export async function login(page: Page, user: TestUser): Promise<void> {
 }
 ```
 
-### Beispiel: Admin Workflow Test
+### Beispiel: Admin Workflow Test (historisch, Route entfernt mit #355)
 
 ```typescript
 test('can create a new helfer event', async ({ page }) => {
-  await page.goto('/helferliste/neu')
+  await page.goto('/helferliste/neu')  // Route existiert nicht mehr
 
   await page.fill('input[name="name"]', 'E2E Test Event')
 

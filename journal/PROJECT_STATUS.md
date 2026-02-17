@@ -104,64 +104,32 @@
 
 **Beschreibung:** Helferliste zur strukturierten Planung und Besetzung von Helferrollen
 **Due:** 2026-02-28
-**Status:** IMPLEMENTIERT (2026-01-27)
+**Status:** Admin-UI entfernt (#355), Funktionalität in `/mitmachen` und `/auffuehrungen` integriert
 
-### Implementierte Funktionen
+### Aktueller Stand (nach #355)
 
-#### Database (4 Issues) ✅
+Die eigenständigen `/helferliste`-Admin-Routes wurden entfernt. Die Funktionalität ist jetzt integriert in:
+- `/mitmachen` — Öffentliche Mitmachen-Seite (ersetzt `/helferliste`)
+- `/auffuehrungen/[id]/helferliste` — Helferliste pro Aufführung
+- `/helfer/[token]` — Öffentliche Helfer-Registrierung (unverändert)
+- `/helfer/helferliste/abmeldung/[token]` — Öffentliche Abmeldung (unverändert)
+
+**Erhaltene Komponenten:** `StatusBadge`, `PublicEventView`, `MultiSelectContext`
+**Erhaltene Server Actions:** `getPublicEventByToken`, `anmeldenPublicMulti` (in `lib/actions/helferliste.ts`)
+**DB-Tabellen & RPC-Funktionen:** Alle erhalten (weiterhin genutzt)
+
+### Entfernt mit #355
+- Admin-Routes: `/helferliste`, `/helferliste/neu`, `/helferliste/[id]`, `/helferliste/templates/*`
+- 10 exklusive Komponenten, `helfer-templates.ts`, Dashboard-Widget
+- E2E-Tests: `helferliste-admin.spec.ts`, `helferliste-member.spec.ts`
+
+### Database (4 Issues) ✅
 | # | Status | Titel |
 |---|--------|-------|
 | #115 | ✅ Done | DB: Create helfer_events table and RLS policies |
 | #116 | ✅ Done | DB: Create helfer_rollen_templates table and RLS policies |
 | #117 | ✅ Done | DB: Create helfer_rollen_instanzen table and RLS policies |
 | #118 | ✅ Done | DB: Create helfer_anmeldungen table and RLS policies |
-
-**Migration:** `20260227000000_helferliste.sql`
-- 4 Tabellen mit RLS Policies
-- Helper Functions für Auth-Checks
-- Seed-Daten für Templates
-
-#### Backend/API (6 Issues) ✅
-| # | Status | Titel |
-|---|--------|-------|
-| #119 | ✅ Done | Integrate helferliste actions with audit logging |
-| #120 | ✅ Done | API: Implement CRUD for helfer_events |
-| #121 | ✅ Done | API: Implement CRUD for helfer_rollen_instanzen |
-| #122 | ✅ Done | API: Implement HelferAnmeldungen actions |
-| #123 | ✅ Done | API: Implement double-booking/overlap prevention |
-| #131 | ✅ Done | API: Implement public link generation |
-
-**Server Actions:**
-- `lib/actions/helferliste.ts` - Haupt-CRUD für Events, Rollen, Anmeldungen
-- `lib/actions/helfer-templates.ts` - Template-Verwaltung
-
-#### Frontend/UI (7 Issues) ✅
-| # | Status | Titel |
-|---|--------|-------|
-| #124 | ✅ Done | UI: Admin page for HelferEvent creation/management |
-| #125 | ✅ Done | UI: Implement HelferAnmeldung forms |
-| #126 | ✅ Done | UI: Admin page for HelferRollenTemplate management |
-| #127 | ✅ Done | UI: Member/Public view for HelferEvents/Rollen |
-| #128 | ✅ Done | UI: Admin dashboard for HelferAnmeldungen management |
-| #129 | ✅ Done | UI: Admin component for HelferRollenInstanz management |
-| #134 | ✅ Done | Improve error handling and UI feedback |
-
-**Routes:**
-- `/helferliste` - Events-Liste
-- `/helferliste/neu` - Neues Event erstellen
-- `/helferliste/[id]` - Event-Details mit Rollen-Management
-- `/helferliste/templates` - Templates-Verwaltung
-- `/helferliste/templates/neu` - Neues Template
-- `/helfer/[token]` - Öffentliche Ansicht für externe Helfer
-
-**Components:** 12 Komponenten in `components/helferliste/`
-
-#### Ausstehend (3 Issues)
-| # | Status | Titel | Grund |
-|---|--------|-------|-------|
-| #130 | 🟡 Deferred | Email notifications | Erfordert Email-Infrastruktur |
-| #132 | 🟡 Deferred | Unit/Integration tests | Optional |
-| #133 | 🟡 Deferred | End-to-End tests | Optional |
 
 ---
 
@@ -206,6 +174,17 @@
 ---
 
 ## Changelog
+
+### 2026-02-17: /helferliste Admin-Modul entfernt (#355, PR #356)
+
+- `/helferliste`-Admin-Routes entfernt (ersetzt durch `/mitmachen`)
+- 10 exklusive Komponenten, `helfer-templates.ts` und Dashboard-Widget gelöscht
+- `helferliste.ts` auf 2 öffentliche Funktionen reduziert (`getPublicEventByToken`, `anmeldenPublicMulti`)
+- Navigation, Breadcrumbs und Route-ACL bereinigt
+- Homepage-Link von `/helferliste` auf `/mitmachen` umgestellt
+- Stale `revalidatePath('/helferliste')` in öffentlicher Abmeldung bereinigt
+- E2E-Tests `helferliste-admin.spec.ts` und `helferliste-member.spec.ts` entfernt
+- **26 Dateien, -3.776 Zeilen**
 
 ### 2026-02-17: Proben-Teilnehmer aus Besetzung auto-befüllen (#345, PR #354)
 
@@ -313,28 +292,19 @@ Alle Template-Elemente jetzt inline editierbar:
 
 ### 2026-01-27: Helferliste Feature - Vollständig implementiert
 
-**Neue Dateien:**
+> **Hinweis:** Die `/helferliste`-Admin-Routes wurden mit #355 (2026-02-17) entfernt.
+> Funktionalität ist jetzt in `/mitmachen` und `/auffuehrungen/[id]/helferliste` integriert.
+
+**Aktuelle Dateien (nach #355):**
 
 | Datei | Beschreibung |
 |-------|--------------|
 | `supabase/migrations/20260227000000_helferliste.sql` | Database Migration |
-| `lib/actions/helferliste.ts` | Server Actions (Events, Rollen, Anmeldungen) |
-| `lib/actions/helfer-templates.ts` | Server Actions (Templates) |
-| `app/(protected)/helferliste/page.tsx` | Events-Liste |
-| `app/(protected)/helferliste/neu/page.tsx` | Neues Event |
-| `app/(protected)/helferliste/[id]/page.tsx` | Event-Details |
-| `app/(protected)/helferliste/templates/page.tsx` | Templates-Liste |
-| `app/(protected)/helferliste/templates/neu/page.tsx` | Neues Template |
+| `lib/actions/helferliste.ts` | Öffentliche Actions (`getPublicEventByToken`, `anmeldenPublicMulti`) |
 | `app/(public)/helfer/[token]/page.tsx` | Öffentliche Helfer-Ansicht |
-| `components/helferliste/*.tsx` | 12 UI-Komponenten |
-
-**Geänderte Dateien:**
-
-| Datei | Änderung |
-|-------|----------|
-| `lib/supabase/types.ts` | Neue Typen für Helferliste |
-| `lib/supabase/auth-helpers.ts` | Neue Permissions (helferliste:*) |
-| `lib/navigation.ts` | Navigation für /helferliste hinzugefügt |
+| `components/helferliste/StatusBadge.tsx` | Status-Badge (shared) |
+| `components/helferliste/PublicEventView.tsx` | Öffentliche Event-Ansicht (shared) |
+| `components/helferliste/MultiSelectContext.tsx` | Multi-Select Context (intern) |
 
 ### Build-Fixes
 
@@ -366,6 +336,7 @@ Progress by Milestone:
 ## Aktuelle Entwicklungen (Feb 2026)
 
 ### Abgeschlossene Features
+- ✅ /helferliste Admin-Modul entfernt, ersetzt durch /mitmachen (#355)
 - ✅ Proben-Teilnehmer aus Besetzung auto-befüllen mit Vorschau-Dialog (#345)
 - ✅ Zentrale Personen-Einsatzübersicht mit 5 Quellen + Verfügbarkeiten (#346)
 - ✅ Besetzung → Aufführungs-Zuweisungen automatisch erstellen (#344)

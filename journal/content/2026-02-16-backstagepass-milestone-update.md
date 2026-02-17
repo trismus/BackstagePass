@@ -132,10 +132,12 @@ export function createMockQueryBuilder(result: MockQueryResult) {
 
 **E2E Tests mit Playwright (15+ Tests)**
 
+> **Hinweis:** `helferliste-admin.spec.ts` wurde mit #355 entfernt. Beispiel historisch.
+
 ```typescript
-// e2e/helferliste-admin.spec.ts
+// e2e/helferliste-admin.spec.ts (entfernt mit #355)
 test('can create a new helfer event', async ({ page }) => {
-  await page.goto('/helferliste/neu')
+  await page.goto('/helferliste/neu')  // Route existiert nicht mehr
   await page.fill('input[name="name"]', 'Premiere - Frühling 2026')
   await page.click('button[type="submit"]')
   await expect(page).toHaveURL(/\/helferliste\/[a-z0-9-]+$/)
