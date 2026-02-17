@@ -14,9 +14,9 @@
 | **Modul 3** | In Progress | 6 | 4 | - |
 | **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
 | **UserExperience** | In Progress | 7 | 5 | - |
-| **Vorhang auf** | In Progress | 7 | 1 | - |
+| **Vorhang auf** | In Progress | 6 | 2 | - |
 
-**Gesamt:** 43 Open, 41 Closed
+**Gesamt:** 42 Open, 42 Closed
 
 ---
 
@@ -193,7 +193,7 @@
 | # | Status | Titel | Prio |
 |---|--------|-------|------|
 | #343 | ✅ Closed | Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung (PR #351) | high |
-| #344 | 🟡 Open | Besetzung → Aufführungs-Zuweisungen automatisch erstellen | high |
+| #344 | ✅ Closed | Besetzung → Aufführungs-Zuweisungen automatisch erstellen (PR #352) | high |
 | #345 | 🟡 Open | Proben-Teilnehmer aus Besetzung auto-befüllen | - |
 | #346 | 🟡 Open | Zentrale Personen-Einsatzübersicht (Mein Kalender) | high |
 | #347 | 🟡 Open | Skills-basierte Schicht-Vorschläge | - |
@@ -206,6 +206,15 @@
 ---
 
 ## Changelog
+
+### 2026-02-17: Besetzung → Aufführungs-Zuweisungen (#344, PR #352)
+
+- Neuer Status `vorgeschlagen` für `auffuehrung_zuweisungen` (Migration + Typen + Validation + UI-Label)
+- Server Action `generateZuweisungenPreview()`: Traversiert Produktion → Serien → Veranstaltungen → Zeitblöcke → Schichten, erstellt Kreuzprodukt-Vorschläge mit Duplikat-Erkennung und Konflikt-Prüfung (gebatcht, max 50)
+- Server Action `confirmZuweisungen()`: Batch-Insert mit `ON CONFLICT` Duplikat-Sicherheit
+- Vorschau-Dialog gruppiert nach Veranstaltung mit Alles/Gruppen-Auswahl, inline `ConflictWarning`, zwei Bestätigungs-Modi ("Als Vorschlag" / "Direkt zusagen")
+- "Zuweisungen generieren"-Button in `BesetzungsMatrix`-Header integriert
+- 10 Unit Tests für Server Actions
 
 ### 2026-02-17: Verfügbarkeitskonflikt-Erkennung (#343, PR #351)
 
@@ -320,7 +329,7 @@ Alle Template-Elemente jetzt inline editierbar:
 ## Statistik
 
 ```
-Total Issues:     84 (43 open, 41 closed)
+Total Issues:     84 (42 open, 42 closed)
 Milestones:       7
 
 Progress by Milestone:
@@ -330,12 +339,13 @@ Progress by Milestone:
 ├── Modul 3:              40% (4/10 closed)
 ├── Helfer Liste:         85% (17/20 closed) ✅
 ├── UserExperience:       64% (7/11 closed)
-└── Vorhang auf:          13% (1/8 closed)
+└── Vorhang auf:          25% (2/8 closed)
 ```
 
 ## Aktuelle Entwicklungen (Feb 2026)
 
 ### Abgeschlossene Features
+- ✅ Besetzung → Aufführungs-Zuweisungen automatisch erstellen (#344)
 - ✅ Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung (#343)
 - ✅ Onboarding-Flow nach erstem Login (#328)
 - ✅ Dashboard-Restructuring: Stundenkonto aus MITGLIED_AKTIV entfernt
@@ -349,7 +359,7 @@ Progress by Milestone:
 - ✅ Zod v4 Kompatibilität
 
 ### In Bearbeitung / Geplant
-- 🆕 Vorhang auf: 7 Issues (#344-#350) — Besetzung→Zuweisungen, Skills-Matching, Einsatzübersicht
+- 🆕 Vorhang auf: 6 Issues (#345-#350) — Proben-Autofill, Skills-Matching, Einsatzübersicht
 - 🔄 Partner-Portal (#146)
 - 🔄 Passive Mitglieder Ansicht (#144)
 - 🔄 Willkommen-Seite für Gäste (#147)
