@@ -82,7 +82,7 @@ export default async function AuffuehrungenPage() {
         )}
 
         {/* Aufführungen Table */}
-        <AuffuehrungenTable auffuehrungen={auffuehrungen} />
+        <AuffuehrungenTable auffuehrungen={auffuehrungen} canEdit={userCanEdit} />
 
         {/* Back Link */}
         <div className="mt-8">

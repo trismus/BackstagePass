@@ -13,6 +13,7 @@ interface SchichtSlotProps {
   onJoinWaitlist?: () => void
   onLeaveWaitlist?: () => void
   canEdit?: boolean
+  isSpringer?: boolean
 }
 
 export function SchichtSlot({
@@ -25,6 +26,7 @@ export function SchichtSlot({
   onJoinWaitlist,
   onLeaveWaitlist,
   canEdit = false,
+  isSpringer = false,
 }: SchichtSlotProps) {
   // Count active zuweisungen
   const activeZuweisungen = (schicht.zuweisungen || []).filter(
@@ -51,7 +53,9 @@ export function SchichtSlot({
             ? 'border-warning-300 bg-warning-50 ring-2 ring-warning-200'
             : isFull
               ? 'border-neutral-200 bg-neutral-50'
-              : 'border-neutral-200 bg-white hover:border-primary-300'
+              : isSpringer
+                ? 'border-stage-200 bg-white hover:border-stage-400'
+                : 'border-neutral-200 bg-white hover:border-primary-300'
       }`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -145,9 +149,17 @@ export function SchichtSlot({
             <button
               onClick={onRegister}
               disabled={isLoading}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
+              className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
+                isSpringer
+                  ? 'bg-stage-600 hover:bg-stage-700'
+                  : 'bg-primary-600 hover:bg-primary-700'
+              }`}
             >
-              {isLoading ? 'Wird angemeldet...' : 'Anmelden'}
+              {isLoading
+                ? 'Wird angemeldet...'
+                : isSpringer
+                  ? 'Als Springer melden'
+                  : 'Anmelden'}
             </button>
           )}
         </div>

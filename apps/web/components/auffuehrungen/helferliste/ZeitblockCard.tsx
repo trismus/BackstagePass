@@ -12,6 +12,9 @@ interface ZeitblockCardProps {
   canEdit?: boolean
 }
 
+const isSpringerSchicht = (rolle: string) =>
+  rolle.toLowerCase().includes('springer')
+
 export function ZeitblockCard({
   zeitblock,
   eigeneAnmeldungen,
@@ -20,6 +23,10 @@ export function ZeitblockCard({
   onUnregister,
   canEdit = false,
 }: ZeitblockCardProps) {
+  // Exclude Springer shifts - they are handled in a dedicated section
+  const regularSchichten = zeitblock.schichten.filter(
+    (s) => !isSpringerSchicht(s.rolle)
+  )
   const formatTime = (timeStr: string) => {
     return timeStr.slice(0, 5)
   }
@@ -82,13 +89,13 @@ export function ZeitblockCard({
 
       {/* Schichten */}
       <div className="p-4">
-        {zeitblock.schichten.length === 0 ? (
+        {regularSchichten.length === 0 ? (
           <p className="py-4 text-center text-sm text-neutral-500">
             Keine Schichten in diesem Zeitblock
           </p>
         ) : (
           <div className="space-y-3">
-            {zeitblock.schichten.map((schicht) => (
+            {regularSchichten.map((schicht) => (
               <SchichtSlot
                 key={schicht.id}
                 schicht={schicht}

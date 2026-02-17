@@ -7,9 +7,10 @@ import { StatusBadge } from '@/components/veranstaltungen/StatusBadge'
 
 interface AuffuehrungenTableProps {
   auffuehrungen: Veranstaltung[]
+  canEdit?: boolean
 }
 
-export function AuffuehrungenTable({ auffuehrungen }: AuffuehrungenTableProps) {
+export function AuffuehrungenTable({ auffuehrungen, canEdit = false }: AuffuehrungenTableProps) {
   const [search, setSearch] = useState('')
   const [showPast, setShowPast] = useState(false)
 
@@ -118,12 +119,22 @@ export function AuffuehrungenTable({ auffuehrungen }: AuffuehrungenTableProps) {
                   <StatusBadge status={a.status} />
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-right">
-                  <Link
-                    href={`/auffuehrungen/${a.id}`}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    Verwalten
-                  </Link>
+                  <div className="flex items-center justify-end gap-3">
+                    <Link
+                      href={`/auffuehrungen/${a.id}/helferliste` as never}
+                      className="text-sm text-primary-600 hover:text-primary-800"
+                    >
+                      Zur Helferliste
+                    </Link>
+                    {canEdit && (
+                      <Link
+                        href={`/auffuehrungen/${a.id}` as never}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        Verwalten
+                      </Link>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

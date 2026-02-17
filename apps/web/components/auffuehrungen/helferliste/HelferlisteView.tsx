@@ -8,6 +8,7 @@ import {
 } from '@/lib/actions/helfer-anmeldung'
 import type { HelferlisteData } from '@/lib/actions/helfer-anmeldung'
 import { ZeitblockCard } from './ZeitblockCard'
+import { SchichtSlot } from './SchichtSlot'
 import { InfoBlockCard } from './InfoBlockCard'
 
 interface HelferlisteViewProps {
@@ -91,9 +92,18 @@ export function HelferlisteView({ data, canRegister, canEdit = false }: Helferli
     a.startzeit.localeCompare(b.startzeit)
   )
 
-  // Count total registrations
+  // Identify Springer schichten (role name contains "springer", case-insensitive)
+  const isSpringerSchicht = (rolle: string) =>
+    rolle.toLowerCase().includes('springer')
+
+  const springerSchichten = data.zeitbloecke.flatMap((zb) =>
+    zb.schichten.filter((s) => isSpringerSchicht(s.rolle))
+  )
+
+  // Count total registrations (excluding Springer schichten from count)
   const totalSchichten = data.zeitbloecke.reduce(
-    (sum, zb) => sum + zb.schichten.length,
+    (sum, zb) =>
+      sum + zb.schichten.filter((s) => !isSpringerSchicht(s.rolle)).length,
     0
   )
   const eigeneCount = optimisticAnmeldungen.length
@@ -186,7 +196,12 @@ export function HelferlisteView({ data, canRegister, canEdit = false }: Helferli
           </div>
         ) : (
           data.zeitbloecke
-            .filter((zb) => zb.schichten.length > 0 || zb.id !== 'no-zeitblock')
+            .filter((zb) => {
+              const regularCount = zb.schichten.filter(
+                (s) => !isSpringerSchicht(s.rolle)
+              ).length
+              return regularCount > 0 || zb.id !== 'no-zeitblock'
+            })
             .map((zeitblock) => (
               <ZeitblockCard
                 key={zeitblock.id}
@@ -200,6 +215,35 @@ export function HelferlisteView({ data, canRegister, canEdit = false }: Helferli
             ))
         )}
       </div>
+
+      {/* Springer Section */}
+      {springerSchichten.length > 0 && (
+        <div className="space-y-4">
+          <div className="rounded-lg border border-stage-200 bg-stage-50 p-4">
+            <h2 className="text-lg font-semibold text-stage-900">Als Springer melden</h2>
+            <p className="mt-1 text-sm text-stage-700">
+              Als Springer bist du flexibel einsetzbar: Du hilfst dort, wo am Abend Bedarf
+              besteht - zum Beispiel bei Ausfall einer anderen Person oder wenn kurzfristig
+              Unterstuetzung gefragt ist. Melde dich hier, wenn du an diesem Abend als
+              Springer verfuegbar bist.
+            </p>
+          </div>
+          <div className="space-y-3">
+            {springerSchichten.map((schicht) => (
+              <SchichtSlot
+                key={schicht.id}
+                schicht={schicht}
+                isRegistered={optimisticAnmeldungen.includes(schicht.id)}
+                isLoading={isPending}
+                onRegister={canRegister ? () => handleRegister(schicht.id) : () => {}}
+                onUnregister={canRegister ? () => handleUnregister(schicht.id) : () => {}}
+                canEdit={canEdit}
+                isSpringer
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Permission Notice */}
       {!canRegister && (
