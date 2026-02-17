@@ -556,7 +556,7 @@ export async function getStueckeMitSzenen(): Promise<
       titel,
       szenen(*)
     `)
-    .eq('status', 'in_produktion')
+    .in('status', ['in_proben', 'in_planung'])
     .order('titel')
 
   if (error) {
