@@ -14,9 +14,9 @@
 | **Modul 3** | In Progress | 6 | 4 | - |
 | **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
 | **UserExperience** | In Progress | 7 | 5 | - |
-| **Vorhang auf** | In Progress | 5 | 3 | - |
+| **Vorhang auf** | In Progress | 4 | 4 | - |
 
-**Gesamt:** 41 Open, 43 Closed
+**Gesamt:** 40 Open, 44 Closed
 
 ---
 
@@ -194,7 +194,7 @@
 |---|--------|-------|------|
 | #343 | ✅ Closed | Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung (PR #351) | high |
 | #344 | ✅ Closed | Besetzung → Aufführungs-Zuweisungen automatisch erstellen (PR #352) | high |
-| #345 | 🟡 Open | Proben-Teilnehmer aus Besetzung auto-befüllen | - |
+| #345 | ✅ Closed | Proben-Teilnehmer aus Besetzung auto-befüllen (PR #354) | - |
 | #346 | ✅ Closed | Zentrale Personen-Einsatzübersicht (Mein Kalender) (PR #353) | high |
 | #347 | 🟡 Open | Skills-basierte Schicht-Vorschläge | - |
 | #348 | 🟡 Open | Produktions-Dashboard: Besetzungs- und Schicht-Fortschritt | - |
@@ -206,6 +206,16 @@
 ---
 
 ## Changelog
+
+### 2026-02-17: Proben-Teilnehmer aus Besetzung auto-befüllen (#345, PR #354)
+
+- "Aus Besetzungen"-Button öffnet jetzt Vorschau-Dialog statt direkt einzufügen
+- `suggestProbenTeilnehmer()`: Read-only Server Action, liefert Vorschläge mit Rollennamen, Duplikat-Erkennung und Konflikt-Prüfung pro Person (max 50)
+- Fallback: Ohne zugewiesene Szenen werden alle Besetzungen des Stücks vorgeschlagen
+- `confirmProbenTeilnehmer()`: Batch-Upsert mit Status `eingeladen` und Duplikat-Sicherheit
+- `TeilnehmerPreviewDialog`: Select/Deselect-All, Rollen-Anzeige, `ConflictWarning` inline, "bereits vorhanden" ausgegraut
+- Button nicht mehr durch fehlende Szenen blockiert (Szenen-Gate entfernt)
+- 10 Unit Tests für beide Server Actions
 
 ### 2026-02-17: Zentrale Personen-Einsatzübersicht (#346, PR #353)
 
@@ -340,7 +350,7 @@ Alle Template-Elemente jetzt inline editierbar:
 ## Statistik
 
 ```
-Total Issues:     84 (41 open, 43 closed)
+Total Issues:     84 (40 open, 44 closed)
 Milestones:       7
 
 Progress by Milestone:
@@ -350,12 +360,13 @@ Progress by Milestone:
 ├── Modul 3:              40% (4/10 closed)
 ├── Helfer Liste:         85% (17/20 closed) ✅
 ├── UserExperience:       64% (7/11 closed)
-└── Vorhang auf:          38% (3/8 closed)
+└── Vorhang auf:          50% (4/8 closed)
 ```
 
 ## Aktuelle Entwicklungen (Feb 2026)
 
 ### Abgeschlossene Features
+- ✅ Proben-Teilnehmer aus Besetzung auto-befüllen mit Vorschau-Dialog (#345)
 - ✅ Zentrale Personen-Einsatzübersicht mit 5 Quellen + Verfügbarkeiten (#346)
 - ✅ Besetzung → Aufführungs-Zuweisungen automatisch erstellen (#344)
 - ✅ Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung (#343)
@@ -371,7 +382,7 @@ Progress by Milestone:
 - ✅ Zod v4 Kompatibilität
 
 ### In Bearbeitung / Geplant
-- 🆕 Vorhang auf: 5 Issues (#345, #347-#350) — Proben-Autofill, Skills-Matching, Einsatzhistorie
+- 🆕 Vorhang auf: 4 Issues (#347-#350) — Skills-Matching, Produktions-Dashboard, Einsatzhistorie, Verfügbarkeiten
 - 🔄 Partner-Portal (#146)
 - 🔄 Passive Mitglieder Ansicht (#144)
 - 🔄 Willkommen-Seite für Gäste (#147)
