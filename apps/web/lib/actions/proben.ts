@@ -225,72 +225,73 @@ async function getProbeBasic(id: string): Promise<Probe | null> {
  * Get upcoming Proben for a person (Dashboard widget)
  */
 export async function getMeineProben(personId: string): Promise<MeineProbe[]> {
-  const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  try {
+    const supabase = await createClient()
+    const today = new Date().toISOString().split('T')[0]
 
-  // Step 1: Get teilnehmer entries with proben (flat join, no nested stuecke)
-  const { data, error } = await supabase
-    .from('proben_teilnehmer')
-    .select(`
-      id,
-      status,
-      probe:proben!inner(id, titel, datum, startzeit, endzeit, ort, stueck_id)
-    `)
-    .eq('person_id', personId)
-    .in('status', ['eingeladen', 'zugesagt'])
+    // Step 1: Get teilnehmer entries
+    const { data: teilnehmerData, error: teilnehmerError } = await supabase
+      .from('proben_teilnehmer')
+      .select('id, status, probe_id')
+      .eq('person_id', personId)
+      .in('status', ['eingeladen', 'zugesagt'])
 
-  if (error) {
-    console.error('Error fetching meine proben:', error)
+    if (teilnehmerError || !teilnehmerData || teilnehmerData.length === 0) {
+      if (teilnehmerError) console.error('Error fetching proben_teilnehmer:', teilnehmerError)
+      return []
+    }
+
+    // Step 2: Fetch proben for these entries
+    const probeIds = [...new Set(teilnehmerData.map((t) => t.probe_id))]
+    const { data: probenData, error: probenError } = await supabase
+      .from('proben')
+      .select('id, titel, datum, startzeit, endzeit, ort, stueck_id')
+      .in('id', probeIds)
+      .gte('datum', today)
+
+    if (probenError || !probenData || probenData.length === 0) {
+      if (probenError) console.error('Error fetching proben:', probenError)
+      return []
+    }
+
+    // Step 3: Fetch stueck titles
+    const stueckIds = [...new Set(probenData.map((p) => p.stueck_id))]
+    const { data: stuecke } = await supabase
+      .from('stuecke')
+      .select('id, titel')
+      .in('id', stueckIds)
+
+    const stueckMap = new Map(
+      (stuecke || []).map((s: { id: string; titel: string }) => [s.id, s.titel])
+    )
+
+    // Step 4: Join in application code
+    const probenMap = new Map(probenData.map((p) => [p.id, p]))
+    const result: MeineProbe[] = []
+
+    for (const t of teilnehmerData) {
+      const probe = probenMap.get(t.probe_id)
+      if (!probe) continue
+      result.push({
+        id: t.id,
+        probe_id: probe.id,
+        titel: probe.titel,
+        stueck_titel: stueckMap.get(probe.stueck_id) ?? null,
+        datum: probe.datum,
+        startzeit: probe.startzeit,
+        endzeit: probe.endzeit,
+        ort: probe.ort,
+        status: t.status as TeilnehmerStatus,
+      })
+    }
+
+    // Sort by datum ascending, limit 5
+    result.sort((a, b) => a.datum.localeCompare(b.datum))
+    return result.slice(0, 5)
+  } catch (error) {
+    console.error('Unexpected error in getMeineProben:', error)
     return []
   }
-
-  if (!data || data.length === 0) return []
-
-  // Filter for future proben
-  type ProbeRow = {
-    id: string; titel: string; datum: string
-    startzeit: string | null; endzeit: string | null
-    ort: string | null; stueck_id: string
-  }
-  const filtered = data.filter((row) => {
-    const probe = row.probe as unknown as ProbeRow | null
-    return probe && probe.datum >= today
-  })
-
-  if (filtered.length === 0) return []
-
-  // Step 2: Fetch stueck titles separately
-  const stueckIds = [...new Set(
-    filtered.map((row) => (row.probe as unknown as ProbeRow).stueck_id)
-  )]
-  const { data: stuecke } = await supabase
-    .from('stuecke')
-    .select('id, titel')
-    .in('id', stueckIds)
-
-  const stueckMap = new Map(
-    (stuecke || []).map((s: { id: string; titel: string }) => [s.id, s.titel])
-  )
-
-  // Step 3: Map to flat structure
-  const result: MeineProbe[] = filtered.map((row) => {
-    const probe = row.probe as unknown as ProbeRow
-    return {
-      id: row.id,
-      probe_id: probe.id,
-      titel: probe.titel,
-      stueck_titel: stueckMap.get(probe.stueck_id) ?? null,
-      datum: probe.datum,
-      startzeit: probe.startzeit,
-      endzeit: probe.endzeit,
-      ort: probe.ort,
-      status: row.status as TeilnehmerStatus,
-    }
-  })
-
-  // Sort by datum ascending, limit 5
-  result.sort((a, b) => a.datum.localeCompare(b.datum))
-  return result.slice(0, 5)
 }
 
 // =============================================================================
