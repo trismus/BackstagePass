@@ -11,6 +11,7 @@ import Link from 'next/link'
 import type {
   PersonalEvent,
   PersonalEventTyp,
+  VerfuegbarkeitEvent,
 } from '@/lib/actions/persoenlicher-kalender'
 import {
   acceptPersonalEvent,
@@ -24,6 +25,8 @@ import {
 
 interface PersonalCalendarProps {
   initialEvents: PersonalEvent[]
+  verfuegbarkeiten?: VerfuegbarkeitEvent[]
+  readOnly?: boolean
 }
 
 type ViewType = 'dayGridMonth' | 'timeGridWeek' | 'listMonth'
@@ -51,12 +54,24 @@ const eventColors: Record<
     border: 'rgb(245 158 11)', // amber-500
     text: 'rgb(146 64 14)', // amber-800
   },
+  helfer: {
+    bg: 'rgb(220 252 231)', // green-100
+    border: 'rgb(34 197 94)', // green-500
+    text: 'rgb(22 101 52)', // green-800
+  },
+  helfereinsatz_legacy: {
+    bg: 'rgb(255 237 213)', // orange-100
+    border: 'rgb(249 115 22)', // orange-500
+    text: 'rgb(154 52 18)', // orange-800
+  },
 }
 
 const typLabels: Record<PersonalEventTyp, string> = {
   veranstaltung: 'Veranstaltung',
   probe: 'Probe',
   schicht: 'Schicht',
+  helfer: 'Helfereinsatz',
+  helfereinsatz_legacy: 'Helfereinsatz (alt)',
 }
 
 const statusLabels: Record<string, string> = {
@@ -66,13 +81,26 @@ const statusLabels: Record<string, string> = {
   zugesagt: 'Zugesagt',
   abgesagt: 'Abgesagt',
   erschienen: 'Erschienen',
+  bestaetigt: 'Bestätigt',
+  abgelehnt: 'Abgelehnt',
+  nicht_erschienen: 'Nicht erschienen',
+}
+
+const verfuegbarkeitColors: Record<string, string> = {
+  verfuegbar: 'rgba(34, 197, 94, 0.15)',
+  eingeschraenkt: 'rgba(234, 179, 8, 0.2)',
+  nicht_verfuegbar: 'rgba(239, 68, 68, 0.15)',
 }
 
 // =============================================================================
 // Component
 // =============================================================================
 
-export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
+export function PersonalCalendar({
+  initialEvents,
+  verfuegbarkeiten = [],
+  readOnly = false,
+}: PersonalCalendarProps) {
   const calendarRef = useRef<FullCalendar>(null)
   const [events, setEvents] = useState<PersonalEvent[]>(initialEvents)
   const [filter, setFilter] = useState<PersonalEventTyp | 'all'>('all')
@@ -124,8 +152,24 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
     })
   }, [filteredEvents])
 
+  // Convert verfuegbarkeiten to background events
+  const backgroundEvents = useMemo(() => {
+    return verfuegbarkeiten.map((v) => ({
+      id: `verf-${v.id}`,
+      start: v.datum_von,
+      end: v.datum_bis,
+      display: 'background' as const,
+      backgroundColor: verfuegbarkeitColors[v.status] ?? verfuegbarkeitColors.verfuegbar,
+      extendedProps: {
+        isVerfuegbarkeit: true,
+      },
+    }))
+  }, [verfuegbarkeiten])
+
   // Handle event click
   const handleEventClick = useCallback((info: EventClickArg) => {
+    // Skip background events
+    if (info.event.extendedProps.isVerfuegbarkeit) return
     const event = info.event.extendedProps.originalEvent as PersonalEvent
     setSelectedEvent(event)
   }, [])
@@ -211,6 +255,12 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
 
   // Get link for event detail
   const getEventLink = (event: PersonalEvent): string => {
+    if (event.helfer_event_id) {
+      return `/helferliste/${event.helfer_event_id}`
+    }
+    if (event.helfereinsatz_id) {
+      return `/helfereinsaetze/${event.helfereinsatz_id}`
+    }
     if (event.probe_id) {
       return `/proben/${event.probe_id}`
     }
@@ -219,6 +269,11 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
     }
     return '#'
   }
+
+  // Check which event types actually exist
+  const hasHelfer = events.some((e) => e.typ === 'helfer')
+  const hasLegacy = events.some((e) => e.typ === 'helfereinsatz_legacy')
+  const hasVerfuegbarkeiten = verfuegbarkeiten.length > 0
 
   return (
     <div className="space-y-4">
@@ -300,29 +355,33 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
             <option value="veranstaltung">Veranstaltungen</option>
             <option value="probe">Proben</option>
             <option value="schicht">Schichten</option>
+            <option value="helfer">Helfereinsätze</option>
+            <option value="helfereinsatz_legacy">Helfereinsätze (alt)</option>
           </select>
 
           {/* Export Button */}
-          <button
-            onClick={handleICalExport}
-            disabled={isExporting}
-            className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {!readOnly && (
+            <button
+              onClick={handleICalExport}
+              disabled={isExporting}
+              className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-            {isExporting ? 'Exportiere...' : 'iCal Export'}
-          </button>
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              {isExporting ? 'Exportiere...' : 'iCal Export'}
+            </button>
+          )}
         </div>
 
         {/* Legend */}
@@ -342,6 +401,32 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
               </div>
             )
           })}
+          {hasVerfuegbarkeiten && (
+            <>
+              <div className="mx-1 border-l border-gray-300" />
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{ backgroundColor: 'rgba(34, 197, 94, 0.3)' }}
+                />
+                <span className="text-sm text-gray-600">Verfügbar</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{ backgroundColor: 'rgba(234, 179, 8, 0.4)' }}
+                />
+                <span className="text-sm text-gray-600">Eingeschränkt</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{ backgroundColor: 'rgba(239, 68, 68, 0.3)' }}
+                />
+                <span className="text-sm text-gray-600">Nicht verfügbar</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -353,13 +438,17 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
           initialView={currentView}
           locale={deLocale}
           headerToolbar={false}
-          events={calendarEvents}
+          events={[...calendarEvents, ...backgroundEvents]}
           eventClick={handleEventClick}
-          eventContent={(arg) => (
-            <div className="overflow-hidden p-1">
-              <div className="truncate text-xs font-medium">{arg.event.title}</div>
-            </div>
-          )}
+          eventContent={(arg) => {
+            // Don't render custom content for background events
+            if (arg.event.display === 'background') return null
+            return (
+              <div className="overflow-hidden p-1">
+                <div className="truncate text-xs font-medium">{arg.event.title}</div>
+              </div>
+            )
+          }}
           height="auto"
           aspectRatio={1.8}
           dayMaxEvents={3}
@@ -386,7 +475,7 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className={`grid gap-4 ${hasHelfer || hasLegacy ? 'grid-cols-3 sm:grid-cols-5' : 'grid-cols-3'}`}>
         <div className="rounded-lg bg-white p-4 text-center shadow">
           <div className="text-2xl font-bold text-blue-600">
             {events.filter((e) => e.typ === 'veranstaltung').length}
@@ -405,6 +494,22 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
           </div>
           <div className="text-sm text-gray-600">Schichten</div>
         </div>
+        {hasHelfer && (
+          <div className="rounded-lg bg-white p-4 text-center shadow">
+            <div className="text-2xl font-bold text-green-600">
+              {events.filter((e) => e.typ === 'helfer').length}
+            </div>
+            <div className="text-sm text-gray-600">Helfereinsätze</div>
+          </div>
+        )}
+        {hasLegacy && (
+          <div className="rounded-lg bg-white p-4 text-center shadow">
+            <div className="text-2xl font-bold text-orange-600">
+              {events.filter((e) => e.typ === 'helfereinsatz_legacy').length}
+            </div>
+            <div className="text-sm text-gray-600">Einsätze (alt)</div>
+          </div>
+        )}
       </div>
 
       {/* Event Detail Modal */}
@@ -484,6 +589,13 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
                 </div>
               )}
 
+              {selectedEvent.helfer_rolle && !selectedEvent.rolle && (
+                <div>
+                  <dt className="font-medium text-gray-500">Helfer-Rolle</dt>
+                  <dd className="text-gray-900">{selectedEvent.helfer_rolle}</dd>
+                </div>
+              )}
+
               {selectedEvent.zeitblock && (
                 <div>
                   <dt className="font-medium text-gray-500">Zeitblock</dt>
@@ -507,7 +619,7 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
             </dl>
 
             <div className="mt-6 flex gap-3">
-              {selectedEvent.kann_zusagen && (
+              {!readOnly && selectedEvent.kann_zusagen && (
                 <button
                   onClick={handleAccept}
                   disabled={isLoading}
@@ -516,7 +628,7 @@ export function PersonalCalendar({ initialEvents }: PersonalCalendarProps) {
                   {isLoading ? 'Wird gespeichert...' : 'Zusagen'}
                 </button>
               )}
-              {selectedEvent.kann_absagen && (
+              {!readOnly && selectedEvent.kann_absagen && (
                 <button
                   onClick={handleDecline}
                   disabled={isLoading}

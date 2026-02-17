@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { isManagement } from '@/lib/supabase/permissions'
-import { getPersonalEvents } from '@/lib/actions/persoenlicher-kalender'
+import { getPersonalEvents, getPersonVerfuegbarkeiten } from '@/lib/actions/persoenlicher-kalender'
 import { PersonalCalendar } from '@/components/mein-bereich/PersonalCalendar'
 
 export const metadata = {
@@ -28,18 +28,21 @@ export default async function VorstandTerminePage() {
     .toISOString()
     .split('T')[0]
 
-  const events = await getPersonalEvents(startDatum, endDatum)
+  const [events, verfuegbarkeiten] = await Promise.all([
+    getPersonalEvents(startDatum, endDatum),
+    getPersonVerfuegbarkeiten(undefined, startDatum, endDatum),
+  ])
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Meine Termine</h1>
         <p className="mt-1 text-gray-600">
-          Alle deine Veranstaltungen, Proben und Schichten auf einen Blick
+          Alle deine Veranstaltungen, Proben und Einsätze auf einen Blick
         </p>
       </div>
 
-      <PersonalCalendar initialEvents={events} />
+      <PersonalCalendar initialEvents={events} verfuegbarkeiten={verfuegbarkeiten} />
     </div>
   )
 }
