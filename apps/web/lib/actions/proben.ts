@@ -16,7 +16,10 @@ import type {
   ProbeTeilnehmerUpdate,
   TeilnehmerStatus,
   Szene,
+  TeilnehmerSuggestionResult,
+  TeilnehmerVorschlag,
 } from '../supabase/types'
+import { checkPersonConflicts } from './conflict-check'
 
 // =============================================================================
 // Proben CRUD
@@ -568,6 +571,239 @@ export async function getProbeTeilnehmer(
     person: { id: string; vorname: string; nachname: string; email: string | null }
   }
   return (data as unknown as TeilnehmerMitPerson[]) || []
+}
+
+// =============================================================================
+// Proben-Teilnehmer Suggestion (Issue #345)
+// =============================================================================
+
+/**
+ * Suggest Teilnehmer from Besetzungen (preview, no insert)
+ * Falls back to all cast if no scenes assigned
+ */
+export async function suggestProbenTeilnehmer(
+  probeId: string
+): Promise<{ success: boolean; error?: string; data?: TeilnehmerSuggestionResult }> {
+  const profile = await getUserProfile()
+  if (!profile || !isManagement(profile.role)) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Vorschläge generieren.',
+    }
+  }
+
+  const supabase = await createClient()
+
+  // 1. Load probe
+  const { data: probe, error: probeError } = await supabase
+    .from('proben')
+    .select('id, stueck_id, datum, startzeit, endzeit')
+    .eq('id', probeId)
+    .single()
+
+  if (probeError || !probe) {
+    return { success: false, error: 'Probe nicht gefunden.' }
+  }
+
+  // 2. Load proben_szenen
+  const { data: probenSzenen } = await supabase
+    .from('proben_szenen')
+    .select('szene_id')
+    .eq('probe_id', probeId)
+
+  const szeneIds = (probenSzenen || []).map((ps: { szene_id: string }) => ps.szene_id)
+  const hasSzenen = szeneIds.length > 0
+
+  // 3. Get rolle_ids based on scene assignment
+  let rolleIds: string[] = []
+
+  if (hasSzenen) {
+    // From szenen_rollen for assigned scenes
+    const { data: szenenRollen } = await supabase
+      .from('szenen_rollen')
+      .select('rolle_id')
+      .in('szene_id', szeneIds)
+
+    rolleIds = [...new Set((szenenRollen || []).map((sr: { rolle_id: string }) => sr.rolle_id))]
+  } else {
+    // Fallback: all roles for this Stück
+    const { data: rollen } = await supabase
+      .from('rollen')
+      .select('id')
+      .eq('stueck_id', probe.stueck_id)
+
+    rolleIds = (rollen || []).map((r: { id: string }) => r.id)
+  }
+
+  if (rolleIds.length === 0) {
+    return {
+      success: true,
+      data: {
+        vorschlaege: [],
+        quelle: hasSzenen ? 'szenen' : 'alle_besetzungen',
+        stats: { total_vorgeschlagen: 0, total_bereits_vorhanden: 0, total_mit_konflikten: 0 },
+      },
+    }
+  }
+
+  // 4. Get besetzungen for these roles (active only)
+  const today = new Date().toISOString().split('T')[0]
+  const { data: besetzungen } = await supabase
+    .from('besetzungen')
+    .select('person_id, rolle_id')
+    .in('rolle_id', rolleIds)
+    .or(`gueltig_bis.is.null,gueltig_bis.gte.${today}`)
+
+  if (!besetzungen || besetzungen.length === 0) {
+    return {
+      success: true,
+      data: {
+        vorschlaege: [],
+        quelle: hasSzenen ? 'szenen' : 'alle_besetzungen',
+        stats: { total_vorgeschlagen: 0, total_bereits_vorhanden: 0, total_mit_konflikten: 0 },
+      },
+    }
+  }
+
+  // 5. Get unique person IDs and their rolle_ids
+  const personRollenMap = new Map<string, Set<string>>()
+  for (const b of besetzungen) {
+    if (!personRollenMap.has(b.person_id)) {
+      personRollenMap.set(b.person_id, new Set())
+    }
+    personRollenMap.get(b.person_id)!.add(b.rolle_id)
+  }
+
+  const personIds = [...personRollenMap.keys()]
+
+  // 6. Load person names
+  const { data: personen } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname')
+    .in('id', personIds)
+
+  const personNameMap = new Map<string, string>()
+  for (const p of personen || []) {
+    personNameMap.set(p.id, `${p.vorname} ${p.nachname}`)
+  }
+
+  // 7. Load rolle names
+  const { data: rollen } = await supabase
+    .from('rollen')
+    .select('id, name')
+    .in('id', rolleIds)
+
+  const rolleNameMap = new Map<string, string>()
+  for (const r of rollen || []) {
+    rolleNameMap.set(r.id, r.name)
+  }
+
+  // 8. Check existing teilnehmer
+  const { data: existingTeilnehmer } = await supabase
+    .from('proben_teilnehmer')
+    .select('person_id')
+    .eq('probe_id', probeId)
+
+  const existingPersonIds = new Set(
+    (existingTeilnehmer || []).map((t: { person_id: string }) => t.person_id)
+  )
+
+  // 9. Build suggestions with conflict checks
+  const hasTimeInfo = !!(probe.startzeit && probe.endzeit)
+  const vorschlaege: TeilnehmerVorschlag[] = []
+
+  for (const personId of personIds) {
+    const rolleIdsForPerson = personRollenMap.get(personId)!
+    const rollenNames = [...rolleIdsForPerson]
+      .map((rid) => rolleNameMap.get(rid) || 'Unbekannt')
+      .sort()
+
+    const bereitsVorhanden = existingPersonIds.has(personId)
+
+    // Conflict check (skip if no time info or already present)
+    let konflikte: TeilnehmerVorschlag['konflikte'] = []
+    if (hasTimeInfo && !bereitsVorhanden && personIds.length <= 50) {
+      try {
+        const startTimestamp = `${probe.datum}T${probe.startzeit}`
+        const endTimestamp = `${probe.datum}T${probe.endzeit}`
+        const result = await checkPersonConflicts(personId, startTimestamp, endTimestamp)
+        konflikte = result.conflicts
+      } catch {
+        // Ignore conflict check errors
+      }
+    }
+
+    vorschlaege.push({
+      person_id: personId,
+      person_name: personNameMap.get(personId) || 'Unbekannt',
+      rollen: rollenNames,
+      bereits_vorhanden: bereitsVorhanden,
+      konflikte,
+    })
+  }
+
+  // Sort: non-existing first, then alphabetically
+  vorschlaege.sort((a, b) => {
+    if (a.bereits_vorhanden !== b.bereits_vorhanden) {
+      return a.bereits_vorhanden ? 1 : -1
+    }
+    return a.person_name.localeCompare(b.person_name, 'de')
+  })
+
+  const stats = {
+    total_vorgeschlagen: vorschlaege.filter((v) => !v.bereits_vorhanden).length,
+    total_bereits_vorhanden: vorschlaege.filter((v) => v.bereits_vorhanden).length,
+    total_mit_konflikten: vorschlaege.filter((v) => v.konflikte.length > 0).length,
+  }
+
+  return {
+    success: true,
+    data: {
+      vorschlaege,
+      quelle: hasSzenen ? 'szenen' : 'alle_besetzungen',
+      stats,
+    },
+  }
+}
+
+/**
+ * Confirm selected Teilnehmer suggestions (batch insert)
+ */
+export async function confirmProbenTeilnehmer(
+  probeId: string,
+  personIds: string[]
+): Promise<{ success: boolean; error?: string; count?: number }> {
+  const profile = await getUserProfile()
+  if (!profile || !isManagement(profile.role)) {
+    return {
+      success: false,
+      error: 'Keine Berechtigung. Nur Vorstand kann Teilnehmer einladen.',
+    }
+  }
+
+  if (personIds.length === 0) {
+    return { success: false, error: 'Keine Teilnehmer ausgewählt.' }
+  }
+
+  const supabase = await createClient()
+
+  const inserts = personIds.map((personId) => ({
+    probe_id: probeId,
+    person_id: personId,
+    status: 'eingeladen' as const,
+  }))
+
+  const { error } = await supabase
+    .from('proben_teilnehmer')
+    .upsert(inserts as never, { onConflict: 'probe_id,person_id', ignoreDuplicates: true })
+
+  if (error) {
+    console.error('Error confirming teilnehmer:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/proben/${probeId}`)
+  return { success: true, count: personIds.length }
 }
 
 // =============================================================================

@@ -1784,6 +1784,28 @@ export type ZuweisungenPreviewResult = {
 }
 
 // =============================================================================
+// Proben-Teilnehmer Suggestion (Issue #345)
+// =============================================================================
+
+export type TeilnehmerVorschlag = {
+  person_id: string
+  person_name: string
+  rollen: string[]
+  bereits_vorhanden: boolean
+  konflikte: PersonConflict[]
+}
+
+export type TeilnehmerSuggestionResult = {
+  vorschlaege: TeilnehmerVorschlag[]
+  quelle: 'szenen' | 'alle_besetzungen'
+  stats: {
+    total_vorgeschlagen: number
+    total_bereits_vorhanden: number
+    total_mit_konflikten: number
+  }
+}
+
+// =============================================================================
 // Helfer Dashboard (US-9)
 // =============================================================================
 
