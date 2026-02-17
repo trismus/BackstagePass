@@ -12,11 +12,13 @@ import {
   veranstaltungUpdateSchema,
 } from '../validations/veranstaltungen'
 import { validateInput } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all veranstaltungen
  */
 export async function getVeranstaltungen(): Promise<Veranstaltung[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('veranstaltungen')
@@ -37,6 +39,7 @@ export async function getVeranstaltungen(): Promise<Veranstaltung[]> {
 export async function getUpcomingVeranstaltungen(
   limit?: number
 ): Promise<Veranstaltung[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0]
 
@@ -67,6 +70,7 @@ export async function getUpcomingVeranstaltungen(
 export async function getVeranstaltung(
   id: string
 ): Promise<Veranstaltung | null> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('veranstaltungen')
@@ -89,6 +93,9 @@ export async function getVeranstaltung(
 export async function createVeranstaltung(
   data: VeranstaltungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(veranstaltungSchema, data)
   if (!validation.success) {
@@ -120,6 +127,9 @@ export async function updateVeranstaltung(
   id: string,
   data: VeranstaltungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(veranstaltungUpdateSchema, data)
   if (!validation.success) {
@@ -151,6 +161,9 @@ export async function updateVeranstaltung(
 export async function deleteVeranstaltung(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:delete') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('veranstaltungen').delete().eq('id', id)
 
@@ -170,6 +183,7 @@ export async function deleteVeranstaltung(
 export async function getAnmeldungCount(
   veranstaltungId: string
 ): Promise<number> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { count, error } = await supabase
     .from('anmeldungen')

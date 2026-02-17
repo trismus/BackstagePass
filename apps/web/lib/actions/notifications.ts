@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, getUserProfile } from '../supabase/server'
 import { createAdminClient } from '../supabase/admin'
+import { requirePermission } from '../supabase/auth-helpers'
 import type {
   Benachrichtigung,
   BenachrichtigungsEinstellungen,
@@ -266,6 +267,9 @@ export async function createNotification(
     metadata?: Record<string, unknown>
   } = {}
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const adminClient = createAdminClient()
 
   const { data, error } = await adminClient
@@ -307,6 +311,9 @@ export async function createBulkNotifications(
     metadata?: Record<string, unknown>
   } = {}
 ): Promise<{ success: boolean; error?: string; count?: number }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   if (profileIds.length === 0) {
     return { success: true, count: 0 }
   }
@@ -349,6 +356,9 @@ export async function notifyNewProbe(
   probeTitel: string,
   probeDatum: string
 ): Promise<{ success: boolean; count?: number }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false } }
+
   const supabase = await createClient()
 
   // Get all participants with their profile IDs
@@ -409,6 +419,9 @@ export async function notifyResponseConfirmed(
   personId: string,
   status: 'zugesagt' | 'abgesagt' | 'vielleicht'
 ): Promise<{ success: boolean }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false } }
+
   const supabase = await createClient()
 
   // Get person and probe info

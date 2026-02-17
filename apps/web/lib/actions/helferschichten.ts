@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
+import { requirePermission } from '../supabase/auth-helpers'
 import type {
   Helferschicht,
   HelferschichtInsert,
@@ -16,6 +17,7 @@ import type {
 export async function getHelferschichtenForEinsatz(
   helfereinsatzId: string
 ): Promise<HelferschichtMitDetails[]> {
+  await requirePermission('helfereinsaetze:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helferschichten')
@@ -43,6 +45,7 @@ export async function getHelferschichtenForEinsatz(
 export async function getHelferschichtenForPerson(
   personId: string
 ): Promise<Helferschicht[]> {
+  await requirePermission('helfereinsaetze:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helferschichten')
@@ -59,9 +62,9 @@ export async function getHelferschichtenForPerson(
 }
 
 /**
- * Assign a helper to a shift
+ * Private helper — insert a helferschicht record (no permission check)
  */
-export async function zuweiseHelfer(
+async function _insertHelferschicht(
   helfereinsatzId: string,
   personId: string,
   helferrolleId?: string,
@@ -111,9 +114,27 @@ export async function zuweiseHelfer(
 }
 
 /**
- * Update shift status
+ * Assign a helper to a shift (management action)
  */
-export async function updateHelferschichtStatus(
+export async function zuweiseHelfer(
+  helfereinsatzId: string,
+  personId: string,
+  helferrolleId?: string,
+  startzeit?: string,
+  endzeit?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('helfereinsaetze:write')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+  return _insertHelferschicht(helfereinsatzId, personId, helferrolleId, startzeit, endzeit)
+}
+
+/**
+ * Private helper — update a helferschicht status (no permission check)
+ */
+async function _updateSchichtStatus(
   id: string,
   status: HelferschichtStatus,
   stundenGearbeitet?: number
@@ -142,12 +163,34 @@ export async function updateHelferschichtStatus(
 }
 
 /**
- * Update a shift
+ * Update shift status (management action)
+ */
+export async function updateHelferschichtStatus(
+  id: string,
+  status: HelferschichtStatus,
+  stundenGearbeitet?: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('helfereinsaetze:write')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+  return _updateSchichtStatus(id, status, stundenGearbeitet)
+}
+
+/**
+ * Update a shift (management action)
  */
 export async function updateHelferschicht(
   id: string,
   data: HelferschichtUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('helfereinsaetze:write')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('helferschichten')
@@ -166,11 +209,17 @@ export async function updateHelferschicht(
 }
 
 /**
- * Remove a helper from a shift
+ * Remove a helper from a shift (management action)
  */
 export async function removeHelfer(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('helfereinsaetze:delete')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase.from('helferschichten').delete().eq('id', id)
 
@@ -191,6 +240,7 @@ export async function removeHelfer(
 export async function getTotalStundenForPerson(
   personId: string
 ): Promise<number> {
+  await requirePermission('helfereinsaetze:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helferschichten')
@@ -212,6 +262,7 @@ export async function getTotalStundenForPerson(
 export async function exportHelfereinsatzCSV(
   helfereinsatzId: string
 ): Promise<string> {
+  await requirePermission('helfereinsaetze:read')
   const schichten = await getHelferschichtenForEinsatz(helfereinsatzId)
 
   const headers = ['Name', 'Email', 'Rolle', 'Status', 'Stunden']
@@ -228,14 +279,20 @@ export async function exportHelfereinsatzCSV(
 }
 
 /**
- * Sign up for an einsatz (simpler wrapper for zuweiseHelfer)
+ * Sign up for an einsatz (self-service action)
  * Used by the Helfer Dashboard
  */
 export async function signUpForEinsatz(
   helfereinsatzId: string,
   personId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const result = await zuweiseHelfer(helfereinsatzId, personId)
+  try {
+    await requirePermission('helfereinsaetze:register')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+
+  const result = await _insertHelferschicht(helfereinsatzId, personId)
 
   if (result.success) {
     revalidatePath('/helfer-dashboard')
@@ -245,13 +302,19 @@ export async function signUpForEinsatz(
 }
 
 /**
- * Cancel own shift (set status to abgesagt)
+ * Cancel own shift (self-service action, set status to abgesagt)
  * Used by the Helfer Dashboard
  */
 export async function cancelSchicht(
   schichtId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const result = await updateHelferschichtStatus(schichtId, 'abgesagt')
+  try {
+    await requirePermission('helfereinsaetze:register')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+
+  const result = await _updateSchichtStatus(schichtId, 'abgesagt')
 
   if (result.success) {
     revalidatePath('/helfer-dashboard')

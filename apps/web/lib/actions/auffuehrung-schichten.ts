@@ -18,6 +18,7 @@ import {
   zuweisungUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all shifts for a performance with time block details
@@ -25,6 +26,7 @@ import {
 export async function getSchichten(
   veranstaltungId: string
 ): Promise<SchichtMitZeitblock[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_schichten')
@@ -51,6 +53,7 @@ export async function getSchichten(
 export async function getSchicht(
   id: string
 ): Promise<SchichtMitZeitblock | null> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_schichten')
@@ -78,6 +81,9 @@ export async function getSchicht(
 export async function createSchicht(
   data: AuffuehrungSchichtInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(schichtSchema, data)
   if (!validation.success) {
@@ -106,6 +112,9 @@ export async function createSchicht(
 export async function createSchichten(
   data: AuffuehrungSchichtInsert[]
 ): Promise<{ success: boolean; error?: string; ids?: string[] }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   if (data.length === 0) {
     return { success: true, ids: [] }
   }
@@ -136,6 +145,9 @@ export async function updateSchicht(
   id: string,
   data: AuffuehrungSchichtUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(schichtUpdateSchema, data)
   if (!validation.success) {
@@ -175,6 +187,9 @@ export async function updateSchicht(
 export async function deleteSchicht(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
 
   // Get the veranstaltung_id for revalidation
@@ -211,6 +226,7 @@ export async function deleteSchicht(
 export async function getZuweisungen(
   schichtId: string
 ): Promise<ZuweisungMitPerson[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_zuweisungen')
@@ -238,6 +254,7 @@ export async function getZuweisungen(
 export async function getZuweisungenForVeranstaltung(
   veranstaltungId: string
 ): Promise<ZuweisungMitPerson[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // First get all shift IDs for this performance
@@ -277,6 +294,9 @@ export async function getZuweisungenForVeranstaltung(
 export async function createZuweisung(
   data: AuffuehrungZuweisungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(zuweisungSchema, data)
   if (!validation.success) {
@@ -306,6 +326,9 @@ export async function updateZuweisung(
   id: string,
   data: AuffuehrungZuweisungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(zuweisungUpdateSchema, data)
   if (!validation.success) {
@@ -333,6 +356,9 @@ export async function updateZuweisung(
 export async function deleteZuweisung(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('auffuehrung_zuweisungen')
@@ -359,6 +385,7 @@ export async function deleteZuweisung(
 export async function getBedarfUebersicht(
   veranstaltungId: string
 ): Promise<BedarfStatus[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // Get all shifts with time blocks

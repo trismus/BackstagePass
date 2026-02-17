@@ -3,11 +3,13 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import type { Partner, PartnerInsert, PartnerUpdate } from '../supabase/types'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all partners
  */
 export async function getPartner(): Promise<Partner[]> {
+  await requirePermission('partner:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('partner')
@@ -26,6 +28,7 @@ export async function getPartner(): Promise<Partner[]> {
  * Get active partners only
  */
 export async function getActivePartner(): Promise<Partner[]> {
+  await requirePermission('partner:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('partner')
@@ -45,6 +48,7 @@ export async function getActivePartner(): Promise<Partner[]> {
  * Get a single partner by ID
  */
 export async function getPartnerById(id: string): Promise<Partner | null> {
+  await requirePermission('partner:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('partner')
@@ -67,6 +71,9 @@ export async function getPartnerById(id: string): Promise<Partner | null> {
 export async function createPartner(
   data: PartnerInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('partner:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('partner')
@@ -92,6 +99,9 @@ export async function updatePartner(
   id: string,
   data: PartnerUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('partner:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('partner')
@@ -115,6 +125,9 @@ export async function updatePartner(
 export async function deletePartner(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('partner:delete') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('partner')
