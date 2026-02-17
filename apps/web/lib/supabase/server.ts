@@ -59,17 +59,19 @@ export async function getUserProfile(): Promise<Profile | null> {
   // Auto-link profile to personen on first login
   // The DB trigger link_profile_to_person() is a no-op due to nested trigger
   // chain issues with the audit system. We handle linking in app code instead.
+  // Uses admin client for both lookup and update because RLS on personen
+  // requires profile_id = auth.uid(), which is NULL for unlinked persons.
   if (data && user.email) {
-    const { data: unlinkedPerson } = await supabase
-      .from('personen')
-      .select('id')
-      .eq('email', user.email)
-      .is('profile_id', null)
-      .maybeSingle()
+    try {
+      const adminClient = createAdminClient()
+      const { data: unlinkedPerson } = await adminClient
+        .from('personen')
+        .select('id')
+        .eq('email', user.email)
+        .is('profile_id', null)
+        .maybeSingle()
 
-    if (unlinkedPerson) {
-      try {
-        const adminClient = createAdminClient()
+      if (unlinkedPerson) {
         await adminClient
           .from('personen')
           .update({
@@ -78,10 +80,10 @@ export async function getUserProfile(): Promise<Profile | null> {
           } as never)
           .eq('id', unlinkedPerson.id)
           .is('profile_id', null)
-      } catch {
-        // Non-critical: linking will retry on next page load
-        console.warn('Failed to auto-link profile to person')
       }
+    } catch {
+      // Non-critical: linking will retry on next page load
+      console.warn('Failed to auto-link profile to person')
     }
   }
 
