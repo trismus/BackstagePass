@@ -5,6 +5,7 @@ import Link from 'next/link'
 import type { UserRole } from '@/lib/supabase/types'
 import { USER_ROLE_LABELS } from '@/lib/supabase/types'
 import { updateOwnProfile } from '@/lib/actions/personen'
+import { TagInput } from '@/components/ui/TagInput'
 
 interface EditableProfileCardProps {
   person: {
@@ -17,6 +18,10 @@ interface EditableProfileCardProps {
     plz?: string | null
     ort?: string | null
     geburtstag?: string | null
+    notfallkontakt_name?: string | null
+    notfallkontakt_telefon?: string | null
+    notfallkontakt_beziehung?: string | null
+    skills?: string[] | null
   } | null
   role?: UserRole
   stundenTotal?: number
@@ -41,6 +46,10 @@ export function EditableProfileCard({
     strasse: person?.strasse || '',
     plz: person?.plz || '',
     ort: person?.ort || '',
+    notfallkontakt_name: person?.notfallkontakt_name || '',
+    notfallkontakt_telefon: person?.notfallkontakt_telefon || '',
+    notfallkontakt_beziehung: person?.notfallkontakt_beziehung || '',
+    skills: person?.skills || [] as string[],
   })
 
   const displayName = person
@@ -65,6 +74,10 @@ export function EditableProfileCard({
         strasse: formData.strasse || null,
         plz: formData.plz || null,
         ort: formData.ort || null,
+        notfallkontakt_name: formData.notfallkontakt_name || null,
+        notfallkontakt_telefon: formData.notfallkontakt_telefon || null,
+        notfallkontakt_beziehung: formData.notfallkontakt_beziehung || null,
+        skills: formData.skills.length > 0 ? formData.skills : [],
       })
 
       if (result.success) {
@@ -81,6 +94,10 @@ export function EditableProfileCard({
       strasse: person?.strasse || '',
       plz: person?.plz || '',
       ort: person?.ort || '',
+      notfallkontakt_name: person?.notfallkontakt_name || '',
+      notfallkontakt_telefon: person?.notfallkontakt_telefon || '',
+      notfallkontakt_beziehung: person?.notfallkontakt_beziehung || '',
+      skills: person?.skills || [],
     })
     setIsEditing(false)
     setError(null)
@@ -216,6 +233,64 @@ export function EditableProfileCard({
             </div>
           )}
 
+          {/* Notfallkontakt */}
+          <div className="border-t border-neutral-200 pt-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+              Notfallkontakt
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-neutral-500">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.notfallkontakt_name}
+                  onChange={(e) => setFormData({ ...formData, notfallkontakt_name: e.target.value })}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="z.B. Maria Müller"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-neutral-500">
+                    Telefon
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.notfallkontakt_telefon}
+                    onChange={(e) => setFormData({ ...formData, notfallkontakt_telefon: e.target.value })}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="079 123 45 67"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-neutral-500">
+                    Beziehung
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.notfallkontakt_beziehung}
+                    onChange={(e) => setFormData({ ...formData, notfallkontakt_beziehung: e.target.value })}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="z.B. Ehepartner"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="border-t border-neutral-200 pt-4">
+            <TagInput
+              label="Skills"
+              value={formData.skills}
+              onChange={(tags) => setFormData({ ...formData, skills: tags })}
+              placeholder="Skill eingeben..."
+              helperText="Enter oder Komma zum Hinzufügen"
+            />
+          </div>
+
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-2">
             <button
@@ -276,6 +351,39 @@ export function EditableProfileCard({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
               </svg>
               <span className="text-sm text-neutral-600">{formatGeburtsdatum(person.geburtstag)}</span>
+            </div>
+          )}
+
+          {/* Notfallkontakt */}
+          {person.notfallkontakt_name && (
+            <div className="flex items-start gap-3 px-4 py-3">
+              <svg className="mt-0.5 h-4 w-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <div className="text-sm text-neutral-600">
+                <p className="font-medium">Notfallkontakt</p>
+                <p>{person.notfallkontakt_name}{person.notfallkontakt_beziehung ? ` (${person.notfallkontakt_beziehung})` : ''}</p>
+                {person.notfallkontakt_telefon && <p>{person.notfallkontakt_telefon}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* Skills */}
+          {person.skills && person.skills.length > 0 && (
+            <div className="flex items-start gap-3 px-4 py-3">
+              <svg className="mt-0.5 h-4 w-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <div className="flex flex-wrap gap-1">
+                {person.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 

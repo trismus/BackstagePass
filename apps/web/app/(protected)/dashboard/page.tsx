@@ -25,7 +25,9 @@ import { HelfereinsatzHistorie } from '@/components/mein-bereich/HelfereinsatzHi
 import {
   UpcomingEventsWidget,
   MitgliederHelferEventsWidget,
+  HelferEinsaetzeWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
+import { ProfileCompletionWidget } from '@/components/mein-bereich/ProfileCompletionWidget'
 import type { KalenderTermin } from '@/components/mein-bereich/MiniKalender'
 
 export const metadata = {
@@ -453,7 +455,7 @@ export default async function DashboardPage({
   // Try to find the person linked to this user
   const { data: person } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, email, telefon, strasse, plz, ort, geburtstag')
+    .select('id, vorname, nachname, email, telefon, strasse, plz, ort, geburtstag, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, skills')
     .eq('email', profile.email)
     .single()
 
@@ -549,7 +551,10 @@ export default async function DashboardPage({
 
           {/* Right Column - Profile & Events */}
           <div className="space-y-6 lg:col-span-2">
-            <EditableProfileCard person={person} role={profile.role} />
+            <ProfileCompletionWidget person={person} />
+            <div id="profile-card">
+              <EditableProfileCard person={person} role={profile.role} />
+            </div>
             <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
 
             {/* CTA for passive members */}
@@ -646,16 +651,22 @@ export default async function DashboardPage({
 
           {/* Main Content Area */}
           <div className="space-y-6 lg:col-span-8 xl:col-span-9">
+            {/* Profile Completion */}
+            <ProfileCompletionWidget person={person} />
+
             {/* Profile Card */}
-            <EditableProfileCard
-              person={person}
-              role={profile.role}
-            />
+            <div id="profile-card">
+              <EditableProfileCard
+                person={person}
+                role={profile.role}
+              />
+            </div>
 
             {/* Content Widgets */}
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
               <MitgliederHelferEventsWidget events={mitgliederHelferEvents} />
+              <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
             </div>
 
             {/* History Section */}
