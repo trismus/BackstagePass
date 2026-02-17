@@ -26,18 +26,15 @@
 | **Public Volunteer Booking Flow** | ✅ Done | 0 | 11 |
 | **Mitglieder-Onboarding** | ✅ Done | 0 | 5 |
 | **Probenplan: Status-Fix & Generator** | ✅ Done | 0 | 7 |
-| **Fix Email-Einladungssystem** | In Progress | 1 | 0 |
+| **Fix Email-Einladungssystem** | ✅ Done | 0 | 1 |
 
-**Gesamt:** 200 Issues (2 open, 198 closed)
+**Gesamt:** 200 Issues (0 open, 200 closed)
 
 ---
 
 ## Offene Issues
 
-| # | Milestone | Titel |
-|---|-----------|-------|
-| #373 | — | security: Missing Permission Checks auf 10+ Server Action Files |
-| #385 | Fix Email-Einladungssystem | fix: Einladungslinks zeigen auf falsche URL (Vercel Preview statt Production) |
+Keine offenen Issues.
 
 ---
 
@@ -221,7 +218,7 @@
 #359–#365 — Status-Filterung, Konstanten, Generator-Hints, Tests
 
 ### Security Fixes (ohne Milestone)
-#368, #369, #371, #372, #374–#377 — Open Redirect Fix, RLS Self-Escalation, IDOR Protections, Permission Checks
+#368, #369, #371–#377 — Open Redirect Fix, RLS Self-Escalation, IDOR Protections, Permission Checks (alle 12 Dateien)
 
 ---
 
@@ -235,6 +232,12 @@
 - Stücke-Detailseite zeigt Callout-Hinweis mit Link zum Generator für berechtigte Stücke
 - `StueckMitSzenen.status` von `string` zu `StueckStatus` typisiert
 - 10 Unit Tests für Konstanten, Filterung, Generierung und Berechtigungsprüfung
+
+### 2026-02-17: Missing Permission Checks komplett (#373, PR #387)
+
+- `requirePermission()` zu allen 12 Server-Action-Dateien hinzugefügt die im Security-Audit aufgefallen sind
+- Letzte 2 Funktionen in `externe-helfer.ts` geschlossen: `findOrCreateExternalHelper` (`helfereinsaetze:write`) und `getExterneHelferProfilByEmail` (`mitglieder:read`)
+- `notifications.ts` absichtlich ohne `requirePermission()` — implizite Auth via `getUserProfile()` + RLS (user-scoped)
 
 ### 2026-02-17: Security Fixes (#368-369, #371-377)
 
@@ -302,12 +305,10 @@
 ## Statistik
 
 ```
-Total Issues:     200 (2 open, 198 closed)
-Milestones:       19+ (18 complete, 1 in progress)
+Total Issues:     200 (0 open, 200 closed)
+Milestones:       19+ (19 complete)
 
-Offene Issues:
-├── #373: security: Missing Permission Checks auf 10+ Server Action Files
-└── #385: fix: Einladungslinks zeigen auf falsche URL (Fix Email-Einladungssystem)
+Offene Issues:    Keine
 
 Abgeschlossene Kern-Module:
 ├── Modul 0 (Foundation):        100% (11/11) ✅
