@@ -616,14 +616,16 @@ export type AuffuehrungSchicht = {
   rolle: string
   anzahl_benoetigt: number
   sichtbarkeit: SchichtSichtbarkeit
+  benoetigte_skills: string[]
   created_at: string
 }
 
 export type AuffuehrungSchichtInsert = Omit<
   AuffuehrungSchicht,
-  'id' | 'created_at' | 'sichtbarkeit'
+  'id' | 'created_at' | 'sichtbarkeit' | 'benoetigte_skills'
 > & {
   sichtbarkeit?: SchichtSichtbarkeit // defaults to 'intern' in DB
+  benoetigte_skills?: string[] // defaults to '{}' in DB
 }
 export type AuffuehrungSchichtUpdate = Partial<AuffuehrungSchichtInsert>
 
@@ -977,9 +979,12 @@ export type TemplateSchicht = {
   rolle: string
   anzahl_benoetigt: number
   nur_mitglieder: boolean
+  benoetigte_skills: string[]
 }
 
-export type TemplateSchichtInsert = Omit<TemplateSchicht, 'id'>
+export type TemplateSchichtInsert = Omit<TemplateSchicht, 'id' | 'benoetigte_skills'> & {
+  benoetigte_skills?: string[] // defaults to '{}' in DB
+}
 export type TemplateSchichtUpdate = Partial<TemplateSchichtInsert>
 
 export type TemplateRessource = {
@@ -1743,6 +1748,23 @@ export type CheckPersonConflictsResult = {
 }
 
 // =============================================================================
+// Schicht-Kandidat (Issue #347)
+// =============================================================================
+
+export type SchichtKandidat = {
+  person_id: string
+  vorname: string
+  nachname: string
+  email: string | null
+  skills: string[]
+  matching_skills: string[]
+  match_count: number
+  total_required: number
+  has_conflicts: boolean
+  conflicts: PersonConflict[]
+}
+
+// =============================================================================
 // Zuweisungen Generator (Issue #344)
 // =============================================================================
 
@@ -2152,6 +2174,63 @@ export type RolleMitProduktionsBesetzungen = StueckRolle & {
   besetzungen: (ProduktionsBesetzung & {
     person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'skills'> | null
   })[]
+}
+
+// =============================================================================
+// Produktions-Dashboard (Issue #348)
+// =============================================================================
+
+export type BesetzungsFortschritt = {
+  totalRollen: number
+  besetztRollen: number
+  vorgemerktRollen: number
+  offeneRollen: number
+  progressProzent: number
+  nachTyp: { typ: RollenTyp; total: number; besetzt: number; offen: number }[]
+  unbesetzteHauptrollen: string[]
+}
+
+export type SchichtAbdeckungProAuffuehrung = {
+  serienauffuehrungId: string
+  datum: string
+  typ: AuffuehrungsTyp
+  hatVeranstaltung: boolean
+  totalBenoetigt: number
+  totalZugewiesen: number
+  totalOffen: number
+  abdeckungProzent: number
+}
+
+export type ProbenAnwesenheit = {
+  personId: string
+  personName: string
+  eingeladen: number
+  erschienen: number
+  anwesenheitsquote: number
+}
+
+export type ProbenDashboardStats = {
+  total: number
+  geplant: number
+  abgeschlossen: number
+  abgesagt: number
+  progressProzent: number
+  anwesenheiten: ProbenAnwesenheit[]
+  topAbwesende: ProbenAnwesenheit[]
+}
+
+export type DashboardWarnung = {
+  typ: 'kritisch' | 'warnung' | 'info'
+  kategorie: 'besetzung' | 'schicht' | 'probe'
+  titel: string
+  beschreibung: string
+}
+
+export type ProduktionDashboardData = {
+  besetzung: BesetzungsFortschritt
+  schichtAbdeckung: SchichtAbdeckungProAuffuehrung[]
+  proben: ProbenDashboardStats
+  warnungen: DashboardWarnung[]
 }
 
 // =============================================================================

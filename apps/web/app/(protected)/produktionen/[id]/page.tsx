@@ -7,6 +7,7 @@ import {
   getAllAuffuehrungenForProduktion,
 } from '@/lib/actions/produktionen'
 import { getRollenMitProduktionsBesetzungen } from '@/lib/actions/produktions-besetzungen'
+import { getProduktionDashboardData } from '@/lib/actions/produktions-dashboard'
 import { getLatestDokumente } from '@/lib/actions/produktions-dokumente'
 import {
   getProduktionsStab,
@@ -24,6 +25,7 @@ import {
   ProduktionStabSection,
   ProduktionChecklistSection,
   SerieManager,
+  ProduktionDashboardSection,
 } from '@/components/produktionen'
 import type { Stueck, Person, AuffuehrungTemplate } from '@/lib/supabase/types'
 
@@ -109,6 +111,14 @@ export default async function ProduktionDetailPage({
     )
   }
 
+  // Dashboard data (reuses already-fetched data where possible)
+  const dashboardData = await getProduktionDashboardData(
+    id,
+    produktion.stueck_id,
+    rollenMitBesetzungen,
+    serienAuffuehrungen
+  )
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '–'
     return new Date(dateStr).toLocaleDateString('de-CH')
@@ -146,6 +156,11 @@ export default async function ProduktionDetailPage({
               Bearbeiten
             </Link>
           )}
+        </div>
+
+        {/* Dashboard */}
+        <div className="mb-8">
+          <ProduktionDashboardSection data={dashboardData} />
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">

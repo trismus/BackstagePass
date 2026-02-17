@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { searchHelfer, validateAssignment, assignHelferManual, createExternalAndAssign } from '@/lib/actions/manual-assignment'
+import { suggestPersonenForSchicht } from '@/lib/actions/schicht-vorschlaege'
 import type { HelferSearchResult, AssignmentValidation } from '@/lib/actions/manual-assignment'
+import type { SchichtKandidat } from '@/lib/supabase/types'
 import { ConflictWarning } from '@/components/ui/ConflictWarning'
 
 interface HelferAssignmentModalProps {
   open: boolean
   schichtId: string
   schichtRolle: string
+  benoetigteSkills?: string[]
   veranstaltungId: string
   onClose: () => void
   onSuccess: () => void
@@ -18,6 +21,7 @@ export function HelferAssignmentModal({
   open,
   schichtId,
   schichtRolle,
+  benoetigteSkills,
   veranstaltungId,
   onClose,
   onSuccess,
@@ -34,6 +38,11 @@ export function HelferAssignmentModal({
   const [isAssigning, setIsAssigning] = useState(false)
   const [override, setOverride] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Suggestions state
+  const [suggestions, setSuggestions] = useState<SchichtKandidat[]>([])
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
   // New external helper form
   const [showNewExternalForm, setShowNewExternalForm] = useState(false)
@@ -63,6 +72,8 @@ export function HelferAssignmentModal({
       setError(null)
       setShowNewExternalForm(false)
       setNewExternal({ vorname: '', nachname: '', email: '', telefon: '' })
+      setSuggestions([])
+      setShowSuggestions(false)
     }
   }, [open])
 
@@ -113,6 +124,36 @@ export function HelferAssignmentModal({
 
     validate()
   }, [selectedHelfer, schichtId])
+
+  const handleLoadSuggestions = async () => {
+    setIsSuggestionsLoading(true)
+    setShowSuggestions(true)
+    try {
+      const result = await suggestPersonenForSchicht(schichtId)
+      setSuggestions(result)
+    } catch (err) {
+      console.error('Suggestions error:', err)
+    } finally {
+      setIsSuggestionsLoading(false)
+    }
+  }
+
+  const handleSelectSuggestion = (kandidat: SchichtKandidat) => {
+    const helferResult: HelferSearchResult = {
+      id: kandidat.person_id,
+      name: `${kandidat.vorname} ${kandidat.nachname}`,
+      email: kandidat.email ?? '',
+      telefon: null,
+      type: 'intern',
+      einsaetzeCount: 0,
+      letzterEinsatz: null,
+    }
+    setSelectedHelfer(helferResult)
+    setShowSuggestions(false)
+    setSearchQuery('')
+    setSearchResults([])
+    setError(null)
+  }
 
   const handleSelectHelfer = (helfer: HelferSearchResult) => {
     setSelectedHelfer(helfer)
@@ -173,6 +214,8 @@ export function HelferAssignmentModal({
     }
   }
 
+  const hasSkills = benoetigteSkills && benoetigteSkills.length > 0
+
   if (!open) return null
 
   return (
@@ -202,6 +245,21 @@ export function HelferAssignmentModal({
           Schicht: <span className="font-medium">{schichtRolle}</span>
         </p>
 
+        {/* Required skills display */}
+        {hasSkills && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            <span className="text-xs text-neutral-500">Skills:</span>
+            {benoetigteSkills.map((skill) => (
+              <span
+                key={skill}
+                className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Error message */}
         {error && (
           <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
@@ -211,6 +269,88 @@ export function HelferAssignmentModal({
 
         {!showNewExternalForm ? (
           <>
+            {/* Skill-based Suggestions */}
+            {hasSkills && !selectedHelfer && (
+              <div className="mt-4">
+                {!showSuggestions ? (
+                  <button
+                    onClick={handleLoadSuggestions}
+                    disabled={isSuggestionsLoading}
+                    className="rounded-lg border border-purple-300 bg-purple-50 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-100 disabled:opacity-50"
+                  >
+                    Vorschlaege anzeigen
+                  </button>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-neutral-700">
+                        Vorschlaege basierend auf Skills
+                      </h3>
+                      <button
+                        onClick={() => setShowSuggestions(false)}
+                        className="text-xs text-neutral-500 hover:text-neutral-700"
+                      >
+                        Ausblenden
+                      </button>
+                    </div>
+                    {isSuggestionsLoading ? (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-neutral-500">
+                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Lade Vorschlaege...
+                      </div>
+                    ) : suggestions.length > 0 ? (
+                      <div className="mt-2 max-h-60 overflow-y-auto rounded-lg border border-neutral-200">
+                        {suggestions.map((k) => (
+                          <button
+                            key={k.person_id}
+                            onClick={() => handleSelectSuggestion(k)}
+                            className="flex w-full items-start justify-between px-3 py-2 text-left hover:bg-neutral-50"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium text-neutral-900">
+                                  {k.vorname} {k.nachname}
+                                </p>
+                                {/* Conflict indicator */}
+                                <span
+                                  className={`inline-block h-2 w-2 rounded-full ${k.has_conflicts ? 'bg-yellow-500' : 'bg-green-500'}`}
+                                  title={k.has_conflicts ? 'Hat Konflikte' : 'Keine Konflikte'}
+                                />
+                              </div>
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {k.matching_skills.map((s) => (
+                                  <span key={s} className="inline-flex rounded-full bg-green-100 px-1.5 py-0.5 text-xs text-green-700">
+                                    {s}
+                                  </span>
+                                ))}
+                                {benoetigteSkills
+                                  .filter((s) => !k.matching_skills.some((ms) => ms.toLowerCase() === s.toLowerCase()))
+                                  .map((s) => (
+                                    <span key={s} className="inline-flex rounded-full bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-500">
+                                      {s}
+                                    </span>
+                                  ))}
+                              </div>
+                            </div>
+                            <span className="ml-2 shrink-0 text-xs font-medium text-neutral-500">
+                              {k.match_count}/{k.total_required}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-neutral-500">
+                        Keine Kandidaten gefunden.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Search */}
             <div className="mt-4">
               <label className="block text-sm font-medium text-neutral-700">
