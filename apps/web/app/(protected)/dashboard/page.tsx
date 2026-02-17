@@ -453,7 +453,7 @@ export default async function DashboardPage({
   // Try to find the person linked to this user
   const { data: person } = await supabase
     .from('personen')
-    .select('id, vorname, nachname, email, telefon, strasse, plz, ort, geburtsdatum')
+    .select('id, vorname, nachname, email, telefon, strasse, plz, ort, geburtstag')
     .eq('email', profile.email)
     .single()
 
