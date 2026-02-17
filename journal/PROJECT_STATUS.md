@@ -11,12 +11,12 @@
 | **Modul 0** | In Progress | 5 | 6 | 2026-02-06 |
 | **Modul 1** | In Progress | 15 | 4 | - |
 | **Modul 2** | ✅ Done | 0 | 4 | - |
-| **Modul 3** | In Progress | 6 | 4 | - |
+| **Modul 3** | In Progress | 6 | 9 | - |
 | **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
 | **UserExperience** | In Progress | 7 | 5 | - |
 | **Vorhang auf** | In Progress | 4 | 4 | - |
 
-**Gesamt:** 40 Open, 44 Closed
+**Gesamt:** 40 Open, 49 Closed
 
 ---
 
@@ -97,6 +97,11 @@
 | #112 | 🟡 Open | perf(db): Index auf proben_teilnehmer.status | enhancement |
 | #113 | 🟡 Open | test: Tests für Künstlerische Planung | enhancement |
 | #114 | 🟡 Open | fix: Server-side Authorization Check | enhancement |
+| #378 | ✅ Closed | Einheitliche Status-Konstanten für StueckStatus (PR #370) | enhancement |
+| #379 | ✅ Closed | Generator soll auch Stücke mit Status 'aktiv' anzeigen (PR #370) | enhancement |
+| #380 | ✅ Closed | Stücke-Detailseite zeigt Hinweis wenn Generator verfügbar (PR #370) | enhancement |
+| #381 | ✅ Closed | Unit-Tests für Probenplan-Generator Status-Filterung (PR #370) | enhancement |
+| #382 | ✅ Closed | TypeScript strictere Typisierung für Supabase-Status-Queries (PR #370) | enhancement |
 
 ---
 
@@ -206,6 +211,15 @@
 ---
 
 ## Changelog
+
+### 2026-02-17: Probenplan Status-Konstanten, Filter, Hints & Tests (#378-382, PR #370)
+
+- Zentrale Konstanten `STUECK_STATUS_LABELS` und `PROBENPLAN_ELIGIBLE_STATUS` in `types.ts`
+- Duplizierte Label-Strings in `StatusBadge`, `StueckForm` und Generator-Page durch Konstanten ersetzt
+- Probenplan-Generator zeigt nun auch Stücke mit Status `aktiv` an (nicht nur `in_proben`/`in_planung`)
+- Stücke-Detailseite zeigt Callout-Hinweis mit Link zum Generator für berechtigte Stücke
+- `StueckMitSzenen.status` von `string` zu `StueckStatus` typisiert
+- 10 Unit Tests für Konstanten, Filterung, Generierung und Berechtigungsprüfung
 
 ### 2026-02-17: Proben-Teilnehmer aus Besetzung auto-befüllen (#345, PR #354)
 
@@ -350,14 +364,14 @@ Alle Template-Elemente jetzt inline editierbar:
 ## Statistik
 
 ```
-Total Issues:     84 (40 open, 44 closed)
+Total Issues:     89 (40 open, 49 closed)
 Milestones:       7
 
 Progress by Milestone:
 ├── Modul 0:              55% (6/11 closed)
 ├── Modul 1:              21% (4/19 closed)
 ├── Modul 2:             100% (4/4 closed) ✅
-├── Modul 3:              40% (4/10 closed)
+├── Modul 3:              60% (9/15 closed)
 ├── Helfer Liste:         85% (17/20 closed) ✅
 ├── UserExperience:       64% (7/11 closed)
 └── Vorhang auf:          50% (4/8 closed)
@@ -366,6 +380,7 @@ Progress by Milestone:
 ## Aktuelle Entwicklungen (Feb 2026)
 
 ### Abgeschlossene Features
+- ✅ Probenplan Status-Konstanten, Filter, Hints & Tests (#378-382)
 - ✅ Proben-Teilnehmer aus Besetzung auto-befüllen mit Vorschau-Dialog (#345)
 - ✅ Zentrale Personen-Einsatzübersicht mit 5 Quellen + Verfügbarkeiten (#346)
 - ✅ Besetzung → Aufführungs-Zuweisungen automatisch erstellen (#344)
