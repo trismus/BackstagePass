@@ -27,6 +27,10 @@ interface SchichtZuweisungListeProps {
 
 const statusLabels: Record<ZuweisungStatus, { label: string; color: string }> =
   {
+    vorgeschlagen: {
+      label: 'Vorgeschlagen',
+      color: 'bg-purple-100 text-purple-800',
+    },
     zugesagt: { label: 'Zugesagt', color: 'bg-green-100 text-green-800' },
     abgesagt: { label: 'Abgesagt', color: 'bg-red-100 text-red-800' },
     erschienen: { label: 'Erschienen', color: 'bg-blue-100 text-blue-800' },

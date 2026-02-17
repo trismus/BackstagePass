@@ -640,6 +640,7 @@ export type SchichtMitZeitblock = AuffuehrungSchicht & {
 // =============================================================================
 
 export type ZuweisungStatus =
+  | 'vorgeschlagen'
   | 'zugesagt'
   | 'abgesagt'
   | 'erschienen'
@@ -1739,6 +1740,47 @@ export type PersonConflict = {
 export type CheckPersonConflictsResult = {
   has_conflicts: boolean
   conflicts: PersonConflict[]
+}
+
+// =============================================================================
+// Zuweisungen Generator (Issue #344)
+// =============================================================================
+
+export type ZuweisungVorschlag = {
+  key: string
+  person_id: string
+  person_name: string
+  schicht_id: string
+  schicht_rolle: string
+  veranstaltung_id: string
+  veranstaltung_titel: string
+  veranstaltung_datum: string
+  zeitblock_name: string | null
+  zeitblock_startzeit: string | null
+  zeitblock_endzeit: string | null
+  bereits_vorhanden: boolean
+  konflikte: PersonConflict[]
+}
+
+export type ZuweisungenPreviewResult = {
+  vorschlaege: ZuweisungVorschlag[]
+  auffuehrungen_ohne_veranstaltung: {
+    id: string
+    datum: string
+    serie_name: string
+  }[]
+  veranstaltungen_ohne_vorfuehrung: {
+    veranstaltung_id: string
+    titel: string
+    datum: string
+  }[]
+  stats: {
+    total_besetzt: number
+    total_auffuehrungen: number
+    total_vorschlaege: number
+    total_bereits_vorhanden: number
+    total_mit_konflikten: number
+  }
 }
 
 // =============================================================================
