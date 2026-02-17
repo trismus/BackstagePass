@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { inviteExistingPerson, resendInvitation, getDefaultAppRole } from '@/lib/actions/personen'
+import { inviteExistingPerson, resendInvitation } from '@/lib/actions/personen'
+import { getDefaultAppRole } from '@/lib/utils/roles'
 import { Alert } from '@/components/ui/Alert'
 import type { Rolle, UserRole } from '@/lib/supabase/types'
 
