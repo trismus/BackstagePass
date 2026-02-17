@@ -800,7 +800,7 @@ export async function getMitgliederStatistik(): Promise<{
 // Invitation Resend (Issue #325)
 // =============================================================================
 
-const RESEND_COOLDOWN_DAYS = 7
+const RESEND_COOLDOWN_DAYS = 1
 
 /**
  * Resend an invitation to a person who was already invited but hasn't accepted
