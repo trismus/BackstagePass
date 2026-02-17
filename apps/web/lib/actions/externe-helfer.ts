@@ -28,6 +28,7 @@ export async function findOrCreateExternalHelper(
   nachname: string,
   telefon?: string | null
 ): Promise<{ success: boolean; error?: string; id?: string; isNew?: boolean }> {
+  await requirePermission('helfereinsaetze:write')
   const supabase = await createClient()
 
   // Normalize email
@@ -159,6 +160,7 @@ export async function getExterneHelferProfil(
 export async function getExterneHelferProfilByEmail(
   email: string
 ): Promise<ExterneHelferProfil | null> {
+  await requirePermission('mitglieder:read')
   const supabase = await createClient()
 
   const { data, error } = await supabase

@@ -12,11 +12,13 @@ import {
   ressourceUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all resources
  */
 export async function getRessourcen(): Promise<Ressource[]> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
@@ -35,6 +37,7 @@ export async function getRessourcen(): Promise<Ressource[]> {
  * Get all active resources only
  */
 export async function getAktiveRessourcen(): Promise<Ressource[]> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
@@ -56,6 +59,7 @@ export async function getAktiveRessourcen(): Promise<Ressource[]> {
 export async function getRessourcenByKategorie(
   kategorie: string
 ): Promise<Ressource[]> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
@@ -76,6 +80,7 @@ export async function getRessourcenByKategorie(
  * Get a single resource by ID
  */
 export async function getRessource(id: string): Promise<Ressource | null> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
@@ -98,6 +103,9 @@ export async function getRessource(id: string): Promise<Ressource | null> {
 export async function createRessource(
   data: RessourceInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('ressourcen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(ressourceSchema, data)
   if (!validation.success) {
@@ -128,6 +136,9 @@ export async function updateRessource(
   id: string,
   data: RessourceUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('ressourcen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(ressourceUpdateSchema, data)
   if (!validation.success) {
@@ -156,6 +167,9 @@ export async function updateRessource(
 export async function deleteRessource(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('ressourcen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('ressourcen').delete().eq('id', id)
 

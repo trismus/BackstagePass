@@ -8,11 +8,13 @@ import {
   raumUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all active rooms
  */
 export async function getRaeume(): Promise<Raum[]> {
+  await requirePermission('raeume:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('raeume')
@@ -31,6 +33,7 @@ export async function getRaeume(): Promise<Raum[]> {
  * Get all active rooms only
  */
 export async function getAktiveRaeume(): Promise<Raum[]> {
+  await requirePermission('raeume:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('raeume')
@@ -50,6 +53,7 @@ export async function getAktiveRaeume(): Promise<Raum[]> {
  * Get a single room by ID
  */
 export async function getRaum(id: string): Promise<Raum | null> {
+  await requirePermission('raeume:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('raeume')
@@ -72,6 +76,9 @@ export async function getRaum(id: string): Promise<Raum | null> {
 export async function createRaum(
   data: RaumInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('raeume:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(raumSchema, data)
   if (!validation.success) {
@@ -102,6 +109,9 @@ export async function updateRaum(
   id: string,
   data: RaumUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('raeume:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(raumUpdateSchema, data)
   if (!validation.success) {
@@ -130,6 +140,9 @@ export async function updateRaum(
 export async function deleteRaum(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('raeume:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('raeume').delete().eq('id', id)
 

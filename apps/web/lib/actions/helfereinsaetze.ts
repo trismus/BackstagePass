@@ -15,11 +15,13 @@ import {
   helferrolleSchema,
 } from '../validations/helfereinsaetze'
 import { validateInput } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all helfereinsaetze with partner info
  */
 export async function getHelfereinsaetze(): Promise<HelfereinsatzMitPartner[]> {
+  await requirePermission('helfereinsaetze:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helfereinsaetze')
@@ -45,6 +47,7 @@ export async function getHelfereinsaetze(): Promise<HelfereinsatzMitPartner[]> {
 export async function getUpcomingHelfereinsaetze(
   limit?: number
 ): Promise<HelfereinsatzMitPartner[]> {
+  await requirePermission('helfereinsaetze:read')
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0]
 
@@ -80,6 +83,7 @@ export async function getUpcomingHelfereinsaetze(
 export async function getHelfereinsatz(
   id: string
 ): Promise<HelfereinsatzMitPartner | null> {
+  await requirePermission('helfereinsaetze:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helfereinsaetze')
@@ -108,6 +112,9 @@ export async function createHelfereinsatz(
   data: HelfereinsatzInsert,
   rollen?: HelferrolleInsert[]
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('helfereinsaetze:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(helfereinsatzSchema, data)
   if (!validation.success) {
@@ -166,6 +173,9 @@ export async function updateHelfereinsatz(
   id: string,
   data: HelfereinsatzUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('helfereinsaetze:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(helfereinsatzUpdateSchema, data)
   if (!validation.success) {
@@ -195,6 +205,9 @@ export async function updateHelfereinsatz(
 export async function deleteHelfereinsatz(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('helfereinsaetze:delete') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('helfereinsaetze').delete().eq('id', id)
 
@@ -213,6 +226,7 @@ export async function deleteHelfereinsatz(
 export async function getHelferrollen(
   helfereinsatzId: string
 ): Promise<Helferrolle[]> {
+  await requirePermission('helfereinsaetze:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('helferrollen')
@@ -234,6 +248,9 @@ export async function getHelferrollen(
 export async function addHelferrolle(
   data: HelferrolleInsert
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('helfereinsaetze:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('helferrollen').insert(data as never)
 
@@ -253,6 +270,9 @@ export async function addHelferrolle(
 export async function removeHelferrolle(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('helfereinsaetze:delete') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('helferrollen').delete().eq('id', id)
 

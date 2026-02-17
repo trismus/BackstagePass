@@ -41,6 +41,7 @@ import {
   templateSachleistungUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /** Revalidate both template pages (user-facing + admin) */
 function revalidateTemplate(templateId: string) {
@@ -52,6 +53,7 @@ function revalidateTemplate(templateId: string) {
  * Get all templates (non-archived)
  */
 export async function getTemplates(): Promise<AuffuehrungTemplate[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_templates')
@@ -71,6 +73,7 @@ export async function getTemplates(): Promise<AuffuehrungTemplate[]> {
  * Get all templates including archived
  */
 export async function getAllTemplates(): Promise<AuffuehrungTemplate[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_templates')
@@ -91,6 +94,7 @@ export async function getAllTemplates(): Promise<AuffuehrungTemplate[]> {
 export async function getTemplate(
   id: string
 ): Promise<TemplateMitDetails | null> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // Get template
@@ -159,6 +163,9 @@ export async function getTemplate(
 export async function createTemplate(
   data: AuffuehrungTemplateInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateSchema, data)
   if (!validation.success) {
@@ -190,6 +197,9 @@ export async function updateTemplate(
   id: string,
   data: AuffuehrungTemplateUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateUpdateSchema, data)
   if (!validation.success) {
@@ -219,6 +229,9 @@ export async function updateTemplate(
 export async function archiveTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   return updateTemplate(id, { archiviert: true })
 }
 
@@ -229,6 +242,9 @@ export async function archiveTemplate(
 export async function deleteTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('auffuehrung_templates')
@@ -252,6 +268,9 @@ export async function deleteTemplate(
 export async function addTemplateZeitblock(
   data: TemplateZeitblockInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateZeitblockSchema, data)
   if (!validation.success) {
@@ -278,6 +297,9 @@ export async function removeTemplateZeitblock(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_zeitbloecke')
@@ -298,6 +320,9 @@ export async function updateTemplateZeitblock(
   templateId: string,
   data: TemplateZeitblockUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const validation = validateInput(templateZeitblockUpdateSchema, data)
   if (!validation.success) {
     return { success: false, error: validation.error }
@@ -325,6 +350,9 @@ export async function updateTemplateZeitblock(
 export async function addTemplateSchicht(
   data: TemplateSchichtInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateSchichtSchema, data)
   if (!validation.success) {
@@ -351,6 +379,9 @@ export async function removeTemplateSchicht(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_schichten')
@@ -371,6 +402,9 @@ export async function updateTemplateSchicht(
   templateId: string,
   data: TemplateSchichtUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const validation = validateInput(templateSchichtUpdateSchema, data)
   if (!validation.success) {
     return { success: false, error: validation.error }
@@ -398,6 +432,9 @@ export async function updateTemplateSchicht(
 export async function addTemplateRessource(
   data: TemplateRessourceInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateRessourceSchema, data)
   if (!validation.success) {
@@ -424,6 +461,9 @@ export async function removeTemplateRessource(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_ressourcen')
@@ -444,6 +484,9 @@ export async function updateTemplateRessource(
   templateId: string,
   data: TemplateRessourceUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const validation = validateInput(templateRessourceUpdateSchema, data)
   if (!validation.success) {
     return { success: false, error: validation.error }
@@ -471,6 +514,9 @@ export async function updateTemplateRessource(
 export async function addTemplateInfoBlock(
   data: TemplateInfoBlockInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateInfoBlockSchema, data)
   if (!validation.success) {
@@ -497,6 +543,9 @@ export async function removeTemplateInfoBlock(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_info_bloecke')
@@ -517,6 +566,9 @@ export async function updateTemplateInfoBlock(
   templateId: string,
   data: TemplateInfoBlockUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const validation = validateInput(templateInfoBlockUpdateSchema, data)
   if (!validation.success) {
     return { success: false, error: validation.error }
@@ -544,6 +596,9 @@ export async function updateTemplateInfoBlock(
 export async function addTemplateSachleistung(
   data: TemplateSachleistungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateSachleistungSchema, data)
   if (!validation.success) {
@@ -570,6 +625,9 @@ export async function removeTemplateSachleistung(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_sachleistungen')
@@ -590,6 +648,9 @@ export async function updateTemplateSachleistung(
   templateId: string,
   data: TemplateSachleistungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const validation = validateInput(templateSachleistungUpdateSchema, data)
   if (!validation.success) {
     return { success: false, error: validation.error }
@@ -627,6 +688,9 @@ export async function applyTemplate(
   veranstaltungId: string,
   _startzeit: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
 
   // Get the template with all details
@@ -775,6 +839,9 @@ export async function createTemplateFromVeranstaltung(
   templateName: string,
   beschreibung?: string
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
 
   // Create the template
