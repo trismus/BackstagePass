@@ -17,14 +17,12 @@ import {
 import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
 import { getRollenHistorie, getHelfereinsatzHistorie } from '@/lib/actions/historie'
-import { getUpcomingMitgliederHelferEvents } from '@/lib/actions/helferliste'
 import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
 import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
 import { RollenHistorie } from '@/components/mein-bereich/RollenHistorie'
 import { HelfereinsatzHistorie } from '@/components/mein-bereich/HelfereinsatzHistorie'
 import {
   UpcomingEventsWidget,
-  MitgliederHelferEventsWidget,
   HelferEinsaetzeWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
 import { ProfileCompletionWidget } from '@/components/mein-bereich/ProfileCompletionWidget'
@@ -477,11 +475,6 @@ export default async function DashboardPage({
         .limit(5)
     : { data: [] }
 
-  // Get member-only helper events (helferliste system)
-  const mitgliederHelferEvents = !isPassiveMember
-    ? await getUpcomingMitgliederHelferEvents()
-    : []
-
   // Get history data (only for active members)
   const rollenHistorie = !isPassiveMember ? await getRollenHistorie() : []
   const helfereinsatzHistorie =
@@ -663,9 +656,8 @@ export default async function DashboardPage({
             </div>
 
             {/* Content Widgets */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
-              <MitgliederHelferEventsWidget events={mitgliederHelferEvents} />
               <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
             </div>
 

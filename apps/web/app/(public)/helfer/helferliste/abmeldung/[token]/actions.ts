@@ -154,10 +154,8 @@ export async function cancelHelferlisteRegistration(
   }
 
   // 8. Revalidate paths
-  revalidatePath('/helferliste')
-  if (rollenInstanz?.helfer_event_id) {
-    revalidatePath(`/helferliste/${rollenInstanz.helfer_event_id}`)
-  }
+  revalidatePath('/veranstaltungen')
+  revalidatePath('/mitmachen')
 
   return { success: true }
 }

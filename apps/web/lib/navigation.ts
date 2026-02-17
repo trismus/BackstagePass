@@ -130,12 +130,6 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
         icon: 'helper',
         permission: 'helfereinsaetze:read',
       },
-      {
-        href: '/helferliste',
-        label: 'Helferliste',
-        icon: 'list',
-        permission: 'helferliste:read',
-      },
     ],
   },
   {
@@ -225,7 +219,6 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
     title: 'Helfen',
     items: [
       { href: '/helfereinsaetze', label: 'Helfereinsätze', icon: 'helper' },
-      { href: '/helferliste', label: 'Helferliste', icon: 'list' },
     ],
   },
   {
@@ -382,7 +375,6 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
     '/admin': ['ADMIN'],
     '/vorstand': ['ADMIN', 'VORSTAND'],
     '/helfereinsaetze': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
-    '/helferliste': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
     '/mein-bereich': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'MITGLIED_PASSIV'],
   }
 
@@ -454,7 +446,6 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   stuecke: 'Stücke',
   proben: 'Proben',
   helfereinsaetze: 'Helfereinsätze',
-  helferliste: 'Helferliste',
   raeume: 'Räume',
   ressourcen: 'Ausstattung',
   templates: 'Templates',
