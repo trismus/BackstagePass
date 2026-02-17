@@ -2141,12 +2141,14 @@ export type EmailTemplateTyp =
   | 'waitlist_assigned'
   | 'waitlist_timeout'
   | 'thank_you'
+  | 'member_invitation'
 
 export const EMAIL_TEMPLATE_TYP_LABELS: Record<EmailTemplateTyp, string> = {
   confirmation: 'Buchungsbestätigung',
   reminder_48h: 'Erinnerung (48h vorher)',
   reminder_6h: 'Erinnerung (6h vorher)',
   cancellation: 'Abmeldebestätigung',
+  member_invitation: 'Mitglieder-Einladung',
   waitlist_assigned: 'Warteliste: Platz frei',
   waitlist_timeout: 'Warteliste: Timeout',
   thank_you: 'Dankeschön',
@@ -2194,6 +2196,7 @@ export type EmailPlaceholderData = {
   koordinator_email?: string
   koordinator_telefon?: string
   frist?: string
+  magic_link?: string
 }
 
 // =============================================================================

@@ -14,6 +14,9 @@ import type {
 } from '../supabase/types'
 import { sanitizeSearchQuery } from '../utils/search'
 import { getDefaultAppRole } from '../utils/roles'
+import { isEmailServiceConfigured } from '@/lib/email'
+import { sendInvitationEmail } from './invitation-email'
+import type { User } from '@supabase/supabase-js'
 
 const USE_DUMMY_DATA = !process.env.NEXT_PUBLIC_SUPABASE_URL
 
@@ -119,6 +122,49 @@ export async function createPerson(
   return { success: true }
 }
 
+// =============================================================================
+// Invite Helper (Issue #326 - Branded Invitation Email)
+// =============================================================================
+
+/**
+ * Perform user invite: generates auth user and sends branded email (if SMTP configured)
+ * or falls back to Supabase default email.
+ */
+async function performInvite(
+  adminClient: ReturnType<typeof createAdminClient>,
+  email: string,
+  vorname: string,
+  nachname: string
+): Promise<{ user: User | null; error?: string }> {
+  if (isEmailServiceConfigured()) {
+    // Custom branded email path: generate link without sending Supabase email
+    const { data, error } = await adminClient.auth.admin.generateLink({
+      type: 'invite',
+      email,
+      options: { data: { display_name: `${vorname} ${nachname}` } },
+    })
+
+    if (error) return { user: null, error: error.message }
+
+    const magicLink = data.properties.action_link
+    const emailResult = await sendInvitationEmail(email, vorname, magicLink)
+    if (!emailResult.success) {
+      console.warn('Custom invitation email failed, user still created:', emailResult.error)
+    }
+
+    return { user: data.user }
+  } else {
+    // Fallback: Supabase default invitation email
+    const { data, error } = await adminClient.auth.admin.inviteUserByEmail(
+      email,
+      { data: { display_name: `${vorname} ${nachname}` } }
+    )
+
+    if (error) return { user: null, error: error.message }
+    return { user: data.user }
+  }
+}
+
 /**
  * Create a new person with an app account
  * This will:
@@ -157,32 +203,30 @@ export async function createPersonWithAccount(
   try {
     const adminClient = createAdminClient()
 
-    const { data: inviteData, error: inviteError } =
-      await adminClient.auth.admin.inviteUserByEmail(personData.email, {
-        data: {
-          display_name: `${personData.vorname} ${personData.nachname}`,
-        },
-      })
+    const inviteResult = await performInvite(
+      adminClient,
+      personData.email,
+      personData.vorname,
+      personData.nachname
+    )
 
-    if (inviteError) {
-      console.error('Error inviting user:', inviteError)
-      // Person was created, but invite failed - still return success with warning
+    if (inviteResult.error) {
+      console.error('Error inviting user:', inviteResult.error)
       return {
         success: true,
-        error: `Mitglied erstellt, aber Einladung fehlgeschlagen: ${inviteError.message}`,
+        error: `Mitglied erstellt, aber Einladung fehlgeschlagen: ${inviteResult.error}`,
       }
     }
 
     // 3. Update the profile role (profile is created by trigger)
-    if (inviteData.user) {
+    if (inviteResult.user) {
       const { error: profileError } = await adminClient
         .from('profiles')
         .update({ role: appRole })
-        .eq('id', inviteData.user.id)
+        .eq('id', inviteResult.user.id)
 
       if (profileError) {
         console.error('Error updating profile role:', profileError)
-        // Don't fail - the user can still be updated later
       }
     }
 
@@ -243,27 +287,27 @@ export async function inviteExistingPerson(
   try {
     const adminClient = createAdminClient()
 
-    const { data: inviteData, error: inviteError } =
-      await adminClient.auth.admin.inviteUserByEmail(person.email, {
-        data: {
-          display_name: `${person.vorname} ${person.nachname}`,
-        },
-      })
+    const inviteResult = await performInvite(
+      adminClient,
+      person.email,
+      person.vorname,
+      person.nachname
+    )
 
-    if (inviteError) {
-      console.error('Error inviting user:', inviteError)
+    if (inviteResult.error) {
+      console.error('Error inviting user:', inviteResult.error)
       return {
         success: false,
-        error: `Einladung fehlgeschlagen: ${inviteError.message}`,
+        error: `Einladung fehlgeschlagen: ${inviteResult.error}`,
       }
     }
 
     // Update the profile role (profile is created by trigger)
-    if (inviteData.user) {
+    if (inviteResult.user) {
       const { error: profileError } = await adminClient
         .from('profiles')
         .update({ role: appRole })
-        .eq('id', inviteData.user.id)
+        .eq('id', inviteResult.user.id)
 
       if (profileError) {
         console.error('Error updating profile role:', profileError)
@@ -804,18 +848,18 @@ export async function resendInvitation(
   try {
     const adminClient = createAdminClient()
 
-    const { error: inviteError } =
-      await adminClient.auth.admin.inviteUserByEmail(person.email, {
-        data: {
-          display_name: `${person.vorname} ${person.nachname}`,
-        },
-      })
+    const inviteResult = await performInvite(
+      adminClient,
+      person.email,
+      person.vorname,
+      person.nachname
+    )
 
-    if (inviteError) {
-      console.error('Error resending invitation:', inviteError)
+    if (inviteResult.error) {
+      console.error('Error resending invitation:', inviteResult.error)
       return {
         success: false,
-        error: `Einladung fehlgeschlagen: ${inviteError.message}`,
+        error: `Einladung fehlgeschlagen: ${inviteResult.error}`,
       }
     }
 
@@ -898,27 +942,29 @@ export async function bulkInvitePersons(
     try {
       const appRole = getDefaultAppRole(person.rolle as Rolle)
 
-      const { data: inviteData, error: inviteError } =
-        await adminClient.auth.admin.inviteUserByEmail(person.email!, {
-          data: { display_name: name },
-        })
+      const inviteResult = await performInvite(
+        adminClient,
+        person.email!,
+        person.vorname,
+        person.nachname
+      )
 
-      if (inviteError) {
+      if (inviteResult.error) {
         result.failed++
         result.errors.push({
           personId: person.id,
           name,
-          error: inviteError.message,
+          error: inviteResult.error,
         })
         continue
       }
 
       // Update profile role
-      if (inviteData.user) {
+      if (inviteResult.user) {
         await adminClient
           .from('profiles')
           .update({ role: appRole })
-          .eq('id', inviteData.user.id)
+          .eq('id', inviteResult.user.id)
       }
 
       // Track invitation timestamp
