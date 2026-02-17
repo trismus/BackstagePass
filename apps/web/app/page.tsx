@@ -229,10 +229,10 @@ export default async function HomePage() {
                 </p>
               )}
               <Link
-                href="/helferliste"
+                href="/mitmachen"
                 className="block w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-center font-medium text-neutral-700 transition-colors hover:border-neutral-400 hover:bg-neutral-50"
               >
-                Zur Helfer-Übersicht
+                Zur Mitmachen-Seite
               </Link>
             </div>
           </div>
