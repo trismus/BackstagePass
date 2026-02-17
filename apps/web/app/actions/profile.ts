@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { requirePermission } from '@/lib/supabase/auth-helpers'
 import { logAuditEvent } from '@/lib/audit'
 import type { UserRole } from '@/lib/supabase/types'
 
@@ -55,6 +56,7 @@ export async function getProfile() {
 
 // Admin functions
 export async function getAllUsers(search?: string) {
+  await requirePermission('admin:access')
   const supabase = await createClient()
 
   let query = supabase

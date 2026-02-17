@@ -10,6 +10,7 @@ import type { HelferFeedbackInsert, HelferFeedbackMitDetails } from '../supabase
 
 export type FeedbackSubmitData = {
   zuweisungId: string
+  feedbackToken: string
   rating: number
   feedbackPositiv: string | null
   feedbackVerbesserung: string | null
@@ -43,15 +44,20 @@ export async function submitHelferFeedback(
     return { success: false, error: 'Ungueltige Bewertung' }
   }
 
-  // Check if zuweisung exists
+  // Validate feedback token matches zuweisung
+  if (!data.feedbackToken) {
+    return { success: false, error: 'Feedback-Token fehlt' }
+  }
+
   const { data: zuweisung, error: zuweisungError } = await supabase
     .from('auffuehrung_zuweisungen')
     .select('id, feedback_token')
     .eq('id', data.zuweisungId)
+    .eq('feedback_token', data.feedbackToken)
     .single()
 
   if (zuweisungError || !zuweisung) {
-    return { success: false, error: 'Zuweisung nicht gefunden' }
+    return { success: false, error: 'Ungültiger Feedback-Link' }
   }
 
   // Check if feedback already exists

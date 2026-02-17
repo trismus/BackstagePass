@@ -490,24 +490,26 @@ export async function acceptPersonalEvent(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const profile = await getUserProfile()
+  const resolved = await resolvePersonIds(supabase)
 
-  if (!profile) {
+  if (!resolved) {
     return { success: false, error: 'Nicht angemeldet' }
   }
 
+  const { resolvedPersonId } = resolved
   const [type, id] = eventId.split('-')
 
   if (type === 'pt') {
-    // Update Probe Teilnehmer status
+    // Update Probe Teilnehmer status — with ownership filter
     const { error } = await supabase
       .from('proben_teilnehmer')
       .update({ status: 'zugesagt' as TeilnehmerStatus } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error accepting probe:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Akzeptieren' }
     }
 
     return { success: true }
@@ -523,84 +525,90 @@ export async function declinePersonalEvent(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const profile = await getUserProfile()
+  const resolved = await resolvePersonIds(supabase)
 
-  if (!profile) {
+  if (!resolved) {
     return { success: false, error: 'Nicht angemeldet' }
   }
 
+  const { resolvedPersonId } = resolved
   const [type, id] = eventId.split('-')
 
   if (type === 'a') {
-    // Update Anmeldung status
+    // Update Anmeldung status — with ownership filter
     const { error } = await supabase
       .from('anmeldungen')
       .update({ status: 'abgemeldet' } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining anmeldung:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }
   }
 
   if (type === 'pt') {
-    // Update Probe Teilnehmer status
+    // Update Probe Teilnehmer status — with ownership filter
     const { error } = await supabase
       .from('proben_teilnehmer')
       .update({ status: 'abgesagt' as TeilnehmerStatus } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining probe:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }
   }
 
   if (type === 'z') {
-    // Update Zuweisung status
+    // Update Zuweisung status — with ownership filter
     const { error } = await supabase
       .from('auffuehrung_zuweisungen')
       .update({ status: 'abgesagt' } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining zuweisung:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }
   }
 
   if (type === 'ha') {
-    // Update Helfer Anmeldung status (new system)
+    // Update Helfer Anmeldung status (new system) — with ownership filter
     const { error } = await supabase
       .from('helfer_anmeldungen')
       .update({ status: 'abgelehnt' } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining helfer anmeldung:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }
   }
 
   if (type === 'hs') {
-    // Update Helferschicht status (legacy system)
+    // Update Helferschicht status (legacy system) — with ownership filter
     const { error } = await supabase
       .from('helferschichten')
       .update({ status: 'abgesagt' } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining helferschicht:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }

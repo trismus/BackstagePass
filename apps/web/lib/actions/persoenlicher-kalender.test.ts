@@ -371,12 +371,16 @@ describe('declinePersonalEvent', () => {
   })
 
   it('handles ha- prefix for helfer_anmeldungen', async () => {
+    const innerEq = vi.fn().mockResolvedValue({ data: null, error: null })
     const updateChain = {
       update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+      eq: vi.fn().mockReturnValue({ eq: innerEq }),
     }
 
     mockSupabase.from.mockImplementation((table: string) => {
+      if (table === 'personen') {
+        return setupPersonLookup('person-1', 'profile-1')
+      }
       if (table === 'helfer_anmeldungen') {
         return updateChain
       }
@@ -391,12 +395,16 @@ describe('declinePersonalEvent', () => {
   })
 
   it('handles hs- prefix for helferschichten', async () => {
+    const innerEq = vi.fn().mockResolvedValue({ data: null, error: null })
     const updateChain = {
       update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+      eq: vi.fn().mockReturnValue({ eq: innerEq }),
     }
 
     mockSupabase.from.mockImplementation((table: string) => {
+      if (table === 'personen') {
+        return setupPersonLookup('person-1', 'profile-1')
+      }
       if (table === 'helferschichten') {
         return updateChain
       }

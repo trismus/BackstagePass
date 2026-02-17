@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, getUser } from '../supabase/server'
+import { requirePermission } from '../supabase/auth-helpers'
 import type { StundenkontoEintrag, StundenkontoInsert } from '../supabase/types'
 
 /**
@@ -45,13 +46,19 @@ export async function getStundensaldo(personId: string): Promise<number> {
 
 /**
  * Add a correction entry to stundenkonto
- * Requires ADMIN role
+ * Requires stundenkonto:write permission
  */
 export async function addStundenkorrektur(
   personId: string,
   stunden: number,
   beschreibung: string
 ): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('stundenkonto:write')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+
   const supabase = await createClient()
   const user = await getUser()
 
@@ -83,6 +90,7 @@ export async function addStundenkorrektur(
 
 /**
  * Add hours from a helferschicht
+ * Requires stundenkonto:write permission
  */
 export async function addStundenFromSchicht(
   personId: string,
@@ -90,6 +98,12 @@ export async function addStundenFromSchicht(
   stunden: number,
   beschreibung: string
 ): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('stundenkonto:write')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+
   const supabase = await createClient()
   const user = await getUser()
 
@@ -116,8 +130,10 @@ export async function addStundenFromSchicht(
 
 /**
  * Export stundenkonto as CSV
+ * Requires stundenkonto:read permission
  */
 export async function exportStundenkontoCSV(personId: string): Promise<string> {
+  await requirePermission('stundenkonto:read')
   const entries = await getStundenkontoForPerson(personId)
 
   const headers = ['Datum', 'Typ', 'Stunden', 'Beschreibung']

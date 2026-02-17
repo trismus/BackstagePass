@@ -45,6 +45,10 @@ export async function requirePermission(
     throw new Error('Profile not found')
   }
 
+  if (profile.is_active === false) {
+    throw new Error('Account deactivated')
+  }
+
   if (!_hasPermission(profile.role, permission)) {
     throw new Error('Insufficient permissions')
   }
@@ -62,6 +66,10 @@ export async function requireAnyPermission(
 
   if (!profile) {
     throw new Error('Profile not found')
+  }
+
+  if (profile.is_active === false) {
+    throw new Error('Account deactivated')
   }
 
   if (!_hasAnyPermission(profile.role, permissions)) {
