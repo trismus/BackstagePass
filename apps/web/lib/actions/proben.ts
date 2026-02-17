@@ -228,14 +228,13 @@ export async function getMeineProben(personId: string): Promise<MeineProbe[]> {
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0]
 
+  // Step 1: Get teilnehmer entries with proben (flat join, no nested stuecke)
   const { data, error } = await supabase
     .from('proben_teilnehmer')
     .select(`
       id,
       status,
-      probe:proben(id, titel, datum, startzeit, endzeit, ort,
-        stueck:stuecke(titel)
-      )
+      probe:proben!inner(id, titel, datum, startzeit, endzeit, ort, stueck_id)
     `)
     .eq('person_id', personId)
     .in('status', ['eingeladen', 'zugesagt'])
@@ -245,33 +244,49 @@ export async function getMeineProben(personId: string): Promise<MeineProbe[]> {
     return []
   }
 
-  if (!data) return []
+  if (!data || data.length === 0) return []
 
-  // Filter for future proben, map to flat structure
-  const result: MeineProbe[] = []
-  for (const row of data) {
-    const probe = row.probe as unknown as {
-      id: string
-      titel: string
-      datum: string
-      startzeit: string | null
-      endzeit: string | null
-      ort: string | null
-      stueck: { titel: string } | null
-    } | null
-    if (!probe || probe.datum < today) continue
-    result.push({
+  // Filter for future proben
+  type ProbeRow = {
+    id: string; titel: string; datum: string
+    startzeit: string | null; endzeit: string | null
+    ort: string | null; stueck_id: string
+  }
+  const filtered = data.filter((row) => {
+    const probe = row.probe as unknown as ProbeRow | null
+    return probe && probe.datum >= today
+  })
+
+  if (filtered.length === 0) return []
+
+  // Step 2: Fetch stueck titles separately
+  const stueckIds = [...new Set(
+    filtered.map((row) => (row.probe as unknown as ProbeRow).stueck_id)
+  )]
+  const { data: stuecke } = await supabase
+    .from('stuecke')
+    .select('id, titel')
+    .in('id', stueckIds)
+
+  const stueckMap = new Map(
+    (stuecke || []).map((s: { id: string; titel: string }) => [s.id, s.titel])
+  )
+
+  // Step 3: Map to flat structure
+  const result: MeineProbe[] = filtered.map((row) => {
+    const probe = row.probe as unknown as ProbeRow
+    return {
       id: row.id,
       probe_id: probe.id,
       titel: probe.titel,
-      stueck_titel: probe.stueck?.titel ?? null,
+      stueck_titel: stueckMap.get(probe.stueck_id) ?? null,
       datum: probe.datum,
       startzeit: probe.startzeit,
       endzeit: probe.endzeit,
       ort: probe.ort,
       status: row.status as TeilnehmerStatus,
-    })
-  }
+    }
+  })
 
   // Sort by datum ascending, limit 5
   result.sort((a, b) => a.datum.localeCompare(b.datum))
