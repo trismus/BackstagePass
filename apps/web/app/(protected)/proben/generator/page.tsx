@@ -19,7 +19,7 @@ export default async function ProbenGeneratorPage() {
       status,
       szenen(id, nummer, titel, dauer_minuten)
     `)
-    .in('status', ['in_produktion', 'in_vorbereitung'])
+    .in('status', ['in_proben', 'in_planung'])
     .order('titel')
 
   // Fetch saved templates
@@ -78,8 +78,8 @@ export default async function ProbenGeneratorPage() {
             Keine aktiven Stücke
           </h3>
           <p className="mt-2 text-gray-500">
-            Um den Probenplan-Generator zu nutzen, muss mindestens ein Stück in
-            Produktion oder Vorbereitung sein.
+            Um den Probenplan-Generator zu nutzen, muss mindestens ein Stück den
+            Status «In Proben» oder «In Planung» haben.
           </p>
           <Link
             href={'/stuecke' as Route}
