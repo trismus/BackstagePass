@@ -129,14 +129,26 @@ export const zuweisungSchema = z.object({
   schicht_id: uuid('Ungültige Schicht-ID'),
   person_id: uuid('Ungültige Personen-ID'),
   status: z
-    .enum(['zugesagt', 'abgesagt', 'erschienen', 'nicht_erschienen'])
+    .enum([
+      'vorgeschlagen',
+      'zugesagt',
+      'abgesagt',
+      'erschienen',
+      'nicht_erschienen',
+    ])
     .optional(),
   notizen: z.string().max(500, 'Notizen zu lang').nullable().optional(),
 })
 
 export const zuweisungUpdateSchema = z.object({
   status: z
-    .enum(['zugesagt', 'abgesagt', 'erschienen', 'nicht_erschienen'])
+    .enum([
+      'vorgeschlagen',
+      'zugesagt',
+      'abgesagt',
+      'erschienen',
+      'nicht_erschienen',
+    ])
     .optional(),
   notizen: z.string().max(500, 'Notizen zu lang').nullable().optional(),
 })
