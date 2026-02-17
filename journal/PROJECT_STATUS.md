@@ -14,9 +14,9 @@
 | **Modul 3** | In Progress | 6 | 4 | - |
 | **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
 | **UserExperience** | In Progress | 7 | 5 | - |
-| **Vorhang auf** | New | 8 | 0 | - |
+| **Vorhang auf** | In Progress | 7 | 1 | - |
 
-**Gesamt:** 44 Open, 40 Closed
+**Gesamt:** 43 Open, 41 Closed
 
 ---
 
@@ -192,7 +192,7 @@
 
 | # | Status | Titel | Prio |
 |---|--------|-------|------|
-| #343 | 🟡 Open | Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung | high |
+| #343 | ✅ Closed | Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung (PR #351) | high |
 | #344 | 🟡 Open | Besetzung → Aufführungs-Zuweisungen automatisch erstellen | high |
 | #345 | 🟡 Open | Proben-Teilnehmer aus Besetzung auto-befüllen | - |
 | #346 | 🟡 Open | Zentrale Personen-Einsatzübersicht (Mein Kalender) | high |
@@ -206,6 +206,14 @@
 ---
 
 ## Changelog
+
+### 2026-02-17: Verfügbarkeitskonflikt-Erkennung (#343, PR #351)
+
+- DB-Funktion `check_person_conflicts()` erkennt Überschneidungen mit Verfügbarkeiten, Schichtzuweisungen, Anmeldungen, Proben und Helfereinsätzen
+- Nicht-blockierende Konfliktwarnung in SchichtZuweisungListe (Aufführungen) und TeilnehmerList (Proben)
+- Cross-System-Konflikterkennung in HelferAssignmentModal mit Admin-Override
+- Neues `ConflictWarning`-UI-Komponente und `checkPersonConflicts` Server Action
+- 5 Unit Tests für Server Action
 
 ### 2026-02-17: Onboarding-Flow nach erstem Login (#328)
 
@@ -312,7 +320,7 @@ Alle Template-Elemente jetzt inline editierbar:
 ## Statistik
 
 ```
-Total Issues:     84 (44 open, 40 closed)
+Total Issues:     84 (43 open, 41 closed)
 Milestones:       7
 
 Progress by Milestone:
@@ -322,12 +330,13 @@ Progress by Milestone:
 ├── Modul 3:              40% (4/10 closed)
 ├── Helfer Liste:         85% (17/20 closed) ✅
 ├── UserExperience:       64% (7/11 closed)
-└── Vorhang auf: 0% (0/8 closed) 🆕
+└── Vorhang auf:          13% (1/8 closed)
 ```
 
 ## Aktuelle Entwicklungen (Feb 2026)
 
 ### Abgeschlossene Features
+- ✅ Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung (#343)
 - ✅ Onboarding-Flow nach erstem Login (#328)
 - ✅ Dashboard-Restructuring: Stundenkonto aus MITGLIED_AKTIV entfernt
 - ✅ Vorstand "Mein Bereich" mit Termine, Stundenkonto, Einsätze
@@ -340,7 +349,7 @@ Progress by Milestone:
 - ✅ Zod v4 Kompatibilität
 
 ### In Bearbeitung / Geplant
-- 🆕 Vorhang auf: 8 Issues (#343-#350) — Verfügbarkeitsprüfung, Besetzung→Zuweisungen, Skills-Matching, Einsatzübersicht
+- 🆕 Vorhang auf: 7 Issues (#344-#350) — Besetzung→Zuweisungen, Skills-Matching, Einsatzübersicht
 - 🔄 Partner-Portal (#146)
 - 🔄 Passive Mitglieder Ansicht (#144)
 - 🔄 Willkommen-Seite für Gäste (#147)
