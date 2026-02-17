@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, getUserProfile } from '../supabase/server'
+import { requirePermission } from '../supabase/auth-helpers'
 import type {
   Veranstaltung,
   Probe,
@@ -8,13 +9,19 @@ import type {
   ProbeTeilnehmer,
   AuffuehrungZuweisung,
   TeilnehmerStatus,
+  VerfuegbarkeitStatus,
 } from '../supabase/types'
 
 // =============================================================================
 // Types
 // =============================================================================
 
-export type PersonalEventTyp = 'veranstaltung' | 'probe' | 'schicht'
+export type PersonalEventTyp =
+  | 'veranstaltung'
+  | 'probe'
+  | 'schicht'
+  | 'helfer'
+  | 'helfereinsatz_legacy'
 
 export type PersonalEventStatus =
   | 'angemeldet'
@@ -24,6 +31,9 @@ export type PersonalEventStatus =
   | 'abgesagt'
   | 'abgemeldet'
   | 'erschienen'
+  | 'bestaetigt'
+  | 'abgelehnt'
+  | 'nicht_erschienen'
 
 export type PersonalEvent = {
   id: string
@@ -42,6 +52,11 @@ export type PersonalEvent = {
   anmeldung_id?: string | null
   teilnehmer_id?: string | null
   zuweisung_id?: string | null
+  helfer_anmeldung_id?: string | null
+  helferschicht_id?: string | null
+  helfer_event_id?: string | null
+  helfereinsatz_id?: string | null
+  helfer_rolle?: string | null
   // Extra info
   stueck_titel?: string | null
   rolle?: string | null
@@ -51,36 +66,74 @@ export type PersonalEvent = {
   kann_absagen: boolean
 }
 
+export type VerfuegbarkeitEvent = {
+  id: string
+  datum_von: string
+  datum_bis: string
+  zeitfenster_von: string | null
+  zeitfenster_bis: string | null
+  status: VerfuegbarkeitStatus
+  grund: string | null
+  notiz: string | null
+}
+
+// =============================================================================
+// Person Resolution Helper
+// =============================================================================
+
+async function resolvePersonIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  personId?: string
+): Promise<{ resolvedPersonId: string; profileId: string | null } | null> {
+  if (personId) {
+    // Management view: require permission and look up profile_id
+    await requirePermission('mitglieder:read')
+
+    const { data: person } = await supabase
+      .from('personen')
+      .select('id, profile_id')
+      .eq('id', personId)
+      .single()
+
+    if (!person) return null
+    return { resolvedPersonId: person.id, profileId: person.profile_id ?? null }
+  }
+
+  // Current user: resolve via email
+  const profile = await getUserProfile()
+  if (!profile) return null
+
+  const { data: person } = await supabase
+    .from('personen')
+    .select('id, profile_id')
+    .eq('email', profile.email)
+    .single()
+
+  if (!person) return null
+  return { resolvedPersonId: person.id, profileId: person.profile_id ?? null }
+}
+
 // =============================================================================
 // Get Personal Events
 // =============================================================================
 
 /**
- * Get all events where the current user is a participant
+ * Get all events where a person is a participant.
+ * When personId is provided, requires mitglieder:read permission.
+ * Otherwise resolves the current user.
  */
 export async function getPersonalEvents(
   startDatum?: string,
-  endDatum?: string
+  endDatum?: string,
+  personId?: string
 ): Promise<PersonalEvent[]> {
   const supabase = await createClient()
-  const profile = await getUserProfile()
+  const resolved = await resolvePersonIds(supabase, personId)
 
-  if (!profile) {
-    return []
-  }
+  if (!resolved) return []
 
+  const { resolvedPersonId, profileId } = resolved
   const events: PersonalEvent[] = []
-
-  // Find the person linked to this user
-  const { data: person } = await supabase
-    .from('personen')
-    .select('id')
-    .eq('email', profile.email)
-    .single()
-
-  if (!person) {
-    return []
-  }
 
   // 1. Get Veranstaltung Anmeldungen
   let anmeldungenQuery = supabase
@@ -91,7 +144,7 @@ export async function getPersonalEvents(
         id, titel, beschreibung, datum, startzeit, endzeit, ort, typ, status
       )
     `)
-    .eq('person_id', person.id)
+    .eq('person_id', resolvedPersonId)
     .neq('status', 'abgemeldet')
 
   if (startDatum) {
@@ -142,7 +195,7 @@ export async function getPersonalEvents(
         stueck:stuecke(id, titel)
       )
     `)
-    .eq('person_id', person.id)
+    .eq('person_id', resolvedPersonId)
     .not('status', 'in', '("abgesagt","nicht_erschienen")')
 
   const { data: probenTeilnahmen } = await probenQuery
@@ -194,7 +247,7 @@ export async function getPersonalEvents(
         veranstaltung:veranstaltungen(id, titel, datum, ort)
       )
     `)
-    .eq('person_id', person.id)
+    .eq('person_id', resolvedPersonId)
     .neq('status', 'abgesagt')
 
   type ZuweisungWithDetails = AuffuehrungZuweisung & {
@@ -237,6 +290,145 @@ export async function getPersonalEvents(
     }
   }
 
+  // 4. Get Helfer Anmeldungen (new Helferliste system)
+  if (profileId) {
+    const { data: helferAnmeldungen } = await supabase
+      .from('helfer_anmeldungen')
+      .select(`
+        id,
+        status,
+        helfer_rollen_instanzen!inner (
+          id,
+          custom_name,
+          zeitblock_start,
+          zeitblock_end,
+          helfer_rollen_templates ( name ),
+          helfer_events!inner (
+            id, name, beschreibung, datum_start, datum_end, ort
+          )
+        )
+      `)
+      .eq('profile_id', profileId)
+      .neq('status', 'abgelehnt')
+
+    type HelferAnmeldungWithDetails = {
+      id: string
+      status: string
+      helfer_rollen_instanzen: {
+        id: string
+        custom_name: string | null
+        zeitblock_start: string | null
+        zeitblock_end: string | null
+        helfer_rollen_templates: { name: string } | null
+        helfer_events: {
+          id: string
+          name: string
+          beschreibung: string | null
+          datum_start: string
+          datum_end: string
+          ort: string | null
+        }
+      }
+    }
+
+    if (helferAnmeldungen) {
+      for (const ha of helferAnmeldungen as unknown as HelferAnmeldungWithDetails[]) {
+        const instanz = ha.helfer_rollen_instanzen
+        const event = instanz.helfer_events
+        const rolleName = instanz.helfer_rollen_templates?.name ?? instanz.custom_name ?? 'Helfer'
+
+        // Use datum_start as the date (format: YYYY-MM-DD or datetime)
+        const datum = event.datum_start.split('T')[0]
+
+        if (startDatum && datum < startDatum) continue
+        if (endDatum && datum > endDatum) continue
+
+        events.push({
+          id: `ha-${ha.id}`,
+          titel: `${event.name} - ${rolleName}`,
+          beschreibung: event.beschreibung,
+          datum,
+          startzeit: instanz.zeitblock_start,
+          endzeit: instanz.zeitblock_end,
+          ort: event.ort,
+          typ: 'helfer',
+          status: ha.status as PersonalEventStatus,
+          helfer_anmeldung_id: ha.id,
+          helfer_event_id: event.id,
+          helfer_rolle: rolleName,
+          kann_zusagen: false,
+          kann_absagen: ha.status === 'angemeldet' || ha.status === 'bestaetigt',
+        })
+      }
+    }
+  }
+
+  // 5. Get Helferschichten (legacy helper system)
+  const { data: helferschichten } = await supabase
+    .from('helferschichten')
+    .select(`
+      id,
+      startzeit,
+      endzeit,
+      status,
+      notizen,
+      helferrolle:helferrollen ( id, rolle ),
+      helfereinsatz:helfereinsaetze (
+        id, titel, beschreibung, datum, startzeit, endzeit, ort
+      )
+    `)
+    .eq('person_id', resolvedPersonId)
+    .not('status', 'in', '("abgesagt","nicht_erschienen")')
+
+  type HelferschichtWithDetails = {
+    id: string
+    startzeit: string | null
+    endzeit: string | null
+    status: string
+    notizen: string | null
+    helferrolle: { id: string; rolle: string } | null
+    helfereinsatz: {
+      id: string
+      titel: string
+      beschreibung: string | null
+      datum: string
+      startzeit: string | null
+      endzeit: string | null
+      ort: string | null
+    } | null
+  }
+
+  if (helferschichten) {
+    for (const hs of helferschichten as unknown as HelferschichtWithDetails[]) {
+      if (!hs.helfereinsatz) continue
+
+      const datum = hs.helfereinsatz.datum
+      if (startDatum && datum < startDatum) continue
+      if (endDatum && datum > endDatum) continue
+
+      const rolleName = hs.helferrolle?.rolle ?? null
+
+      events.push({
+        id: `hs-${hs.id}`,
+        titel: rolleName
+          ? `${hs.helfereinsatz.titel} - ${rolleName}`
+          : hs.helfereinsatz.titel,
+        beschreibung: hs.helfereinsatz.beschreibung,
+        datum,
+        startzeit: hs.startzeit ?? hs.helfereinsatz.startzeit,
+        endzeit: hs.endzeit ?? hs.helfereinsatz.endzeit,
+        ort: hs.helfereinsatz.ort,
+        typ: 'helfereinsatz_legacy',
+        status: hs.status as PersonalEventStatus,
+        helferschicht_id: hs.id,
+        helfereinsatz_id: hs.helfereinsatz.id,
+        helfer_rolle: rolleName,
+        kann_zusagen: false,
+        kann_absagen: hs.status === 'zugesagt',
+      })
+    }
+  }
+
   // Sort by date and time
   events.sort((a, b) => {
     const dateCompare = a.datum.localeCompare(b.datum)
@@ -247,6 +439,44 @@ export async function getPersonalEvents(
   })
 
   return events
+}
+
+// =============================================================================
+// Get Person Verfuegbarkeiten
+// =============================================================================
+
+/**
+ * Get availability entries for a person.
+ * When personId is provided, requires mitglieder:read permission.
+ * Otherwise resolves the current user.
+ */
+export async function getPersonVerfuegbarkeiten(
+  personId?: string,
+  startDatum?: string,
+  endDatum?: string
+): Promise<VerfuegbarkeitEvent[]> {
+  const supabase = await createClient()
+  const resolved = await resolvePersonIds(supabase, personId)
+
+  if (!resolved) return []
+
+  let query = supabase
+    .from('verfuegbarkeiten')
+    .select('id, datum_von, datum_bis, zeitfenster_von, zeitfenster_bis, status, grund, notiz')
+    .eq('mitglied_id', resolved.resolvedPersonId)
+
+  if (startDatum) {
+    query = query.gte('datum_bis', startDatum)
+  }
+  if (endDatum) {
+    query = query.lte('datum_von', endDatum)
+  }
+
+  const { data } = await query
+
+  if (!data) return []
+
+  return data as VerfuegbarkeitEvent[]
 }
 
 // =============================================================================
@@ -346,6 +576,36 @@ export async function declinePersonalEvent(
     return { success: true }
   }
 
+  if (type === 'ha') {
+    // Update Helfer Anmeldung status (new system)
+    const { error } = await supabase
+      .from('helfer_anmeldungen')
+      .update({ status: 'abgelehnt' } as never)
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error declining helfer anmeldung:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  }
+
+  if (type === 'hs') {
+    // Update Helferschicht status (legacy system)
+    const { error } = await supabase
+      .from('helferschichten')
+      .update({ status: 'abgesagt' } as never)
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error declining helferschicht:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  }
+
   return { success: false, error: 'Aktion nicht unterstützt' }
 }
 
@@ -363,7 +623,7 @@ export async function generatePersonalICalFeed(): Promise<string> {
     'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//BackstagePass//Meine Termine//DE\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Meine TGW Termine\r\n'
 
   for (const event of events) {
-    if (event.status === 'abgesagt' || event.status === 'abgemeldet') continue
+    if (event.status === 'abgesagt' || event.status === 'abgemeldet' || event.status === 'abgelehnt') continue
 
     const startDate = event.datum.replace(/-/g, '')
     const startTime = event.startzeit
@@ -386,14 +646,16 @@ export async function generatePersonalICalFeed(): Promise<string> {
     if (event.ort) {
       ical += `LOCATION:${escapeICalText(event.ort)}\r\n`
     }
-    if (event.rolle) {
-      ical += `X-TGW-ROLLE:${escapeICalText(event.rolle)}\r\n`
+    if (event.rolle || event.helfer_rolle) {
+      ical += `X-TGW-ROLLE:${escapeICalText(event.rolle || event.helfer_rolle || '')}\r\n`
     }
 
     const categoryMap: Record<PersonalEventTyp, string> = {
       veranstaltung: 'VERANSTALTUNG',
       probe: 'PROBE',
       schicht: 'SCHICHT',
+      helfer: 'HELFER',
+      helfereinsatz_legacy: 'HELFEREINSATZ',
     }
     ical += `CATEGORIES:${categoryMap[event.typ]}\r\n`
 

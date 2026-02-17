@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPerson } from '@/lib/actions/personen'
+import { getPersonalEvents, getPersonVerfuegbarkeiten } from '@/lib/actions/persoenlicher-kalender'
 import { MitgliedForm } from '@/components/mitglieder/MitgliedForm'
 import { InviteButton } from '@/components/mitglieder/InviteButton'
+import { PersonalCalendar } from '@/components/mein-bereich/PersonalCalendar'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -16,9 +18,23 @@ export default async function MitgliedEditPage({ params }: PageProps) {
     notFound()
   }
 
+  // Fetch calendar data for the person (12-month range)
+  const today = new Date()
+  const startDatum = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    .toISOString()
+    .split('T')[0]
+  const endDatum = new Date(today.getFullYear() + 1, today.getMonth(), 0)
+    .toISOString()
+    .split('T')[0]
+
+  const [events, verfuegbarkeiten] = await Promise.all([
+    getPersonalEvents(startDatum, endDatum, id),
+    getPersonVerfuegbarkeiten(id, startDatum, endDatum),
+  ])
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mx-auto max-w-5xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -50,6 +66,20 @@ export default async function MitgliedEditPage({ params }: PageProps) {
         <div className="rounded-lg bg-white p-6 shadow">
           <MitgliedForm person={person} mode="edit" />
         </div>
+
+        {/* Calendar Section */}
+        {events.length > 0 && (
+          <div className="mt-8">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900">
+              Einsatzübersicht
+            </h2>
+            <PersonalCalendar
+              initialEvents={events}
+              verfuegbarkeiten={verfuegbarkeiten}
+              readOnly
+            />
+          </div>
+        )}
       </div>
     </main>
   )
