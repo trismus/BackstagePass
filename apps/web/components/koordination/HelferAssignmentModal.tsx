@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { searchHelfer, validateAssignment, assignHelferManual, createExternalAndAssign } from '@/lib/actions/manual-assignment'
 import type { HelferSearchResult, AssignmentValidation } from '@/lib/actions/manual-assignment'
+import { ConflictWarning } from '@/components/ui/ConflictWarning'
 
 interface HelferAssignmentModalProps {
   open: boolean
@@ -310,6 +311,11 @@ export function HelferAssignmentModal({
                       </div>
                     )}
 
+                    {/* Cross-system conflicts */}
+                    {validation.crossSystemConflicts.length > 0 && (
+                      <ConflictWarning conflicts={validation.crossSystemConflicts} />
+                    )}
+
                     {/* Booking limit */}
                     {validation.bookingLimitReached && (
                       <div className="rounded-lg bg-orange-50 p-3">
@@ -324,7 +330,7 @@ export function HelferAssignmentModal({
                     )}
 
                     {/* Override checkbox */}
-                    {(validation.hasConflict || validation.bookingLimitReached) && (
+                    {(validation.hasConflict || validation.bookingLimitReached || validation.crossSystemConflicts.length > 0) && (
                       <label className="flex items-center gap-2">
                         <input
                           type="checkbox"
@@ -339,7 +345,7 @@ export function HelferAssignmentModal({
                     )}
 
                     {/* No conflicts */}
-                    {!validation.hasConflict && !validation.bookingLimitReached && (
+                    {!validation.hasConflict && !validation.bookingLimitReached && validation.crossSystemConflicts.length === 0 && (
                       <div className="rounded-lg bg-green-50 p-3">
                         <p className="text-sm text-green-700">
                           Keine Konflikte - Zuweisung moeglich
@@ -437,7 +443,7 @@ export function HelferAssignmentModal({
             <button
               onClick={handleAssign}
               disabled={!selectedHelfer || isAssigning || isValidating || !!(
-                validation && (validation.hasConflict || validation.bookingLimitReached) && !override
+                validation && (validation.hasConflict || validation.bookingLimitReached || validation.crossSystemConflicts.length > 0) && !override
               )}
               className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
