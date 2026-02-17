@@ -14,7 +14,7 @@
 | **Modul 3** | In Progress | 6 | 4 | - |
 | **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
 | **UserExperience** | In Progress | 7 | 5 | - |
-| **Mitglieder-Integration** | New | 8 | 0 | - |
+| **Vorhang auf** | New | 8 | 0 | - |
 
 **Gesamt:** 44 Open, 40 Closed
 
@@ -186,7 +186,7 @@
 
 ---
 
-## Mitglieder-Integration (Milestone #24)
+## Vorhang auf — Mitglieder-Integration (Milestone #24)
 
 **Beschreibung:** Integration von Mitgliederprofilen mit Schichtplanung, Veranstaltungen/Aufführungen und künstlerischen Produktionen.
 
@@ -322,7 +322,7 @@ Progress by Milestone:
 ├── Modul 3:              40% (4/10 closed)
 ├── Helfer Liste:         85% (17/20 closed) ✅
 ├── UserExperience:       64% (7/11 closed)
-└── Mitglieder-Integration: 0% (0/8 closed) 🆕
+└── Vorhang auf: 0% (0/8 closed) 🆕
 ```
 
 ## Aktuelle Entwicklungen (Feb 2026)
@@ -340,7 +340,7 @@ Progress by Milestone:
 - ✅ Zod v4 Kompatibilität
 
 ### In Bearbeitung / Geplant
-- 🆕 Mitglieder-Integration: 8 Issues (#343-#350) — Verfügbarkeitsprüfung, Besetzung→Zuweisungen, Skills-Matching, Einsatzübersicht
+- 🆕 Vorhang auf: 8 Issues (#343-#350) — Verfügbarkeitsprüfung, Besetzung→Zuweisungen, Skills-Matching, Einsatzübersicht
 - 🔄 Partner-Portal (#146)
 - 🔄 Passive Mitglieder Ansicht (#144)
 - 🔄 Willkommen-Seite für Gäste (#147)
