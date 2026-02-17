@@ -14,8 +14,9 @@
 | **Modul 3** | In Progress | 6 | 4 | - |
 | **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
 | **UserExperience** | In Progress | 7 | 5 | - |
+| **Mitglieder-Integration** | New | 8 | 0 | - |
 
-**Gesamt:** 36 Open, 40 Closed
+**Gesamt:** 44 Open, 40 Closed
 
 ---
 
@@ -185,6 +186,25 @@
 
 ---
 
+## Mitglieder-Integration (Milestone #24)
+
+**Beschreibung:** Integration von Mitgliederprofilen mit Schichtplanung, Veranstaltungen/Aufführungen und künstlerischen Produktionen.
+
+| # | Status | Titel | Prio |
+|---|--------|-------|------|
+| #343 | 🟡 Open | Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung | high |
+| #344 | 🟡 Open | Besetzung → Aufführungs-Zuweisungen automatisch erstellen | high |
+| #345 | 🟡 Open | Proben-Teilnehmer aus Besetzung auto-befüllen | - |
+| #346 | 🟡 Open | Zentrale Personen-Einsatzübersicht (Mein Kalender) | high |
+| #347 | 🟡 Open | Skills-basierte Schicht-Vorschläge | - |
+| #348 | 🟡 Open | Produktions-Dashboard: Besetzungs- und Schicht-Fortschritt | - |
+| #349 | 🟡 Open | Personen-Detailseite: Rollen- und Einsatzhistorie | - |
+| #350 | 🟡 Open | Verfügbarkeiten bei Produktionsplanung berücksichtigen | - |
+
+**Empfohlene Reihenfolge:** #343 → #346 + #349 parallel → #344 + #345 + #350 → #347 → #348
+
+---
+
 ## Changelog
 
 ### 2026-02-17: Onboarding-Flow nach erstem Login (#328)
@@ -292,16 +312,17 @@ Alle Template-Elemente jetzt inline editierbar:
 ## Statistik
 
 ```
-Total Issues:     76 (36 open, 40 closed)
-Milestones:       6
+Total Issues:     84 (44 open, 40 closed)
+Milestones:       7
 
 Progress by Milestone:
-├── Modul 0:       55% (6/11 closed)
-├── Modul 1:       21% (4/19 closed)
-├── Modul 2:      100% (4/4 closed) ✅
-├── Modul 3:       40% (4/10 closed)
-├── Helfer Liste:  85% (17/20 closed) ✅
-└── UserExperience: 64% (7/11 closed)
+├── Modul 0:              55% (6/11 closed)
+├── Modul 1:              21% (4/19 closed)
+├── Modul 2:             100% (4/4 closed) ✅
+├── Modul 3:              40% (4/10 closed)
+├── Helfer Liste:         85% (17/20 closed) ✅
+├── UserExperience:       64% (7/11 closed)
+└── Mitglieder-Integration: 0% (0/8 closed) 🆕
 ```
 
 ## Aktuelle Entwicklungen (Feb 2026)
@@ -318,7 +339,8 @@ Progress by Milestone:
 - ✅ nur_mitglieder-Flag für Template-Schichten
 - ✅ Zod v4 Kompatibilität
 
-### In Bearbeitung
+### In Bearbeitung / Geplant
+- 🆕 Mitglieder-Integration: 8 Issues (#343-#350) — Verfügbarkeitsprüfung, Besetzung→Zuweisungen, Skills-Matching, Einsatzübersicht
 - 🔄 Partner-Portal (#146)
 - 🔄 Passive Mitglieder Ansicht (#144)
 - 🔄 Willkommen-Seite für Gäste (#147)
