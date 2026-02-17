@@ -213,6 +213,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
               zuweisungen={zuweisungen}
               personen={personen}
               canEdit={canEdit}
+              datum={veranstaltung.datum}
             />
           </div>
         </div>

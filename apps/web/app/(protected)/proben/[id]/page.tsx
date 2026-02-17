@@ -216,6 +216,9 @@ export default async function ProbeDetailPage({
         personen={personen ?? []}
         canEdit={canEdit}
         hasSzenen={probeSzenen.length > 0}
+        datum={probe.datum}
+        startzeit={probe.startzeit}
+        endzeit={probe.endzeit}
       />
 
       {/* Notizen (nur für Regie) */}

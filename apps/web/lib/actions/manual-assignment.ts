@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient, getUserProfile } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
 import { sanitizeSearchQuery } from '../utils/search'
-// Types used for reference but not directly imported
-// Person, Profile, ExterneHelferProfil are used in runtime queries
+import { checkPersonConflicts } from './conflict-check'
+import type { PersonConflict } from '../supabase/types'
 
 // =============================================================================
 // Types
@@ -32,6 +32,7 @@ export type TimeConflict = {
 export type AssignmentValidation = {
   hasConflict: boolean
   conflicts: TimeConflict[]
+  crossSystemConflicts: PersonConflict[]
   bookingLimitReached: boolean
   currentBookings: number
   maxBookings: number | null
@@ -160,16 +161,17 @@ export async function validateAssignment(
     return {
       hasConflict: false,
       conflicts: [],
+      crossSystemConflicts: [],
       bookingLimitReached: false,
       currentBookings: 0,
       maxBookings: null,
     }
   }
 
-  // Get veranstaltung booking limits
+  // Get veranstaltung booking limits and datum
   const { data: veranstaltung } = await supabase
     .from('veranstaltungen')
-    .select('max_schichten_pro_helfer, helfer_buchung_limit_aktiv')
+    .select('datum, max_schichten_pro_helfer, helfer_buchung_limit_aktiv')
     .eq('id', schicht.veranstaltung_id)
     .single()
 
@@ -234,13 +236,29 @@ export async function validateAssignment(
     }
   }
 
+  // Cross-system conflict check
+  let crossSystemConflicts: PersonConflict[] = []
+  const targetZeitblockForCross = schicht.zeitblock as unknown as { startzeit: string; endzeit: string } | null
+  if (personType === 'intern' && veranstaltung?.datum && targetZeitblockForCross) {
+    try {
+      const startTimestamp = `${veranstaltung.datum} ${targetZeitblockForCross.startzeit} Europe/Zurich`
+      const endTimestamp = `${veranstaltung.datum} ${targetZeitblockForCross.endzeit} Europe/Zurich`
+      const crossResult = await checkPersonConflicts(personId, startTimestamp, endTimestamp)
+      // Filter out 'zuweisung' type (already covered by same-veranstaltung check above)
+      crossSystemConflicts = crossResult.conflicts.filter((c) => c.type !== 'zuweisung')
+    } catch {
+      // Non-blocking: cross-system check failure should not prevent assignment
+    }
+  }
+
   const maxBookings = veranstaltung?.helfer_buchung_limit_aktiv
     ? veranstaltung.max_schichten_pro_helfer
     : null
 
   return {
-    hasConflict: conflicts.length > 0,
+    hasConflict: conflicts.length > 0 || crossSystemConflicts.length > 0,
     conflicts,
+    crossSystemConflicts,
     bookingLimitReached: maxBookings !== null && currentBookings >= maxBookings,
     currentBookings,
     maxBookings,
@@ -271,8 +289,14 @@ export async function assignHelferManual(
     const validation = await validateAssignment(schichtId, personId, personType)
 
     if (validation.hasConflict) {
-      const conflictRoles = validation.conflicts.map((c) => c.rolle).join(', ')
-      return { success: false, error: `Zeitkonflikt mit: ${conflictRoles}` }
+      const messages: string[] = []
+      if (validation.conflicts.length > 0) {
+        messages.push(`Zeitkonflikt mit: ${validation.conflicts.map((c) => c.rolle).join(', ')}`)
+      }
+      if (validation.crossSystemConflicts.length > 0) {
+        messages.push(`${validation.crossSystemConflicts.length} systemweite(r) Konflikt(e)`)
+      }
+      return { success: false, error: messages.join('. ') }
     }
 
     if (validation.bookingLimitReached) {

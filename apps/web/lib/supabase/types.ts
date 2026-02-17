@@ -1722,6 +1722,26 @@ export type CheckHelferTimeConflictsResult = {
 }
 
 // =============================================================================
+// Cross-System Conflict Detection (Issue #343)
+// =============================================================================
+
+export type PersonConflictType = 'verfuegbarkeit' | 'zuweisung' | 'anmeldung' | 'probe' | 'helfer'
+
+export type PersonConflict = {
+  type: PersonConflictType
+  description: string
+  start_time: string
+  end_time: string
+  reference_id: string
+  severity?: string
+}
+
+export type CheckPersonConflictsResult = {
+  has_conflicts: boolean
+  conflicts: PersonConflict[]
+}
+
+// =============================================================================
 // Helfer Dashboard (US-9)
 // =============================================================================
 

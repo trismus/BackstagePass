@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type {
   ProbeTeilnehmer,
   Person,
   TeilnehmerStatus,
+  PersonConflict,
 } from '@/lib/supabase/types'
 import {
   updateTeilnehmerStatus,
@@ -12,8 +13,10 @@ import {
   removeTeilnehmerFromProbe,
   generateTeilnehmerFromBesetzungen,
 } from '@/lib/actions/proben'
+import { checkPersonConflicts } from '@/lib/actions/conflict-check'
 import { TeilnehmerStatusBadge } from './ProbeStatusBadge'
 import { ConfirmDialog } from '@/components/ui'
+import { ConflictWarning } from '@/components/ui/ConflictWarning'
 
 interface TeilnehmerListProps {
   probeId: string
@@ -28,6 +31,9 @@ interface TeilnehmerListProps {
   personen: Person[]
   canEdit: boolean
   hasSzenen: boolean
+  datum: string
+  startzeit: string | null
+  endzeit: string | null
 }
 
 const statusOptions: { value: TeilnehmerStatus; label: string }[] = [
@@ -45,15 +51,55 @@ export function TeilnehmerList({
   personen,
   canEdit,
   hasSzenen,
+  datum,
+  startzeit,
+  endzeit,
 }: TeilnehmerListProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState('')
+  const [conflicts, setConflicts] = useState<PersonConflict[]>([])
+  const [isCheckingConflicts, setIsCheckingConflicts] = useState(false)
   const [removeConfirm, setRemoveConfirm] = useState<{
     open: boolean
     personId: string
     name: string
   }>({ open: false, personId: '', name: '' })
+
+  // Check conflicts when person is selected
+  useEffect(() => {
+    if (!selectedPersonId || !isAdding || !startzeit || !endzeit) {
+      setConflicts([])
+      return
+    }
+
+    const startTimestamp = `${datum}T${startzeit}`
+    const endTimestamp = `${datum}T${endzeit}`
+
+    let cancelled = false
+    setIsCheckingConflicts(true)
+
+    checkPersonConflicts(selectedPersonId, startTimestamp, endTimestamp)
+      .then((result) => {
+        if (!cancelled) {
+          setConflicts(result.conflicts)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setConflicts([])
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsCheckingConflicts(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedPersonId, isAdding, datum, startzeit, endzeit])
 
   // Personen die noch nicht eingeladen sind
   const teilnehmerIds = teilnehmer.map((t) => t.person_id)
@@ -202,32 +248,38 @@ export function TeilnehmerList({
       {/* Add Teilnehmer Form */}
       {isAdding && (
         <div className="border-b border-blue-100 bg-blue-50 px-6 py-4">
-          <div className="flex gap-3">
-            <select
-              value={selectedPersonId}
-              onChange={(e) => setSelectedPersonId(e.target.value)}
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">Person auswählen...</option>
-              {availablePersonen.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.vorname} {p.nachname}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleAdd}
-              disabled={isSubmitting || !selectedPersonId}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm text-white hover:bg-primary-700 disabled:bg-gray-400"
-            >
-              Einladen
-            </button>
-            <button
-              onClick={() => setIsAdding(false)}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
-            >
-              Abbrechen
-            </button>
+          <div className="space-y-2">
+            <div className="flex gap-3">
+              <select
+                value={selectedPersonId}
+                onChange={(e) => setSelectedPersonId(e.target.value)}
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">Person auswählen...</option>
+                {availablePersonen.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.vorname} {p.nachname}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleAdd}
+                disabled={isSubmitting || !selectedPersonId}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm text-white hover:bg-primary-700 disabled:bg-gray-400"
+              >
+                Einladen
+              </button>
+              <button
+                onClick={() => setIsAdding(false)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+              >
+                Abbrechen
+              </button>
+            </div>
+            <ConflictWarning
+              conflicts={conflicts}
+              isLoading={isCheckingConflicts}
+            />
           </div>
         </div>
       )}
