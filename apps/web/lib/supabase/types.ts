@@ -277,6 +277,7 @@ export type Profile = {
   email: string
   display_name: string | null
   role: UserRole
+  onboarding_completed: boolean
   created_at: string
   updated_at: string
 }

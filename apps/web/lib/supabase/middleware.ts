@@ -113,7 +113,7 @@ export async function updateSession(request: NextRequest) {
     // Get user role from profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, onboarding_completed')
       .eq('id', user.id)
       .single()
 
@@ -124,6 +124,15 @@ export async function updateSession(request: NextRequest) {
       const startPage = ROLE_START_PAGES[userRole]
       return NextResponse.redirect(new URL(startPage, request.url))
     }
+
+    // Redirect to onboarding if not completed (exempt /willkommen and /profile)
+    if (
+      profile?.onboarding_completed === false &&
+      !pathname.startsWith('/willkommen') &&
+      !pathname.startsWith('/profile')
+    ) {
+      return NextResponse.redirect(new URL('/willkommen', request.url))
+    }
   }
 
   // Redirect authenticated users from auth routes to their start page
@@ -131,11 +140,17 @@ export async function updateSession(request: NextRequest) {
     // Get user role for correct redirect
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, onboarding_completed')
       .eq('id', user.id)
       .single()
 
     const userRole = (profile?.role as UserRole) || 'FREUNDE'
+
+    // Redirect to onboarding if not completed
+    if (profile?.onboarding_completed === false) {
+      return NextResponse.redirect(new URL('/willkommen', request.url))
+    }
+
     const startPage = ROLE_START_PAGES[userRole]
     return NextResponse.redirect(new URL(startPage, request.url))
   }
