@@ -16,7 +16,7 @@ interface EditableProfileCardProps {
     strasse?: string | null
     plz?: string | null
     ort?: string | null
-    geburtsdatum?: string | null
+    geburtstag?: string | null
   } | null
   role?: UserRole
   stundenTotal?: number
@@ -202,7 +202,7 @@ export function EditableProfileCard({
           </div>
 
           {/* Geburtsdatum (read-only) */}
-          {person.geburtsdatum && (
+          {person.geburtstag && (
             <div>
               <label className="mb-1 block text-xs font-medium text-neutral-500">
                 Geburtsdatum (nicht änderbar)
@@ -211,7 +211,7 @@ export function EditableProfileCard({
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
                 </svg>
-                {formatGeburtsdatum(person.geburtsdatum)}
+                {formatGeburtsdatum(person.geburtstag)}
               </div>
             </div>
           )}
@@ -270,12 +270,12 @@ export function EditableProfileCard({
             </div>
           )}
 
-          {person.geburtsdatum && (
+          {person.geburtstag && (
             <div className="flex items-center gap-3 px-4 py-3">
               <svg className="h-4 w-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
               </svg>
-              <span className="text-sm text-neutral-600">{formatGeburtsdatum(person.geburtsdatum)}</span>
+              <span className="text-sm text-neutral-600">{formatGeburtsdatum(person.geburtstag)}</span>
             </div>
           )}
 
