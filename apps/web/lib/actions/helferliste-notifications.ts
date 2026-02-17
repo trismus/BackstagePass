@@ -85,7 +85,7 @@ export async function notifyEventPublished(
     return { success: true, sent: 0, errors: 0 }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstagepass.app'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://backstagepass.app'
   const publicLink = event.public_token
     ? `${baseUrl}/public/helfer/${event.public_token}`
     : `${baseUrl}/helferliste/${event.id}`
@@ -331,7 +331,7 @@ export async function notifyStatusChange(
  */
 function buildAbmeldungLink(token: string | null): string {
   if (!token) return ''
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   return `${baseUrl}/helfer/helferliste/abmeldung/${token}`
 }
 
@@ -436,7 +436,7 @@ export async function notifyMultiRegistrationConfirmed(
   })
 
   // Build dashboard link
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const dashboardLink = `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
 
   // Fetch coordinator info (if event is linked to a veranstaltung)

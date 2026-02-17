@@ -11,6 +11,11 @@ export async function GET(request: NextRequest) {
     next = '/dashboard'
   }
 
+  // For invite-type confirmations, redirect to password setup instead of dashboard
+  if (type === 'invite' && next === '/dashboard') {
+    next = '/passwort-setzen'
+  }
+
   if (token_hash && type) {
     const supabase = await createClient()
     const { error } = await supabase.auth.verifyOtp({ type, token_hash })

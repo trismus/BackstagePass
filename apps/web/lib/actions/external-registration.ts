@@ -372,7 +372,7 @@ async function sendExternalRegistrationEmail(
   helperData: { email: string; vorname: string; nachname: string },
   isWaitlist: boolean
 ): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   // Get dashboard token
   const { data: dashboardToken } = await supabase.rpc(

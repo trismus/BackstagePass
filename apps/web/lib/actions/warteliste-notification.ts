@@ -31,7 +31,7 @@ function calculateDeadline(): Date {
  */
 function buildPublicLink(token: string | null): string {
   if (!token) return ''
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   return `${baseUrl}/helfer/anmeldung/${token}`
 }
 
