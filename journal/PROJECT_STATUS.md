@@ -1,6 +1,6 @@
 # BackstagePass - Projekt Status
 
-**Stand:** 2026-02-17
+**Stand:** 2026-02-18
 
 ---
 
@@ -224,6 +224,21 @@ Keine offenen Issues.
 
 ## Changelog
 
+### 2026-02-18: BesetzungsMatrix auf Stück-Detailseite (PR #397)
+
+- Neue `StueckBesetzungen`-Komponente für Stück-Level Besetzungsverwaltung (Person → Rolle)
+- Rollen gruppiert nach Typ mit Fortschrittsbalken, Avatar-Initialen und Inline-Editor
+- Wichtig für `auto_invite_probe_teilnehmer`, das auf Stück-Level `besetzungen` basiert
+- Backfill-Script erneut ausgeführt: 12 Teilnehmer für bestehende Proben eingeladen
+
+### 2026-02-18: Auto-Invite Probe Teilnehmer (PR #394, #395)
+
+- DB-Funktion `auto_invite_probe_teilnehmer()` erstellt: Lädt automatisch besetzte Personen als Teilnehmer ein wenn eine Probe erstellt wird
+- Trigger `trigger_auto_invite_probe_teilnehmer` auf `proben` Tabelle (AFTER INSERT)
+- Szenen-basiert: Nur Personen einladen deren Rollen in den zugewiesenen Szenen vorkommen
+- Fallback: Ohne Szenen werden alle Besetzungen des Stücks eingeladen
+- Backfill-Migration für bestehende offene Proben ohne Teilnehmer
+
 ### 2026-02-17: Probenplan Status-Konstanten, Filter, Hints & Tests (#378-382, PR #370)
 
 - Zentrale Konstanten `STUECK_STATUS_LABELS` und `PROBENPLAN_ELIGIBLE_STATUS` in `types.ts`
@@ -322,4 +337,4 @@ Abgeschlossene Kern-Module:
 
 ---
 
-*Aktualisiert am 2026-02-17*
+*Aktualisiert am 2026-02-18*

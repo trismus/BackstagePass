@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Implementierung von Benutzerverwaltung, Profilseiten und Health-Check (#1)
 - Implement Rollenmanagement & Permissions (#90)
+- BesetzungsMatrix auf Stück-Detailseite (PR #397)
+- Auto-Invite Probe Teilnehmer bei Probe-Erstellung (PR #394, #395)
 
 ### Changed
 
