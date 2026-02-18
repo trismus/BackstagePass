@@ -28,7 +28,7 @@
 | **Probenplan: Status-Fix & Generator** | ✅ Done | 0 | 7 |
 | **Fix Email-Einladungssystem** | ✅ Done | 0 | 1 |
 
-**Gesamt:** 200 Issues (0 open, 200 closed)
+**Gesamt:** 202 Issues (0 open, 202 closed)
 
 ---
 
@@ -328,7 +328,7 @@ Keine offenen Issues.
 ## Statistik
 
 ```
-Total Issues:     200 (0 open, 200 closed)
+Total Issues:     202 (0 open, 202 closed)
 Milestones:       19+ (19 complete)
 
 Offene Issues:    Keine
