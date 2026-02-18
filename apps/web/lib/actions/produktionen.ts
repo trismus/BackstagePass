@@ -13,7 +13,6 @@ import type {
   AuffuehrungsserieInsert,
   AuffuehrungsserieUpdate,
   Serienauffuehrung,
-  SerienauffuehrungInsert,
   SerienauffuehrungUpdate,
   AuffuehrungsTyp,
 } from '../supabase/types'
@@ -418,15 +417,14 @@ export async function deleteSerie(
     }
   }
 
-  const supabase = await createClient()
-
   const serie = await getSerie(id)
   const produktionId = serie?.produktion_id
 
-  const { error } = await supabase
-    .from('auffuehrungsserien')
-    .delete()
-    .eq('id', id)
+  const supabase = await createClient()
+  const { error } = await supabase.rpc(
+    'delete_serie_with_veranstaltungen' as never,
+    { p_serie_id: id } as never
+  )
 
   if (error) {
     console.error('Error deleting serie:', error)
@@ -436,6 +434,7 @@ export async function deleteSerie(
   if (produktionId) {
     revalidatePath(`/produktionen/${produktionId}`)
   }
+  revalidatePath('/auffuehrungen')
   return { success: true }
 }
 
@@ -523,21 +522,31 @@ export async function generiereAuffuehrungen(
     return { success: false, error: 'Serie nicht gefunden.' }
   }
 
-  const inserts: SerienauffuehrungInsert[] = termine.map((t) => ({
-    serie_id: serieId,
+  // Fetch produktion titel for veranstaltung naming
+  const supabase = await createClient()
+  const { data: produktion } = await supabase
+    .from('produktionen')
+    .select('titel')
+    .eq('id', serie.produktion_id)
+    .single()
+
+  const produktionTitel = produktion?.titel ?? 'Aufführung'
+
+  const termineJsonb = termine.map((t) => ({
     datum: t.datum,
     startzeit: t.startzeit || serie.standard_startzeit || null,
     ort: serie.standard_ort || null,
     typ: t.typ || 'regulaer',
-    ist_ausnahme: false,
-    veranstaltung_id: null,
-    notizen: null,
   }))
 
-  const supabase = await createClient()
-  const { error } = await supabase
-    .from('serienauffuehrungen')
-    .insert(inserts as never)
+  const { data, error } = await supabase.rpc(
+    'generate_serienauffuehrungen_with_veranstaltungen' as never,
+    {
+      p_serie_id: serieId,
+      p_produktion_titel: produktionTitel,
+      p_termine: termineJsonb,
+    } as never
+  )
 
   if (error) {
     console.error('Error generating auffuehrungen:', error)
@@ -545,7 +554,8 @@ export async function generiereAuffuehrungen(
   }
 
   revalidatePath(`/produktionen/${serie.produktion_id}`)
-  return { success: true, count: inserts.length }
+  revalidatePath('/auffuehrungen')
+  return { success: true, count: (data as unknown[])?.length ?? termine.length }
 }
 
 export async function generiereAuffuehrungenWiederholung(
@@ -617,6 +627,32 @@ export async function updateSerienauffuehrung(
     return { success: false, error: error.message }
   }
 
+  // Sync changes to linked veranstaltung if it exists
+  if (data.datum || data.startzeit || data.ort) {
+    const { data: sa } = await supabase
+      .from('serienauffuehrungen')
+      .select('veranstaltung_id')
+      .eq('id', id)
+      .single()
+
+    if (sa?.veranstaltung_id) {
+      const veranstaltungUpdate: Record<string, unknown> = {}
+      if (data.datum) veranstaltungUpdate.datum = data.datum
+      if (data.startzeit) veranstaltungUpdate.startzeit = data.startzeit
+      if (data.ort) veranstaltungUpdate.ort = data.ort
+
+      const { error: vError } = await supabase
+        .from('veranstaltungen')
+        .update(veranstaltungUpdate as never)
+        .eq('id', sa.veranstaltung_id)
+
+      if (vError) {
+        console.error('Error syncing veranstaltung:', vError)
+      }
+    }
+  }
+
+  revalidatePath('/auffuehrungen')
   return { success: true }
 }
 
@@ -629,15 +665,58 @@ export async function deleteSerienauffuehrung(
   }
 
   const supabase = await createClient()
-  const { error } = await supabase
-    .from('serienauffuehrungen')
-    .delete()
-    .eq('id', id)
+  const { error } = await supabase.rpc(
+    'delete_serienauffuehrung_with_veranstaltung' as never,
+    { p_serienauffuehrung_id: id } as never
+  )
 
   if (error) {
     console.error('Error deleting serienauffuehrung:', error)
     return { success: false, error: error.message }
   }
 
+  revalidatePath('/auffuehrungen')
   return { success: true }
+}
+
+// =============================================================================
+// Reverse Lookup: Veranstaltung → Produktion
+// =============================================================================
+
+export async function getProduktionForVeranstaltung(
+  veranstaltungId: string
+): Promise<{
+  produktion: { id: string; titel: string }
+  serieName: string
+} | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('serienauffuehrungen')
+    .select(
+      'serie_id, auffuehrungsserien(id, name, produktion_id, produktionen(id, titel))'
+    )
+    .eq('veranstaltung_id', veranstaltungId)
+    .limit(1)
+    .single()
+
+  if (error || !data) {
+    return null
+  }
+
+  const serie = data.auffuehrungsserien as unknown as {
+    id: string
+    name: string
+    produktion_id: string
+    produktionen: { id: string; titel: string }
+  }
+
+  if (!serie?.produktionen) {
+    return null
+  }
+
+  return {
+    produktion: { id: serie.produktionen.id, titel: serie.produktionen.titel },
+    serieName: serie.name,
+  }
 }

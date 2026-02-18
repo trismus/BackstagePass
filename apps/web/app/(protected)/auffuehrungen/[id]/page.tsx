@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { canEdit as canEditFn } from '@/lib/supabase/auth-helpers'
 import { getVeranstaltung } from '@/lib/actions/veranstaltungen'
+import { getProduktionForVeranstaltung } from '@/lib/actions/produktionen'
 import { getZeitbloecke } from '@/lib/actions/zeitbloecke'
 import {
   getSchichten,
@@ -59,6 +60,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
     raeume,
     ressourcen,
     templates,
+    produktionsKontext,
   ] = await Promise.all([
     getZeitbloecke(id),
     getSchichten(id),
@@ -70,6 +72,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
     getAktiveRaeume(),
     getAktiveRessourcen(),
     getTemplates(),
+    getProduktionForVeranstaltung(id),
   ])
 
   const formatDate = (dateStr: string) => {
@@ -93,6 +96,16 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
         <div className="mb-8">
           <div className="flex items-start justify-between">
             <div>
+              {produktionsKontext && (
+                <div className="mb-1">
+                  <Link
+                    href={`/produktionen/${produktionsKontext.produktion.id}` as never}
+                    className="text-sm text-primary-600 hover:text-primary-800"
+                  >
+                    {produktionsKontext.produktion.titel} / {produktionsKontext.serieName}
+                  </Link>
+                </div>
+              )}
               <div className="mb-2 flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
                   {veranstaltung.titel}
