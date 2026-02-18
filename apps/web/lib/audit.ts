@@ -6,6 +6,7 @@ export type AuditAction =
   | 'auth.login'
   | 'auth.logout'
   | 'auth.signup'
+  | 'auth.password_changed'
   | 'profile.updated'
   | 'role.assigned'
   | 'role.removed'
