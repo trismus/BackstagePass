@@ -340,44 +340,66 @@ export function OffeneSchichtenWidget({
     return `${start.slice(0, 5)}–${end.slice(0, 5)}`
   }
 
+  // Group shifts by veranstaltung
+  const grouped = new Map<string, { veranstaltung: DashboardSchicht['veranstaltung']; schichten: DashboardSchicht[] }>()
+  for (const s of schichten) {
+    const key = s.veranstaltung.id
+    if (!grouped.has(key)) {
+      grouped.set(key, { veranstaltung: s.veranstaltung, schichten: [] })
+    }
+    grouped.get(key)!.schichten.push(s)
+  }
+
   return (
     <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
       <div className="border-b border-orange-100 bg-orange-50 px-4 py-3">
         <h3 className="font-medium text-orange-900">Offene Schichten</h3>
       </div>
       {schichten.length > 0 ? (
-        <div className="divide-y divide-neutral-100">
-          {schichten.map((s) => (
-            <Link
-              key={s.id}
-              href={`/auffuehrungen/${s.veranstaltung.id}/helferliste` as never}
-              className="block p-3 transition-colors hover:bg-neutral-50"
-            >
-              <div className="flex items-start justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-neutral-900">
-                    {s.rolle}
-                    {s.sichtbarkeit === 'intern' && (
-                      <span className="ml-2 inline-block rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
-                        Intern
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    {s.veranstaltung.titel}
-                    {s.zeitblock && ` • ${formatTime(s.zeitblock.startzeit, s.zeitblock.endzeit)}`}
-                  </p>
-                </div>
-                <div className="ml-2 flex flex-col items-end gap-1">
-                  <span className="text-xs text-neutral-500">
-                    {formatDate(s.veranstaltung.datum)}
-                  </span>
-                  <span className="text-xs text-green-600">
-                    {s.freie_plaetze} frei
-                  </span>
-                </div>
+        <div className="space-y-4 p-4">
+          {[...grouped.values()].map(({ veranstaltung, schichten: items }) => (
+            <div key={veranstaltung.id}>
+              <div className="mb-2 flex items-center justify-between">
+                <Link
+                  href={`/auffuehrungen/${veranstaltung.id}/helferliste` as never}
+                  className="text-sm font-semibold text-neutral-900 hover:text-orange-700"
+                >
+                  {veranstaltung.titel}
+                </Link>
+                <span className="text-xs text-neutral-500">
+                  {formatDate(veranstaltung.datum)}
+                  {veranstaltung.ort && ` • ${veranstaltung.ort}`}
+                </span>
               </div>
-            </Link>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {items.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/auffuehrungen/${veranstaltung.id}/helferliste` as never}
+                    className="rounded-lg border border-neutral-200 p-3 transition-colors hover:border-orange-300 hover:bg-orange-50"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium text-neutral-900">
+                        {s.rolle}
+                      </p>
+                      {s.sichtbarkeit === 'intern' && (
+                        <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+                          Intern
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-neutral-500">
+                      <span>
+                        {s.zeitblock ? formatTime(s.zeitblock.startzeit, s.zeitblock.endzeit) : 'Ganzer Tag'}
+                      </span>
+                      <span className="font-medium text-green-600">
+                        {s.freie_plaetze} frei
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : (
