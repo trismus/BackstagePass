@@ -91,3 +91,38 @@ export async function updatePassword(password: string) {
   revalidatePath('/', 'layout')
   redirect('/login?message=password-updated')
 }
+
+export async function changePassword(currentPassword: string, newPassword: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user?.email) {
+    return { error: 'Nicht angemeldet' }
+  }
+
+  // Verify current password
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  })
+
+  if (signInError) {
+    return { error: 'Aktuelles Passwort ist falsch' }
+  }
+
+  // Set new password
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: newPassword,
+  })
+
+  if (updateError) {
+    return { error: updateError.message }
+  }
+
+  await logAuditEvent('auth.password_changed')
+
+  return { success: true }
+}
