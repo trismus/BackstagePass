@@ -14,7 +14,7 @@ import {
   BarChart,
   MetricCard,
 } from '@/components/dashboard'
-import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
+import { getAktuelleProduktionFuerDashboard, getMeineProduktionsAuffuehrungen } from '@/lib/actions/produktionen'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
 import { getMeineProben } from '@/lib/actions/proben'
 import { getRollenHistorie, getHelfereinsatzHistorie } from '@/lib/actions/historie'
@@ -463,8 +463,11 @@ export default async function DashboardPage({
   const isPassiveMember = profile.role === 'MITGLIED_PASSIV'
 
   // Get data if person is linked
-  const anmeldungen = person ? await getAnmeldungenForPerson(person.id) : []
-  const meineProben = person && !isPassiveMember ? await getMeineProben(person.id) : []
+  const [anmeldungen, meineProben, meineAuffuehrungen] = await Promise.all([
+    person ? getAnmeldungenForPerson(person.id) : Promise.resolve([]),
+    person && !isPassiveMember ? getMeineProben(person.id) : Promise.resolve([]),
+    person && !isPassiveMember ? getMeineProduktionsAuffuehrungen(person.id) : Promise.resolve([]),
+  ])
 
   // Get available helper events (only for active members)
   const { data: verfuegbareEinsaetze } = !isPassiveMember
@@ -507,6 +510,19 @@ export default async function DashboardPage({
       titel: p.stueck_titel ? `${p.stueck_titel}: ${p.titel}` : p.titel,
       typ: 'probe',
       href: `/proben/${p.probe_id}`,
+    })
+  })
+
+  // Add produktions-aufführungen as calendar events (deduplicated)
+  const anmeldungVeranstaltungIds = new Set(anmeldungen.map((a) => a.veranstaltung.id))
+  meineAuffuehrungen.forEach((pa) => {
+    if (anmeldungVeranstaltungIds.has(pa.veranstaltung_id)) return
+    kalenderTermine.push({
+      id: pa.id,
+      datum: pa.datum,
+      titel: pa.titel,
+      typ: 'veranstaltung',
+      href: `/auffuehrungen/${pa.veranstaltung_id}`,
     })
   })
 
@@ -562,7 +578,7 @@ export default async function DashboardPage({
             <div id="profile-card">
               <EditableProfileCard person={person} role={profile.role} />
             </div>
-            <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
+            <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
 
             {/* CTA for passive members */}
             <div className="rounded-xl border border-blue-200 bg-blue-50 p-6">
@@ -675,7 +691,7 @@ export default async function DashboardPage({
 
             {/* Content Widgets */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-              <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} />
+              <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
               <MeineProbenWidget proben={meineProben} />
               <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
             </div>

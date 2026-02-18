@@ -224,6 +224,14 @@ Keine offenen Issues.
 
 ## Changelog
 
+### 2026-02-18: Produktions-Aufführungen im Dashboard & Kalender
+
+- Mitglieder die in einer Produktion besetzt sind (via `produktions_besetzungen` oder `produktions_stab`) sehen ihre Aufführungen jetzt im Dashboard-Widget "Meine Veranstaltungen" und im MiniKalender
+- Neue Server Action `getMeineProduktionsAuffuehrungen()`: Multi-Query Join über Besetzung/Stab → Produktion → Auffuehrungsserie → Serienauffuehrung → Veranstaltung
+- `UpcomingEventsWidget` erweitert: Merged Anmeldungen + Produktions-Aufführungen mit Deduplizierung nach `veranstaltung_id`
+- `getPersonalEvents()` um Quelle #6 (Produktions-Aufführungen) erweitert — erscheinen in `/mein-bereich/termine` und iCal-Feed
+- Dashboard-Datenabfrage parallelisiert via `Promise.all`
+
 ### 2026-02-18: BesetzungsMatrix auf Stück-Detailseite (PR #397)
 
 - Neue `StueckBesetzungen`-Komponente für Stück-Level Besetzungsverwaltung (Person → Rolle)

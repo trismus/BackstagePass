@@ -680,6 +680,105 @@ export async function deleteSerienauffuehrung(
 }
 
 // =============================================================================
+// Meine Produktions-Aufführungen (Dashboard)
+// =============================================================================
+
+export type MeineProduktionsAuffuehrung = {
+  id: string
+  veranstaltung_id: string
+  titel: string
+  datum: string
+  startzeit: string | null
+  ort: string | null
+}
+
+/**
+ * Get upcoming Aufführungen for a person based on their Produktions-Besetzungen/Stab.
+ * Pattern: multi-query with in-memory join (like getMeineProben).
+ */
+export async function getMeineProduktionsAuffuehrungen(
+  personId: string
+): Promise<MeineProduktionsAuffuehrung[]> {
+  try {
+    const supabase = await createClient()
+    const today = new Date().toISOString().split('T')[0]
+
+    // Step 1: Find produktion_ids where person is besetzt/vorgemerkt OR on stab
+    const [{ data: besetzungen }, { data: stab }] = await Promise.all([
+      supabase
+        .from('produktions_besetzungen')
+        .select('produktion_id')
+        .eq('person_id', personId)
+        .in('status', ['besetzt', 'vorgemerkt']),
+      supabase
+        .from('produktions_stab')
+        .select('produktion_id')
+        .eq('person_id', personId),
+    ])
+
+    const produktionIds = [
+      ...new Set([
+        ...(besetzungen || []).map((b) => b.produktion_id),
+        ...(stab || []).map((s) => s.produktion_id),
+      ]),
+    ]
+
+    if (produktionIds.length === 0) return []
+
+    // Step 2: Get produktion titles
+    const { data: produktionen } = await supabase
+      .from('produktionen')
+      .select('id, titel')
+      .in('id', produktionIds)
+
+    const produktionMap = new Map(
+      (produktionen || []).map((p: { id: string; titel: string }) => [p.id, p.titel])
+    )
+
+    // Step 3: Get auffuehrungsserien for these produktionen
+    const { data: serien } = await supabase
+      .from('auffuehrungsserien')
+      .select('id, produktion_id')
+      .in('produktion_id', produktionIds)
+
+    if (!serien || serien.length === 0) return []
+
+    const serieProduktionMap = new Map(
+      serien.map((s: { id: string; produktion_id: string }) => [s.id, s.produktion_id])
+    )
+    const serieIds = serien.map((s) => s.id)
+
+    // Step 4: Get serienauffuehrungen with linked veranstaltungen
+    const { data: auffuehrungen } = await supabase
+      .from('serienauffuehrungen')
+      .select('id, serie_id, veranstaltung_id, datum, startzeit, ort')
+      .in('serie_id', serieIds)
+      .not('veranstaltung_id', 'is', null)
+      .gte('datum', today)
+      .order('datum', { ascending: true })
+      .limit(10)
+
+    if (!auffuehrungen || auffuehrungen.length === 0) return []
+
+    // Step 5: Join in application code
+    return auffuehrungen.map((a) => {
+      const produktionId = serieProduktionMap.get(a.serie_id) ?? ''
+      return {
+        id: a.id,
+        veranstaltung_id: a.veranstaltung_id!,
+        titel: produktionMap.get(produktionId) ?? 'Aufführung',
+        datum: a.datum,
+        startzeit: a.startzeit,
+        ort: a.ort,
+      }
+    })
+  } catch (error) {
+    console.error('Unexpected error in getMeineProduktionsAuffuehrungen:', error)
+    return []
+  }
+}
+
+// =============================================================================
 // Reverse Lookup: Veranstaltung → Produktion
 // =============================================================================
 

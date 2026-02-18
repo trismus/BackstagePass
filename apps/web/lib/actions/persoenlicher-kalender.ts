@@ -429,6 +429,94 @@ export async function getPersonalEvents(
     }
   }
 
+  // 6. Get Produktions-Aufführungen (via Besetzung/Stab → Produktion → Serie → Veranstaltung)
+  // Collect veranstaltung_ids already present to deduplicate
+  const existingVeranstaltungIds = new Set(
+    events
+      .filter((e) => e.veranstaltung_id)
+      .map((e) => e.veranstaltung_id!)
+  )
+
+  const [{ data: prodBesetzungen }, { data: prodStab }] = await Promise.all([
+    supabase
+      .from('produktions_besetzungen')
+      .select('produktion_id')
+      .eq('person_id', resolvedPersonId)
+      .in('status', ['besetzt', 'vorgemerkt']),
+    supabase
+      .from('produktions_stab')
+      .select('produktion_id')
+      .eq('person_id', resolvedPersonId),
+  ])
+
+  const produktionIds = [
+    ...new Set([
+      ...(prodBesetzungen || []).map((b) => b.produktion_id),
+      ...(prodStab || []).map((s) => s.produktion_id),
+    ]),
+  ]
+
+  if (produktionIds.length > 0) {
+    // Get produktion titles
+    const { data: produktionen } = await supabase
+      .from('produktionen')
+      .select('id, titel')
+      .in('id', produktionIds)
+
+    const produktionMap = new Map(
+      (produktionen || []).map((p: { id: string; titel: string }) => [p.id, p.titel])
+    )
+
+    // Get serien
+    const { data: serien } = await supabase
+      .from('auffuehrungsserien')
+      .select('id, produktion_id')
+      .in('produktion_id', produktionIds)
+
+    if (serien && serien.length > 0) {
+      const serieProduktionMap = new Map(
+        serien.map((s: { id: string; produktion_id: string }) => [s.id, s.produktion_id])
+      )
+      const serieIds = serien.map((s) => s.id)
+
+      let auffQuery = supabase
+        .from('serienauffuehrungen')
+        .select('id, serie_id, veranstaltung_id, datum, startzeit, ort')
+        .in('serie_id', serieIds)
+        .not('veranstaltung_id', 'is', null)
+
+      if (startDatum) auffQuery = auffQuery.gte('datum', startDatum)
+      if (endDatum) auffQuery = auffQuery.lte('datum', endDatum)
+
+      const { data: auffuehrungen } = await auffQuery
+
+      if (auffuehrungen) {
+        for (const a of auffuehrungen) {
+          if (!a.veranstaltung_id) continue
+          if (existingVeranstaltungIds.has(a.veranstaltung_id)) continue
+          existingVeranstaltungIds.add(a.veranstaltung_id)
+
+          const produktionId = serieProduktionMap.get(a.serie_id) ?? ''
+
+          events.push({
+            id: `pa-${a.id}`,
+            titel: produktionMap.get(produktionId) ?? 'Aufführung',
+            beschreibung: null,
+            datum: a.datum,
+            startzeit: a.startzeit,
+            endzeit: null,
+            ort: a.ort,
+            typ: 'veranstaltung',
+            status: 'angemeldet',
+            veranstaltung_id: a.veranstaltung_id,
+            kann_zusagen: false,
+            kann_absagen: false,
+          })
+        }
+      }
+    }
+  }
+
   // Sort by date and time
   events.sort((a, b) => {
     const dateCompare = a.datum.localeCompare(b.datum)
