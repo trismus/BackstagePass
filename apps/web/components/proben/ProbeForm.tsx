@@ -14,6 +14,7 @@ import {
   updateProbe,
   updateProbeSzenen,
   checkProbeVerfuegbarkeit,
+  autoInviteProbeTeilnehmer,
 } from '@/lib/actions/proben'
 
 interface ProbeFormProps {
@@ -119,6 +120,7 @@ export function ProbeForm({
           if (szenenIds.length > 0) {
             await updateProbeSzenen(result.id, szenenIds)
           }
+          await autoInviteProbeTeilnehmer(result.id)
           router.push(`/proben/${result.id}` as Route)
         } else {
           setError(result.error || 'Fehler beim Erstellen')
