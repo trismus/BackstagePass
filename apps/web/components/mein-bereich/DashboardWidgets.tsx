@@ -3,13 +3,24 @@ import type {
   AnmeldungMitVeranstaltung,
   MeineProbe,
 } from '@/lib/supabase/types'
+import type { MeineProduktionsAuffuehrung } from '@/lib/actions/produktionen'
+
+type MergedEvent = {
+  key: string
+  titel: string
+  ort: string | null
+  datum: string
+  href: string
+}
 
 interface UpcomingEventsWidgetProps {
   anmeldungen: AnmeldungMitVeranstaltung[]
+  produktionsAuffuehrungen?: MeineProduktionsAuffuehrung[]
 }
 
 export function UpcomingEventsWidget({
   anmeldungen,
+  produktionsAuffuehrungen = [],
 }: UpcomingEventsWidgetProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -19,30 +30,59 @@ export function UpcomingEventsWidget({
     })
   }
 
+  // Build merged list: anmeldungen + produktions-aufführungen (deduplicated)
+  const merged: MergedEvent[] = []
+  const seenVeranstaltungIds = new Set<string>()
+
+  for (const a of anmeldungen) {
+    seenVeranstaltungIds.add(a.veranstaltung.id)
+    merged.push({
+      key: `a-${a.id}`,
+      titel: a.veranstaltung.titel,
+      ort: a.veranstaltung.ort ?? null,
+      datum: a.veranstaltung.datum,
+      href: `/veranstaltungen/${a.veranstaltung.id}`,
+    })
+  }
+
+  for (const pa of produktionsAuffuehrungen) {
+    if (seenVeranstaltungIds.has(pa.veranstaltung_id)) continue
+    merged.push({
+      key: `pa-${pa.id}`,
+      titel: pa.titel,
+      ort: pa.ort,
+      datum: pa.datum,
+      href: `/auffuehrungen/${pa.veranstaltung_id}`,
+    })
+  }
+
+  merged.sort((a, b) => a.datum.localeCompare(b.datum))
+  const display = merged.slice(0, 5)
+
   return (
     <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
       <div className="border-b border-blue-100 bg-blue-50 px-4 py-3">
         <h3 className="font-medium text-blue-900">Meine Veranstaltungen</h3>
       </div>
-      {anmeldungen.length > 0 ? (
+      {display.length > 0 ? (
         <div className="divide-y divide-neutral-100">
-          {anmeldungen.slice(0, 5).map((a) => (
+          {display.map((event) => (
             <Link
-              key={a.id}
-              href={`/veranstaltungen/${a.veranstaltung.id}` as never}
+              key={event.key}
+              href={event.href as never}
               className="block p-3 transition-colors hover:bg-neutral-50"
             >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-neutral-900">
-                    {a.veranstaltung.titel}
+                    {event.titel}
                   </p>
                   <p className="text-xs text-neutral-500">
-                    {a.veranstaltung.ort || 'Kein Ort'}
+                    {event.ort || 'Kein Ort'}
                   </p>
                 </div>
                 <span className="text-xs text-neutral-500">
-                  {formatDate(a.veranstaltung.datum)}
+                  {formatDate(event.datum)}
                 </span>
               </div>
             </Link>

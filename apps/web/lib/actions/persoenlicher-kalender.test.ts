@@ -43,9 +43,12 @@ function setupPersonLookup(personId = 'person-1', profileId: string | null = 'pr
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     neq: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
     gte: vi.fn().mockReturnThis(),
     lte: vi.fn().mockReturnThis(),
     not: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue({
       data: { id: personId, profile_id: profileId },
       error: null,
@@ -59,9 +62,12 @@ function createEmptyChain() {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     neq: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
     gte: vi.fn().mockReturnThis(),
     lte: vi.fn().mockReturnThis(),
     not: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue({ data: null, error: null }),
     then: (resolve: (r: { data: unknown[]; error: null }) => void) => {
       resolve({ data: [], error: null })
