@@ -10,6 +10,7 @@ import type {
   AuffuehrungZuweisungUpdate,
   ZuweisungMitPerson,
   BedarfStatus,
+  SchichtSichtbarkeit,
 } from '../supabase/types'
 import {
   schichtSchema,
@@ -443,4 +444,108 @@ export async function getBedarfUebersicht(
       offen: schicht.anzahl_benoetigt - (zuweisungCounts[schicht.id] || 0),
     }
   })
+}
+
+// =============================================================================
+// Dashboard: Offene Schichten
+// =============================================================================
+
+export type DashboardSchicht = {
+  id: string
+  rolle: string
+  freie_plaetze: number
+  sichtbarkeit: SchichtSichtbarkeit
+  zeitblock: { name: string; startzeit: string; endzeit: string } | null
+  veranstaltung: { id: string; titel: string; datum: string; ort: string | null }
+}
+
+/**
+ * Get open shifts for the member dashboard.
+ * Returns shifts with free slots from published performances (intern + public).
+ */
+export async function getOffeneSchichtenForDashboard(): Promise<DashboardSchicht[]> {
+  await requirePermission('veranstaltungen:read')
+  const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  // Get upcoming published performances
+  const { data: veranstaltungen, error: vError } = await supabase
+    .from('veranstaltungen')
+    .select('id, titel, datum, ort')
+    .eq('helfer_status', 'veroeffentlicht')
+    .gte('datum', today)
+    .order('datum', { ascending: true })
+
+  if (vError || !veranstaltungen || veranstaltungen.length === 0) {
+    if (vError) console.error('Error fetching veranstaltungen for dashboard:', vError)
+    return []
+  }
+
+  const veranstaltungIds = veranstaltungen.map((v) => v.id)
+  const veranstaltungMap = new Map(veranstaltungen.map((v) => [v.id, v]))
+
+  // Get all shifts for these performances with time blocks
+  const { data: schichten, error: sError } = await supabase
+    .from('auffuehrung_schichten')
+    .select(`
+      id,
+      veranstaltung_id,
+      rolle,
+      anzahl_benoetigt,
+      sichtbarkeit,
+      zeitblock:zeitbloecke(name, startzeit, endzeit)
+    `)
+    .in('veranstaltung_id', veranstaltungIds)
+
+  if (sError || !schichten || schichten.length === 0) {
+    if (sError) console.error('Error fetching schichten for dashboard:', sError)
+    return []
+  }
+
+  // Get assignment counts per shift (exclude cancelled)
+  const schichtIds = schichten.map((s) => s.id)
+  const { data: zuweisungen } = await supabase
+    .from('auffuehrung_zuweisungen')
+    .select('schicht_id')
+    .in('schicht_id', schichtIds)
+    .neq('status', 'abgesagt')
+
+  const zuweisungCounts: Record<string, number> = {}
+  zuweisungen?.forEach((z) => {
+    zuweisungCounts[z.schicht_id] = (zuweisungCounts[z.schicht_id] || 0) + 1
+  })
+
+  // Build result: only shifts with free slots
+  const result: DashboardSchicht[] = []
+  for (const schicht of schichten) {
+    const assigned = zuweisungCounts[schicht.id] || 0
+    const freiePlaetze = schicht.anzahl_benoetigt - assigned
+    if (freiePlaetze <= 0) continue
+
+    const v = veranstaltungMap.get(schicht.veranstaltung_id)
+    if (!v) continue
+
+    const zb = schicht.zeitblock
+    const zeitblockData = Array.isArray(zb) ? zb[0] : zb
+
+    result.push({
+      id: schicht.id,
+      rolle: schicht.rolle,
+      freie_plaetze: freiePlaetze,
+      sichtbarkeit: schicht.sichtbarkeit,
+      zeitblock: zeitblockData ?? null,
+      veranstaltung: { id: v.id, titel: v.titel, datum: v.datum, ort: v.ort },
+    })
+  }
+
+  // Sort by date, then by zeitblock start time
+  result.sort((a, b) => {
+    const dateCmp = a.veranstaltung.datum.localeCompare(b.veranstaltung.datum)
+    if (dateCmp !== 0) return dateCmp
+    const aStart = a.zeitblock?.startzeit ?? ''
+    const bStart = b.zeitblock?.startzeit ?? ''
+    return aStart.localeCompare(bStart)
+  })
+
+  return result.slice(0, 8)
 }

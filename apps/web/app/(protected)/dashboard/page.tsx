@@ -26,7 +26,9 @@ import {
   UpcomingEventsWidget,
   HelferEinsaetzeWidget,
   MeineProbenWidget,
+  OffeneSchichtenWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
+import { getOffeneSchichtenForDashboard } from '@/lib/actions/auffuehrung-schichten'
 import { ProfileCompletionWidget } from '@/components/mein-bereich/ProfileCompletionWidget'
 import type { KalenderTermin } from '@/components/mein-bereich/MiniKalender'
 
@@ -463,10 +465,11 @@ export default async function DashboardPage({
   const isPassiveMember = profile.role === 'MITGLIED_PASSIV'
 
   // Get data if person is linked
-  const [anmeldungen, meineProben, meineAuffuehrungen] = await Promise.all([
+  const [anmeldungen, meineProben, meineAuffuehrungen, offeneSchichten] = await Promise.all([
     person ? getAnmeldungenForPerson(person.id) : Promise.resolve([]),
     person && !isPassiveMember ? getMeineProben(person.id) : Promise.resolve([]),
     person && !isPassiveMember ? getMeineProduktionsAuffuehrungen(person.id) : Promise.resolve([]),
+    !isPassiveMember ? getOffeneSchichtenForDashboard() : Promise.resolve([]),
   ])
 
   // Get available helper events (only for active members)
@@ -694,6 +697,7 @@ export default async function DashboardPage({
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
               <MeineProbenWidget proben={meineProben} />
               <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
+              <OffeneSchichtenWidget schichten={offeneSchichten} />
             </div>
 
             {/* History Section */}

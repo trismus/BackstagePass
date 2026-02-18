@@ -4,6 +4,7 @@ import type {
   MeineProbe,
 } from '@/lib/supabase/types'
 import type { MeineProduktionsAuffuehrung } from '@/lib/actions/produktionen'
+import type { DashboardSchicht } from '@/lib/actions/auffuehrung-schichten'
 
 type MergedEvent = {
   key: string
@@ -315,6 +316,82 @@ export function QuickLinksWidget({
             </span>
           </Link>
         ))}
+      </div>
+    </div>
+  )
+}
+
+interface OffeneSchichtenWidgetProps {
+  schichten: DashboardSchicht[]
+}
+
+export function OffeneSchichtenWidget({
+  schichten,
+}: OffeneSchichtenWidgetProps) {
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('de-CH', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+    })
+  }
+
+  const formatTime = (start: string, end: string) => {
+    return `${start.slice(0, 5)}–${end.slice(0, 5)}`
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <div className="border-b border-orange-100 bg-orange-50 px-4 py-3">
+        <h3 className="font-medium text-orange-900">Offene Schichten</h3>
+      </div>
+      {schichten.length > 0 ? (
+        <div className="divide-y divide-neutral-100">
+          {schichten.map((s) => (
+            <Link
+              key={s.id}
+              href={`/auffuehrungen/${s.veranstaltung.id}/helferliste` as never}
+              className="block p-3 transition-colors hover:bg-neutral-50"
+            >
+              <div className="flex items-start justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-neutral-900">
+                    {s.rolle}
+                    {s.sichtbarkeit === 'intern' && (
+                      <span className="ml-2 inline-block rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+                        Intern
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    {s.veranstaltung.titel}
+                    {s.zeitblock && ` • ${formatTime(s.zeitblock.startzeit, s.zeitblock.endzeit)}`}
+                  </p>
+                </div>
+                <div className="ml-2 flex flex-col items-end gap-1">
+                  <span className="text-xs text-neutral-500">
+                    {formatDate(s.veranstaltung.datum)}
+                  </span>
+                  <span className="text-xs text-green-600">
+                    {s.freie_plaetze} frei
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="p-4 text-center text-sm text-neutral-500">
+          Keine offenen Schichten
+        </div>
+      )}
+      <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
+        <Link
+          href="/auffuehrungen"
+          className="text-sm text-orange-600 hover:text-orange-800"
+        >
+          Alle Aufführungen &rarr;
+        </Link>
       </div>
     </div>
   )
