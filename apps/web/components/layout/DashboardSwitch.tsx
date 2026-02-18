@@ -1,31 +1,41 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import type { UserRole } from '@/lib/supabase/types'
 
 interface DashboardSwitchProps {
   userRole?: UserRole
 }
 
-type DashboardView = 'admin' | 'vorstand'
+type DashboardView = 'admin' | 'vorstand' | 'mein-bereich'
 
 export function DashboardSwitch({ userRole }: DashboardSwitchProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const router = useRouter()
 
-  // Only show for ADMIN
-  if (userRole !== 'ADMIN') {
+  const isAdmin = userRole === 'ADMIN'
+  const isVorstand = userRole === 'VORSTAND'
+
+  // Only show for management roles
+  if (!isAdmin && !isVorstand) {
     return null
   }
 
   // Determine current view based on pathname
-  const currentView: DashboardView = pathname.startsWith('/admin')
-    ? 'admin'
-    : 'vorstand'
+  const isMeinBereich =
+    pathname === '/dashboard' && searchParams.get('ansicht') === 'mitglied'
+  const currentView: DashboardView = isMeinBereich
+    ? 'mein-bereich'
+    : pathname.startsWith('/admin')
+      ? 'admin'
+      : 'vorstand'
 
   function handleSwitch(view: DashboardView) {
     if (view === 'admin') {
       router.push('/admin' as never)
+    } else if (view === 'mein-bereich') {
+      router.push('/dashboard?ansicht=mitglied' as never)
     } else {
       router.push('/dashboard' as never)
     }
@@ -44,15 +54,27 @@ export function DashboardSwitch({ userRole }: DashboardSwitchProps) {
         Vorstand
       </button>
       <button
-        onClick={() => handleSwitch('admin')}
+        onClick={() => handleSwitch('mein-bereich')}
         className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-          currentView === 'admin'
+          currentView === 'mein-bereich'
             ? 'bg-white text-neutral-900 shadow-sm'
             : 'text-neutral-600 hover:text-neutral-900'
         }`}
       >
-        Admin
+        Mein Bereich
       </button>
+      {isAdmin && (
+        <button
+          onClick={() => handleSwitch('admin')}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+            currentView === 'admin'
+              ? 'bg-white text-neutral-900 shadow-sm'
+              : 'text-neutral-600 hover:text-neutral-900'
+          }`}
+        >
+          Admin
+        </button>
+      )}
     </div>
   )
 }
