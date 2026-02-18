@@ -27,9 +27,10 @@ Neuer Typ `DashboardSchicht` exportiert für Widget-Props.
 **Datei:** `components/mein-bereich/DashboardWidgets.tsx`
 
 - Orange-Farbschema (`bg-orange-50`, `text-orange-900`)
-- Pro Schicht: Rolle, Veranstaltungstitel, Datum, Zeitblock, freie Plätze
-- `intern`-Schichten mit "Intern"-Badge markiert
-- Jede Schicht verlinkt auf `/auffuehrungen/{veranstaltung_id}/helferliste`
+- Schichten nach Veranstaltung gruppiert: Header mit Titel, Datum und Ort
+- Pro Gruppe: Responsive Card-Grid (1–4 Spalten je Breakpoint)
+- Pro Card: Rolle, Zeitblock, freie Plätze, "Intern"-Badge bei `sichtbarkeit = 'intern'`
+- Jede Card und jeder Header verlinkt auf `/auffuehrungen/{veranstaltung_id}/helferliste`
 - Footer: "Alle Aufführungen" → `/auffuehrungen`
 - Empty State: "Keine offenen Schichten"
 
@@ -54,5 +55,6 @@ Neuer Typ `DashboardSchicht` exportiert für Widget-Props.
 |-------------|------------|
 | Kein `sichtbarkeit`-Filter | Mitglieder sollen sowohl interne als auch öffentliche Schichten sehen |
 | Volle Breite statt im Grid | Bessere Sichtbarkeit und Differenzierung von den 3 bestehenden Widgets |
+| Gruppierung nach Veranstaltung | Schichten im Kontext des Anlasses besser verständlich; Card-Grid nutzt volle Breite |
 | Limit 8 | Kompakt für Dashboard, ausreichend für Überblick |
 | `neq('status', 'abgesagt')` statt Whitelist | Zählt alle aktiven Zuweisungen unabhängig vom genauen Status |
