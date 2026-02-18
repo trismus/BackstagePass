@@ -11,7 +11,6 @@ import {
   HandlungsbedarfCard,
   ProduktionDashboardWidget,
   CircularProgress,
-  BarChart,
   MetricCard,
 } from '@/components/dashboard'
 import { getAktuelleProduktionFuerDashboard, getMeineProduktionsAuffuehrungen } from '@/lib/actions/produktionen'
@@ -97,7 +96,15 @@ export default async function DashboardPage({
   const params = await searchParams
 
   const isVorstand = profile?.role ? isManagement(profile.role) : false
-  const today = new Date().toISOString().split('T')[0]
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+
+  // End of current week (Sunday)
+  const dayOfWeek = now.getDay() // 0 = Sunday
+  const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
+  const endOfWeekDate = new Date(now)
+  endOfWeekDate.setDate(now.getDate() + daysUntilSunday)
+  const endOfWeek = endOfWeekDate.toISOString().split('T')[0]
 
   // =============================================================================
   // Vorstand Dashboard (3-Säulen-Layout)
@@ -121,10 +128,11 @@ export default async function DashboardPage({
       supabase.from('helferschichten').select('*', { count: 'exact', head: true }).eq('status', 'zugesagt'),
       supabase
         .from('veranstaltungen')
-        .select('id, titel, datum, typ')
+        .select('id, titel, datum, typ, startzeit, ort, status')
         .gte('datum', today)
-        .order('datum', { ascending: true })
-        .limit(5),
+        .lte('datum', endOfWeek)
+        .in('typ', ['probe', 'auffuehrung'])
+        .order('datum', { ascending: true }),
       supabase
         .from('stuecke')
         .select('id, titel, status, premiere_datum')
@@ -181,22 +189,48 @@ export default async function DashboardPage({
 
         {/* Modern Widgets Section */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Bar Chart: Veranstaltungen diese Woche */}
-          <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <BarChart
-              title="Veranstaltungen diese Woche"
-              data={[
-                { label: 'Mo', value: 2 },
-                { label: 'Di', value: 1 },
-                { label: 'Mi', value: 3 },
-                { label: 'Do', value: 1 },
-                { label: 'Fr', value: 2 },
-                { label: 'Sa', value: 4 },
-                { label: 'So', value: 1 },
-              ]}
-              color="primary"
-              height={140}
-            />
+          {/* Proben & Aufführungen diese Woche */}
+          <div className="rounded-xl border border-neutral-200 bg-white p-6 lg:col-span-2">
+            <h3 className="mb-3 text-sm font-medium text-neutral-500">
+              Proben & Aufführungen diese Woche
+            </h3>
+            {upcomingEvents && upcomingEvents.length > 0 ? (
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {upcomingEvents.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/${event.typ === 'probe' ? 'proben' : 'auffuehrungen'}/${event.id}` as never}
+                    className="flex min-w-[180px] flex-col gap-1 rounded-lg border border-neutral-200 p-3 transition-colors hover:border-neutral-300 hover:bg-neutral-50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          event.typ === 'probe'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
+                      >
+                        {event.typ === 'probe' ? 'Probe' : 'Aufführung'}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-neutral-900 line-clamp-1">
+                      {event.titel}
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      {formatDate(event.datum)}
+                      {event.startzeit ? ` · ${event.startzeit.slice(0, 5)}` : ''}
+                    </p>
+                    {event.ort && (
+                      <p className="text-xs text-neutral-400 line-clamp-1">{event.ort}</p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="py-4 text-center text-sm text-neutral-400">
+                Keine Proben oder Aufführungen diese Woche
+              </p>
+            )}
           </div>
 
           {/* Circular Progress: Mitglieder-Aktivität */}
