@@ -8,6 +8,7 @@ import {
   getSzenenRollen,
 } from '@/lib/actions/stuecke'
 import { getRequisiten } from '@/lib/actions/requisiten'
+import { getRollenMitBesetzungen } from '@/lib/actions/besetzungen'
 import { createClient, getUserProfile } from '@/lib/supabase/server'
 import { canEdit as checkCanEdit } from '@/lib/supabase/auth-helpers'
 import { PROBENPLAN_ELIGIBLE_STATUS } from '@/lib/supabase/types'
@@ -17,6 +18,7 @@ import {
   RollenList,
   RequisitenList,
   SzenenRollenMatrix,
+  StueckBesetzungen,
 } from '@/components/stuecke'
 import { DownloadStueckButton } from '@/components/stuecke/DownloadStueckButton'
 
@@ -30,7 +32,7 @@ export default async function StueckDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [stueck, szenen, rollen, szenenRollen, requisiten, profile, personenResult] = await Promise.all([
+  const [stueck, szenen, rollen, szenenRollen, requisiten, profile, personenResult, rollenMitBesetzungen] = await Promise.all([
     getStueck(id),
     getSzenen(id),
     getRollen(id),
@@ -42,6 +44,7 @@ export default async function StueckDetailPage({
       .select('id, vorname, nachname')
       .eq('aktiv', true)
       .order('nachname'),
+    getRollenMitBesetzungen(id),
   ])
 
   const personen = personenResult.data || []
@@ -170,6 +173,16 @@ export default async function StueckDetailPage({
             szenen={szenen}
             rollen={rollen}
             szenenRollen={szenenRollen}
+            canEdit={canEdit}
+          />
+        </div>
+
+        {/* Besetzung */}
+        <div className="mb-6">
+          <StueckBesetzungen
+            stueckId={id}
+            rollen={rollenMitBesetzungen}
+            personen={personen}
             canEdit={canEdit}
           />
         </div>
