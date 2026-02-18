@@ -697,8 +697,10 @@ export default async function DashboardPage({
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
               <MeineProbenWidget proben={meineProben} />
               <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
-              <OffeneSchichtenWidget schichten={offeneSchichten} />
             </div>
+
+            {/* Offene Schichten - full width */}
+            <OffeneSchichtenWidget schichten={offeneSchichten} />
 
             {/* History Section */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
