@@ -21,12 +21,20 @@ export default async function StueckePage() {
               Theaterstücke, Szenen und Rollen verwalten
             </p>
           </div>
-          <Link
-            href={'/stuecke/neu' as Route}
-            className="rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700"
-          >
-            + Neues Stück
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={'/stuecke/dashboard' as Route}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              Produktions-Dashboard
+            </Link>
+            <Link
+              href={'/stuecke/neu' as Route}
+              className="rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700"
+            >
+              + Neues Stück
+            </Link>
+          </div>
         </div>
 
         {/* Table */}

@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPerson } from '@/lib/actions/personen'
+import { getPersonDetailData } from '@/lib/actions/mitglieder-integration'
 import { MitgliedForm } from '@/components/mitglieder/MitgliedForm'
 import { InviteButton } from '@/components/mitglieder/InviteButton'
+import { PersonAssignments } from '@/components/mitglieder/PersonAssignments'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -16,9 +18,11 @@ export default async function MitgliedEditPage({ params }: PageProps) {
     notFound()
   }
 
+  const detailData = await getPersonDetailData(id)
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -46,9 +50,42 @@ export default async function MitgliedEditPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Form */}
-        <div className="rounded-lg bg-white p-6 shadow">
-          <MitgliedForm person={person} mode="edit" />
+        {/* Stats Overview */}
+        {detailData && (
+          <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="rounded-lg bg-white p-4 shadow">
+              <p className="text-2xl font-bold text-purple-600">{detailData.stats.total_besetzungen}</p>
+              <p className="text-sm text-gray-600">Besetzungen</p>
+            </div>
+            <div className="rounded-lg bg-white p-4 shadow">
+              <p className="text-2xl font-bold text-blue-600">{detailData.stats.total_schichten}</p>
+              <p className="text-sm text-gray-600">Schichten</p>
+            </div>
+            <div className="rounded-lg bg-white p-4 shadow">
+              <p className="text-2xl font-bold text-amber-600">{detailData.stats.total_proben}</p>
+              <p className="text-sm text-gray-600">Proben</p>
+            </div>
+            <div className="rounded-lg bg-white p-4 shadow">
+              <p className="text-2xl font-bold text-green-600">{detailData.stats.total_veranstaltungen}</p>
+              <p className="text-sm text-gray-600">Veranstaltungen</p>
+            </div>
+          </div>
+        )}
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Form */}
+          <div className="rounded-lg bg-white p-6 shadow">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Profil</h2>
+            <MitgliedForm person={person} mode="edit" />
+          </div>
+
+          {/* Assignments */}
+          {detailData && (
+            <div className="rounded-lg bg-white p-6 shadow">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">Einsätze & Rollen</h2>
+              <PersonAssignments assignments={detailData.assignments} />
+            </div>
+          )}
         </div>
       </div>
     </main>
