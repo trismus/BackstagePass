@@ -2,9 +2,9 @@
 
 **System Architecture Document**
 
-**Version:** 1.0.0  
-**Date:** 2026-01-24  
-**Status:** Living Document  
+**Version:** 2.0.0
+**Date:** 2026-02-23
+**Status:** Living Document
 
 ---
 
@@ -140,27 +140,36 @@ BackstagePass ist eine moderne, cloud-native Web-Applikation für Theatervereins
 │  │  ┌────────────────────────────────────────────────┐  │  │
 │  │  │  app/                                           │  │  │
 │  │  │  ├── layout.tsx          (Root Layout)          │  │  │
-│  │  │  ├── page.tsx            (Dashboard)            │  │  │
+│  │  │  ├── page.tsx            (Landing)              │  │  │
+│  │  │  │                                               │  │  │
+│  │  │  ├── (auth)/             (Auth Routes)          │  │  │
+│  │  │  │   ├── login/                                  │  │  │
+│  │  │  │   ├── signup/                                 │  │  │
+│  │  │  │   ├── forgot-password/                        │  │  │
+│  │  │  │   └── reset-password/                         │  │  │
 │  │  │  │                                               │  │  │
 │  │  │  ├── (public)/           (Public Routes)        │  │  │
-│  │  │  │   ├── login/                                  │  │  │
-│  │  │  │   └── signup/                                 │  │  │
+│  │  │  │   ├── helfer/[token]/ (Helper Registration)  │  │  │
+│  │  │  │   └── mitmachen/      (Public Helper Portal) │  │  │
 │  │  │  │                                               │  │  │
-│  │  │  └── (authenticated)/    (Protected Routes)     │  │  │
-│  │  │      ├── members/                                │  │  │
-│  │  │      │   ├── page.tsx          (List)           │  │  │
-│  │  │      │   ├── [id]/             (Detail)         │  │  │
-│  │  │      │   ├── new/              (Create)         │  │  │
-│  │  │      │   └── components/                        │  │  │
-│  │  │      │                                           │  │  │
-│  │  │      ├── produktionen/                           │  │  │
-│  │  │      │   ├── page.tsx                           │  │  │
-│  │  │      │   ├── [id]/                              │  │  │
-│  │  │      │   └── components/                        │  │  │
-│  │  │      │                                           │  │  │
-│  │  │      └── termine/                                │  │  │
-│  │  │          ├── page.tsx                           │  │  │
-│  │  │          └── components/                        │  │  │
+│  │  │  └── (protected)/        (Protected Routes)     │  │  │
+│  │  │      ├── dashboard/      (Role-based Dashboard) │  │  │
+│  │  │      ├── mitglieder/     (Members + Invites)    │  │  │
+│  │  │      ├── veranstaltungen/(Events)               │  │  │
+│  │  │      ├── auffuehrungen/  (Performances)         │  │  │
+│  │  │      ├── stuecke/        (Plays + Scenes)       │  │  │
+│  │  │      ├── produktionen/   (Productions)          │  │  │
+│  │  │      ├── proben/         (Rehearsals)           │  │  │
+│  │  │      ├── templates/      (Perf. Templates)      │  │  │
+│  │  │      ├── kalender/       (Calendar)             │  │  │
+│  │  │      ├── raeume/         (Rooms)                │  │  │
+│  │  │      ├── ressourcen/     (Equipment)            │  │  │
+│  │  │      ├── partner/        (Partners)             │  │  │
+│  │  │      ├── helfereinsaetze/(Legacy Helpers)       │  │  │
+│  │  │      ├── mitmachen/      (New Helpers)          │  │  │
+│  │  │      ├── vorstand/       (Board Member Area)    │  │  │
+│  │  │      ├── willkommen/     (Onboarding)           │  │  │
+│  │  │      └── admin/          (Admin Panel)          │  │  │
 │  │  └────────────────────────────────────────────────┘  │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                                                             │
@@ -270,62 +279,60 @@ BackstagePass ist eine moderne, cloud-native Web-Applikation für Theatervereins
 │                  (PostgreSQL Database)                      │
 │                                                             │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │  Core Tables                                          │  │
+│  │  Core Tables (78 Migrationen, Stand Feb 2026)          │  │
 │  │  ┌────────────────────────────────────────────────┐  │  │
+│  │  │  PERSONEN & AUTH                                │  │  │
+│  │  │  ─────────────────                              │  │  │
+│  │  │  personen          - Mitglieder/Personen        │  │  │
+│  │  │  profiles          - User Accounts + Rollen     │  │  │
+│  │  │  (7 Rollen: ADMIN, VORSTAND, MITGLIED_AKTIV,   │  │  │
+│  │  │   MITGLIED_PASSIV, HELFER, PARTNER, FREUNDE)    │  │  │
 │  │  │                                                  │  │  │
-│  │  │  personen (Members)                             │  │  │
-│  │  │  ├─ id: UUID (PK)                               │  │  │
-│  │  │  ├─ vorname: TEXT                               │  │  │
-│  │  │  ├─ nachname: TEXT                              │  │  │
-│  │  │  ├─ email: TEXT UNIQUE                          │  │  │
-│  │  │  ├─ typ: ENUM                                   │  │  │
-│  │  │  ├─ rolle: TEXT                                 │  │  │
-│  │  │  ├─ status: ENUM                                │  │  │
-│  │  │  ├─ active: BOOLEAN                             │  │  │
-│  │  │  ├─ created_at: TIMESTAMPTZ                     │  │  │
-│  │  │  └─ updated_at: TIMESTAMPTZ                     │  │  │
+│  │  │  VERANSTALTUNGEN & AUFFUEHRUNGEN                │  │  │
+│  │  │  ─────────────────────────────                  │  │  │
+│  │  │  veranstaltungen   - Events (4 Typen)           │  │  │
+│  │  │  anmeldungen       - Event-Registrierungen      │  │  │
+│  │  │  zeitbloecke       - Performance-Zeitbloecke    │  │  │
+│  │  │  auffuehrung_schichten  - Schichten             │  │  │
+│  │  │  auffuehrung_zuweisungen - Zuweisungen          │  │  │
 │  │  │                                                  │  │  │
-│  │  │  produktionen (Productions)                     │  │  │
-│  │  │  ├─ id: UUID (PK)                               │  │  │
-│  │  │  ├─ titel: TEXT                                 │  │  │
-│  │  │  ├─ saison: TEXT                                │  │  │
-│  │  │  ├─ status: TEXT                                │  │  │
-│  │  │  ├─ beschreibung: TEXT                          │  │  │
-│  │  │  ├─ premiere_datum: DATE                        │  │  │
-│  │  │  └─ created_at: TIMESTAMPTZ                     │  │  │
+│  │  │  KUENSTLERISCHE PLANUNG                         │  │  │
+│  │  │  ─────────────────────                          │  │  │
+│  │  │  stuecke           - Theaterstuecke             │  │  │
+│  │  │  szenen            - Szenen pro Stueck          │  │  │
+│  │  │  rollen            - Rollen pro Stueck          │  │  │
+│  │  │  besetzungen       - Besetzung (M:N)            │  │  │
+│  │  │  produktionen      - Produktionen               │  │  │
+│  │  │  proben            - Proben                     │  │  │
+│  │  │  proben_szenen     - Proben-Szenen-Zuordnung    │  │  │
+│  │  │  proben_teilnehmer - Proben-Teilnehmer          │  │  │
 │  │  │                                                  │  │  │
-│  │  │  besetzung (Cast - M:N Junction)                │  │  │
-│  │  │  ├─ id: UUID (PK)                               │  │  │
-│  │  │  ├─ produktion_id: UUID (FK)                    │  │  │
-│  │  │  ├─ person_id: UUID (FK)                        │  │  │
-│  │  │  ├─ rolle: TEXT                                 │  │  │
-│  │  │  ├─ typ: ENUM (Schauspiel, Regie, etc.)        │  │  │
-│  │  │  └─ UNIQUE(produktion_id, person_id, rolle)    │  │  │
+│  │  │  HELFER-SYSTEM                                  │  │  │
+│  │  │  ──────────────                                 │  │  │
+│  │  │  helfer_events     - Helfer-Events              │  │  │
+│  │  │  helfer_rollen_templates  - Rollen-Vorlagen     │  │  │
+│  │  │  helfer_rollen_instanzen  - Rollen-Instanzen    │  │  │
+│  │  │  helfer_anmeldungen      - Anmeldungen          │  │  │
+│  │  │  helfereinsaetze   - Legacy Helfer-Events       │  │  │
+│  │  │  helferrollen      - Legacy Rollen              │  │  │
+│  │  │  helferschichten   - Legacy Schichten           │  │  │
 │  │  │                                                  │  │  │
-│  │  │  termine (Events)                               │  │  │
-│  │  │  ├─ id: UUID (PK)                               │  │  │
-│  │  │  ├─ produktion_id: UUID (FK, nullable)         │  │  │
-│  │  │  ├─ titel: TEXT                                 │  │  │
-│  │  │  ├─ typ: ENUM                                   │  │  │
-│  │  │  ├─ start_zeit: TIMESTAMPTZ                     │  │  │
-│  │  │  ├─ end_zeit: TIMESTAMPTZ                       │  │  │
-│  │  │  ├─ ort: TEXT                                   │  │  │
-│  │  │  └─ beschreibung: TEXT                          │  │  │
+│  │  │  TEMPLATES                                      │  │  │
+│  │  │  ─────────                                      │  │  │
+│  │  │  auffuehrung_templates    - Auffu.-Templates    │  │  │
+│  │  │  template_zeitbloecke     - Template-Bloecke    │  │  │
+│  │  │  template_schichten       - Template-Schichten  │  │  │
+│  │  │  template_info_bloecke    - Info-Bloecke        │  │  │
+│  │  │  template_sachleistungen  - Sachleistungen      │  │  │
+│  │  │  info_bloecke / sachleistungen  - Instanzen     │  │  │
 │  │  │                                                  │  │  │
-│  │  │  anwesenheit (Attendance - M:N)                 │  │  │
-│  │  │  ├─ id: UUID (PK)                               │  │  │
-│  │  │  ├─ termin_id: UUID (FK)                        │  │  │
-│  │  │  ├─ person_id: UUID (FK)                        │  │  │
-│  │  │  ├─ status: ENUM (Zugesagt, Abgesagt, Offen)   │  │  │
-│  │  │  ├─ notiz: TEXT                                 │  │  │
-│  │  │  └─ UNIQUE(termin_id, person_id)               │  │  │
-│  │  │                                                  │  │  │
-│  │  │  user_roles (Authorization)                     │  │  │
-│  │  │  ├─ id: UUID (PK)                               │  │  │
-│  │  │  ├─ user_id: UUID (FK → auth.users)            │  │  │
-│  │  │  ├─ role: ENUM (admin, vorstand, mitglied)     │  │  │
-│  │  │  ├─ created_at: TIMESTAMPTZ                     │  │  │
-│  │  │  └─ UNIQUE(user_id)                             │  │  │
+│  │  │  RESSOURCEN                                     │  │  │
+│  │  │  ──────────                                     │  │  │
+│  │  │  raeume / ressourcen      - Raeume/Equipment    │  │  │
+│  │  │  raum_reservierungen      - Raum-Buchungen      │  │  │
+│  │  │  ressourcen_reservierungen- Geraete-Buchungen   │  │  │
+│  │  │  partner                  - Partnerorganisationen│  │  │
+│  │  │  stundenkonto             - Stunden-Ledger      │  │  │
 │  │  │                                                  │  │  │
 │  │  └────────────────────────────────────────────────┘  │  │
 │  └──────────────────────────────────────────────────────┘  │
@@ -388,26 +395,29 @@ BackstagePass ist eine moderne, cloud-native Web-Applikation für Theatervereins
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │  PostgreSQL RLS Policies                             │  │
 │  │  ┌────────────────────────────────────────────────┐  │  │
+│  │  │  RLS Helper Functions:                           │  │  │
+│  │  │  ─────────────────────                           │  │  │
+│  │  │  is_management()  - ADMIN or VORSTAND            │  │  │
+│  │  │  is_admin()       - ADMIN only                   │  │  │
+│  │  │  get_user_role()  - Current user's role          │  │  │
+│  │  │  has_role_permission(perm) - Permission check    │  │  │
+│  │  │                                                  │  │  │
 │  │  │  personen:                                      │  │  │
 │  │  │  ─────────                                      │  │  │
-│  │  │  SELECT: authenticated users only              │  │  │
-│  │  │  INSERT/UPDATE/DELETE: admin only              │  │  │
+│  │  │  SELECT: has_role_permission('mitglieder:read') │  │  │
+│  │  │  INSERT/UPDATE: mitglieder:write                │  │  │
+│  │  │  DELETE: mitglieder:delete                      │  │  │
 │  │  │                                                  │  │  │
-│  │  │  produktionen:                                  │  │  │
-│  │  │  ─────────────                                  │  │  │
-│  │  │  SELECT: authenticated                          │  │  │
-│  │  │  INSERT/UPDATE/DELETE: vorstand + admin        │  │  │
+│  │  │  veranstaltungen:                               │  │  │
+│  │  │  ────────────────                               │  │  │
+│  │  │  SELECT: veranstaltungen:read                   │  │  │
+│  │  │  INSERT/UPDATE/DELETE: veranstaltungen:write    │  │  │
 │  │  │                                                  │  │  │
-│  │  │  termine:                                       │  │  │
-│  │  │  ────────                                       │  │  │
-│  │  │  SELECT: authenticated                          │  │  │
-│  │  │  INSERT/UPDATE/DELETE: regie + vorstand + admin│  │  │
-│  │  │                                                  │  │  │
-│  │  │  anwesenheit:                                   │  │  │
-│  │  │  ────────────                                   │  │  │
-│  │  │  SELECT: authenticated                          │  │  │
-│  │  │  UPDATE (own): person_id = auth.uid()          │  │  │
-│  │  │  UPDATE (all): admin                           │  │  │
+│  │  │  helfer_*:                                      │  │  │
+│  │  │  ─────────                                      │  │  │
+│  │  │  SELECT: authenticated (public via token)       │  │  │
+│  │  │  INSERT/UPDATE: helfereinsaetze:write           │  │  │
+│  │  │  Anmeldungen: self-service + management         │  │  │
 │  │  └────────────────────────────────────────────────┘  │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                        ▼                                    │
@@ -428,51 +438,62 @@ BackstagePass ist eine moderne, cloud-native Web-Applikation für Theatervereins
 │  User    │
 │ Browser  │
 └────┬─────┘
-     │ 1. Visit /login
+     │ 1. Visit /login (or receive Invitation Email)
      ▼
 ┌─────────────────┐
-│  Login Page     │
+│  Login Page     │  OR  Invitation Link (branded SMTP email)
 │  (Public Route) │
 └────┬────────────┘
-     │ 2. Enter Email
+     │ 2. Enter Email / Password  OR  Click Invitation Link
      ▼
 ┌─────────────────────┐
 │  Supabase Auth      │
 │  (GoTrue Service)   │
 └────┬────────────────┘
-     │ 3. Send Magic Link
-     ▼
-┌─────────────────┐
-│  Email Client   │
-└────┬────────────┘
-     │ 4. Click Link
+     │ 3. Authenticate (Password / Magic Link / Invitation)
      ▼
 ┌──────────────────────────┐
-│  Callback URL            │
-│  /auth/callback?token=x  │
+│  Auth Callback           │
+│  /auth/callback          │
+│  /auth/confirm           │
 └────┬─────────────────────┘
-     │ 5. Exchange Token
-     ▼
-┌─────────────────────┐
-│  Supabase Auth      │
-│  - Verify Token     │
-│  - Create Session   │
-│  - Set Cookie       │
-└────┬────────────────┘
-     │ 6. Redirect /dashboard
+     │ 4. Exchange Token, Create Session, Set Cookie
+     │ 5. Auto-link Profile to Person (if invited)
      ▼
 ┌─────────────────────┐
 │  Middleware         │
 │  - Check Cookie     │
 │  - Validate Session │
-│  - Allow Access     │
+│  - Check onboarding │
 └────┬────────────────┘
-     │ 7. Render Page
+     │ 6a. First Login? → /willkommen (Onboarding Wizard)
+     │ 6b. Returning?   → /dashboard (Role-based)
      ▼
-┌─────────────────────┐
-│  Dashboard          │
-│  (Protected Route)  │
-└─────────────────────┘
+┌─────────────────────┐     ┌─────────────────────┐
+│  /willkommen        │ ──► │  /dashboard          │
+│  2-Step Wizard      │     │  Role-based Content  │
+│  (Profile + Skills) │     │  ADMIN/VORSTAND/     │
+│                     │     │  MITGLIED/HELFER     │
+└─────────────────────┘     └─────────────────────┘
+```
+
+### Invitation Flow (Member Onboarding)
+
+```
+Admin/Vorstand                     Existing Person (no app access)
+───────────                        ──────────────────────────────
+1. /mitglieder → "Einladen"
+2. Select person(s)
+3. Send invitation                 → Branded email via SMTP
+   (single or bulk)                  (Supabase fallback)
+                                   4. Click invitation link
+                                   5. Create account / Login
+                                   6. Profile auto-linked to Person
+                                   7. Onboarding Wizard
+                                   8. → Dashboard
+
+Tracking: invitation_status (pending/accepted/expired)
+Resend: Available for pending invitations
 ```
 
 ### RLS Policy Example
@@ -750,6 +771,18 @@ USING (
 │  │    - Create Files (Tech Plans)                        │  │
 │  │    - Webhooks (Push, Issue Events)                    │  │
 │  │  └──────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  SMTP Email (Nodemailer)                              │  │
+│  │  ───────────────────────                              │  │
+│  │  • Provider: Gmail SMTP                               │  │
+│  │  • Fallback: Supabase Auth Email                      │  │
+│  │  • Use Cases:                                         │  │
+│  │    - Branded Invitation Emails                        │  │
+│  │    - Helper Registration Confirmations                │  │
+│  │    - Booking Confirmations                            │  │
+│  │    - Reminder Notifications (via Cron)                │  │
+│  └──────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -757,12 +790,14 @@ USING (
 
 ## 📊 Scalability & Performance
 
-### Current Scale (MVP)
+### Current Scale (Late MVP / Early Production)
 
 ```
-Expected Load:
-├── Users: 10-50 concurrent
-├── Database: < 10k rows
+Current State:
+├── Database: 78 migrations, 30+ tables
+├── Protected Routes: 28 route groups
+├── Public Routes: Helper registration + Mitmachen
+├── Users: 10-50 concurrent (expected)
 ├── Requests: < 1k/day
 └── Storage: < 1 GB
 ```
@@ -1262,10 +1297,10 @@ Implementation:
 
 ## 📞 Support & Updates
 
-**Maintainer:** AI-Team (Bühnenmeister, Kulissenbauer, Kritiker, Chronist)  
-**Last Updated:** 2026-01-24  
-**Next Review:** End of February 2026  
-**Version:** 1.0.0
+**Maintainer:** AI-Team (Bühnenmeister, Kulissenbauer, Kritiker, Chronist)
+**Last Updated:** 2026-02-23
+**Next Review:** End of March 2026
+**Version:** 2.0.0
 
 ---
 
