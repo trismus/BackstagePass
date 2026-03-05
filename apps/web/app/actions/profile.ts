@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/supabase/auth-helpers'
+import { isManagement } from '@/lib/supabase/permissions'
 import { logAuditEvent } from '@/lib/audit'
 import type { UserRole } from '@/lib/supabase/types'
 
@@ -184,5 +186,60 @@ export async function updateUserRole(userId: string, role: UserRole) {
   })
 
   revalidatePath('/admin/users')
+  return { success: true }
+}
+
+export async function adminSetPassword(userId: string, newPassword: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Nicht angemeldet' }
+  }
+
+  const { data: currentProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!currentProfile || !isManagement(currentProfile.role as UserRole)) {
+    return { error: 'Keine Berechtigung' }
+  }
+
+  if (newPassword.length < 6) {
+    return { error: 'Passwort muss mindestens 6 Zeichen lang sein' }
+  }
+
+  // Prevent setting your own password via this action
+  if (userId === user.id) {
+    return { error: 'Eigenes Passwort bitte über die Profileinstellungen ändern' }
+  }
+
+  // Get target user info for audit log
+  const { data: targetProfile } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', userId)
+    .single()
+
+  // Use admin client to set password (bypasses RLS)
+  const adminClient = createAdminClient()
+  const { error } = await adminClient.auth.admin.updateUserById(userId, {
+    password: newPassword,
+  })
+
+  if (error) {
+    console.error('Failed to set password:', error)
+    return { error: 'Passwort konnte nicht gesetzt werden' }
+  }
+
+  await logAuditEvent('user.password_reset_by_management', 'profile', userId, {
+    target_email: targetProfile?.email,
+    reset_by: user.email,
+  })
+
   return { success: true }
 }

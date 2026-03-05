@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserRoleSelect } from './UserRoleSelect'
+import { SetPasswordButton } from './SetPasswordButton'
 import { toggleUserActive } from '@/app/actions/profile'
 import type { UserRole } from '@/lib/supabase/types'
 
@@ -140,16 +141,19 @@ export function UsersTable({
                 </td>
                 <td className="py-3">
                   {u.id !== currentUserId && (
-                    <button
-                      onClick={() => handleToggleActive(u.id)}
-                      className={`text-sm ${
-                        u.is_active === false
-                          ? 'text-green-600 hover:text-green-800'
-                          : 'text-red-600 hover:text-red-800'
-                      }`}
-                    >
-                      {u.is_active === false ? 'Aktivieren' : 'Deaktivieren'}
-                    </button>
+                    <div className="flex gap-3">
+                      <SetPasswordButton userId={u.id} userEmail={u.email} />
+                      <button
+                        onClick={() => handleToggleActive(u.id)}
+                        className={`text-sm ${
+                          u.is_active === false
+                            ? 'text-green-600 hover:text-green-800'
+                            : 'text-red-600 hover:text-red-800'
+                        }`}
+                      >
+                        {u.is_active === false ? 'Aktivieren' : 'Deaktivieren'}
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>

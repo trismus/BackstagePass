@@ -7,6 +7,7 @@ import { getUserProfile } from '@/lib/supabase/server'
 import { isManagement } from '@/lib/supabase/permissions'
 import { MitgliedForm } from '@/components/mitglieder/MitgliedForm'
 import { InviteButton } from '@/components/mitglieder/InviteButton'
+import { SetPasswordButton } from '@/components/admin/SetPasswordButton'
 import { PersonalCalendar } from '@/components/mein-bereich/PersonalCalendar'
 import { PersonEngagementHistory } from '@/components/mitglieder/PersonEngagementHistory'
 
@@ -69,6 +70,17 @@ export default async function MitgliedEditPage({ params }: PageProps) {
               invitedAt={person.invited_at}
               invitationAcceptedAt={person.invitation_accepted_at}
             />
+          </div>
+        )}
+
+        {/* Password reset for management (only if person has an account) */}
+        {person.profile_id && profile && isManagement(profile.role) && person.profile_id !== profile.id && (
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-neutral-900">Kontoverwaltung</p>
+              <p className="text-sm text-neutral-500">Passwort für dieses Mitglied manuell setzen</p>
+            </div>
+            <SetPasswordButton userId={person.profile_id} userEmail={person.email} />
           </div>
         )}
 
