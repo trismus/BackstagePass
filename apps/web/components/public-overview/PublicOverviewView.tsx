@@ -15,33 +15,32 @@ interface PublicOverviewViewProps {
 
 type OverviewState =
   | { type: 'browsing' }
-  | { type: 'form'; selectedSchichtIds: string[] }
+  | { type: 'form'; selectedRolleIds: string[] }
   | { type: 'success'; results: MultiRegistrationResult }
 
 export function PublicOverviewView({ data }: PublicOverviewViewProps) {
   const [state, setState] = useState<OverviewState>({ type: 'browsing' })
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  // Build a map of schichtId -> display name for the success screen
-  const schichtNames = useMemo(() => {
+  // Build a map of rolleId -> display name for the success screen
+  const rolleNames = useMemo(() => {
     const map = new Map<string, string>()
     for (const event of data.events) {
-      for (const zb of event.zeitbloecke) {
-        for (const s of zb.schichten) {
-          map.set(s.id, `${s.rolle} (${event.veranstaltung.titel})`)
-        }
+      for (const rolle of event.rollen) {
+        const name = rolle.template?.name || rolle.custom_name || 'Unbekannt'
+        map.set(rolle.id, `${name} (${event.event.name})`)
       }
     }
     return map
   }, [data])
 
-  const handleToggleSchicht = (schichtId: string) => {
+  const handleToggleRolle = (rolleId: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      if (next.has(schichtId)) {
-        next.delete(schichtId)
+      if (next.has(rolleId)) {
+        next.delete(rolleId)
       } else {
-        next.add(schichtId)
+        next.add(rolleId)
       }
       return next
     })
@@ -50,7 +49,7 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
   const handleProceedToForm = () => {
     setState({
       type: 'form',
-      selectedSchichtIds: Array.from(selectedIds),
+      selectedRolleIds: Array.from(selectedIds),
     })
   }
 
@@ -73,7 +72,8 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
     return (
       <OverviewSuccessScreen
         results={state.results}
-        schichtNames={schichtNames}
+        data={data}
+        rolleNames={rolleNames}
         dashboardToken={state.results.dashboardToken}
         onBrowseMore={handleBrowseMore}
       />
@@ -84,7 +84,7 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
   if (state.type === 'form') {
     return (
       <OverviewRegistrationForm
-        selectedSchichtIds={state.selectedSchichtIds}
+        selectedRolleIds={state.selectedRolleIds}
         data={data}
         onBack={handleBackToBrowsing}
         onSuccess={handleSuccess}
@@ -115,10 +115,10 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
           </div>
           <div>
             <h3 className="font-medium text-primary-900">
-              Wähle deine Schichten aus
+              Wähle deine Rollen aus
             </h3>
             <p className="mt-1 text-sm text-primary-700">
-              Du kannst mehrere Schichten aus verschiedenen Veranstaltungen
+              Du kannst mehrere Rollen aus verschiedenen Veranstaltungen
               auswählen und dich mit einem einzigen Formular für alle anmelden.
             </p>
           </div>
@@ -129,10 +129,10 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
       <div className="space-y-6">
         {data.events.map((event) => (
           <EventGroup
-            key={event.veranstaltung.id}
+            key={event.event.id}
             event={event}
-            selectedSchichtIds={selectedIds}
-            onToggleSchicht={handleToggleSchicht}
+            selectedRolleIds={selectedIds}
+            onToggleRolle={handleToggleRolle}
           />
         ))}
       </div>
@@ -143,7 +143,7 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
           <div className="mx-auto flex max-w-6xl items-center justify-between">
             <p className="text-sm font-medium text-gray-700">
               {selectedIds.size}{' '}
-              {selectedIds.size === 1 ? 'Schicht' : 'Schichten'} ausgewählt
+              {selectedIds.size === 1 ? 'Rolle' : 'Rollen'} ausgewählt
             </p>
             <button
               onClick={handleProceedToForm}

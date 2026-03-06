@@ -68,7 +68,7 @@ export default async function MitmachenPage() {
               </svg>
             </div>
             <h2 className="text-lg font-medium text-gray-900">
-              Aktuell keine offenen Schichten
+              Aktuell keine offenen Rollen
             </h2>
             <p className="mt-2 text-gray-500">
               Derzeit suchen wir keine Helfer. Schau bald wieder vorbei — neue
