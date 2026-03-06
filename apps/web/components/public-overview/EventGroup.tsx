@@ -6,16 +6,23 @@ import type { PublicOverviewEventData } from '@/lib/actions/public-overview'
 
 interface EventGroupProps {
   event: PublicOverviewEventData
-  selectedSchichtIds: Set<string>
-  onToggleSchicht: (schichtId: string) => void
+  selectedRolleIds: Set<string>
+  onToggleRolle: (rolleId: string) => void
+}
+
+function formatTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString('de-CH', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function EventGroup({
   event,
-  selectedSchichtIds,
-  onToggleSchicht,
+  selectedRolleIds,
+  onToggleRolle,
 }: EventGroupProps) {
-  const { veranstaltung, zeitbloecke } = event
+  const { event: eventData, rollen } = event
   const [showFull, setShowFull] = useState(false)
 
   const formatDate = (dateStr: string) => {
@@ -27,18 +34,9 @@ export function EventGroup({
     })
   }
 
-  const formatTime = (timeStr: string | null) => {
-    if (!timeStr) return null
-    return timeStr.slice(0, 5)
-  }
-
-  // Flatten all shifts across Zeitblöcke
-  const allSchichten = zeitbloecke.flatMap((zb) =>
-    zb.schichten.map((s) => ({ ...s, zeitblockName: zb.name, zeitblockStart: zb.startzeit, zeitblockEnd: zb.endzeit }))
-  )
-  const availableSchichten = allSchichten.filter((s) => s.freie_plaetze > 0)
-  const fullSchichten = allSchichten.filter((s) => s.freie_plaetze <= 0)
-  const totalFree = availableSchichten.reduce((sum, s) => sum + s.freie_plaetze, 0)
+  const availableRollen = rollen.filter((r) => r.freie_plaetze > 0)
+  const fullRollen = rollen.filter((r) => r.freie_plaetze <= 0)
+  const totalFree = availableRollen.reduce((sum, r) => sum + r.freie_plaetze, 0)
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -46,7 +44,7 @@ export function EventGroup({
       <div className="border-b border-gray-100 px-5 py-4">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-gray-900">
-            {veranstaltung.titel}
+            {eventData.name}
           </h3>
           {totalFree > 0 ? (
             <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
@@ -59,43 +57,55 @@ export function EventGroup({
           )}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-          <span>{formatDate(veranstaltung.datum)}</span>
-          {veranstaltung.startzeit && (
-            <span>
-              {formatTime(veranstaltung.startzeit)}
-              {veranstaltung.endzeit &&
-                ` - ${formatTime(veranstaltung.endzeit)}`}{' '}
-              Uhr
-            </span>
-          )}
-          {veranstaltung.ort && <span>{veranstaltung.ort}</span>}
+          <span>{formatDate(eventData.datum_start)}</span>
+          <span>
+            {formatTime(eventData.datum_start)}
+            {eventData.datum_end &&
+              ` - ${formatTime(eventData.datum_end)}`}{' '}
+            Uhr
+          </span>
+          {eventData.ort && <span>{eventData.ort}</span>}
         </div>
       </div>
 
-      {/* All shifts in one grid */}
+      {/* All roles in one grid */}
       <div className="px-5 py-4">
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5">
-          {availableSchichten.map((schicht) => (
-            <SelectableSchichtCard
-              key={schicht.id}
-              schicht={schicht}
-              isSelected={selectedSchichtIds.has(schicht.id)}
-              onToggle={onToggleSchicht}
-              zeitblockLabel={`${schicht.zeitblockStart.slice(0, 5)}–${schicht.zeitblockEnd.slice(0, 5)}`}
-            />
-          ))}
-          {showFull &&
-            fullSchichten.map((schicht) => (
+          {availableRollen.map((rolle) => {
+            const zeitblockLabel =
+              rolle.zeitblock_start && rolle.zeitblock_end
+                ? `${formatTime(rolle.zeitblock_start)}–${formatTime(rolle.zeitblock_end)}`
+                : undefined
+
+            return (
               <SelectableSchichtCard
-                key={schicht.id}
-                schicht={schicht}
-                isSelected={false}
-                onToggle={onToggleSchicht}
-                zeitblockLabel={`${schicht.zeitblockStart.slice(0, 5)}–${schicht.zeitblockEnd.slice(0, 5)}`}
+                key={rolle.id}
+                rolle={rolle}
+                isSelected={selectedRolleIds.has(rolle.id)}
+                onToggle={onToggleRolle}
+                zeitblockLabel={zeitblockLabel}
               />
-            ))}
+            )
+          })}
+          {showFull &&
+            fullRollen.map((rolle) => {
+              const zeitblockLabel =
+                rolle.zeitblock_start && rolle.zeitblock_end
+                  ? `${formatTime(rolle.zeitblock_start)}–${formatTime(rolle.zeitblock_end)}`
+                  : undefined
+
+              return (
+                <SelectableSchichtCard
+                  key={rolle.id}
+                  rolle={rolle}
+                  isSelected={false}
+                  onToggle={onToggleRolle}
+                  zeitblockLabel={zeitblockLabel}
+                />
+              )
+            })}
         </div>
-        {fullSchichten.length > 0 && (
+        {fullRollen.length > 0 && (
           <button
             type="button"
             onClick={() => setShowFull((prev) => !prev)}
@@ -103,7 +113,7 @@ export function EventGroup({
           >
             {showFull
               ? 'Belegte Rollen ausblenden'
-              : `${fullSchichten.length} belegte ${fullSchichten.length === 1 ? 'Rolle' : 'Rollen'} anzeigen`}
+              : `${fullRollen.length} belegte ${fullRollen.length === 1 ? 'Rolle' : 'Rollen'} anzeigen`}
           </button>
         )}
       </div>
