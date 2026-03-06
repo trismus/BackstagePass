@@ -12,6 +12,7 @@ export type AuditAction =
   | 'role.removed'
   | 'user.disabled'
   | 'user.enabled'
+  | 'user.password_reset_by_management'
 
 export interface AuditLogEntry {
   id: string
