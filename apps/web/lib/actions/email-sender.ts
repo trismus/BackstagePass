@@ -232,17 +232,23 @@ export async function sendBookingConfirmation(
 
   // Build dashboard link
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  let dashboardLink = `${baseUrl}/meine-einsaetze`
+  let dashboardLink = ''
 
   const externalHelperId = (zuweisung as unknown as { external_helper_id: string | null }).external_helper_id
   if (externalHelperId) {
-    const { data: dashboardToken } = await supabase.rpc(
+    const { data: dashboardToken, error: tokenError } = await supabase.rpc(
       'get_externe_helfer_dashboard_token',
       { p_helper_id: externalHelperId }
     )
+    if (tokenError) {
+      console.error('[Email] Failed to get dashboard token:', tokenError)
+    }
     if (dashboardToken) {
       dashboardLink = `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
     }
+  } else {
+    // Logged-in user: link to protected dashboard
+    dashboardLink = `${baseUrl}/dashboard`
   }
 
   // Get email template
