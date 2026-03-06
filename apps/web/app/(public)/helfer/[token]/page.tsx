@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getPublicEventByToken } from '@/lib/actions/helferliste'
 import { PublicEventView } from '@/components/helferliste/PublicEventView'
 
@@ -73,6 +74,32 @@ export default async function PublicHelferPage({ params }: PageProps) {
 
         {/* Public Roles */}
         <PublicEventView event={event} />
+
+        {/* Cross-Link to /mitmachen */}
+        <div className="mt-8 rounded-lg border border-primary-200 bg-primary-50 p-4 text-center">
+          <p className="text-sm text-primary-800">
+            Du möchtest auch bei anderen Veranstaltungen helfen?
+          </p>
+          <Link
+            href={'/mitmachen' as never}
+            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary-700 hover:text-primary-800 hover:underline"
+          >
+            Alle offenen Schichten ansehen
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
+        </div>
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-500">
