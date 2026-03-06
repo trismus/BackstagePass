@@ -32,12 +32,19 @@ function canCancelAnmeldung(anmeldung: HelferDashboardAnmeldung): boolean {
 
 export function HelferDashboardView({ data, showHeader = true }: HelferDashboardViewProps) {
   const [showPast, setShowPast] = useState(false)
+  const [showCancelled, setShowCancelled] = useState(false)
 
   const now = new Date()
-  const upcoming = data.anmeldungen.filter(
+  const cancelled = data.anmeldungen.filter(
+    (a) => a.status === 'abgelehnt'
+  )
+  const active = data.anmeldungen.filter(
+    (a) => a.status !== 'abgelehnt'
+  )
+  const upcoming = active.filter(
     (a) => new Date(a.event_datum_start) >= now
   )
-  const past = data.anmeldungen.filter(
+  const past = active.filter(
     (a) => new Date(a.event_datum_start) < now
   )
 
@@ -163,6 +170,49 @@ export function HelferDashboardView({ data, showHeader = true }: HelferDashboard
           {showPast && (
             <div className="space-y-3">
               {past.map((anmeldung) => (
+                <ShiftCard
+                  key={anmeldung.id}
+                  anmeldung={anmeldung}
+                  canCancel={false}
+                  isPast={true}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Cancelled Shifts */}
+      {cancelled.length > 0 && (
+        <section>
+          <button
+            type="button"
+            onClick={() => setShowCancelled(!showCancelled)}
+            className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900"
+          >
+            <svg
+              className={`h-5 w-5 text-neutral-500 transition-transform duration-200 ${
+                showCancelled ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+            Abgemeldete Einsätze
+            <span className="text-sm font-normal text-neutral-500">
+              ({cancelled.length})
+            </span>
+          </button>
+          {showCancelled && (
+            <div className="space-y-3">
+              {cancelled.map((anmeldung) => (
                 <ShiftCard
                   key={anmeldung.id}
                   anmeldung={anmeldung}

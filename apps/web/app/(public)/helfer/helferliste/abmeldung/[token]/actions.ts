@@ -10,8 +10,8 @@ import {
 /**
  * Cancel a helferliste registration using the abmeldung_token.
  * This is a public action - no authentication required.
- * Deletes the helfer_anmeldungen row, promotes waitlisted entry if applicable,
- * and sends confirmation + promotion emails.
+ * Sets status to 'abgelehnt' (soft-cancel), promotes waitlisted entry if
+ * applicable, and sends confirmation + promotion emails.
  */
 export async function cancelHelferlisteRegistration(
   token: string
@@ -60,6 +60,11 @@ export async function cancelHelferlisteRegistration(
   } | null
 
   const helferEvent = rollenInstanz?.helfer_event
+
+  // 2b. Already cancelled?
+  if (anmeldung.status === 'abgelehnt') {
+    return { success: false, error: 'Diese Anmeldung wurde bereits storniert.' }
+  }
 
   // 3. Check deadline (configurable abmeldung_frist, fallback to 6-hour rule)
   if (helferEvent) {
@@ -113,20 +118,20 @@ export async function cancelHelferlisteRegistration(
     recipientName = anmeldung.external_name || 'Helfer'
   }
 
-  // 5. Delete the registration (frees the slot)
-  const { error: deleteError } = await supabase
+  // 5. Set status to 'abgelehnt' (soft-cancel, keeps row for dashboard history)
+  const { error: updateError } = await supabase
     .from('helfer_anmeldungen')
-    .delete()
+    .update({ status: 'abgelehnt' })
     .eq('id', anmeldung.id)
 
-  if (deleteError) {
-    console.error('Error cancelling helferliste registration:', deleteError)
+  if (updateError) {
+    console.error('Error cancelling helferliste registration:', updateError)
     return { success: false, error: 'Fehler beim Stornieren der Anmeldung' }
   }
 
-  // 6. Waitlist auto-promotion (if a slot was freed by an active registration)
+  // 6. Waitlist auto-promotion (if a slot was freed by a previously active registration)
   let promotedAnmeldungId: string | null = null
-  const wasActiveRegistration = anmeldung.status !== 'abgelehnt'
+  const wasActiveRegistration = anmeldung.status !== 'abgelehnt' && anmeldung.status !== 'warteliste'
 
   if (wasActiveRegistration && anmeldung.rollen_instanz_id) {
     const { data: promotedId } = await supabase.rpc('promote_helfer_waitlist', {
@@ -156,6 +161,7 @@ export async function cancelHelferlisteRegistration(
   // 8. Revalidate paths
   revalidatePath('/veranstaltungen')
   revalidatePath('/mitmachen')
+  revalidatePath('/helfer/meine-einsaetze')
 
   return { success: true }
 }
