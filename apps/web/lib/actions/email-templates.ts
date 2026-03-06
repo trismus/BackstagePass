@@ -253,6 +253,9 @@ export async function resetEmailTemplateToDefault(
   <p>Falls du doch nicht kommen kannst, melde dich bitte rechtzeitig ab:</p>
   <p><a href="{{absage_link}}" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Anmeldung stornieren</a></p>
 
+  <p style="margin-top: 20px;">Alle deine Einsätze auf einen Blick:</p>
+  <p><a href="{{dashboard_link}}" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Meine Einsätze ansehen</a></p>
+
   <p style="margin-top: 30px;">Bei Fragen wende dich an:</p>
   <p>{{koordinator_name}}<br>
   {{koordinator_email}}<br>
@@ -285,6 +288,9 @@ Helferessen: {{helferessen_zeit}}
 Falls du doch nicht kommen kannst, melde dich bitte rechtzeitig ab:
 {{absage_link}}
 
+Alle deine Einsätze auf einen Blick:
+{{dashboard_link}}
+
 Bei Fragen wende dich an:
 {{koordinator_name}}
 {{koordinator_email}}
@@ -306,6 +312,7 @@ Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
         'briefing_zeit',
         'helferessen_zeit',
         'absage_link',
+        'dashboard_link',
         'koordinator_name',
         'koordinator_email',
         'koordinator_telefon',

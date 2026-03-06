@@ -25,6 +25,7 @@ const TRUSTED_PLACEHOLDERS = new Set([
   'absage_link',
   'public_link',
   'magic_link',
+  'dashboard_link',
 ])
 
 /**
@@ -94,6 +95,7 @@ export const SAMPLE_PLACEHOLDER_DATA: EmailPlaceholderData = {
   koordinator_telefon: '+41 79 123 45 67',
   frist: 'Freitag, 14. März 2026, 18:00 Uhr',
   magic_link: 'https://example.com/auth/confirm?token_hash=abc123&type=invite',
+  dashboard_link: 'https://example.com/helfer/meine-einsaetze/abc123',
 }
 
 /**
