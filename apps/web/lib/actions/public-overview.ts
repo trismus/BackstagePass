@@ -266,10 +266,13 @@ export async function registerForMultipleShifts(
   }
 
   // Get dashboard token
-  const { data: dashboardToken } = await supabase.rpc(
+  const { data: dashboardToken, error: tokenError } = await supabase.rpc(
     'get_externe_helfer_dashboard_token',
     { p_helper_id: helperId }
   )
+  if (tokenError) {
+    console.error('[PublicOverview] Failed to get dashboard token:', tokenError)
+  }
 
   const anySuccess = results.some((r) => r.success)
 
@@ -456,7 +459,7 @@ async function sendConfirmationEmail(
 
   const dashboardLink = dashboardToken
     ? `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
-    : `${baseUrl}/meine-einsaetze`
+    : `${baseUrl}/mitmachen`
 
   const { subject, html, text } = multiRegistrationConfirmationEmail(
     `${helperData.vorname} ${helperData.nachname}`,
