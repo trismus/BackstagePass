@@ -62,8 +62,8 @@ export function eventPublishedEmail(
           </p>
         </div>
         <div class="footer">
-          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
-          <p>Theatergruppe Widen</p>
+          <p>Theatergruppe Widen — s'Theater uf em Mutschelle</p>
+          <p><a href="mailto:theatergruppewiden@gmail.com" style="color: #3b82f6;">theatergruppewiden@gmail.com</a></p>
         </div>
       </div>
     </body>
@@ -81,7 +81,8 @@ ${event.ort ? `Ort: ${event.ort}` : ''}
 Schau dir die offenen Rollen an: ${publicLink || 'Siehe BackstagePass'}
 
 --
-BackstagePass - Theatergruppe Widen
+Theatergruppe Widen — s'Theater uf em Mutschelle
+theatergruppewiden@gmail.com
   `
 
   return { subject, html, text }
@@ -131,8 +132,8 @@ export function registrationConfirmationEmail(
           }
         </div>
         <div class="footer">
-          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
-          <p>Theatergruppe Widen</p>
+          <p>Theatergruppe Widen — s'Theater uf em Mutschelle</p>
+          <p><a href="mailto:theatergruppewiden@gmail.com" style="color: #3b82f6;">theatergruppewiden@gmail.com</a></p>
         </div>
       </div>
     </body>
@@ -154,7 +155,8 @@ Status: ${isWaitlist ? 'Warteliste' : 'Angemeldet'}
 ${isWaitlist ? 'Du stehst auf der Warteliste. Wir melden uns, sobald ein Platz frei wird.' : 'Wir freuen uns auf dich!'}
 
 --
-BackstagePass - Theatergruppe Widen
+Theatergruppe Widen — s'Theater uf em Mutschelle
+theatergruppewiden@gmail.com
   `
 
   return { subject, html, text }
@@ -267,8 +269,8 @@ export function multiRegistrationConfirmationEmail(
           ${koordinatorHtml}
         </div>
         <div class="footer">
-          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
-          <p>Theatergruppe Widen</p>
+          <p>Theatergruppe Widen — s'Theater uf em Mutschelle</p>
+          <p><a href="mailto:theatergruppewiden@gmail.com" style="color: #3b82f6;">theatergruppewiden@gmail.com</a></p>
         </div>
       </div>
     </body>
@@ -300,7 +302,8 @@ Meine Einsätze: ${dashboardLink}
 ${koordinator ? `\nKoordination: ${koordinator.name}, ${koordinator.email}${koordinator.telefon ? `, ${koordinator.telefon}` : ''}` : ''}
 
 --
-BackstagePass - Theatergruppe Widen
+Theatergruppe Widen — s'Theater uf em Mutschelle
+theatergruppewiden@gmail.com
   `
 
   return { subject, html, text }
@@ -359,8 +362,8 @@ export function statusUpdateEmail(
           <p>${message || statusMessages[newStatus]}</p>
         </div>
         <div class="footer">
-          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
-          <p>Theatergruppe Widen</p>
+          <p>Theatergruppe Widen — s'Theater uf em Mutschelle</p>
+          <p><a href="mailto:theatergruppewiden@gmail.com" style="color: #3b82f6;">theatergruppewiden@gmail.com</a></p>
         </div>
       </div>
     </body>
@@ -380,7 +383,8 @@ Neuer Status: ${statusLabels[newStatus]}
 ${message || statusMessages[newStatus]}
 
 --
-BackstagePass - Theatergruppe Widen
+Theatergruppe Widen — s'Theater uf em Mutschelle
+theatergruppewiden@gmail.com
   `
 
   return { subject, html, text }
@@ -420,8 +424,8 @@ export function cancellationConfirmationEmail(
           <p>Danke, dass du uns rechtzeitig Bescheid gegeben hast. So können wir den Platz an jemand anderen vergeben.</p>
         </div>
         <div class="footer">
-          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
-          <p>Theatergruppe Widen</p>
+          <p>Theatergruppe Widen — s'Theater uf em Mutschelle</p>
+          <p><a href="mailto:theatergruppewiden@gmail.com" style="color: #3b82f6;">theatergruppewiden@gmail.com</a></p>
         </div>
       </div>
     </body>
@@ -442,7 +446,8 @@ ${event.zeitblock ? `Zeit: ${event.zeitblock}` : ''}
 Danke, dass du uns rechtzeitig Bescheid gegeben hast.
 
 --
-BackstagePass - Theatergruppe Widen
+Theatergruppe Widen — s'Theater uf em Mutschelle
+theatergruppewiden@gmail.com
   `
 
   return { subject, html, text }
@@ -495,8 +500,8 @@ export function waitlistPromotionEmail(
           ` : ''}
         </div>
         <div class="footer">
-          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
-          <p>Theatergruppe Widen</p>
+          <p>Theatergruppe Widen — s'Theater uf em Mutschelle</p>
+          <p><a href="mailto:theatergruppewiden@gmail.com" style="color: #3b82f6;">theatergruppewiden@gmail.com</a></p>
         </div>
       </div>
     </body>
@@ -519,7 +524,8 @@ Wir freuen uns auf dich!
 ${abmeldungLink ? `\nFalls du doch nicht teilnehmen kannst: ${abmeldungLink}` : ''}
 
 --
-BackstagePass - Theatergruppe Widen
+Theatergruppe Widen — s'Theater uf em Mutschelle
+theatergruppewiden@gmail.com
   `
 
   return { subject, html, text }
