@@ -72,6 +72,7 @@ export function PublicOverviewView({ data }: PublicOverviewViewProps) {
     return (
       <OverviewSuccessScreen
         results={state.results}
+        data={data}
         rolleNames={rolleNames}
         dashboardToken={state.results.dashboardToken}
         onBrowseMore={handleBrowseMore}
