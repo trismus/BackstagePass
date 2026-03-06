@@ -456,7 +456,7 @@ async function sendConfirmationEmail(
 
   const dashboardLink = dashboardToken
     ? `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
-    : `${baseUrl}/mitmachen`
+    : `${baseUrl}/meine-einsaetze`
 
   const { subject, html, text } = multiRegistrationConfirmationEmail(
     `${helperData.vorname} ${helperData.nachname}`,
