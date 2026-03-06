@@ -4,20 +4,20 @@ import type { MultiRegistrationResult } from '@/lib/actions/public-overview'
 
 interface OverviewSuccessScreenProps {
   results: MultiRegistrationResult
-  schichtNames: Map<string, string>
+  rolleNames: Map<string, string>
   dashboardToken?: string
   onBrowseMore: () => void
 }
 
 export function OverviewSuccessScreen({
   results,
-  schichtNames,
+  rolleNames,
   dashboardToken,
   onBrowseMore,
 }: OverviewSuccessScreenProps) {
   const successResults = results.results.filter((r) => r.success)
   const failedResults = results.results.filter((r) => !r.success)
-  const waitlistResults = results.results.filter((r) => r.waitlist)
+  const waitlistResults = results.results.filter((r) => r.is_waitlist)
 
   return (
     <div className="space-y-6">
@@ -47,7 +47,7 @@ export function OverviewSuccessScreen({
 
         <p className="mt-2 text-gray-600">
           {successResults.length} von {results.results.length}{' '}
-          {results.results.length === 1 ? 'Schicht' : 'Schichten'} erfolgreich
+          {results.results.length === 1 ? 'Rolle' : 'Rollen'} erfolgreich
           gebucht.
         </p>
       </div>
@@ -61,8 +61,8 @@ export function OverviewSuccessScreen({
             </h3>
           </div>
           <ul className="divide-y divide-gray-100">
-            {successResults.map((r) => (
-              <li key={r.schichtId} className="flex items-center gap-3 px-5 py-3">
+            {successResults.map((r, index) => (
+              <li key={r.anmeldung_id || index} className="flex items-center gap-3 px-5 py-3">
                 <svg
                   className="h-5 w-5 shrink-0 text-success-500"
                   fill="none"
@@ -77,9 +77,9 @@ export function OverviewSuccessScreen({
                   />
                 </svg>
                 <span className="text-gray-900">
-                  {schichtNames.get(r.schichtId) || r.schichtId}
+                  {rolleNames.get(r.anmeldung_id || '') || `Rolle ${index + 1}`}
                 </span>
-                {r.waitlist && (
+                {r.is_waitlist && (
                   <span className="rounded-full bg-warning-100 px-2 py-0.5 text-xs font-medium text-warning-700">
                     Warteliste
                   </span>
@@ -94,8 +94,8 @@ export function OverviewSuccessScreen({
       {waitlistResults.length > 0 && (
         <div className="rounded-lg border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700">
           {waitlistResults.length === 1
-            ? 'Eine Schicht wurde auf die Warteliste gesetzt. Du wirst benachrichtigt, falls ein Platz frei wird.'
-            : `${waitlistResults.length} Schichten wurden auf die Warteliste gesetzt. Du wirst benachrichtigt, falls Plätze frei werden.`}
+            ? 'Eine Rolle wurde auf die Warteliste gesetzt. Du wirst benachrichtigt, falls ein Platz frei wird.'
+            : `${waitlistResults.length} Rollen wurden auf die Warteliste gesetzt. Du wirst benachrichtigt, falls Plätze frei werden.`}
         </div>
       )}
 
@@ -108,8 +108,8 @@ export function OverviewSuccessScreen({
             </h3>
           </div>
           <ul className="divide-y divide-gray-100">
-            {failedResults.map((r) => (
-              <li key={r.schichtId} className="px-5 py-3">
+            {failedResults.map((r, index) => (
+              <li key={r.anmeldung_id || `failed-${index}`} className="px-5 py-3">
                 <div className="flex items-center gap-3">
                   <svg
                     className="h-5 w-5 shrink-0 text-error-500"
@@ -125,7 +125,7 @@ export function OverviewSuccessScreen({
                     />
                   </svg>
                   <span className="text-gray-900">
-                    {schichtNames.get(r.schichtId) || r.schichtId}
+                    Rolle {index + 1}
                   </span>
                 </div>
                 {r.error && (
@@ -177,7 +177,7 @@ export function OverviewSuccessScreen({
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          Weitere Schichten buchen
+          Weitere Rollen buchen
         </button>
       </div>
     </div>
