@@ -1728,6 +1728,7 @@ export type HelferAnmeldungMitDetails = HelferAnmeldung & {
 
 export type BookHelferSlotResult = {
   success: boolean
+  rollen_instanz_id?: string
   anmeldung_id?: string
   status?: HelferAnmeldungStatus
   is_waitlist?: boolean
