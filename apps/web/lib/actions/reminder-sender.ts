@@ -51,7 +51,7 @@ async function getKoordinatorInfo(koordinatorId: string | null): Promise<{
   if (!koordinatorId) {
     return {
       name: 'TGW Koordination',
-      email: 'theatergruppewiden@gmail.com',
+      email: 'helfer@tgw.ch',
       telefon: '',
     }
   }
@@ -67,14 +67,14 @@ async function getKoordinatorInfo(koordinatorId: string | null): Promise<{
   if (!data) {
     return {
       name: 'TGW Koordination',
-      email: 'theatergruppewiden@gmail.com',
+      email: 'helfer@tgw.ch',
       telefon: '',
     }
   }
 
   return {
     name: `${data.vorname} ${data.nachname}`,
-    email: data.email || 'theatergruppewiden@gmail.com',
+    email: data.email || 'helfer@tgw.ch',
     telefon: data.telefon || '',
   }
 }

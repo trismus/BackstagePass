@@ -2496,7 +2496,6 @@ export type EmailPlaceholderData = {
   koordinator_telefon?: string
   frist?: string
   magic_link?: string
-  dashboard_link?: string
 }
 
 // =============================================================================
