@@ -266,6 +266,7 @@ export async function registerForMultipleShifts(
     results.push({ schichtId, ...result })
   }
 
+  revalidatePath('/mitmachen')
   // Get dashboard token
   const { data: dashboardToken } = await supabase.rpc(
     'get_externe_helfer_dashboard_token',

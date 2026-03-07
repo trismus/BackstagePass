@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui'
 import { ShiftCard } from './ShiftCard'
 import { ProfileEditSection } from './ProfileEditSection'
@@ -33,12 +34,19 @@ function canCancelAnmeldung(anmeldung: HelferDashboardAnmeldung): boolean {
 
 export function HelferDashboardView({ data, showHeader = true, dashboardToken }: HelferDashboardViewProps) {
   const [showPast, setShowPast] = useState(false)
+  const [showCancelled, setShowCancelled] = useState(false)
 
   const now = new Date()
-  const upcoming = data.anmeldungen.filter(
+  const cancelled = data.anmeldungen.filter(
+    (a) => a.status === 'abgelehnt'
+  )
+  const active = data.anmeldungen.filter(
+    (a) => a.status !== 'abgelehnt'
+  )
+  const upcoming = active.filter(
     (a) => new Date(a.event_datum_start) >= now
   )
-  const past = data.anmeldungen.filter(
+  const past = active.filter(
     (a) => new Date(a.event_datum_start) < now
   )
 
@@ -71,6 +79,44 @@ export function HelferDashboardView({ data, showHeader = true, dashboardToken }:
               </CardContent>
             </Card>
           )}
+          {/* Helper Info */}
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-neutral-600">Angemeldet als</p>
+              <p className="font-semibold text-neutral-900">
+                {data.helper.vorname} {data.helper.nachname}
+              </p>
+              <p className="text-sm text-neutral-500">{data.helper.email}</p>
+            </CardContent>
+          </Card>
+
+          {/* CTA: Weitere Schichten buchen */}
+          <Link
+            href="/mitmachen"
+            className="flex items-center justify-between rounded-lg border border-primary-200 bg-primary-50 px-5 py-4 transition-colors hover:bg-primary-100"
+          >
+            <div>
+              <p className="font-semibold text-primary-900">
+                Weitere Schichten buchen
+              </p>
+              <p className="text-sm text-primary-700">
+                Alle offenen Helfer-Einsätze ansehen und dich anmelden
+              </p>
+            </div>
+            <svg
+              className="h-5 w-5 flex-shrink-0 text-primary-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
         </>
       )}
 
@@ -90,6 +136,12 @@ export function HelferDashboardView({ data, showHeader = true, dashboardToken }:
               <p className="text-neutral-500">
                 Du hast keine kommenden Einsätze.
               </p>
+              <Link
+                href="/mitmachen"
+                className="mt-3 inline-block text-sm font-medium text-primary-600 hover:text-primary-700"
+              >
+                Offene Einsätze ansehen
+              </Link>
             </CardContent>
           </Card>
         ) : (
@@ -149,6 +201,49 @@ export function HelferDashboardView({ data, showHeader = true, dashboardToken }:
         </section>
       )}
 
+      {/* Cancelled Shifts */}
+      {cancelled.length > 0 && (
+        <section>
+          <button
+            type="button"
+            onClick={() => setShowCancelled(!showCancelled)}
+            className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900"
+          >
+            <svg
+              className={`h-5 w-5 text-neutral-500 transition-transform duration-200 ${
+                showCancelled ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+            Abgemeldete Einsätze
+            <span className="text-sm font-normal text-neutral-500">
+              ({cancelled.length})
+            </span>
+          </button>
+          {showCancelled && (
+            <div className="space-y-3">
+              {cancelled.map((anmeldung) => (
+                <ShiftCard
+                  key={anmeldung.id}
+                  anmeldung={anmeldung}
+                  canCancel={false}
+                  isPast={true}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Empty state when no registrations at all */}
       {data.anmeldungen.length === 0 && (
         <Card>
@@ -160,6 +255,25 @@ export function HelferDashboardView({ data, showHeader = true, dashboardToken }:
               Sobald du dich für einen Helfer-Einsatz anmeldest, siehst du hier
               deine Übersicht.
             </p>
+            <Link
+              href="/mitmachen"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+            >
+              Jetzt Schichten buchen
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Link>
           </CardContent>
         </Card>
       )}

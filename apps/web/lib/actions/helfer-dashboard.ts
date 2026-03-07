@@ -160,7 +160,6 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
       )
     `)
     .eq('profile_id', profile.id)
-    .neq('status', 'abgelehnt')
 
   const systemAEntries: HelferDashboardAnmeldung[] = (!error && anmeldungen)
     ? anmeldungen.map((a) => {
