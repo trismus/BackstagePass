@@ -1861,7 +1861,7 @@ export type TeilnehmerSuggestionResult = {
 
 export type HelferDashboardAnmeldung = {
   id: string
-  status: HelferAnmeldungStatus
+  status: HelferAnmeldungStatus | ZuweisungStatus
   abmeldung_token: string | null
   created_at: string
   rolle_name: string
@@ -1875,6 +1875,29 @@ export type HelferDashboardAnmeldung = {
   event_ort: string | null
   event_public_token: string
   event_abmeldung_frist: string | null
+  /** Which booking system this entry comes from */
+  system: 'a' | 'b'
+}
+
+/** Raw System B zuweisung as returned by the RPC */
+export type HelferDashboardZuweisung = {
+  id: string
+  status: ZuweisungStatus
+  abmeldung_token: string | null
+  created_at: string
+  rolle: string
+  schicht_id: string
+  zeitblock_id: string | null
+  zeitblock_name: string | null
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  veranstaltung_id: string
+  veranstaltung_titel: string
+  veranstaltung_datum: string
+  veranstaltung_startzeit: string | null
+  veranstaltung_ort: string | null
+  veranstaltung_public_helfer_token: string | null
+  veranstaltung_helfer_buchung_deadline: string | null
 }
 
 export type HelferDashboardData = {
