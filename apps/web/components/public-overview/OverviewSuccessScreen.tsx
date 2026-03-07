@@ -1,12 +1,54 @@
 'use client'
 
-import type { MultiRegistrationResult } from '@/lib/actions/public-overview'
+import type { MultiRegistrationResult, PublicOverviewData } from '@/lib/actions/public-overview'
+import type { BookHelferSlotResult } from '@/lib/supabase/types'
+import {
+  generateICalEvent,
+  mergeICalEvents,
+  icalToDataUrl,
+  generateIcalFilename,
+} from '@/lib/utils/ical-generator'
 
 interface OverviewSuccessScreenProps {
   results: MultiRegistrationResult
   schichtNames: Map<string, string>
   dashboardToken?: string
   onBrowseMore: () => void
+}
+
+/**
+ * Find the matching rolle from event data for a booking result.
+ * Uses rollen_instanz_id if available, falls back to anmeldung_id-based lookup.
+ */
+function findRolleForResult(
+  result: BookHelferSlotResult,
+  data: PublicOverviewData
+) {
+  if (!result.rollen_instanz_id) return null
+  for (const event of data.events) {
+    const rolle = event.rollen.find((r) => r.id === result.rollen_instanz_id)
+    if (rolle) return { rolle, event }
+  }
+  return null
+}
+
+function triggerDownload(dataUrl: string, filename: string) {
+  const link = document.createElement('a')
+  link.href = dataUrl
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+function formatDateTime(dateStr: string | null): string | null {
+  if (!dateStr) return null
+  return new Date(dateStr).toLocaleString('de-CH', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function OverviewSuccessScreen({
@@ -18,6 +60,44 @@ export function OverviewSuccessScreen({
   const successResults = results.results.filter((r) => r.success)
   const failedResults = results.results.filter((r) => !r.success)
   const waitlistResults = results.results.filter((r) => r.waitlist)
+
+  const handleIcsDownload = () => {
+    const icsContents = successResults
+      .map((result) => {
+        const match = findRolleForResult(result, data)
+        if (!match) return null
+
+        const { rolle, event } = match
+        const rollenName =
+          rolle.template?.name || rolle.custom_name || 'Unbekannte Rolle'
+        const startDate = new Date(
+          rolle.zeitblock_start || event.event.datum_start
+        )
+        const endDate = new Date(
+          rolle.zeitblock_end || event.event.datum_end
+        )
+
+        return generateICalEvent({
+          title: `Helfereinsatz: ${rollenName} - ${event.event.name}`,
+          description: `Rolle: ${rollenName}\nVeranstaltung: ${event.event.name}`,
+          location: event.event.ort || undefined,
+          startDate,
+          endDate,
+        })
+      })
+      .filter((content): content is string => content !== null)
+
+    if (icsContents.length === 0) return
+
+    const icsContent =
+      icsContents.length === 1
+        ? icsContents[0]
+        : mergeICalEvents(icsContents)
+
+    const dataUrl = icalToDataUrl(icsContent)
+    const filename = generateIcalFilename('mitmachen', 'helfereinsaetze')
+    triggerDownload(dataUrl, filename)
+  }
 
   return (
     <div className="space-y-6">
@@ -159,6 +239,27 @@ export function OverviewSuccessScreen({
             </svg>
             Zu meinen Einsätzen
           </a>
+        )}
+        {successResults.length > 0 && (
+          <button
+            onClick={handleIcsDownload}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Termine herunterladen (.ics)
+          </button>
         )}
         <button
           onClick={onBrowseMore}
