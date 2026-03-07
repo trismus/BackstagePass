@@ -66,7 +66,7 @@ export const ROLE_START_PAGES: Record<UserRole, string> = {
   VORSTAND: '/dashboard',
   MITGLIED_AKTIV: '/dashboard',
   MITGLIED_PASSIV: '/dashboard',
-  HELFER: '/helfer',
+  HELFER: '/dashboard',
   PARTNER: '/partner-portal',
   FREUNDE: '/willkommen',
 }
@@ -124,12 +124,6 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
         permission: 'stuecke:read',
       },
       { href: '/proben', label: 'Proben', icon: 'rehearsal' },
-      {
-        href: '/helfereinsaetze',
-        label: 'Helfereinsätze',
-        icon: 'helper',
-        permission: 'helfereinsaetze:read',
-      },
     ],
   },
   {
@@ -162,7 +156,6 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
     title: 'Ansichten',
     items: [
       { href: '/dashboard?ansicht=mitglied', label: 'Mitglieder-Ansicht', icon: 'eye' },
-      { href: '/helfer', label: 'Helfer-Ansicht', icon: 'eye' },
       { href: '/partner-portal', label: 'Partner-Ansicht', icon: 'eye' },
     ],
   },
@@ -216,12 +209,6 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
     ],
   },
   {
-    title: 'Helfen',
-    items: [
-      { href: '/helfereinsaetze', label: 'Helfereinsätze', icon: 'helper' },
-    ],
-  },
-  {
     title: 'Ressourcen',
     items: [{ href: '/raeume', label: 'Räume', icon: 'room' }],
   },
@@ -249,19 +236,7 @@ const MITGLIED_PASSIV_NAVIGATION: NavSection[] = [
  */
 const HELFER_NAVIGATION: NavSection[] = [
   {
-    items: [{ href: '/helfer', label: 'Übersicht', icon: 'home' }],
-  },
-  {
-    title: 'Meine Einsätze',
-    items: [
-      { href: '/helfer/meine-einsaetze', label: 'Meine Einsätze', icon: 'check' },
-      { href: '/helfer/schichten', label: 'Meine Schichten', icon: 'list' },
-      {
-        href: '/helfer/einsaetze',
-        label: 'Verfügbare Einsätze',
-        icon: 'helper',
-      },
-    ],
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' }],
   },
   {
     items: [{ href: '/profile', label: 'Mein Profil', icon: 'user' }],
@@ -370,11 +345,9 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
     '/mitglieder': ['ADMIN', 'VORSTAND'],
     '/alle-helfer': ['ADMIN', 'VORSTAND'],
     '/partner': ['ADMIN', 'VORSTAND', 'PARTNER'],
-    '/helfer': ['ADMIN', 'VORSTAND', 'HELFER'],
     '/partner-portal': ['ADMIN', 'VORSTAND', 'PARTNER'],
     '/admin': ['ADMIN'],
     '/vorstand': ['ADMIN', 'VORSTAND'],
-    '/helfereinsaetze': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
     '/mein-bereich': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'MITGLIED_PASSIV'],
   }
 
@@ -445,7 +418,6 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   produktionen: 'Produktionen',
   stuecke: 'Stücke',
   proben: 'Proben',
-  helfereinsaetze: 'Helfereinsätze',
   raeume: 'Räume',
   ressourcen: 'Ausstattung',
   templates: 'Templates',
@@ -457,10 +429,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   termine: 'Meine Termine',
   stundenkonto: 'Stundenkonto',
   anmeldungen: 'Anmeldungen',
-  helfer: 'Helfer',
   'meine-einsaetze': 'Meine Einsätze',
-  schichten: 'Meine Schichten',
-  einsaetze: 'Meine Einsätze',
   'partner-portal': 'Partner-Portal',
   daten: 'Meine Daten',
   kontakt: 'Kontakt',

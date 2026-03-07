@@ -59,11 +59,6 @@ const eventColors: Record<
     border: 'rgb(34 197 94)', // green-500
     text: 'rgb(22 101 52)', // green-800
   },
-  helfereinsatz_legacy: {
-    bg: 'rgb(255 237 213)', // orange-100
-    border: 'rgb(249 115 22)', // orange-500
-    text: 'rgb(154 52 18)', // orange-800
-  },
 }
 
 const typLabels: Record<PersonalEventTyp, string> = {
@@ -71,7 +66,6 @@ const typLabels: Record<PersonalEventTyp, string> = {
   probe: 'Probe',
   schicht: 'Schicht',
   helfer: 'Helfereinsatz',
-  helfereinsatz_legacy: 'Helfereinsatz (alt)',
 }
 
 const statusLabels: Record<string, string> = {
@@ -258,9 +252,6 @@ export function PersonalCalendar({
     if (event.helfer_event_id) {
       return `/helferliste/${event.helfer_event_id}`
     }
-    if (event.helfereinsatz_id) {
-      return `/helfereinsaetze/${event.helfereinsatz_id}`
-    }
     if (event.probe_id) {
       return `/proben/${event.probe_id}`
     }
@@ -272,7 +263,6 @@ export function PersonalCalendar({
 
   // Check which event types actually exist
   const hasHelfer = events.some((e) => e.typ === 'helfer')
-  const hasLegacy = events.some((e) => e.typ === 'helfereinsatz_legacy')
   const hasVerfuegbarkeiten = verfuegbarkeiten.length > 0
 
   return (
@@ -356,7 +346,6 @@ export function PersonalCalendar({
             <option value="probe">Proben</option>
             <option value="schicht">Schichten</option>
             <option value="helfer">Helfereinsätze</option>
-            <option value="helfereinsatz_legacy">Helfereinsätze (alt)</option>
           </select>
 
           {/* Export Button */}
@@ -475,7 +464,7 @@ export function PersonalCalendar({
       </div>
 
       {/* Stats */}
-      <div className={`grid gap-4 ${hasHelfer || hasLegacy ? 'grid-cols-3 sm:grid-cols-5' : 'grid-cols-3'}`}>
+      <div className={`grid gap-4 ${hasHelfer ? 'grid-cols-3 sm:grid-cols-4' : 'grid-cols-3'}`}>
         <div className="rounded-lg bg-white p-4 text-center shadow">
           <div className="text-2xl font-bold text-blue-600">
             {events.filter((e) => e.typ === 'veranstaltung').length}
@@ -500,14 +489,6 @@ export function PersonalCalendar({
               {events.filter((e) => e.typ === 'helfer').length}
             </div>
             <div className="text-sm text-gray-600">Helfereinsätze</div>
-          </div>
-        )}
-        {hasLegacy && (
-          <div className="rounded-lg bg-white p-4 text-center shadow">
-            <div className="text-2xl font-bold text-orange-600">
-              {events.filter((e) => e.typ === 'helfereinsatz_legacy').length}
-            </div>
-            <div className="text-sm text-gray-600">Einsätze (alt)</div>
           </div>
         )}
       </div>

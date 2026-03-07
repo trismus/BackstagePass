@@ -1613,6 +1613,7 @@ export type HelferEvent = {
   id: string
   typ: HelferEventTyp
   veranstaltung_id: string | null
+  koordinator_id: string | null
   name: string
   beschreibung: string | null
   datum_start: string
@@ -1627,8 +1628,9 @@ export type HelferEvent = {
 
 export type HelferEventInsert = Omit<
   HelferEvent,
-  'id' | 'public_token' | 'max_anmeldungen_pro_helfer' | 'abmeldung_frist' | 'created_at' | 'updated_at'
+  'id' | 'public_token' | 'koordinator_id' | 'max_anmeldungen_pro_helfer' | 'abmeldung_frist' | 'created_at' | 'updated_at'
 > & {
+  koordinator_id?: string | null
   max_anmeldungen_pro_helfer?: number | null
   abmeldung_frist?: string | null
 }
@@ -1728,6 +1730,7 @@ export type HelferAnmeldungMitDetails = HelferAnmeldung & {
 
 export type BookHelferSlotResult = {
   success: boolean
+  rollen_instanz_id?: string
   anmeldung_id?: string
   status?: HelferAnmeldungStatus
   is_waitlist?: boolean
@@ -1861,7 +1864,7 @@ export type TeilnehmerSuggestionResult = {
 
 export type HelferDashboardAnmeldung = {
   id: string
-  status: HelferAnmeldungStatus
+  status: HelferAnmeldungStatus | ZuweisungStatus
   abmeldung_token: string | null
   created_at: string
   rolle_name: string
@@ -1875,10 +1878,33 @@ export type HelferDashboardAnmeldung = {
   event_ort: string | null
   event_public_token: string
   event_abmeldung_frist: string | null
+  /** Which booking system this entry comes from */
+  system: 'a' | 'b'
+}
+
+/** Raw System B zuweisung as returned by the RPC */
+export type HelferDashboardZuweisung = {
+  id: string
+  status: ZuweisungStatus
+  abmeldung_token: string | null
+  created_at: string
+  rolle: string
+  schicht_id: string
+  zeitblock_id: string | null
+  zeitblock_name: string | null
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  veranstaltung_id: string
+  veranstaltung_titel: string
+  veranstaltung_datum: string
+  veranstaltung_startzeit: string | null
+  veranstaltung_ort: string | null
+  veranstaltung_public_helfer_token: string | null
+  veranstaltung_helfer_buchung_deadline: string | null
 }
 
 export type HelferDashboardData = {
-  helper: { vorname: string; nachname: string; email: string }
+  helper: { vorname: string; nachname: string; email: string; telefon: string | null }
   anmeldungen: HelferDashboardAnmeldung[]
 }
 

@@ -10,17 +10,6 @@ export interface RollenHistorieEintrag {
   changedBy?: string
 }
 
-export interface HelfereinsatzHistorieEintrag {
-  id: string
-  helfereinsatzId: string
-  titel: string
-  datum: string
-  ort: string | null
-  partnerName: string | null
-  status: string
-  stundenGearbeitet: number | null
-}
-
 export interface AuffuehrungHelferHistorieEintrag {
   id: string
   veranstaltungId: string
@@ -80,112 +69,6 @@ export async function getRollenHistorie(): Promise<RollenHistorieEintrag[]> {
   }
 
   return roleChanges
-}
-
-/**
- * Get helper event history for a person
- */
-export async function getHelfereinsatzHistorie(
-  personId: string
-): Promise<HelfereinsatzHistorieEintrag[]> {
-  const supabase = await createClient()
-
-  const today = new Date().toISOString().split('T')[0]
-
-  // Get past helper events where the person participated
-  const { data, error } = await supabase
-    .from('helferschichten')
-    .select(`
-      id,
-      status,
-      stunden_gearbeitet,
-      helfereinsatz:helfereinsaetze(
-        id,
-        titel,
-        datum,
-        ort,
-        partner:partner(name)
-      )
-    `)
-    .eq('person_id', personId)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching helper event history:', error)
-    return []
-  }
-
-  // Transform and filter to past events
-  const historie: HelfereinsatzHistorieEintrag[] = []
-
-  for (const schicht of data || []) {
-    // helfereinsatz is a single object (not array) due to foreign key relationship
-    const einsatz = schicht.helfereinsatz as unknown as {
-      id: string
-      titel: string
-      datum: string
-      ort: string | null
-      partner: { name: string } | null
-    } | null
-
-    if (einsatz && einsatz.datum < today) {
-      historie.push({
-        id: schicht.id,
-        helfereinsatzId: einsatz.id,
-        titel: einsatz.titel,
-        datum: einsatz.datum,
-        ort: einsatz.ort,
-        partnerName: einsatz.partner?.name || null,
-        status: schicht.status,
-        stundenGearbeitet: schicht.stunden_gearbeitet,
-      })
-    }
-  }
-
-  // Sort by date descending
-  historie.sort((a, b) => b.datum.localeCompare(a.datum))
-
-  return historie
-}
-
-/**
- * Get helper event history for the current user (via their person record)
- */
-export async function getOwnHelfereinsatzHistorie(): Promise<HelfereinsatzHistorieEintrag[]> {
-  const supabase = await createClient()
-
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return []
-  }
-
-  // Get the user's profile to find their email
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('email')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.email) {
-    return []
-  }
-
-  // Find the person linked to this email
-  const { data: person } = await supabase
-    .from('personen')
-    .select('id')
-    .eq('email', profile.email)
-    .single()
-
-  if (!person) {
-    return []
-  }
-
-  return getHelfereinsatzHistorie(person.id)
 }
 
 /**
@@ -312,32 +195,3 @@ export async function getOwnAuffuehrungHelferHistorie(): Promise<AuffuehrungHelf
   return getAuffuehrungHelferHistorie(person.id)
 }
 
-/**
- * Get combined helper statistics for a person
- */
-export async function getHelferStatistik(
-  personId: string
-): Promise<{
-  auffuehrungen: { total: number; erschienen: number; noShows: number; stunden: number }
-  helfereinsaetze: { total: number; stunden: number }
-}> {
-  const [auffHistorie, einsatzHistorie] = await Promise.all([
-    getAuffuehrungHelferHistorie(personId),
-    getHelfereinsatzHistorie(personId),
-  ])
-
-  return {
-    auffuehrungen: {
-      total: auffHistorie.length,
-      erschienen: auffHistorie.filter((h) => h.checkedIn).length,
-      noShows: auffHistorie.filter((h) => h.noShow).length,
-      stunden: auffHistorie
-        .filter((h) => h.checkedIn)
-        .reduce((sum, h) => sum + h.stundenGearbeitet, 0),
-    },
-    helfereinsaetze: {
-      total: einsatzHistorie.length,
-      stunden: einsatzHistorie.reduce((sum, h) => sum + (h.stundenGearbeitet || 0), 0),
-    },
-  }
-}

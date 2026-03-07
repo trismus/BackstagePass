@@ -1,6 +1,6 @@
 /**
  * Unit Tests for Persönlicher Kalender (Issue #346)
- * Tests getPersonalEvents (5 sources), getPersonVerfuegbarkeiten,
+ * Tests getPersonalEvents (4 sources), getPersonVerfuegbarkeiten,
  * personId management view, and decline actions for new types.
  */
 
@@ -210,48 +210,19 @@ describe('getPersonalEvents', () => {
         return chain
       }
 
-      if (table === 'helferschichten') {
-        const chain = createEmptyChain()
-        const resultData = [
-          {
-            id: 'hs-1',
-            startzeit: '14:00:00',
-            endzeit: '18:00:00',
-            status: 'zugesagt',
-            notizen: null,
-            helferrolle: { id: 'hr-1', rolle: 'Service' },
-            helfereinsatz: {
-              id: 'hei-1',
-              titel: 'Hochzeit Müller',
-              beschreibung: null,
-              datum: '2026-09-01',
-              startzeit: '14:00:00',
-              endzeit: '22:00:00',
-              ort: 'Restaurant',
-            },
-          },
-        ]
-        chain.then = (resolve: (r: { data: unknown[]; error: null }) => void) => {
-          resolve({ data: resultData, error: null })
-          return Promise.resolve({ data: resultData, error: null })
-        }
-        return chain
-      }
-
       return createEmptyChain()
     })
 
     const result = await getPersonalEvents()
 
-    expect(result).toHaveLength(5)
+    expect(result).toHaveLength(4)
 
-    // Check all 5 types are present
+    // Check all 4 types are present
     const types = result.map((e) => e.typ)
     expect(types).toContain('veranstaltung')
     expect(types).toContain('probe')
     expect(types).toContain('schicht')
     expect(types).toContain('helfer')
-    expect(types).toContain('helfereinsatz_legacy')
 
     // Verify sorted by date
     for (let i = 1; i < result.length; i++) {
@@ -263,12 +234,6 @@ describe('getPersonalEvents', () => {
     expect(helferEvent.id).toBe('ha-ha-1')
     expect(helferEvent.helfer_rolle).toBe('Aufbau')
     expect(helferEvent.helfer_event_id).toBe('he-1')
-
-    // Check legacy event details
-    const legacyEvent = result.find((e) => e.typ === 'helfereinsatz_legacy')!
-    expect(legacyEvent.id).toBe('hs-hs-1')
-    expect(legacyEvent.helfer_rolle).toBe('Service')
-    expect(legacyEvent.helfereinsatz_id).toBe('hei-1')
   })
 
   it('requires mitglieder:read when personId provided', async () => {
@@ -302,8 +267,6 @@ describe('getPersonalEvents', () => {
 
     // helfer_anmeldungen should NOT be queried when profileId is null
     expect(fromCalls).not.toContain('helfer_anmeldungen')
-    // helferschichten should still be queried
-    expect(fromCalls).toContain('helferschichten')
   })
 })
 
@@ -400,27 +363,4 @@ describe('declinePersonalEvent', () => {
     expect(updateChain.update).toHaveBeenCalledWith({ status: 'abgelehnt' })
   })
 
-  it('handles hs- prefix for helferschichten', async () => {
-    const innerEq = vi.fn().mockResolvedValue({ data: null, error: null })
-    const updateChain = {
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnValue({ eq: innerEq }),
-    }
-
-    mockSupabase.from.mockImplementation((table: string) => {
-      if (table === 'personen') {
-        return setupPersonLookup('person-1', 'profile-1')
-      }
-      if (table === 'helferschichten') {
-        return updateChain
-      }
-      return createEmptyChain()
-    })
-
-    const result = await declinePersonalEvent('hs-sch456')
-
-    expect(result.success).toBe(true)
-    expect(mockSupabase.from).toHaveBeenCalledWith('helferschichten')
-    expect(updateChain.update).toHaveBeenCalledWith({ status: 'abgesagt' })
-  })
 })

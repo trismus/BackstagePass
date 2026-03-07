@@ -23,7 +23,7 @@ export default async function HelferDashboardPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <HelferDashboardView data={data} />
+      <HelferDashboardView data={data} dashboardToken={token} />
     </div>
   )
 }
