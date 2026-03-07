@@ -68,6 +68,34 @@ export default async function HelferlisteCancellationPage({
   const rollenName = rollenInstanz?.template?.name || 'Unbekannte Rolle'
   const helferName = profile?.display_name || anmeldung.external_name
 
+  // Already cancelled
+  if (anmeldung.status === 'abgelehnt') {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-12">
+        <Card>
+          <CardHeader>
+            <CardTitle>Bereits abgemeldet</CardTitle>
+            <CardDescription>
+              Diese Anmeldung wurde bereits storniert.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-neutral-600">
+              Du hast dich bereits von diesem Einsatz abgemeldet. Falls du
+              dich erneut anmelden möchtest, besuche{' '}
+              <a
+                href="/mitmachen"
+                className="font-medium text-primary-600 hover:text-primary-700"
+              >
+                die Übersicht
+              </a>.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   // Check deadline (configurable abmeldung_frist, fallback to 6-hour rule)
   if (helferEvent) {
     const now = new Date()

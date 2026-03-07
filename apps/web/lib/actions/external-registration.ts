@@ -1,5 +1,19 @@
 'use server'
 
+/**
+ * @deprecated This file contains System B (auffuehrung_schichten / auffuehrung_zuweisungen)
+ * registration logic. System A (helfer_events / helfer_rollen_instanzen / helfer_anmeldungen)
+ * is now the primary system for public helper registration.
+ *
+ * These functions remain for backwards compatibility with existing
+ * /helfer/anmeldung/[token] and /helfer/abmeldung/[token] links.
+ *
+ * New features should use System A via lib/actions/helferliste.ts
+ * and lib/actions/public-overview.ts.
+ *
+ * See: journal/decisions/20260307_helfer-registrierung-system-a.md
+ */
+
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../supabase/admin'
 import { canRegisterForHelferliste } from './helfer-status'
@@ -16,7 +30,7 @@ import type {
 } from '../supabase/types'
 
 // =============================================================================
-// Types for Public Access
+// Types for Public Access (System B - DEPRECATED)
 // =============================================================================
 
 export type PublicVeranstaltungData = Pick<
@@ -57,8 +71,10 @@ export type RegistrationResult = {
 // =============================================================================
 
 /**
- * Validate token and get public helferliste data
- * This is called by the public page - no authentication required
+ * @deprecated System B function. Use getPublicShiftOverview() from public-overview.ts instead.
+ * Validate token and get public helferliste data.
+ * This is called by the public page - no authentication required.
+ * Retained for /helfer/anmeldung/[token] backwards compatibility.
  */
 export async function getPublicHelferlisteByToken(
   token: string
@@ -200,8 +216,10 @@ export async function getPublicHelferlisteByToken(
 // =============================================================================
 
 /**
- * Register an external helper for a shift
- * This is called from the public page - uses token validation
+ * @deprecated System B function. Use registerForMultipleShifts() from public-overview.ts instead.
+ * Register an external helper for a shift.
+ * This is called from the public page - uses token validation.
+ * Retained for /helfer/anmeldung/[token] backwards compatibility.
  */
 export async function registerExternalHelper(
   token: string,
@@ -328,7 +346,8 @@ export async function registerExternalHelper(
 }
 
 /**
- * Check if an email is already registered for a schicht
+ * @deprecated System B function. Retained for /helfer/anmeldung/[token] backwards compatibility.
+ * Check if an email is already registered for a schicht.
  */
 export async function checkExistingRegistration(
   token: string,

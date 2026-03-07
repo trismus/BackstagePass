@@ -74,8 +74,29 @@ export const externeHelferRegistrierungFormSchema = externeHelferRegistrierungSc
     .refine((val) => val === true, 'Bitte akzeptiere die Datenschutzerklärung'),
 })
 
+/**
+ * Schema for self-edit by external helpers in dashboard (Issue #436)
+ * Only vorname, nachname, telefon – email is not editable
+ */
+export const externeHelferSelfEditSchema = z.object({
+  vorname: z
+    .string()
+    .min(1, 'Vorname ist erforderlich')
+    .max(100, 'Vorname zu lang'),
+  nachname: z
+    .string()
+    .min(1, 'Nachname ist erforderlich')
+    .max(100, 'Nachname zu lang'),
+  telefon: z
+    .string()
+    .max(50, 'Telefonnummer zu lang')
+    .nullable()
+    .optional(),
+})
+
 // Export types inferred from schemas
 export type ExterneHelferProfilFormData = z.infer<typeof externeHelferProfilSchema>
 export type ExterneHelferProfilUpdateFormData = z.infer<typeof externeHelferProfilUpdateSchema>
 export type ExterneHelferRegistrierungFormData = z.infer<typeof externeHelferRegistrierungSchema>
 export type ExterneHelferRegistrierungFormWithPrivacy = z.infer<typeof externeHelferRegistrierungFormSchema>
+export type ExterneHelferSelfEditFormData = z.infer<typeof externeHelferSelfEditSchema>
