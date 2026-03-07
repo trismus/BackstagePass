@@ -300,16 +300,25 @@ Types are manually maintained in `lib/supabase/types.ts` following the database 
 - `veranstaltungen` - Events (vereinsevent, probe, auffuehrung, sonstiges)
 - `anmeldungen` - Event registrations
 - `partner` - Partner organizations
-- `helfereinsaetze`, `helferrollen`, `helferschichten` - Helper system (legacy)
-- `helfer_events`, `helfer_rollen_templates`, `helfer_rollen_instanzen`, `helfer_anmeldungen` - Helferliste system (new)
+- `helfereinsaetze`, `helferrollen`, `helferschichten` - Helper system (legacy, no longer in use)
+- `helfer_events`, `helfer_rollen_templates`, `helfer_rollen_instanzen`, `helfer_anmeldungen` - Helferliste System A (FROZEN - no new features)
 - `stundenkonto` - Hours ledger
 - `stuecke`, `szenen`, `rollen`, `besetzungen` - Play management
 - `proben`, `proben_szenen`, `proben_teilnehmer` - Rehearsals
-- `zeitbloecke`, `auffuehrung_schichten`, `auffuehrung_zuweisungen` - Performance scheduling
+- `zeitbloecke`, `auffuehrung_schichten`, `auffuehrung_zuweisungen` - Performance scheduling / Helfersystem B (LEADING SYSTEM)
 - `raeume`, `ressourcen`, `raum_reservierungen`, `ressourcen_reservierungen` - Resources
 - `auffuehrung_templates`, `template_zeitbloecke`, `template_schichten` - Performance templates
 - `template_info_bloecke`, `info_bloecke` - Template and instance info blocks
 - `template_sachleistungen`, `sachleistungen` - Template and instance in-kind contributions
+
+### Helfersystem (Important)
+
+**System B is the leading helper system.** All new helper features MUST be built on System B (`veranstaltungen` -> `zeitbloecke` -> `auffuehrung_schichten` -> `auffuehrung_zuweisungen`).
+
+- **System A** (`helfer_events`, `helfer_rollen_*`, `helfer_anmeldungen`) is **frozen** -- existing data remains accessible, but no new features or modifications
+- **Legacy** (`helfereinsaetze`) is deprecated and no longer in use
+- **Dashboard** (`/meine-einsaetze`) displays data from both System A and B
+- See ADR: `journal/decisions/20260310_helfersystem-konsolidierung.md`
 
 ## Code Style
 
