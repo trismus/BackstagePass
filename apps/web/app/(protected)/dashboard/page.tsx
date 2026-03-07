@@ -16,14 +16,12 @@ import {
 import { getAktuelleProduktionFuerDashboard, getMeineProduktionsAuffuehrungen } from '@/lib/actions/produktionen'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
 import { getMeineProben } from '@/lib/actions/proben'
-import { getRollenHistorie, getHelfereinsatzHistorie } from '@/lib/actions/historie'
+import { getRollenHistorie } from '@/lib/actions/historie'
 import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
 import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
 import { RollenHistorie } from '@/components/mein-bereich/RollenHistorie'
-import { HelfereinsatzHistorie } from '@/components/mein-bereich/HelfereinsatzHistorie'
 import {
   UpcomingEventsWidget,
-  HelferEinsaetzeWidget,
   MeineProbenWidget,
   OffeneSchichtenWidget,
 } from '@/components/mein-bereich/DashboardWidgets'
@@ -116,7 +114,6 @@ export default async function DashboardPage({
       { count: mitgliederTotal },
       { count: mitgliederAktiv },
       { count: partnerCount },
-      { count: helferCount },
       { data: upcomingEvents },
       { data: aktivesStuck },
       { data: offeneSchichten },
@@ -125,7 +122,6 @@ export default async function DashboardPage({
       supabase.from('personen').select('*', { count: 'exact', head: true }),
       supabase.from('personen').select('*', { count: 'exact', head: true }).eq('aktiv', true),
       supabase.from('partner').select('*', { count: 'exact', head: true }),
-      supabase.from('helferschichten').select('*', { count: 'exact', head: true }).eq('status', 'zugesagt'),
       supabase
         .from('veranstaltungen')
         .select('id, titel, datum, typ, startzeit, ort, status')
@@ -280,7 +276,7 @@ export default async function DashboardPage({
             icon={icons.users}
             quickLinks={[
               { href: '/mitglieder', label: 'Mitglieder' },
-              { href: '/helfereinsaetze', label: 'Helfereinsätze' },
+              { href: '/helferliste', label: 'Helferliste' },
               { href: '/admin/gruppen', label: 'Gruppen' },
             ]}
           >
@@ -293,7 +289,6 @@ export default async function DashboardPage({
                   subValue={`/ ${mitgliederTotal || 0}`}
                 />
                 <ModulStat label="Partner" value={partnerCount || 0} />
-                <ModulStat label="Aktive Helfer" value={helferCount || 0} />
               </div>
 
               {/* Handlungsbedarf */}
@@ -305,8 +300,8 @@ export default async function DashboardPage({
                   <HandlungsbedarfCard
                     prioritaet="warnung"
                     titel="Offene Positionen"
-                    beschreibung="Helferschichten nicht besetzt"
-                    href="/helfereinsaetze"
+                    beschreibung="Schichten nicht besetzt"
+                    href="/auffuehrungen"
                     count={offeneHelferPositionen}
                   />
                 ) : (
@@ -457,11 +452,6 @@ export default async function DashboardPage({
               label="Neues Mitglied"
             />
             <QuickAction
-              href="/helfereinsaetze/neu"
-              icon={icons.users}
-              label="Neuer Helfereinsatz"
-            />
-            <QuickAction
               href="/stuecke/neu"
               icon={icons.theater}
               label="Neues Stück"
@@ -506,24 +496,8 @@ export default async function DashboardPage({
     !isPassiveMember ? getOffeneSchichtenForDashboard() : Promise.resolve([]),
   ])
 
-  // Get available helper events (only for active members)
-  const { data: verfuegbareEinsaetze } = !isPassiveMember
-    ? await supabase
-        .from('helfereinsaetze')
-        .select(
-          'id, titel, datum, startzeit, ort, helfer_max, helferschichten(id)'
-        )
-        .gte('datum', today)
-        .order('datum', { ascending: true })
-        .limit(5)
-    : { data: [] }
-
   // Get history data (only for active members)
   const rollenHistorie = !isPassiveMember ? await getRollenHistorie() : []
-  const helfereinsatzHistorie =
-    person && !isPassiveMember
-      ? await getHelfereinsatzHistorie(person.id)
-      : []
 
   // Build calendar events from all sources
   const kalenderTermine: KalenderTermin[] = []
@@ -562,19 +536,6 @@ export default async function DashboardPage({
       href: `/auffuehrungen/${pa.veranstaltung_id}`,
     })
   })
-
-  // Add helper events
-  if (verfuegbareEinsaetze) {
-    verfuegbareEinsaetze.forEach((e) => {
-      kalenderTermine.push({
-        id: e.id,
-        datum: e.datum,
-        titel: e.titel,
-        typ: 'helfereinsatz',
-        href: `/helfereinsaetze/${e.id}`,
-      })
-    })
-  }
 
   // Filter to upcoming events only
   const upcomingAnmeldungen = anmeldungen.filter(
@@ -653,10 +614,6 @@ export default async function DashboardPage({
                   <span className="text-sm text-neutral-600">Anstehende Proben</span>
                   <span className="font-semibold text-purple-600">{meineProben.length}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-600">Offene Einsätze</span>
-                  <span className="font-semibold text-blue-600">{verfuegbareEinsaetze?.length ?? 0}</span>
-                </div>
               </div>
             </div>
 
@@ -674,17 +631,6 @@ export default async function DashboardPage({
                     </svg>
                   </span>
                   Veranstaltungen
-                </Link>
-                <Link
-                  href="/helfereinsaetze"
-                  className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
-                >
-                  <span className="text-amber-500">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </span>
-                  Helfereinsätze
                 </Link>
                 <Link
                   href="/mein-bereich/verfuegbarkeit"
@@ -730,7 +676,6 @@ export default async function DashboardPage({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
               <MeineProbenWidget proben={meineProben} />
-              <HelferEinsaetzeWidget einsaetze={verfuegbareEinsaetze ?? []} />
             </div>
 
             {/* Offene Schichten - full width */}
@@ -738,7 +683,6 @@ export default async function DashboardPage({
 
             {/* History Section */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <HelfereinsatzHistorie historie={helfereinsatzHistorie} />
               <RollenHistorie historie={rollenHistorie} />
             </div>
           </div>

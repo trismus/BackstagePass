@@ -21,7 +21,6 @@ export type PersonalEventTyp =
   | 'probe'
   | 'schicht'
   | 'helfer'
-  | 'helfereinsatz_legacy'
 
 export type PersonalEventStatus =
   | 'angemeldet'
@@ -53,9 +52,7 @@ export type PersonalEvent = {
   teilnehmer_id?: string | null
   zuweisung_id?: string | null
   helfer_anmeldung_id?: string | null
-  helferschicht_id?: string | null
   helfer_event_id?: string | null
-  helfereinsatz_id?: string | null
   helfer_rolle?: string | null
   // Extra info
   stueck_titel?: string | null
@@ -363,73 +360,7 @@ export async function getPersonalEvents(
     }
   }
 
-  // 5. Get Helferschichten (legacy helper system)
-  const { data: helferschichten } = await supabase
-    .from('helferschichten')
-    .select(`
-      id,
-      startzeit,
-      endzeit,
-      status,
-      notizen,
-      helferrolle:helferrollen ( id, rolle ),
-      helfereinsatz:helfereinsaetze (
-        id, titel, beschreibung, datum, startzeit, endzeit, ort
-      )
-    `)
-    .eq('person_id', resolvedPersonId)
-    .not('status', 'in', '("abgesagt","nicht_erschienen")')
-
-  type HelferschichtWithDetails = {
-    id: string
-    startzeit: string | null
-    endzeit: string | null
-    status: string
-    notizen: string | null
-    helferrolle: { id: string; rolle: string } | null
-    helfereinsatz: {
-      id: string
-      titel: string
-      beschreibung: string | null
-      datum: string
-      startzeit: string | null
-      endzeit: string | null
-      ort: string | null
-    } | null
-  }
-
-  if (helferschichten) {
-    for (const hs of helferschichten as unknown as HelferschichtWithDetails[]) {
-      if (!hs.helfereinsatz) continue
-
-      const datum = hs.helfereinsatz.datum
-      if (startDatum && datum < startDatum) continue
-      if (endDatum && datum > endDatum) continue
-
-      const rolleName = hs.helferrolle?.rolle ?? null
-
-      events.push({
-        id: `hs-${hs.id}`,
-        titel: rolleName
-          ? `${hs.helfereinsatz.titel} - ${rolleName}`
-          : hs.helfereinsatz.titel,
-        beschreibung: hs.helfereinsatz.beschreibung,
-        datum,
-        startzeit: hs.startzeit ?? hs.helfereinsatz.startzeit,
-        endzeit: hs.endzeit ?? hs.helfereinsatz.endzeit,
-        ort: hs.helfereinsatz.ort,
-        typ: 'helfereinsatz_legacy',
-        status: hs.status as PersonalEventStatus,
-        helferschicht_id: hs.id,
-        helfereinsatz_id: hs.helfereinsatz.id,
-        helfer_rolle: rolleName,
-        kann_zusagen: false,
-        kann_absagen: hs.status === 'zugesagt',
-      })
-    }
-  }
-
-  // 6. Get Produktions-Aufführungen (via Besetzung/Stab → Produktion → Serie → Veranstaltung)
+  // 5. Get Produktions-Aufführungen (via Besetzung/Stab → Produktion → Serie → Veranstaltung)
   // Collect veranstaltung_ids already present to deduplicate
   const existingVeranstaltungIds = new Set(
     events
@@ -686,22 +617,6 @@ export async function declinePersonalEvent(
     return { success: true }
   }
 
-  if (type === 'hs') {
-    // Update Helferschicht status (legacy system) — with ownership filter
-    const { error } = await supabase
-      .from('helferschichten')
-      .update({ status: 'abgesagt' } as never)
-      .eq('id', id)
-      .eq('person_id', resolvedPersonId)
-
-    if (error) {
-      console.error('Error declining helferschicht:', error)
-      return { success: false, error: 'Fehler beim Absagen' }
-    }
-
-    return { success: true }
-  }
-
   return { success: false, error: 'Aktion nicht unterstützt' }
 }
 
@@ -751,7 +666,6 @@ export async function generatePersonalICalFeed(): Promise<string> {
       probe: 'PROBE',
       schicht: 'SCHICHT',
       helfer: 'HELFER',
-      helfereinsatz_legacy: 'HELFEREINSATZ',
     }
     ical += `CATEGORIES:${categoryMap[event.typ]}\r\n`
 

@@ -17,7 +17,6 @@ export type HelpContextKey =
   // Veranstaltungen
   | 'veranstaltungen'
   | 'veranstaltungen:anmeldung'
-  | 'helfereinsaetze'
   // Künstlerisch
   | 'stuecke'
   | 'besetzungen'
@@ -96,7 +95,7 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'Übersicht über deine zugewiesenen Aufgaben',
     accessLevel: 'all',
     section: 'Mein Bereich',
-    relatedTopics: ['stundenkonto', 'helfereinsaetze'],
+    relatedTopics: ['stundenkonto'],
   },
   stundenkonto: {
     file: '02-mein-bereich/stundenkonto.md',
@@ -114,7 +113,7 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'Alle Vereinsveranstaltungen im Überblick',
     accessLevel: 'all',
     section: 'Veranstaltungen',
-    relatedTopics: ['veranstaltungen:anmeldung', 'helfereinsaetze'],
+    relatedTopics: ['veranstaltungen:anmeldung'],
   },
   'veranstaltungen:anmeldung': {
     file: '03-veranstaltungen/anmeldung.md',
@@ -122,17 +121,8 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'Wie du dich für Events an- und abmeldest',
     accessLevel: 'all',
     section: 'Veranstaltungen',
-    relatedTopics: ['veranstaltungen', 'helfereinsaetze'],
+    relatedTopics: ['veranstaltungen'],
   },
-  helfereinsaetze: {
-    file: '03-veranstaltungen/helfereinsaetze.md',
-    title: 'Helfereinsätze',
-    description: 'Externe Helferjobs und Arbeitseinsätze',
-    accessLevel: 'all',
-    section: 'Veranstaltungen',
-    relatedTopics: ['einsaetze', 'stundenkonto'],
-  },
-
   // Künstlerisch
   stuecke: {
     file: '04-kuenstlerisch/stuecke.md',

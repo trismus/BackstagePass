@@ -87,7 +87,6 @@ export async function createPartner(
   }
 
   revalidatePath('/partner')
-  revalidatePath('/helfereinsaetze')
   return { success: true, id: result?.id }
 }
 
@@ -114,7 +113,6 @@ export async function updatePartner(
   }
 
   revalidatePath('/partner')
-  revalidatePath('/helfereinsaetze')
   return { success: true }
 }
 
@@ -140,6 +138,5 @@ export async function deletePartner(
   }
 
   revalidatePath('/partner')
-  revalidatePath('/helfereinsaetze')
   return { success: true }
 }

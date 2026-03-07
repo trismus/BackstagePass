@@ -120,10 +120,10 @@ export default async function PartnerPage() {
         {/* Back Link */}
         <div className="mt-8">
           <Link
-            href="/helfereinsaetze"
+            href="/dashboard"
             className="text-blue-600 hover:text-blue-800"
           >
-            &larr; Zurück zu Helfereinsätze
+            &larr; Zurück zum Dashboard
           </Link>
         </div>
       </div>
