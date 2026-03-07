@@ -41,7 +41,13 @@ export function ShiftCard({ anmeldung, canCancel, isPast }: ShiftCardProps) {
               <p className="text-sm text-neutral-500">{anmeldung.event_ort}</p>
             )}
           </div>
-          <StatusBadge status={anmeldung.status} />
+          {anmeldung.status === 'abgelehnt' ? (
+            <span className="rounded bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+              Abgemeldet
+            </span>
+          ) : (
+            <StatusBadge status={anmeldung.status} />
+          )}
         </div>
 
         <div className="mt-3 border-t border-neutral-100 pt-3">
@@ -65,7 +71,7 @@ export function ShiftCard({ anmeldung, canCancel, isPast }: ShiftCardProps) {
         {!isPast && (
           <div className="mt-3 flex flex-wrap gap-2 border-t border-neutral-100 pt-3">
             <Link
-              href={`/helfer/anmeldung/${anmeldung.event_public_token}` as never}
+              href="/mitmachen"
               className="text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               Weitere Schichten

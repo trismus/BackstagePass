@@ -1613,6 +1613,7 @@ export type HelferEvent = {
   id: string
   typ: HelferEventTyp
   veranstaltung_id: string | null
+  koordinator_id: string | null
   name: string
   beschreibung: string | null
   datum_start: string
@@ -1627,8 +1628,9 @@ export type HelferEvent = {
 
 export type HelferEventInsert = Omit<
   HelferEvent,
-  'id' | 'public_token' | 'max_anmeldungen_pro_helfer' | 'abmeldung_frist' | 'created_at' | 'updated_at'
+  'id' | 'public_token' | 'koordinator_id' | 'max_anmeldungen_pro_helfer' | 'abmeldung_frist' | 'created_at' | 'updated_at'
 > & {
+  koordinator_id?: string | null
   max_anmeldungen_pro_helfer?: number | null
   abmeldung_frist?: string | null
 }
@@ -1728,6 +1730,7 @@ export type HelferAnmeldungMitDetails = HelferAnmeldung & {
 
 export type BookHelferSlotResult = {
   success: boolean
+  rollen_instanz_id?: string
   anmeldung_id?: string
   status?: HelferAnmeldungStatus
   is_waitlist?: boolean
