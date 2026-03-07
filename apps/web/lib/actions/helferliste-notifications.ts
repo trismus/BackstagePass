@@ -439,43 +439,28 @@ export async function notifyMultiRegistrationConfirmed(
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const dashboardLink = `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
 
-  // Fetch coordinator info
-  // Priority: helfer_events.koordinator_id > veranstaltungen.koordinator_id
+  // Fetch coordinator info (if event is linked to a veranstaltung)
   let koordinator: { name: string; email: string; telefon?: string } | undefined
-  let koordinatorPersonId: string | null = null
-
-  // Check helfer_events.koordinator_id first
-  const { data: eventWithKoordinator } = await supabase
-    .from('helfer_events')
-    .select('koordinator_id')
-    .eq('id', helferEvent.id)
-    .single()
-
-  koordinatorPersonId = eventWithKoordinator?.koordinator_id ?? null
-
-  // Fallback to veranstaltungen.koordinator_id
-  if (!koordinatorPersonId && helferEvent.veranstaltung_id) {
+  if (helferEvent.veranstaltung_id) {
     const { data: veranstaltung } = await supabase
       .from('veranstaltungen')
       .select('koordinator_id')
       .eq('id', helferEvent.veranstaltung_id)
       .single()
 
-    koordinatorPersonId = veranstaltung?.koordinator_id ?? null
-  }
+    if (veranstaltung?.koordinator_id) {
+      const { data: person } = await supabase
+        .from('personen')
+        .select('vorname, nachname, email, telefon')
+        .eq('id', veranstaltung.koordinator_id)
+        .single()
 
-  if (koordinatorPersonId) {
-    const { data: person } = await supabase
-      .from('personen')
-      .select('vorname, nachname, email, telefon')
-      .eq('id', koordinatorPersonId)
-      .single()
-
-    if (person?.email) {
-      koordinator = {
-        name: `${person.vorname} ${person.nachname}`,
-        email: person.email,
-        telefon: person.telefon || undefined,
+      if (person?.email) {
+        koordinator = {
+          name: `${person.vorname} ${person.nachname}`,
+          email: person.email,
+          telefon: person.telefon || undefined,
+        }
       }
     }
   }

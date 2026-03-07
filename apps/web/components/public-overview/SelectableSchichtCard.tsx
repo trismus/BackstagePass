@@ -1,30 +1,29 @@
 'use client'
 
-import type { PublicOverviewRolle } from '@/lib/actions/public-overview'
+import type { PublicSchichtData } from '@/lib/actions/external-registration'
 
 interface SelectableSchichtCardProps {
-  rolle: PublicOverviewRolle
+  schicht: PublicSchichtData
   isSelected: boolean
-  onToggle: (rolleId: string) => void
+  onToggle: (schichtId: string) => void
   zeitblockLabel?: string
 }
 
 export function SelectableSchichtCard({
-  rolle,
+  schicht,
   isSelected,
   onToggle,
   zeitblockLabel,
 }: SelectableSchichtCardProps) {
-  const rollenName = rolle.template?.name || rolle.custom_name || 'Unbekannt'
-  const isFull = rolle.freie_plaetze <= 0
+  const isFull = schicht.freie_plaetze <= 0
   const slotsText = isFull
     ? 'Belegt'
-    : `${rolle.freie_plaetze} von ${rolle.anzahl_benoetigt} frei`
+    : `${schicht.freie_plaetze} von ${schicht.anzahl_benoetigt} frei`
 
   if (isFull) {
     return (
       <div className="flex flex-col items-center justify-center rounded-md border border-gray-100 bg-gray-50 px-2 py-2 text-center text-gray-400">
-        <span className="text-xs leading-tight">{rollenName}</span>
+        <span className="text-xs leading-tight">{schicht.rolle}</span>
         {zeitblockLabel && (
           <span className="mt-0.5 text-[10px]">{zeitblockLabel}</span>
         )}
@@ -36,7 +35,7 @@ export function SelectableSchichtCard({
   return (
     <button
       type="button"
-      onClick={() => onToggle(rolle.id)}
+      onClick={() => onToggle(schicht.id)}
       className={`relative flex flex-col items-center justify-center rounded-md border px-2 py-2 text-center transition-all ${
         isSelected
           ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
@@ -69,7 +68,7 @@ export function SelectableSchichtCard({
       </div>
 
       <span className="text-xs font-medium leading-tight text-gray-900">
-        {rollenName}
+        {schicht.rolle}
       </span>
       {zeitblockLabel && (
         <span className="mt-0.5 text-[10px] text-gray-400">{zeitblockLabel}</span>

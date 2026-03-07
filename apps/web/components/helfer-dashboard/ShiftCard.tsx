@@ -65,7 +65,7 @@ export function ShiftCard({ anmeldung, canCancel, isPast }: ShiftCardProps) {
         {!isPast && (
           <div className="mt-3 flex flex-wrap gap-2 border-t border-neutral-100 pt-3">
             <Link
-              href="/mitmachen"
+              href={`/helfer/anmeldung/${anmeldung.event_public_token}` as never}
               className="text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               Weitere Schichten
