@@ -10,6 +10,7 @@ import {
 } from '../email/templates/helferliste'
 import { getKoordinatorInfo } from './email-sender'
 import { formatDateForEmail, formatTimeForEmail } from '../utils/email-renderer'
+import { generateHelferSchichtIcal, mergeICalEvents } from '../utils/ical-generator'
 import type {
   PublicVeranstaltungData,
   PublicSchichtData,
@@ -458,6 +459,36 @@ async function sendConfirmationEmail(
     ? `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
     : `${baseUrl}/mitmachen`
 
+  // Generate ICS attachment with all booked shifts
+  const icsContents: string[] = []
+  for (const s of schichten) {
+    const zeitblock = s.zeitblock as unknown as {
+      id: string; name: string; startzeit: string; endzeit: string
+    } | null
+    if (!zeitblock?.startzeit || !zeitblock?.endzeit) continue
+
+    icsContents.push(
+      generateHelferSchichtIcal({
+        veranstaltung: veranstaltung.titel,
+        rolle: s.rolle,
+        datum: veranstaltung.datum,
+        startzeit: zeitblock.startzeit,
+        endzeit: zeitblock.endzeit,
+        ort: veranstaltung.ort || undefined,
+        koordinatorName: koordinator.name,
+        koordinatorEmail: koordinator.email,
+      })
+    )
+  }
+
+  const icsAttachment = icsContents.length > 0
+    ? {
+        filename: `helfereinsaetze-${veranstaltung.titel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.ics`,
+        content: icsContents.length === 1 ? icsContents[0] : mergeICalEvents(icsContents),
+        contentType: 'text/calendar',
+      }
+    : undefined
+
   const { subject, html, text } = multiRegistrationConfirmationEmail(
     `${helperData.vorname} ${helperData.nachname}`,
     {
@@ -480,5 +511,6 @@ async function sendConfirmationEmail(
     html,
     text,
     replyTo: koordinator.email,
+    attachments: icsAttachment ? [icsAttachment] : undefined,
   })
 }
