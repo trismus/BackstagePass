@@ -1901,7 +1901,7 @@ export type HelferDashboardZuweisung = {
 }
 
 export type HelferDashboardData = {
-  helper: { vorname: string; nachname: string; email: string }
+  helper: { vorname: string; nachname: string; email: string; telefon: string | null }
   anmeldungen: HelferDashboardAnmeldung[]
 }
 

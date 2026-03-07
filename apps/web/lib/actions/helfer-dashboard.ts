@@ -1,7 +1,9 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getUserProfile } from '@/lib/supabase/server'
+import { externeHelferSelfEditSchema } from '@/lib/validations/externe-helfer'
 import type {
   HelferDashboardData,
   HelferDashboardAnmeldung,
@@ -81,7 +83,7 @@ export async function getHelferDashboardData(
 
   const result = data as unknown as
     | {
-        helper: { vorname: string; nachname: string; email: string }
+        helper: { vorname: string; nachname: string; email: string; telefon: string | null }
         anmeldungen: HelferDashboardAnmeldung[]
         zuweisungen?: HelferDashboardZuweisung[]
         error?: never
@@ -113,7 +115,7 @@ export async function getHelferDashboardData(
   ])
 
   return {
-    helper: (result as { helper: { vorname: string; nachname: string; email: string } }).helper,
+    helper: (result as { helper: { vorname: string; nachname: string; email: string; telefon: string | null } }).helper,
     anmeldungen: allEntries,
   }
 }
@@ -127,13 +129,13 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
   // Get person info for display name
   const { data: person } = await supabase
     .from('personen')
-    .select('vorname, nachname, email')
+    .select('vorname, nachname, email, telefon')
     .eq('email', profile.email)
     .single()
 
   const helper = person
-    ? { vorname: person.vorname, nachname: person.nachname, email: person.email ?? profile.email }
-    : { vorname: profile.display_name ?? profile.email, nachname: '', email: profile.email }
+    ? { vorname: person.vorname, nachname: person.nachname, email: person.email ?? profile.email, telefon: person.telefon ?? null }
+    : { vorname: profile.display_name ?? profile.email, nachname: '', email: profile.email, telefon: null }
 
   // System A: Get all non-rejected helfer_anmeldungen for this profile
   const { data: anmeldungen, error } = await supabase
@@ -291,4 +293,55 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
   ])
 
   return { helper, anmeldungen: allEntries }
+}
+
+export async function updateExterneHelferProfile(
+  dashboardToken: string,
+  data: { vorname: string; nachname: string; telefon?: string | null }
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    if (!UUID_REGEX.test(dashboardToken)) {
+      return { success: false, error: 'Ungültiger Token' }
+    }
+
+    const validated = externeHelferSelfEditSchema.parse(data)
+
+    const supabase = createAdminClient()
+
+    // Verify token exists and get the profile
+    const { data: profile, error: findError } = await supabase
+      .from('externe_helfer_profile')
+      .select('id')
+      .eq('dashboard_token', dashboardToken)
+      .single()
+
+    if (findError || !profile) {
+      return { success: false, error: 'Profil nicht gefunden' }
+    }
+
+    // Update the profile
+    const { error: updateError } = await supabase
+      .from('externe_helfer_profile')
+      .update({
+        vorname: validated.vorname,
+        nachname: validated.nachname,
+        telefon: validated.telefon ?? null,
+      })
+      .eq('id', profile.id)
+
+    if (updateError) {
+      console.error('Failed to update externe_helfer_profile:', updateError)
+      return { success: false, error: 'Profil konnte nicht aktualisiert werden' }
+    }
+
+    revalidatePath(`/helfer/meine-einsaetze/${dashboardToken}`)
+
+    return { success: true }
+  } catch (error) {
+    console.error('updateExterneHelferProfile failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unbekannter Fehler',
+    }
+  }
 }

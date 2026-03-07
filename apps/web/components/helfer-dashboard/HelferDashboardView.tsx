@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui'
 import { ShiftCard } from './ShiftCard'
+import { ProfileEditSection } from './ProfileEditSection'
 import type {
   HelferDashboardData,
   HelferDashboardAnmeldung,
@@ -11,6 +12,7 @@ import type {
 interface HelferDashboardViewProps {
   data: HelferDashboardData
   showHeader?: boolean
+  dashboardToken?: string
 }
 
 function canCancelAnmeldung(anmeldung: HelferDashboardAnmeldung): boolean {
@@ -29,7 +31,7 @@ function canCancelAnmeldung(anmeldung: HelferDashboardAnmeldung): boolean {
   return hoursUntilEvent >= 6
 }
 
-export function HelferDashboardView({ data, showHeader = true }: HelferDashboardViewProps) {
+export function HelferDashboardView({ data, showHeader = true, dashboardToken }: HelferDashboardViewProps) {
   const [showPast, setShowPast] = useState(false)
 
   const now = new Date()
@@ -52,16 +54,23 @@ export function HelferDashboardView({ data, showHeader = true }: HelferDashboard
             </p>
           </div>
 
-          {/* Helper Info */}
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-neutral-600">Angemeldet als</p>
-              <p className="font-semibold text-neutral-900">
-                {data.helper.vorname} {data.helper.nachname}
-              </p>
-              <p className="text-sm text-neutral-500">{data.helper.email}</p>
-            </CardContent>
-          </Card>
+          {/* Helper Info - editable for external helpers (with dashboardToken) */}
+          {dashboardToken ? (
+            <ProfileEditSection
+              helper={data.helper}
+              dashboardToken={dashboardToken}
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-sm text-neutral-600">Angemeldet als</p>
+                <p className="font-semibold text-neutral-900">
+                  {data.helper.vorname} {data.helper.nachname}
+                </p>
+                <p className="text-sm text-neutral-500">{data.helper.email}</p>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
 
