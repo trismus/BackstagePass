@@ -253,17 +253,13 @@ export async function resetEmailTemplateToDefault(
   <p>Falls du doch nicht kommen kannst, melde dich bitte rechtzeitig ab:</p>
   <p><a href="{{absage_link}}" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Anmeldung stornieren</a></p>
 
-  <p style="margin-top: 20px;">Alle deine Einsätze auf einen Blick:</p>
-  <p><a href="{{dashboard_link}}" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Meine Einsätze ansehen</a></p>
-
   <p style="margin-top: 30px;">Bei Fragen wende dich an:</p>
   <p>{{koordinator_name}}<br>
   {{koordinator_email}}<br>
   {{koordinator_telefon}}</p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
 </div>`,
       body_text: `Vielen Dank für deine Anmeldung!
 
@@ -289,17 +285,13 @@ Helferessen: {{helferessen_zeit}}
 Falls du doch nicht kommen kannst, melde dich bitte rechtzeitig ab:
 {{absage_link}}
 
-Alle deine Einsätze auf einen Blick:
-{{dashboard_link}}
-
 Bei Fragen wende dich an:
 {{koordinator_name}}
 {{koordinator_email}}
 {{koordinator_telefon}}
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: [
         'vorname',
         'nachname',
@@ -314,7 +306,6 @@ theatergruppewiden@gmail.com`,
         'briefing_zeit',
         'helferessen_zeit',
         'absage_link',
-        'dashboard_link',
         'koordinator_name',
         'koordinator_email',
         'koordinator_telefon',
@@ -348,8 +339,7 @@ theatergruppewiden@gmail.com`,
   {{koordinator_telefon}}</p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
 </div>`,
       body_text: `Nicht vergessen: Morgen ist es soweit!
 
@@ -375,8 +365,7 @@ Bei Fragen oder wenn du doch absagen musst:
 {{koordinator_telefon}}
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: [
         'vorname',
         'nachname',
@@ -414,8 +403,7 @@ theatergruppewiden@gmail.com`,
   {{koordinator_telefon}}</p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
 </div>`,
       body_text: `Heute ist es soweit!
 
@@ -434,8 +422,7 @@ Bis gleich!
 Notfall-Kontakt: {{koordinator_telefon}}
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: [
         'vorname',
         'nachname',
@@ -466,8 +453,7 @@ theatergruppewiden@gmail.com`,
   <p><a href="{{public_link}}" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Zur Anmeldung</a></p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
 </div>`,
       body_text: `Deine Abmeldung wurde bestätigt
 
@@ -485,8 +471,7 @@ Du kannst dich jederzeit wieder für andere Schichten anmelden:
 {{public_link}}
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: [
         'vorname',
         'nachname',
@@ -523,8 +508,7 @@ theatergruppewiden@gmail.com`,
   </p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
 </div>`,
       body_text: `Gute Nachricht!
 
@@ -544,8 +528,7 @@ Bestätige hier: {{absage_link}}
 Wenn du nicht kannst, lass es uns bitte wissen.
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: [
         'vorname',
         'nachname',
@@ -570,8 +553,7 @@ theatergruppewiden@gmail.com`,
   <p><a href="{{public_link}}" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Zur Anmeldung</a></p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
 </div>`,
       body_text: `Platz wurde weitergegeben
 
@@ -585,8 +567,7 @@ Du kannst dich aber gerne für andere Schichten anmelden:
 {{public_link}}
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: [
         'vorname',
         'nachname',
@@ -612,8 +593,7 @@ theatergruppewiden@gmail.com`,
   Das TGW-Team</p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
 </div>`,
       body_text: `Vielen herzlichen Dank!
 
@@ -629,8 +609,7 @@ Herzliche Grüsse
 Das TGW-Team
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: ['vorname', 'nachname', 'veranstaltung', 'rolle'],
     },
     member_invitation: {
@@ -658,8 +637,8 @@ theatergruppewiden@gmail.com`,
   <p style="color: #6b7280; font-size: 14px;">Der Link ist 24 Stunden gültig. Falls er abgelaufen ist, wende dich an den Vorstand für eine neue Einladung.</p>
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-  <p style="color: #6b7280; font-size: 14px;">Theatergruppe Widen — s'Theater uf em Mutschelle<br>
-  <a href="mailto:theatergruppewiden@gmail.com" style="color: #7c3aed;">theatergruppewiden@gmail.com</a> | <a href="https://www.theatergruppe-widen.ch" style="color: #7c3aed;">www.theatergruppe-widen.ch</a></p>
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.<br>
+  Theatergruppe Widen | <a href="https://www.theatergruppe-widen.ch" style="color: #7c3aed;">www.theatergruppe-widen.ch</a></p>
 </div>`,
       body_text: `Willkommen bei BackstagePass!
 
@@ -680,8 +659,8 @@ Jetzt anmelden: {{magic_link}}
 Der Link ist 24 Stunden gültig. Falls er abgelaufen ist, wende dich an den Vorstand für eine neue Einladung.
 
 ---
-Theatergruppe Widen — s'Theater uf em Mutschelle
-theatergruppewiden@gmail.com | www.theatergruppe-widen.ch`,
+Diese E-Mail wurde automatisch von BackstagePass gesendet.
+Theatergruppe Widen | www.theatergruppe-widen.ch`,
       placeholders: ['vorname', 'magic_link'],
     },
   }

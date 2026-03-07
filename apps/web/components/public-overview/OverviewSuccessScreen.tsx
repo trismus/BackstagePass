@@ -13,6 +13,7 @@ interface OverviewSuccessScreenProps {
   results: MultiRegistrationResult
   data: PublicOverviewData
   rolleNames: Map<string, string>
+  schichtNames: Map<string, string>
   dashboardToken?: string
   onBrowseMore: () => void
 }
@@ -56,12 +57,51 @@ export function OverviewSuccessScreen({
   results,
   data,
   rolleNames,
+  schichtNames,
   dashboardToken,
   onBrowseMore,
 }: OverviewSuccessScreenProps) {
   const successResults = results.results.filter((r) => r.success)
   const failedResults = results.results.filter((r) => !r.success)
-  const waitlistResults = results.results.filter((r) => r.is_waitlist)
+  const waitlistResults = results.results.filter((r) => r.waitlist)
+
+  const handleIcsDownload = () => {
+    const icsContents = successResults
+      .map((result) => {
+        const match = findRolleForResult(result, data)
+        if (!match) return null
+
+        const { rolle, event } = match
+        const rollenName =
+          rolle.template?.name || rolle.custom_name || 'Unbekannte Rolle'
+        const startDate = new Date(
+          rolle.zeitblock_start || event.event.datum_start
+        )
+        const endDate = new Date(
+          rolle.zeitblock_end || event.event.datum_end
+        )
+
+        return generateICalEvent({
+          title: `Helfereinsatz: ${rollenName} - ${event.event.name}`,
+          description: `Rolle: ${rollenName}\nVeranstaltung: ${event.event.name}`,
+          location: event.event.ort || undefined,
+          startDate,
+          endDate,
+        })
+      })
+      .filter((content): content is string => content !== null)
+
+    if (icsContents.length === 0) return
+
+    const icsContent =
+      icsContents.length === 1
+        ? icsContents[0]
+        : mergeICalEvents(icsContents)
+
+    const dataUrl = icalToDataUrl(icsContent)
+    const filename = generateIcalFilename('mitmachen', 'helfereinsaetze')
+    triggerDownload(dataUrl, filename)
+  }
 
   const handleIcsDownload = () => {
     const icsContents = successResults
@@ -129,7 +169,7 @@ export function OverviewSuccessScreen({
 
         <p className="mt-2 text-gray-600">
           {successResults.length} von {results.results.length}{' '}
-          {results.results.length === 1 ? 'Rolle' : 'Rollen'} erfolgreich
+          {results.results.length === 1 ? 'Schicht' : 'Schichten'} erfolgreich
           gebucht.
         </p>
       </div>
@@ -202,6 +242,31 @@ export function OverviewSuccessScreen({
                 </li>
               )
             })}
+            {successResults.map((r) => (
+              <li key={r.schichtId} className="flex items-center gap-3 px-5 py-3">
+                <svg
+                  className="h-5 w-5 shrink-0 text-success-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span className="text-gray-900">
+                  {schichtNames.get(r.schichtId) || r.schichtId}
+                </span>
+                {r.waitlist && (
+                  <span className="rounded-full bg-warning-100 px-2 py-0.5 text-xs font-medium text-warning-700">
+                    Warteliste
+                  </span>
+                )}
+              </li>
+            ))}
           </ul>
         </div>
       )}
@@ -210,8 +275,8 @@ export function OverviewSuccessScreen({
       {waitlistResults.length > 0 && (
         <div className="rounded-lg border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700">
           {waitlistResults.length === 1
-            ? 'Eine Rolle wurde auf die Warteliste gesetzt. Du wirst benachrichtigt, falls ein Platz frei wird.'
-            : `${waitlistResults.length} Rollen wurden auf die Warteliste gesetzt. Du wirst benachrichtigt, falls Plätze frei werden.`}
+            ? 'Eine Schicht wurde auf die Warteliste gesetzt. Du wirst benachrichtigt, falls ein Platz frei wird.'
+            : `${waitlistResults.length} Schichten wurden auf die Warteliste gesetzt. Du wirst benachrichtigt, falls Plätze frei werden.`}
         </div>
       )}
 
@@ -224,8 +289,8 @@ export function OverviewSuccessScreen({
             </h3>
           </div>
           <ul className="divide-y divide-gray-100">
-            {failedResults.map((r, index) => (
-              <li key={r.anmeldung_id || `failed-${index}`} className="px-5 py-3">
+            {failedResults.map((r) => (
+              <li key={r.schichtId} className="px-5 py-3">
                 <div className="flex items-center gap-3">
                   <svg
                     className="h-5 w-5 shrink-0 text-error-500"
@@ -247,6 +312,7 @@ export function OverviewSuccessScreen({
                         ? rolleNames.get(match.rolle.id) || `Rolle ${index + 1}`
                         : `Rolle ${index + 1}`
                     })()}
+                    {schichtNames.get(r.schichtId) || r.schichtId}
                   </span>
                 </div>
                 {r.error && (
@@ -319,7 +385,7 @@ export function OverviewSuccessScreen({
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          Weitere Rollen buchen
+          Weitere Schichten buchen
         </button>
       </div>
     </div>

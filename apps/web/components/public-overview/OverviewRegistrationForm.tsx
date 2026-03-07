@@ -10,21 +10,14 @@ import {
 } from '@/lib/validations/externe-helfer'
 
 interface OverviewRegistrationFormProps {
-  selectedRolleIds: string[]
+  selectedSchichtIds: string[]
   data: PublicOverviewData
   onBack: () => void
   onSuccess: (results: MultiRegistrationResult) => void
 }
 
-function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString('de-CH', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
 export function OverviewRegistrationForm({
-  selectedRolleIds,
+  selectedSchichtIds,
   data,
   onBack,
   onSuccess,
@@ -42,28 +35,29 @@ export function OverviewRegistrationForm({
       datenschutz: false,
     })
 
-  // Build summary of selected roles grouped by event
+  // Build summary of selected shifts grouped by event
   const selectedSummary = data.events
-    .map((eventEntry) => {
-      const roles = eventEntry.rollen
-        .filter((r) => selectedRolleIds.includes(r.id))
-        .map((r) => ({
-          id: r.id,
-          name: r.template?.name || r.custom_name || 'Unbekannt',
-          zeitblock:
-            r.zeitblock_start && r.zeitblock_end
-              ? `${formatTime(r.zeitblock_start)} – ${formatTime(r.zeitblock_end)}`
-              : null,
-        }))
-      if (!roles.length) return null
-      return { event: eventEntry, roles }
+    .map((event) => {
+      const shifts = event.zeitbloecke.flatMap((zb) =>
+        zb.schichten
+          .filter((s) => selectedSchichtIds.includes(s.id))
+          .map((s) => ({
+            id: s.id,
+            rolle: s.rolle,
+            zeitblock: zb.name,
+            zeit: `${zb.startzeit.slice(0, 5)} - ${zb.endzeit.slice(0, 5)}`,
+          }))
+      )
+      if (!shifts.length) return null
+      return { event, shifts }
     })
     .filter(Boolean) as Array<{
     event: PublicOverviewData['events'][number]
-    roles: Array<{
+    shifts: Array<{
       id: string
-      name: string
-      zeitblock: string | null
+      rolle: string
+      zeitblock: string
+      zeit: string
     }>
   }>
 
@@ -87,17 +81,15 @@ export function OverviewRegistrationForm({
 
     setIsSubmitting(true)
 
-    const result = await registerForMultipleShifts(selectedRolleIds, {
+    const result = await registerForMultipleShifts(selectedSchichtIds, {
       email: formData.email,
       vorname: formData.vorname,
       nachname: formData.nachname,
       telefon: formData.telefon || undefined,
-      datenschutz: formData.datenschutz,
     })
 
     if (!result.success && result.error) {
       setError(result.error)
-      if (result.fieldErrors) setFieldErrors(result.fieldErrors)
       setIsSubmitting(false)
       return
     }
@@ -115,12 +107,12 @@ export function OverviewRegistrationForm({
 
   return (
     <div className="space-y-6">
-      {/* Summary of selected roles */}
+      {/* Summary of selected shifts */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-100 px-5 py-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">
-              Ausgewählte Rollen ({selectedRolleIds.length})
+              Ausgewählte Schichten ({selectedSchichtIds.length})
             </h2>
             <button
               type="button"
@@ -132,23 +124,21 @@ export function OverviewRegistrationForm({
           </div>
         </div>
         <div className="divide-y divide-gray-100">
-          {selectedSummary.map(({ event: eventEntry, roles }) => (
-            <div key={eventEntry.event.id} className="px-5 py-3">
+          {selectedSummary.map(({ event, shifts }) => (
+            <div key={event.veranstaltung.id} className="px-5 py-3">
               <p className="text-sm font-medium text-gray-900">
-                {eventEntry.event.name}{' '}
+                {event.veranstaltung.titel}{' '}
                 <span className="font-normal text-gray-500">
-                  ({formatDate(eventEntry.event.datum_start)})
+                  ({formatDate(event.veranstaltung.datum)})
                 </span>
               </p>
               <ul className="mt-1 space-y-0.5">
-                {roles.map((r) => (
-                  <li key={r.id} className="text-sm text-gray-600">
-                    {r.name}{' '}
-                    {r.zeitblock && (
-                      <span className="text-gray-400">
-                        &middot; {r.zeitblock}
-                      </span>
-                    )}
+                {shifts.map((s) => (
+                  <li key={s.id} className="text-sm text-gray-600">
+                    {s.rolle}{' '}
+                    <span className="text-gray-400">
+                      &middot; {s.zeitblock} ({s.zeit})
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -163,7 +153,7 @@ export function OverviewRegistrationForm({
           <h2 className="font-semibold text-gray-900">Deine Kontaktdaten</h2>
           <p className="mt-1 text-sm text-gray-500">
             Bitte fülle das Formular einmal aus — die Anmeldung gilt für alle
-            ausgewählten Rollen.
+            ausgewählten Schichten.
           </p>
         </div>
 
@@ -332,7 +322,7 @@ export function OverviewRegistrationForm({
             >
               {isSubmitting
                 ? 'Wird angemeldet...'
-                : `Verbindlich anmelden (${selectedRolleIds.length})`}
+                : `Verbindlich anmelden (${selectedSchichtIds.length})`}
             </button>
           </div>
         </form>
