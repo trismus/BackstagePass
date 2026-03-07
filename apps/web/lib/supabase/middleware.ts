@@ -18,7 +18,6 @@ const protectedPrefixes = [
   '/auffuehrungen',
   '/stuecke',
   '/proben',
-  '/helfereinsaetze',
   '/raeume',
   '/ressourcen',
   '/templates',

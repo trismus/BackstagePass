@@ -175,8 +175,6 @@ export function canAccess(route: string, userRole: UserRole): boolean {
     '/mitglieder/neu': ['mitglieder:write'],
     '/partner': ['partner:read'],
     '/partner/neu': ['partner:write'],
-    '/helfereinsaetze': ['helfereinsaetze:read'],
-    '/helfereinsaetze/neu': ['helfereinsaetze:write'],
     '/stundenkonto': ['stundenkonto:read', 'stundenkonto:read_own'],
   }
 
