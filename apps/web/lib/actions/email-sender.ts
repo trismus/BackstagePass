@@ -79,7 +79,7 @@ export async function getKoordinatorInfo(koordinatorId: string | null): Promise<
   if (!koordinatorId) {
     return {
       name: 'TGW Koordination',
-      email: 'theatergruppewiden@gmail.com',
+      email: 'helfer@tgw.ch',
       telefon: '',
     }
   }
@@ -95,14 +95,14 @@ export async function getKoordinatorInfo(koordinatorId: string | null): Promise<
   if (!data) {
     return {
       name: 'TGW Koordination',
-      email: 'theatergruppewiden@gmail.com',
+      email: 'helfer@tgw.ch',
       telefon: '',
     }
   }
 
   return {
     name: `${data.vorname} ${data.nachname}`,
-    email: data.email || 'theatergruppewiden@gmail.com',
+    email: data.email || 'helfer@tgw.ch',
     telefon: data.telefon || '',
   }
 }
@@ -178,7 +178,6 @@ export async function sendBookingConfirmation(
     .select(`
       id,
       abmeldung_token,
-      external_helper_id,
       person:personen(id, vorname, nachname, email),
       schicht:auffuehrung_schichten(
         id,
@@ -230,27 +229,6 @@ export async function sendBookingConfirmation(
   // Get info blocks (briefing, helferessen)
   const infoTimes = await getInfoBlockTimes(veranstaltung.id)
 
-  // Build dashboard link
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  let dashboardLink = ''
-
-  const externalHelperId = (zuweisung as unknown as { external_helper_id: string | null }).external_helper_id
-  if (externalHelperId) {
-    const { data: dashboardToken, error: tokenError } = await supabase.rpc(
-      'get_externe_helfer_dashboard_token',
-      { p_helper_id: externalHelperId }
-    )
-    if (tokenError) {
-      console.error('[Email] Failed to get dashboard token:', tokenError)
-    }
-    if (dashboardToken) {
-      dashboardLink = `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
-    }
-  } else {
-    // Logged-in user: link to protected dashboard
-    dashboardLink = `${baseUrl}/dashboard`
-  }
-
   // Get email template
   const template = await getEmailTemplateInternal('confirmation')
   if (!template) {
@@ -278,7 +256,6 @@ export async function sendBookingConfirmation(
     public_link: veranstaltung.public_helfer_token
       ? buildPublicLink(veranstaltung.public_helfer_token)
       : '',
-    dashboard_link: dashboardLink,
     koordinator_name: koordinator.name,
     koordinator_email: koordinator.email,
     koordinator_telefon: koordinator.telefon,

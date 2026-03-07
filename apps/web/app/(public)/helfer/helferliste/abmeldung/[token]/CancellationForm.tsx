@@ -38,6 +38,14 @@ export function CancellationForm({ token }: Props) {
         <p className="text-center text-sm text-neutral-600">
           Vielen Dank, dass du uns Bescheid gegeben hast. So können wir den Platz an jemand anderen vergeben.
         </p>
+        <div className="flex justify-center gap-4">
+          <a
+            href="/mitmachen"
+            className="text-sm font-medium text-primary-600 hover:text-primary-700"
+          >
+            Zurück zur Übersicht
+          </a>
+        </div>
       </div>
     )
   }

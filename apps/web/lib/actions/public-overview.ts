@@ -2,42 +2,27 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../supabase/admin'
+import { externeHelferRegistrierungSchema } from '../validations/externe-helfer'
+import { sendEmail } from '../email/client'
+import {
+  multiRegistrationConfirmationEmail,
+  type ShiftInfo,
+} from '../email/templates/helferliste'
+import { getKoordinatorInfo } from './email-sender'
+import { formatDateForEmail, formatTimeForEmail } from '../utils/email-renderer'
 import type {
-  HelferEvent,
-  HelferRollenInstanz,
-  HelferRollenTemplate,
-  BookHelferSlotResult,
-} from '../supabase/types'
-import { anmeldenPublicMulti } from './helferliste'
+  PublicVeranstaltungData,
+  PublicSchichtData,
+  PublicZeitblockData,
+} from './external-registration'
 
 // =============================================================================
 // Types
 // =============================================================================
 
-export type PublicOverviewRolle = Pick<
-  HelferRollenInstanz,
-  | 'id'
-  | 'helfer_event_id'
-  | 'template_id'
-  | 'custom_name'
-  | 'zeitblock_start'
-  | 'zeitblock_end'
-  | 'anzahl_benoetigt'
-  | 'sichtbarkeit'
-> & {
-  template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
-  angemeldet_count: number
-  freie_plaetze: number
-}
-
 export type PublicOverviewEventData = {
-  event: Pick<
-    HelferEvent,
-    'id' | 'name' | 'datum_start' | 'datum_end' | 'ort' | 'public_token'
-  > & {
-    veranstaltung: { id: string; titel: string } | null
-  }
-  rollen: PublicOverviewRolle[]
+  veranstaltung: PublicVeranstaltungData & { public_helfer_token: string }
+  zeitbloecke: PublicZeitblockData[]
 }
 
 export type PublicOverviewData = {
@@ -46,10 +31,14 @@ export type PublicOverviewData = {
 
 export type MultiRegistrationResult = {
   success: boolean
-  results: BookHelferSlotResult[]
+  results: Array<{
+    schichtId: string
+    success: boolean
+    error?: string
+    waitlist?: boolean
+  }>
   dashboardToken?: string
   error?: string
-  fieldErrors?: Record<string, string>
 }
 
 // =============================================================================
@@ -57,179 +46,272 @@ export type MultiRegistrationResult = {
 // =============================================================================
 
 /**
- * Get all published helfer_events with available public roles.
+ * Get all published events with available public shifts.
  * No authentication required - this is for the public /mitmachen page.
- * Reads from System A (helfer_events + helfer_rollen_instanzen + helfer_anmeldungen).
  */
 export async function getPublicShiftOverview(): Promise<PublicOverviewData> {
   const supabase = createAdminClient()
 
-  // Get today's date (start of day) for filtering future events
+  // Get today's date (start of day) for filtering
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const todayStr = today.toISOString()
+  const todayStr = today.toISOString().split('T')[0]
 
-  // Fetch all helfer_events with future dates, including linked veranstaltung name
-  const { data: events, error: eventsError } = await supabase
-    .from('helfer_events')
-    .select(`
-      id,
-      name,
-      datum_start,
-      datum_end,
-      ort,
-      public_token,
-      veranstaltung:veranstaltungen(id, titel)
-    `)
-    .gte('datum_start', todayStr)
-    .order('datum_start', { ascending: true })
+  // Fetch all published veranstaltungen with future dates
+  const { data: veranstaltungen, error: veranstaltungenError } = await supabase
+    .from('veranstaltungen')
+    .select('id, titel, datum, startzeit, endzeit, ort, helfer_status, public_helfer_token')
+    .eq('helfer_status', 'veroeffentlicht')
+    .gte('datum', todayStr)
+    .order('datum', { ascending: true })
 
-  if (eventsError || !events?.length) {
+  if (veranstaltungenError || !veranstaltungen?.length) {
     return { events: [] }
   }
 
-  const eventIds = events.map((e) => e.id)
+  const veranstaltungIds = veranstaltungen.map((v) => v.id)
 
-  // Fetch public rollen_instanzen with their templates and anmeldungen count
-  const { data: rollen, error: rollenError } = await supabase
-    .from('helfer_rollen_instanzen')
-    .select(`
-      id,
-      helfer_event_id,
-      template_id,
-      custom_name,
-      zeitblock_start,
-      zeitblock_end,
-      anzahl_benoetigt,
-      sichtbarkeit,
-      template:helfer_rollen_templates(id, name),
-      anmeldungen:helfer_anmeldungen(id, status)
-    `)
-    .in('helfer_event_id', eventIds)
-    .eq('sichtbarkeit', 'public')
-    .order('zeitblock_start', { ascending: true })
+  // Fetch zeitbloecke and schichten in parallel
+  const [zeitblockResult, schichtenResult] = await Promise.all([
+    supabase
+      .from('zeitbloecke')
+      .select('id, name, startzeit, endzeit, typ, sortierung, veranstaltung_id')
+      .in('veranstaltung_id', veranstaltungIds)
+      .order('sortierung', { ascending: true }),
+    supabase
+      .from('auffuehrung_schichten')
+      .select(`
+        id,
+        rolle,
+        anzahl_benoetigt,
+        zeitblock_id,
+        veranstaltung_id,
+        zuweisungen:auffuehrung_zuweisungen(id, status)
+      `)
+      .in('veranstaltung_id', veranstaltungIds)
+      .eq('sichtbarkeit', 'public'),
+  ])
 
-  if (rollenError) {
+  if (zeitblockResult.error || schichtenResult.error) {
     return { events: [] }
   }
 
-  const alleRollen = rollen || []
+  const zeitbloecke = zeitblockResult.data || []
+  const schichten = schichtenResult.data || []
 
-  // Build events with rollen
-  const result: PublicOverviewEventData[] = []
+  // Build events
+  const events: PublicOverviewEventData[] = []
 
-  for (const event of events) {
-    const eventRollen = alleRollen
-      .filter((r) => r.helfer_event_id === event.id)
-      .map((r) => {
-        const anmeldungen = (r.anmeldungen as unknown as { id: string; status: string }[]) || []
-        const angemeldet_count = anmeldungen.filter(
-          (a) => a.status !== 'abgelehnt'
-        ).length
-        const freie_plaetze = Math.max(0, r.anzahl_benoetigt - angemeldet_count)
+  for (const v of veranstaltungen) {
+    if (!v.public_helfer_token) continue
 
-        return {
-          id: r.id,
-          helfer_event_id: r.helfer_event_id,
-          template_id: r.template_id,
-          custom_name: r.custom_name,
-          zeitblock_start: r.zeitblock_start,
-          zeitblock_end: r.zeitblock_end,
-          anzahl_benoetigt: r.anzahl_benoetigt,
-          sichtbarkeit: r.sichtbarkeit as 'intern' | 'public',
-          template: (Array.isArray(r.template) ? r.template[0] : r.template) as { id: string; name: string } | null,
-          angemeldet_count,
-          freie_plaetze,
-        }
+    const eventZeitbloecke = zeitbloecke.filter(
+      (zb) => zb.veranstaltung_id === v.id
+    )
+    const eventSchichten = schichten.filter(
+      (s) => s.veranstaltung_id === v.id
+    )
+
+    // Group schichten by zeitblock
+    const zeitblockMap = new Map<string | null, PublicSchichtData[]>()
+
+    for (const schicht of eventSchichten) {
+      const zuweisungen =
+        (schicht.zuweisungen as unknown as { id: string; status: string }[]) ||
+        []
+      const anzahl_belegt = zuweisungen.filter(
+        (z) => z.status !== 'abgesagt'
+      ).length
+      const freie_plaetze = Math.max(
+        0,
+        schicht.anzahl_benoetigt - anzahl_belegt
+      )
+
+      const zeitblock = eventZeitbloecke.find(
+        (zb) => zb.id === schicht.zeitblock_id
+      )
+
+      const schichtData: PublicSchichtData = {
+        id: schicht.id,
+        rolle: schicht.rolle,
+        anzahl_benoetigt: schicht.anzahl_benoetigt,
+        zeitblock: zeitblock
+          ? {
+              id: zeitblock.id,
+              name: zeitblock.name,
+              startzeit: zeitblock.startzeit,
+              endzeit: zeitblock.endzeit,
+            }
+          : null,
+        anzahl_belegt,
+        freie_plaetze,
+      }
+
+      const key = schicht.zeitblock_id
+      if (!zeitblockMap.has(key)) {
+        zeitblockMap.set(key, [])
+      }
+      zeitblockMap.get(key)!.push(schichtData)
+    }
+
+    // Build zeitblock data with grouped schichten
+    const transformedZeitbloecke: PublicZeitblockData[] = eventZeitbloecke
+      .filter((zb) => zeitblockMap.has(zb.id))
+      .map((zb) => ({
+        id: zb.id,
+        name: zb.name,
+        startzeit: zb.startzeit,
+        endzeit: zb.endzeit,
+        typ: zb.typ,
+        sortierung: zb.sortierung,
+        schichten: zeitblockMap.get(zb.id) || [],
+      }))
+
+    // Add schichten without zeitblock
+    const orphanSchichten = zeitblockMap.get(null)
+    if (orphanSchichten?.length) {
+      transformedZeitbloecke.push({
+        id: 'ohne-zeitblock',
+        name: 'Allgemein',
+        startzeit: v.startzeit || '00:00',
+        endzeit: v.endzeit || '23:59',
+        typ: 'standard',
+        sortierung: 9999,
+        schichten: orphanSchichten,
       })
+    }
 
-    // Only include events that have at least one role with free spots
-    const hasFreeSpots = eventRollen.some((r) => r.freie_plaetze > 0)
+    // Only include events that have at least one shift with free spots
+    const hasFreeSpots = transformedZeitbloecke.some((zb) =>
+      zb.schichten.some((s) => s.freie_plaetze > 0)
+    )
 
-    if (eventRollen.length > 0 && hasFreeSpots) {
-      result.push({
-        event: {
-          id: event.id,
-          name: event.name,
-          datum_start: event.datum_start,
-          datum_end: event.datum_end,
-          ort: event.ort,
-          public_token: event.public_token,
-          veranstaltung: (Array.isArray(event.veranstaltung) ? event.veranstaltung[0] : event.veranstaltung) as { id: string; titel: string } | null,
+    if (transformedZeitbloecke.length > 0 && hasFreeSpots) {
+      events.push({
+        veranstaltung: {
+          id: v.id,
+          titel: v.titel,
+          datum: v.datum,
+          startzeit: v.startzeit,
+          endzeit: v.endzeit,
+          ort: v.ort,
+          helfer_status: v.helfer_status!,
+          public_helfer_token: v.public_helfer_token,
         },
-        rollen: eventRollen,
+        zeitbloecke: transformedZeitbloecke,
       })
     }
   }
 
-  return { events: result }
+  return { events }
 }
 
 // =============================================================================
-// Multi-Role Registration (delegates to System A)
+// Multi-Shift Registration
 // =============================================================================
 
 /**
- * Register an external helper for multiple roles across events.
- * Delegates to anmeldenPublicMulti() from helferliste.ts (System A).
+ * Register an external helper for multiple shifts across events.
+ * No authentication required - uses admin client.
  */
 export async function registerForMultipleShifts(
-  rollenInstanzIds: string[],
+  schichtIds: string[],
   helperData: {
     email: string
     vorname: string
     nachname: string
     telefon?: string
-    datenschutz: boolean
   }
 ): Promise<MultiRegistrationResult> {
-  if (!rollenInstanzIds.length) {
-    return { success: false, results: [], error: 'Keine Rollen ausgewählt' }
+  if (!schichtIds.length) {
+    return { success: false, results: [], error: 'Keine Schichten ausgewählt' }
   }
 
-  const result = await anmeldenPublicMulti(rollenInstanzIds, {
-    vorname: helperData.vorname,
-    nachname: helperData.nachname,
-    email: helperData.email,
-    telefon: helperData.telefon,
-    datenschutz: helperData.datenschutz,
-  })
-
-  if (!result.success) {
-    return {
-      success: false,
-      results: result.results || [],
-      error: result.error,
-      fieldErrors: result.fieldErrors,
-    }
+  // Validate helper data
+  const parseResult = externeHelferRegistrierungSchema.safeParse(helperData)
+  if (!parseResult.success) {
+    const firstIssue = parseResult.error.issues[0]
+    return { success: false, results: [], error: firstIssue.message }
   }
+  const validData = parseResult.data
 
-  // Get dashboard token for the helper
   const supabase = createAdminClient()
-  const { data: helperId } = await supabase.rpc(
+
+  // Find or create external helper profile (once)
+  const { data: helperId, error: helperError } = await supabase.rpc(
     'find_or_create_external_helper',
     {
-      p_email: helperData.email,
-      p_vorname: helperData.vorname,
-      p_nachname: helperData.nachname,
-      p_telefon: helperData.telefon || null,
+      p_email: validData.email,
+      p_vorname: validData.vorname,
+      p_nachname: validData.nachname,
+      p_telefon: validData.telefon || null,
     }
   )
 
-  let dashboardToken: string | undefined
-  if (helperId) {
-    const { data: token } = await supabase.rpc(
-      'get_externe_helfer_dashboard_token',
-      { p_helper_id: helperId as string }
-    )
-    dashboardToken = (token as string) || undefined
+  if (helperError || !helperId) {
+    console.error('Error creating helper profile:', helperError)
+    return {
+      success: false,
+      results: [],
+      error: 'Fehler bei der Registrierung',
+    }
+  }
+
+  // Process each shift sequentially
+  const results: MultiRegistrationResult['results'] = []
+
+  for (const schichtId of schichtIds) {
+    const result = await registerSingleShift(supabase, schichtId, helperId)
+    results.push({ schichtId, ...result })
   }
 
   revalidatePath('/mitmachen')
+  // Get dashboard token
+  const { data: dashboardToken } = await supabase.rpc(
+    'get_externe_helfer_dashboard_token',
+    { p_helper_id: helperId }
+  )
+
+  const anySuccess = results.some((r) => r.success)
+
+  if (anySuccess) {
+    revalidatePath('/mitmachen')
+
+    // Fire-and-forget confirmation email
+    const successSchichtIds = results.filter((r) => r.success).map((r) => r.schichtId)
+    sendConfirmationEmail(
+      supabase,
+      successSchichtIds,
+      results,
+      validData,
+      dashboardToken || undefined
+    ).catch(console.error)
+  }
 
   return {
-    success: true,
-    results: result.results || [],
-    dashboardToken,
+    success: anySuccess,
+    results,
+    dashboardToken: dashboardToken || undefined,
+  }
+}
+
+// =============================================================================
+// Helper: Single Shift Registration
+// =============================================================================
+
+async function registerSingleShift(
+  supabase: ReturnType<typeof createAdminClient>,
+  schichtId: string,
+  helperId: string
+): Promise<{ success: boolean; error?: string; waitlist?: boolean }> {
+  // Verify schicht exists and is public
+  const { data: schicht, error: schichtError } = await supabase
+    .from('auffuehrung_schichten')
+    .select('id, veranstaltung_id, anzahl_benoetigt, sichtbarkeit')
+    .eq('id', schichtId)
+    .single()
+
+  if (schichtError || !schicht) {
+    return { success: false, error: 'Schicht nicht gefunden' }
   }
 }

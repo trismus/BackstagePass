@@ -75,7 +75,6 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
       )
     `)
     .eq('profile_id', profile.id)
-    .neq('status', 'abgelehnt')
 
   if (error || !anmeldungen) {
     return { helper, anmeldungen: [] }
