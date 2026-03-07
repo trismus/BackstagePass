@@ -11,6 +11,8 @@ import {
 
 interface OverviewSuccessScreenProps {
   results: MultiRegistrationResult
+  data: PublicOverviewData
+  rolleNames: Map<string, string>
   schichtNames: Map<string, string>
   dashboardToken?: string
   onBrowseMore: () => void
@@ -53,6 +55,8 @@ function formatDateTime(dateStr: string | null): string | null {
 
 export function OverviewSuccessScreen({
   results,
+  data,
+  rolleNames,
   schichtNames,
   dashboardToken,
   onBrowseMore,
@@ -60,6 +64,44 @@ export function OverviewSuccessScreen({
   const successResults = results.results.filter((r) => r.success)
   const failedResults = results.results.filter((r) => !r.success)
   const waitlistResults = results.results.filter((r) => r.waitlist)
+
+  const handleIcsDownload = () => {
+    const icsContents = successResults
+      .map((result) => {
+        const match = findRolleForResult(result, data)
+        if (!match) return null
+
+        const { rolle, event } = match
+        const rollenName =
+          rolle.template?.name || rolle.custom_name || 'Unbekannte Rolle'
+        const startDate = new Date(
+          rolle.zeitblock_start || event.event.datum_start
+        )
+        const endDate = new Date(
+          rolle.zeitblock_end || event.event.datum_end
+        )
+
+        return generateICalEvent({
+          title: `Helfereinsatz: ${rollenName} - ${event.event.name}`,
+          description: `Rolle: ${rollenName}\nVeranstaltung: ${event.event.name}`,
+          location: event.event.ort || undefined,
+          startDate,
+          endDate,
+        })
+      })
+      .filter((content): content is string => content !== null)
+
+    if (icsContents.length === 0) return
+
+    const icsContent =
+      icsContents.length === 1
+        ? icsContents[0]
+        : mergeICalEvents(icsContents)
+
+    const dataUrl = icalToDataUrl(icsContent)
+    const filename = generateIcalFilename('mitmachen', 'helfereinsaetze')
+    triggerDownload(dataUrl, filename)
+  }
 
   const handleIcsDownload = () => {
     const icsContents = successResults
@@ -141,6 +183,65 @@ export function OverviewSuccessScreen({
             </h3>
           </div>
           <ul className="divide-y divide-gray-100">
+            {successResults.map((r, index) => {
+              const match = findRolleForResult(r, data)
+              const displayName = match
+                ? rolleNames.get(match.rolle.id) || `Rolle ${index + 1}`
+                : `Rolle ${index + 1}`
+
+              return (
+                <li key={r.anmeldung_id || index} className="px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    <svg
+                      className="h-5 w-5 shrink-0 text-success-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-gray-900">{displayName}</span>
+                      {match?.rolle && (match.rolle.zeitblock_start || match.rolle.zeitblock_end) && (
+                        <p className="text-sm text-gray-500">
+                          {formatDateTime(match.rolle.zeitblock_start)}
+                          {match.rolle.zeitblock_end &&
+                            ` - ${formatDateTime(match.rolle.zeitblock_end)}`}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {r.is_waitlist && (
+                        <span className="rounded-full bg-warning-100 px-2 py-0.5 text-xs font-medium text-warning-700">
+                          Warteliste
+                        </span>
+                      )}
+                      {!r.is_waitlist && (
+                        <span className="rounded-full bg-success-100 px-2 py-0.5 text-xs font-medium text-success-700">
+                          Bestätigt
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Cancellation Link */}
+                  {r.abmeldung_token && (
+                    <div className="mt-1 pl-8">
+                      <a
+                        href={`/helfer/helferliste/abmeldung/${r.abmeldung_token}` as never}
+                        className="text-sm text-error-600 hover:text-error-700 hover:underline"
+                      >
+                        Stornieren
+                      </a>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
             {successResults.map((r) => (
               <li key={r.schichtId} className="flex items-center gap-3 px-5 py-3">
                 <svg
@@ -205,6 +306,12 @@ export function OverviewSuccessScreen({
                     />
                   </svg>
                   <span className="text-gray-900">
+                    {(() => {
+                      const match = findRolleForResult(r, data)
+                      return match
+                        ? rolleNames.get(match.rolle.id) || `Rolle ${index + 1}`
+                        : `Rolle ${index + 1}`
+                    })()}
                     {schichtNames.get(r.schichtId) || r.schichtId}
                   </span>
                 </div>
