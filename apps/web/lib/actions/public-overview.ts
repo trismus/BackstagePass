@@ -429,6 +429,7 @@ async function sendConfirmationEmail(
   if (!veranstaltung) return
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const baseUrlClean = baseUrl.replace(/\/+$/, '')
 
   // Build shift info for email
   const shifts: ShiftInfo[] = schichten.map((s) => {
@@ -449,7 +450,7 @@ async function sendConfirmationEmail(
         : '',
       status: resultEntry?.waitlist ? 'warteliste' as const : 'angemeldet' as const,
       abmeldungLink: abmeldungToken
-        ? `${baseUrl}/helfer/abmeldung/${abmeldungToken}`
+        ? `${baseUrlClean}/helfer/abmeldung/${abmeldungToken}`
         : '',
     }
   })
@@ -457,8 +458,8 @@ async function sendConfirmationEmail(
   const koordinator = await getKoordinatorInfo(veranstaltung.koordinator_id)
 
   const dashboardLink = dashboardToken
-    ? `${baseUrl}/helfer/meine-einsaetze/${dashboardToken}`
-    : `${baseUrl}/mitmachen`
+    ? `${baseUrlClean}/helfer/meine-einsaetze/${dashboardToken}`
+    : `${baseUrlClean}/meine-einsaetze`
 
   // Generate ICS attachment with all booked shifts
   const icsContents: string[] = []
