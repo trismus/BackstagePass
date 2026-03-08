@@ -18,6 +18,7 @@ const VALID_TYPES: EmailTemplateTyp[] = [
   'waitlist_assigned',
   'waitlist_timeout',
   'thank_you',
+  'member_invitation',
 ]
 
 export default async function EmailTemplateEditPage({
