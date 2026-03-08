@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
 import { sanitizeSearchQuery } from '../utils/search'
-import { helferErfassenSchema } from '../validations/alle-helfer'
+import { helferErfassenSchema, helferUpdateSchema } from '../validations/alle-helfer'
 
 export type HelferTyp = 'intern' | 'extern'
 export type AlleHelferSortField = 'name' | 'einsaetze' | 'letzter_einsatz'
@@ -448,6 +448,67 @@ export async function createHelferManual(data: {
     return { success: true }
   } catch (error) {
     console.error('createHelferManual failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unbekannter Fehler',
+    }
+  }
+}
+
+/**
+ * Update an existing helper's details (internal or external).
+ */
+export async function updateHelfer(data: {
+  id: string
+  typ: HelferTyp
+  vorname: string
+  nachname: string
+  email?: string
+  telefon?: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('veranstaltungen:write')
+
+    const validated = helferUpdateSchema.parse(data)
+
+    const supabase = await createClient()
+
+    if (validated.typ === 'extern') {
+      const { error } = await supabase
+        .from('externe_helfer_profile')
+        .update({
+          vorname: validated.vorname,
+          nachname: validated.nachname,
+          email: validated.email || '',
+          telefon: validated.telefon || null,
+        })
+        .eq('id', validated.id)
+
+      if (error) {
+        console.error('Failed to update external helper:', error)
+        return { success: false, error: error.message }
+      }
+    } else {
+      const { error } = await supabase
+        .from('personen')
+        .update({
+          vorname: validated.vorname,
+          nachname: validated.nachname,
+          email: validated.email || null,
+          telefon: validated.telefon || null,
+        })
+        .eq('id', validated.id)
+
+      if (error) {
+        console.error('Failed to update internal helper:', error)
+        return { success: false, error: error.message }
+      }
+    }
+
+    revalidatePath('/alle-helfer')
+    return { success: true }
+  } catch (error) {
+    console.error('updateHelfer failed:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unbekannter Fehler',
