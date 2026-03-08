@@ -40,7 +40,7 @@ export default function DatenschutzPage() {
               <p>Ein Verein gemäss Schweizer Zivilrecht</p>
               <p className="mt-4 font-semibold text-gray-900">Kontakt:</p>
               <p>E-Mail: theatergruppewiden@gmail.com</p>
-              <p>Website: https://www.theatergruppe-widen.ch</p>
+              <p>Website: https://www.theater-widen.ch</p>
               <p>Plattform: https://backstage-pass.vercel.app</p>
               <p className="mt-4 text-sm italic text-gray-600">
                 Für Fragen zu deinen Daten wende dich bitte per E-Mail an uns.
@@ -593,7 +593,7 @@ export default function DatenschutzPage() {
             </h2>
             <p className="text-gray-700">
               BackstagePass kann Links zu externen Websites (z.B. die Verein-Website
-              https://www.theatergruppe-widen.ch) enthalten. Wir sind nicht
+              https://www.theater-widen.ch) enthalten. Wir sind nicht
               verantwortlich für die Datenschutzpraktiken anderer Websites. Wenn
               du auf externe Links klickst, beachte die Datenschutzerklärung
               dieser Websites.
@@ -646,10 +646,10 @@ export default function DatenschutzPage() {
               <p className="mt-2 text-gray-700">
                 Website:{' '}
                 <a
-                  href="https://www.theatergruppe-widen.ch"
+                  href="https://www.theater-widen.ch"
                   className="font-semibold text-primary-600 hover:text-primary-700"
                 >
-                  https://www.theatergruppe-widen.ch
+                  https://www.theater-widen.ch
                 </a>
               </p>
               <p className="mt-4 text-sm italic text-gray-600">
