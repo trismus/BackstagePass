@@ -250,15 +250,10 @@ export function OffeneSchichtenWidget({
     return `${start.slice(0, 5)}–${end.slice(0, 5)}`
   }
 
-  // Sort shifts: intern first, then by date
+  // Sort shifts by date, then by time
   const sorted = [...schichten].sort((a, b) => {
-    // Intern shifts first
-    if (a.sichtbarkeit === 'intern' && b.sichtbarkeit !== 'intern') return -1
-    if (a.sichtbarkeit !== 'intern' && b.sichtbarkeit === 'intern') return 1
-    // Then by date
     const dateCmp = a.veranstaltung.datum.localeCompare(b.veranstaltung.datum)
     if (dateCmp !== 0) return dateCmp
-    // Then by time
     const aStart = a.zeitblock?.startzeit ?? ''
     const bStart = b.zeitblock?.startzeit ?? ''
     return aStart.localeCompare(bStart)
@@ -279,56 +274,58 @@ export function OffeneSchichtenWidget({
   const displayGroups = maxEvents ? allGroups.slice(0, maxEvents) : allGroups
   const hasMore = maxEvents ? allGroups.length > maxEvents : false
 
+  // Total free slots across all shifts
+  const totalFreiePlaetze = schichten.reduce((sum, s) => sum + s.freie_plaetze, 0)
+
   return (
     <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
-      <div className="border-b border-orange-100 bg-orange-50 px-4 py-3">
+      <div className="border-b border-orange-100 bg-orange-50 px-5 py-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-orange-900">Offene Schichten</h3>
+          <div>
+            <h3 className="text-lg font-semibold text-orange-900">Offene Schichten</h3>
+            <p className="mt-0.5 text-sm text-orange-700">
+              Melde dich für verfügbare Schichten an
+            </p>
+          </div>
           {schichten.length > 0 && (
-            <span className="text-xs text-orange-700">
-              {allGroups.length} {allGroups.length === 1 ? 'Veranstaltung' : 'Veranstaltungen'}
-            </span>
+            <div className="text-right">
+              <span className="text-2xl font-bold text-orange-600">{totalFreiePlaetze}</span>
+              <p className="text-xs text-orange-700">freie Plätze</p>
+            </div>
           )}
         </div>
       </div>
       {displayGroups.length > 0 ? (
         <div className="divide-y divide-neutral-100">
           {displayGroups.map(({ veranstaltung, schichten: items }) => (
-            <div key={veranstaltung.id} className="p-4">
-              <div className="mb-2 flex items-center justify-between">
+            <div key={veranstaltung.id} className="px-5 py-4">
+              <div className="mb-3 flex items-center justify-between">
                 <Link
                   href={`/auffuehrungen/${veranstaltung.id}/helferliste` as never}
-                  className="text-sm font-semibold text-neutral-900 hover:text-orange-700"
+                  className="font-semibold text-neutral-900 hover:text-orange-700"
                 >
                   {veranstaltung.titel}
                 </Link>
-                <span className="text-xs text-neutral-500">
+                <span className="ml-3 shrink-0 text-sm text-neutral-500">
                   {formatDate(veranstaltung.datum)}
                   {veranstaltung.ort && ` • ${veranstaltung.ort}`}
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((s) => (
                   <Link
                     key={s.id}
                     href={`/auffuehrungen/${veranstaltung.id}/helferliste` as never}
                     className="rounded-lg border border-neutral-200 p-3 transition-colors hover:border-orange-300 hover:bg-orange-50"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium text-neutral-900">
-                        {s.rolle}
-                      </p>
-                      {s.sichtbarkeit === 'intern' && (
-                        <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                          Intern
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-1 flex items-center justify-between text-xs text-neutral-500">
+                    <p className="text-sm font-medium text-neutral-900">
+                      {s.rolle}
+                    </p>
+                    <div className="mt-1.5 flex items-center justify-between text-xs text-neutral-500">
                       <span>
                         {s.zeitblock ? formatTime(s.zeitblock.startzeit, s.zeitblock.endzeit) : 'Ganzer Tag'}
                       </span>
-                      <span className="font-medium text-green-600">
+                      <span className="rounded-full bg-green-50 px-2 py-0.5 font-medium text-green-700">
                         {s.freie_plaetze} frei
                       </span>
                     </div>
@@ -339,14 +336,14 @@ export function OffeneSchichtenWidget({
           ))}
         </div>
       ) : (
-        <div className="p-4 text-center text-sm text-neutral-500">
-          Keine offenen Schichten
+        <div className="p-6 text-center text-sm text-neutral-500">
+          Keine offenen Schichten verfügbar
         </div>
       )}
-      <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
+      <div className="border-t border-neutral-100 bg-neutral-50 px-5 py-3">
         <Link
           href={"/mitmachen" as never}
-          className="text-sm text-orange-600 hover:text-orange-800"
+          className="text-sm font-medium text-orange-600 hover:text-orange-800"
         >
           {hasMore ? 'Alle Schichten ansehen' : 'Zur Mitmachen-Seite'} &rarr;
         </Link>
