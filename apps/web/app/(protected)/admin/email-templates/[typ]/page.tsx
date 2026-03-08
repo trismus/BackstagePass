@@ -16,6 +16,7 @@ const VALID_TYPES: EmailTemplateTyp[] = [
   'reminder_48h',
   'reminder_6h',
   'cancellation',
+  'waitlist_confirmation',
   'waitlist_assigned',
   'waitlist_timeout',
   'thank_you',

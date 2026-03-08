@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { getUserProfile } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
-import { sendBookingConfirmation } from './email-sender'
+import { sendBookingConfirmation, sendWaitlistConfirmationEmail } from './email-sender'
 import type {
   WartelisteEintragMitDetails,
   WartelisteStatus,
@@ -69,7 +69,7 @@ export async function addToWaitlist(
   const position = maxPosition || 1
 
   // Add to waitlist
-  const { error: insertError } = await supabase
+  const { data: newEntry, error: insertError } = await supabase
     .from('helfer_warteliste')
     .insert({
       schicht_id: schichtId,
@@ -77,6 +77,8 @@ export async function addToWaitlist(
       position,
       status: 'wartend',
     } as never)
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('Error adding to waitlist:', insertError)
@@ -86,10 +88,10 @@ export async function addToWaitlist(
     return { success: false, error: 'Fehler beim Hinzufuegen zur Warteliste' }
   }
 
-  // TODO: Send waitlist confirmation email once a 'waitlist_confirmation' template exists
-  // Currently no EmailTemplateTyp for "you're on the waitlist" notifications.
-  // Requires: 1) Add 'waitlist_confirmation' to EmailTemplateTyp
-  //           2) Create template in DB  3) Add send function in email-sender.ts
+  // Send waitlist confirmation email (fire-and-forget)
+  if (newEntry?.id) {
+    sendWaitlistConfirmationEmail(newEntry.id, position).catch(console.error)
+  }
 
   // Get veranstaltung_id for revalidation
   const { data: schicht } = await supabase

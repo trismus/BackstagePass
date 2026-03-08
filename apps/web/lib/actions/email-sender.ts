@@ -442,6 +442,76 @@ export async function sendCancellationConfirmation(
 }
 
 /**
+ * Send waitlist confirmation email (confirms user was added to waitlist)
+ */
+export async function sendWaitlistConfirmationEmail(
+  wartelisteId: string,
+  position: number
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient()
+
+  // Fetch waitlist entry with profile
+  const { data: entry } = await supabase
+    .from('helfer_warteliste')
+    .select(`
+      id,
+      profile:profiles(id, email, display_name),
+      schicht:auffuehrung_schichten(
+        id,
+        rolle,
+        veranstaltung_id
+      )
+    `)
+    .eq('id', wartelisteId)
+    .single()
+
+  if (!entry) {
+    return { success: false, error: 'Warteliste-Eintrag nicht gefunden' }
+  }
+
+  const profile = entry.profile as unknown as { id: string; email: string; display_name: string } | null
+  const schicht = entry.schicht as unknown as {
+    id: string
+    rolle: string
+    veranstaltung_id: string
+  } | null
+
+  if (!profile?.email || !schicht) {
+    return { success: false, error: 'Ungültige Daten' }
+  }
+
+  // Get veranstaltung
+  const { data: veranstaltung } = await supabase
+    .from('veranstaltungen')
+    .select('id, titel, datum, koordinator_id')
+    .eq('id', schicht.veranstaltung_id)
+    .single()
+
+  if (!veranstaltung) {
+    return { success: false, error: 'Veranstaltung nicht gefunden' }
+  }
+
+  // Get coordinator info
+  const koordinator = await getKoordinatorInfo(veranstaltung.koordinator_id)
+
+  // Parse display_name to get vorname/nachname
+  const nameParts = (profile.display_name || '').split(' ')
+  const vorname = nameParts[0] || 'Helfer'
+  const nachname = nameParts.slice(1).join(' ') || ''
+
+  return sendTemplatedEmail('waitlist_confirmation', profile.email, {
+    vorname,
+    nachname,
+    veranstaltung: veranstaltung.titel,
+    datum: formatDateForEmail(veranstaltung.datum),
+    rolle: schicht.rolle,
+    position: String(position),
+    koordinator_name: koordinator.name,
+    koordinator_email: koordinator.email,
+  })
+}
+
+/**
  * Send waitlist assignment notification
  */
 export async function sendWaitlistAssignedEmail(
