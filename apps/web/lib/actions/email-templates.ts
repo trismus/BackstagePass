@@ -698,7 +698,7 @@ Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
 
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
   <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.<br>
-  Theatergruppe Widen | <a href="https://www.theatergruppe-widen.ch" style="color: #7c3aed;">www.theatergruppe-widen.ch</a></p>
+  Theatergruppe Widen | <a href="https://www.theater-widen.ch" style="color: #7c3aed;">www.theater-widen.ch</a></p>
 </div>`,
       body_text: `Willkommen bei BackstagePass!
 
@@ -720,7 +720,7 @@ Der Link ist 24 Stunden gültig. Falls er abgelaufen ist, wende dich an den Vors
 
 ---
 Diese E-Mail wurde automatisch von BackstagePass gesendet.
-Theatergruppe Widen | www.theatergruppe-widen.ch`,
+Theatergruppe Widen | www.theater-widen.ch`,
       placeholders: ['vorname', 'magic_link'],
     },
   }

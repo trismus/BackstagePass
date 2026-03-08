@@ -41,7 +41,7 @@ interface EmailSendResult {
  * Get the configured email sender address
  */
 function getSenderAddress(): string {
-  return process.env.EMAIL_FROM_ADDRESS || 'BackstagePass <noreply@tgw.ch>'
+  return process.env.EMAIL_FROM_ADDRESS || 'BackstagePass <theatergruppewiden@gmail.com>'
 }
 
 /**
