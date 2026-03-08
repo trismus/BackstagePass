@@ -7,6 +7,7 @@ import {
   type HelferTyp,
 } from '@/lib/actions/alle-helfer'
 import { AlleHelferTable } from '@/components/alle-helfer/AlleHelferTable'
+import { HelferErfassenDialog } from '@/components/alle-helfer/HelferErfassenDialog'
 
 interface PageProps {
   searchParams: Promise<{
@@ -33,11 +34,14 @@ export default async function AlleHelferPage({ searchParams }: PageProps) {
     <main className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Alle Helfer</h1>
-          <p className="mt-1 text-gray-600">
-            Übersicht aller internen und externen Helfer mit ihren Einsätzen
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Alle Helfer</h1>
+            <p className="mt-1 text-gray-600">
+              Übersicht aller internen und externen Helfer mit ihren Einsätzen
+            </p>
+          </div>
+          <HelferErfassenDialog />
         </div>
 
         {/* Table with Filters */}

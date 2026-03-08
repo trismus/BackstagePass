@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
 import { sanitizeSearchQuery } from '../utils/search'
+import { helferErfassenSchema } from '../validations/alle-helfer'
 
 export type HelferTyp = 'intern' | 'extern'
 export type AlleHelferSortField = 'name' | 'einsaetze' | 'letzter_einsatz'
@@ -393,5 +394,63 @@ export async function getHelferEinsaetze(
   } catch (error) {
     console.error('getHelferEinsaetze failed:', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unbekannter Fehler' }
+  }
+}
+
+/**
+ * Manually create a new external helper profile.
+ * Used by Vorstand/Admin from the /alle-helfer page.
+ */
+export async function createHelferManual(data: {
+  vorname: string
+  nachname: string
+  email?: string
+  telefon?: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('veranstaltungen:write')
+
+    const validated = helferErfassenSchema.parse(data)
+
+    const supabase = await createClient()
+
+    // Check for duplicate email if provided
+    if (validated.email) {
+      const { data: existing } = await supabase
+        .from('externe_helfer_profile')
+        .select('id')
+        .ilike('email', validated.email)
+        .maybeSingle()
+
+      if (existing) {
+        return {
+          success: false,
+          error: 'Ein Helfer mit dieser E-Mail-Adresse existiert bereits.',
+        }
+      }
+    }
+
+    const { error } = await supabase
+      .from('externe_helfer_profile')
+      .insert({
+        vorname: validated.vorname,
+        nachname: validated.nachname,
+        email: validated.email || '',
+        telefon: validated.telefon || null,
+      })
+
+    if (error) {
+      console.error('Failed to create helper:', error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath('/alle-helfer')
+    return { success: true }
+  } catch (error) {
+    console.error('createHelferManual failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unbekannter Fehler',
+    }
   }
 }

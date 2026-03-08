@@ -1,0 +1,34 @@
+import { z } from 'zod'
+
+// =============================================================================
+// Alle Helfer Validations
+// =============================================================================
+
+/**
+ * Schema for manually creating a new external helper via the Alle Helfer page.
+ * Email is optional here (unlike public registration where it's required).
+ */
+export const helferErfassenSchema = z.object({
+  vorname: z
+    .string()
+    .min(1, 'Vorname ist erforderlich')
+    .max(100, 'Vorname zu lang'),
+  nachname: z
+    .string()
+    .min(1, 'Nachname ist erforderlich')
+    .max(100, 'Nachname zu lang'),
+  email: z
+    .string()
+    .email('Ungueltige E-Mail-Adresse')
+    .max(255, 'E-Mail zu lang')
+    .transform((val) => val.toLowerCase().trim())
+    .optional()
+    .or(z.literal('')),
+  telefon: z
+    .string()
+    .max(50, 'Telefonnummer zu lang')
+    .optional()
+    .or(z.literal('')),
+})
+
+export type HelferErfassenFormData = z.infer<typeof helferErfassenSchema>
