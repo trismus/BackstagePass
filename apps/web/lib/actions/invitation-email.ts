@@ -32,6 +32,10 @@ export async function sendInvitationEmail(
     subject: rendered.subject,
     html: rendered.html,
     text: rendered.text,
+    logging: {
+      templateTyp: 'member_invitation',
+      recipientName: vorname,
+    },
   })
 
   if (!emailResult.success) {

@@ -273,6 +273,10 @@ export async function sendThankYouEmails(
       subject: rendered.subject,
       html: rendered.html,
       text: rendered.text,
+      logging: {
+        templateTyp: 'thank_you',
+        recipientName: helfer.name,
+      },
     })
 
     if (result.success) {

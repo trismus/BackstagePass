@@ -111,6 +111,10 @@ export async function notifyEventPublished(
       subject,
       html,
       text,
+      logging: {
+        templateTyp: 'event_published',
+        recipientName: profile.display_name || 'Helfer',
+      },
     })
 
     if (result.success) {
@@ -219,6 +223,11 @@ export async function notifyRegistrationConfirmed(
     subject,
     html,
     text,
+    logging: {
+      templateTyp: 'registration_confirmation',
+      recipientName,
+      helferAnmeldungId: anmeldungId,
+    },
   })
 
   return result.success
@@ -315,6 +324,11 @@ export async function notifyStatusChange(
     subject,
     html,
     text,
+    logging: {
+      templateTyp: 'status_update',
+      recipientName,
+      helferAnmeldungId: anmeldungId,
+    },
   })
 
   return result.success
@@ -535,6 +549,10 @@ export async function notifyMultiRegistrationConfirmed(
           },
         ]
       : undefined,
+    logging: {
+      templateTyp: 'multi_registration_confirmation',
+      recipientName,
+    },
   })
 
   return emailResult.success
@@ -581,6 +599,10 @@ export async function notifyCancellationConfirmed(params: {
     subject,
     html,
     text,
+    logging: {
+      templateTyp: 'cancellation_confirmation',
+      recipientName: params.recipientName,
+    },
   })
 
   return result.success
@@ -701,6 +723,11 @@ export async function notifyWaitlistPromotion(
     subject,
     html,
     text,
+    logging: {
+      templateTyp: 'waitlist_promotion',
+      recipientName,
+      helferAnmeldungId: anmeldungId,
+    },
   })
 
   return result.success

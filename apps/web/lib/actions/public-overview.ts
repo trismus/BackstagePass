@@ -514,5 +514,9 @@ async function sendConfirmationEmail(
     text,
     replyTo: koordinator.email,
     attachments: icsAttachment ? [icsAttachment] : undefined,
+    logging: {
+      templateTyp: 'external_registration',
+      recipientName: `${helperData.vorname} ${helperData.nachname}`,
+    },
   })
 }

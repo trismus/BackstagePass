@@ -461,5 +461,9 @@ async function sendExternalRegistrationEmail(
     html,
     text,
     replyTo: koordinator.email,
+    logging: {
+      templateTyp: 'external_registration',
+      recipientName: `${helperData.vorname} ${helperData.nachname}`,
+    },
   })
 }
