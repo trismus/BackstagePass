@@ -27,6 +27,17 @@ export interface AlleHelferFilterParams {
   sortOrder?: SortOrder
 }
 
+export interface HelferEinsatzDetail {
+  id: string
+  veranstaltung: string
+  datum: string
+  rolle: string
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  status: string
+  system: 'a' | 'b'
+}
+
 /**
  * Get consolidated list of all helpers (internal + external)
  */
@@ -204,4 +215,183 @@ export async function deleteHelferFromList(
 
   revalidatePath('/alle-helfer')
   return { success: true }
+}
+
+/**
+ * Get all Einsätze (assignments) for a specific helper.
+ * Queries both System A (helfer_anmeldungen) and System B (auffuehrung_zuweisungen).
+ */
+export async function getHelferEinsaetze(
+  helferId: string,
+  typ: HelferTyp
+): Promise<{ success: boolean; data?: HelferEinsatzDetail[]; error?: string }> {
+  try {
+    await requirePermission('mitglieder:read')
+
+    const supabase = await createClient()
+    const results: HelferEinsatzDetail[] = []
+
+    // System B: auffuehrung_zuweisungen
+    const idField = typ === 'intern' ? 'person_id' : 'external_helper_id'
+    const { data: zuweisungen, error: zuweisungenError } = await supabase
+      .from('auffuehrung_zuweisungen')
+      .select(`
+        id,
+        status,
+        schicht:auffuehrung_schichten!inner(
+          rolle,
+          veranstaltung:veranstaltungen!inner(
+            titel,
+            datum,
+            startzeit
+          ),
+          zeitblock:zeitbloecke(
+            name,
+            startzeit,
+            endzeit
+          )
+        )
+      `)
+      .eq(idField, helferId)
+
+    if (zuweisungenError) {
+      console.error('Error fetching auffuehrung_zuweisungen:', zuweisungenError)
+    } else if (zuweisungen) {
+      for (const z of zuweisungen) {
+        const schicht = z.schicht as unknown as {
+          rolle: string
+          veranstaltung: { titel: string; datum: string; startzeit: string | null }
+          zeitblock: { name: string; startzeit: string; endzeit: string } | null
+        }
+        if (!schicht?.veranstaltung) continue
+
+        results.push({
+          id: z.id,
+          veranstaltung: schicht.veranstaltung.titel,
+          datum: schicht.veranstaltung.datum,
+          rolle: schicht.rolle,
+          zeitblock_start: schicht.zeitblock?.startzeit ?? schicht.veranstaltung.startzeit ?? null,
+          zeitblock_end: schicht.zeitblock?.endzeit ?? null,
+          status: z.status,
+          system: 'b',
+        })
+      }
+    }
+
+    // System A: helfer_anmeldungen (for external helpers, also check this system)
+    if (typ === 'extern') {
+      const { data: anmeldungen, error: anmeldungenError } = await supabase
+        .from('helfer_anmeldungen')
+        .select(`
+          id,
+          status,
+          rollen_instanz:helfer_rollen_instanzen!inner(
+            custom_name,
+            zeitblock_start,
+            zeitblock_end,
+            template:helfer_rollen_templates(name),
+            helfer_event:helfer_events!inner(
+              name,
+              datum_start
+            )
+          )
+        `)
+        .eq('external_helper_id', helferId)
+
+      if (anmeldungenError) {
+        console.error('Error fetching helfer_anmeldungen:', anmeldungenError)
+      } else if (anmeldungen) {
+        for (const a of anmeldungen) {
+          const instanz = a.rollen_instanz as unknown as {
+            custom_name: string | null
+            zeitblock_start: string | null
+            zeitblock_end: string | null
+            template: { name: string } | null
+            helfer_event: { name: string; datum_start: string }
+          }
+          if (!instanz?.helfer_event) continue
+
+          const rolleName = instanz.custom_name ?? instanz.template?.name ?? 'Unbekannt'
+
+          results.push({
+            id: a.id,
+            veranstaltung: instanz.helfer_event.name,
+            datum: instanz.helfer_event.datum_start,
+            rolle: rolleName,
+            zeitblock_start: instanz.zeitblock_start,
+            zeitblock_end: instanz.zeitblock_end,
+            status: a.status,
+            system: 'a',
+          })
+        }
+      }
+    }
+
+    // Also check System A for internal helpers (they may have helfer_anmeldungen via profile_id)
+    if (typ === 'intern') {
+      // Internal helpers are linked via profile_id in helfer_anmeldungen
+      // First find the profile_id for this person
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('person_id', helferId)
+        .maybeSingle()
+
+      if (profile) {
+        const { data: anmeldungen, error: anmeldungenError } = await supabase
+          .from('helfer_anmeldungen')
+          .select(`
+            id,
+            status,
+            rollen_instanz:helfer_rollen_instanzen!inner(
+              custom_name,
+              zeitblock_start,
+              zeitblock_end,
+              template:helfer_rollen_templates(name),
+              helfer_event:helfer_events!inner(
+                name,
+                datum_start
+              )
+            )
+          `)
+          .eq('profile_id', profile.id)
+
+        if (anmeldungenError) {
+          console.error('Error fetching helfer_anmeldungen for intern:', anmeldungenError)
+        } else if (anmeldungen) {
+          for (const a of anmeldungen) {
+            const instanz = a.rollen_instanz as unknown as {
+              custom_name: string | null
+              zeitblock_start: string | null
+              zeitblock_end: string | null
+              template: { name: string } | null
+              helfer_event: { name: string; datum_start: string }
+            }
+            if (!instanz?.helfer_event) continue
+
+            const rolleName = instanz.custom_name ?? instanz.template?.name ?? 'Unbekannt'
+
+            results.push({
+              id: a.id,
+              veranstaltung: instanz.helfer_event.name,
+              datum: instanz.helfer_event.datum_start,
+              rolle: rolleName,
+              zeitblock_start: instanz.zeitblock_start,
+              zeitblock_end: instanz.zeitblock_end,
+              status: a.status,
+              system: 'a',
+            })
+          }
+        }
+      }
+    }
+
+    // Sort by datum descending (newest first)
+    results.sort((a, b) => b.datum.localeCompare(a.datum))
+
+    return { success: true, data: results }
+  } catch (error) {
+    console.error('getHelferEinsaetze failed:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unbekannter Fehler' }
+  }
 }
