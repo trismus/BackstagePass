@@ -5,68 +5,11 @@ import { getEmailTemplateInternal } from './email-templates'
 import { renderEmailTemplate, formatDateForEmail, formatTimeForEmail, formatDeadlineForEmail } from '../utils/email-renderer'
 import { generateHelferSchichtIcal, generateIcalFilename } from '../utils/ical-generator'
 import { sendEmailWithRetry } from '../email/client'
-import type { EmailPlaceholderData, EmailTemplateTyp, EmailLogStatus } from '../supabase/types'
+import type { EmailPlaceholderData, EmailTemplateTyp } from '../supabase/types'
 
 // =============================================================================
 // Helper Functions
 // =============================================================================
-
-/**
- * Log an email send attempt
- */
-async function logEmailSend(params: {
-  anmeldungId?: string
-  helferAnmeldungId?: string
-  templateTyp: string
-  recipientEmail: string
-  recipientName?: string
-  status: EmailLogStatus
-  errorMessage?: string
-}): Promise<string | null> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('email_logs')
-    .insert({
-      anmeldung_id: params.anmeldungId || null,
-      helfer_anmeldung_id: params.helferAnmeldungId || null,
-      template_typ: params.templateTyp,
-      recipient_email: params.recipientEmail,
-      recipient_name: params.recipientName || null,
-      status: params.status,
-      error_message: params.errorMessage || null,
-      sent_at: params.status === 'sent' ? new Date().toISOString() : null,
-    } as never)
-    .select('id')
-    .single()
-
-  if (error) {
-    console.error('[Email] Failed to log email:', error)
-    return null
-  }
-
-  return data?.id || null
-}
-
-/**
- * Update email log status
- */
-async function updateEmailLogStatus(
-  logId: string,
-  status: EmailLogStatus,
-  errorMessage?: string
-): Promise<void> {
-  const supabase = await createClient()
-
-  await supabase
-    .from('email_logs')
-    .update({
-      status,
-      error_message: errorMessage || null,
-      sent_at: status === 'sent' ? new Date().toISOString() : null,
-    } as never)
-    .eq('id', logId)
-}
 
 /**
  * Get veranstaltung coordinator info
@@ -287,15 +230,6 @@ export async function sendBookingConfirmation(
     }
   }
 
-  // Log the attempt
-  const logId = await logEmailSend({
-    anmeldungId: zuweisungId,
-    templateTyp: 'confirmation',
-    recipientEmail: person.email,
-    recipientName: `${person.vorname} ${person.nachname}`,
-    status: 'pending',
-  })
-
   // Send email
   const sendResult = await sendEmailWithRetry({
     to: person.email,
@@ -304,16 +238,12 @@ export async function sendBookingConfirmation(
     text: rendered.text,
     replyTo: koordinator.email,
     attachments: icalAttachment ? [icalAttachment] : undefined,
+    logging: {
+      templateTyp: 'confirmation',
+      recipientName: `${person.vorname} ${person.nachname}`,
+      anmeldungId: zuweisungId,
+    },
   })
-
-  // Update log
-  if (logId) {
-    await updateEmailLogStatus(
-      logId,
-      sendResult.success ? 'sent' : 'failed',
-      sendResult.error
-    )
-  }
 
   if (!sendResult.success) {
     console.error('[Email] Failed to send confirmation:', sendResult.error)
@@ -345,18 +275,6 @@ export async function sendTemplatedEmail(
   // Render template
   const rendered = renderEmailTemplate(template, data)
 
-  // Log the attempt
-  const logId = await logEmailSend({
-    anmeldungId: options?.anmeldungId,
-    helferAnmeldungId: options?.helferAnmeldungId,
-    templateTyp,
-    recipientEmail,
-    recipientName: data.vorname && data.nachname
-      ? `${data.vorname} ${data.nachname}`
-      : undefined,
-    status: 'pending',
-  })
-
   // Send email
   const sendResult = await sendEmailWithRetry({
     to: recipientEmail,
@@ -364,16 +282,15 @@ export async function sendTemplatedEmail(
     html: rendered.html,
     text: rendered.text,
     replyTo: options?.replyTo,
+    logging: {
+      templateTyp,
+      recipientName: data.vorname && data.nachname
+        ? `${data.vorname} ${data.nachname}`
+        : undefined,
+      anmeldungId: options?.anmeldungId,
+      helferAnmeldungId: options?.helferAnmeldungId,
+    },
   })
-
-  // Update log
-  if (logId) {
-    await updateEmailLogStatus(
-      logId,
-      sendResult.success ? 'sent' : 'failed',
-      sendResult.error
-    )
-  }
 
   if (!sendResult.success) {
     return { success: false, error: sendResult.error }

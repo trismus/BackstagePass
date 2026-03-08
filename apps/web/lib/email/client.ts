@@ -7,6 +7,14 @@
 
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
+import { createClient } from '@supabase/supabase-js'
+
+export interface EmailLogContext {
+  templateTyp?: string
+  recipientName?: string
+  anmeldungId?: string
+  helferAnmeldungId?: string
+}
 
 interface EmailSendOptions {
   to: string | string[]
@@ -20,6 +28,7 @@ interface EmailSendOptions {
     content: string | Buffer
     contentType?: string
   }>
+  logging?: EmailLogContext
 }
 
 interface EmailSendResult {
@@ -58,11 +67,55 @@ function createTransporter(): Transporter | null {
 }
 
 /**
+ * Write an email log entry to the database (fire-and-forget).
+ * Never throws — silently skips if env vars are missing.
+ */
+async function writeEmailLog(
+  recipientEmail: string,
+  status: 'sent' | 'failed',
+  logging?: EmailLogContext,
+  errorMessage?: string
+): Promise<void> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
+    const { error } = await supabase
+      .from('email_logs')
+      .insert({
+        template_typ: logging?.templateTyp || 'unknown',
+        recipient_email: recipientEmail,
+        recipient_name: logging?.recipientName || null,
+        anmeldung_id: logging?.anmeldungId || null,
+        helfer_anmeldung_id: logging?.helferAnmeldungId || null,
+        status,
+        error_message: errorMessage || null,
+        sent_at: status === 'sent' ? new Date().toISOString() : null,
+      } as never)
+
+    if (error) {
+      console.error('[Email] Failed to write email log:', error)
+    }
+  } catch (err) {
+    console.error('[Email] Error in writeEmailLog:', err)
+  }
+}
+
+/**
  * Send an email using SMTP
  */
 export async function sendEmail(options: EmailSendOptions): Promise<EmailSendResult> {
-  const { to, subject, html, text, from, replyTo, attachments } = options
+  const { to, subject, html, text, from, replyTo, attachments, logging } = options
 
+  const recipientEmail = Array.isArray(to) ? to[0] : to
   const transporter = createTransporter()
 
   // If no transporter available, log the email (development mode)
@@ -75,16 +128,20 @@ export async function sendEmail(options: EmailSendOptions): Promise<EmailSendRes
 
     // In development, treat as success
     if (process.env.NODE_ENV === 'development') {
-      return {
+      const result: EmailSendResult = {
         success: true,
         messageId: `dev-${Date.now()}`,
       }
+      void writeEmailLog(recipientEmail, 'sent', logging)
+      return result
     }
 
-    return {
+    const result: EmailSendResult = {
       success: false,
       error: 'Email service not configured',
     }
+    void writeEmailLog(recipientEmail, 'failed', logging, result.error)
+    return result
   }
 
   try {
@@ -102,15 +159,19 @@ export async function sendEmail(options: EmailSendOptions): Promise<EmailSendRes
       })),
     })
 
+    void writeEmailLog(recipientEmail, 'sent', logging)
+
     return {
       success: true,
       messageId: result.messageId,
     }
   } catch (error) {
     console.error('[Email] Failed to send:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    void writeEmailLog(recipientEmail, 'failed', logging, errorMsg)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMsg,
     }
   }
 }
