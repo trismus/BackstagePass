@@ -140,10 +140,10 @@ export default async function HilfePage() {
           Bei Fragen oder Problemen wende dich an den Vorstand oder schreibe
           eine E-Mail an{' '}
           <a
-            href="mailto:support@tgw.ch"
+            href="mailto:theatergruppewiden@gmail.com"
             className="text-primary-600 hover:underline"
           >
-            support@tgw.ch
+            theatergruppewiden@gmail.com
           </a>
         </p>
       </div>

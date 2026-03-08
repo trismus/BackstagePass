@@ -28,10 +28,10 @@ export default function PartnerKontaktPage() {
               <dt className="text-sm font-medium text-gray-500">E-Mail</dt>
               <dd>
                 <a
-                  href="mailto:info@theatergruppe-widen.ch"
+                  href="mailto:theatergruppewiden@gmail.com"
                   className="text-blue-600 hover:text-blue-800"
                 >
-                  info@theatergruppe-widen.ch
+                  theatergruppewiden@gmail.com
                 </a>
               </dd>
             </div>
@@ -39,12 +39,12 @@ export default function PartnerKontaktPage() {
               <dt className="text-sm font-medium text-gray-500">Website</dt>
               <dd>
                 <a
-                  href="https://www.theatergruppe-widen.ch"
+                  href="https://www.theater-widen.ch"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800"
                 >
-                  www.theatergruppe-widen.ch
+                  www.theater-widen.ch
                 </a>
               </dd>
             </div>
