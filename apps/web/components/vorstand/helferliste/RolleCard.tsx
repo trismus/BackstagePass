@@ -16,7 +16,6 @@ import type {
   HelferAnmeldung,
   HelferAnmeldungStatus,
   Profile,
-  ExterneHelferProfil,
 } from '@/lib/supabase/types'
 
 // =============================================================================
@@ -25,7 +24,6 @@ import type {
 
 type RolleAnmeldung = HelferAnmeldung & {
   profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
-  external_helper: Pick<ExterneHelferProfil, 'id' | 'vorname' | 'nachname' | 'email'> | null
 }
 
 type RolleData = HelferRollenInstanz & {
@@ -219,9 +217,7 @@ function AnmeldungRow({ anmeldung }: { anmeldung: RolleAnmeldung }) {
 
   const name = anmeldung.profile
     ? anmeldung.profile.display_name || anmeldung.profile.email
-    : anmeldung.external_helper
-      ? `${anmeldung.external_helper.vorname} ${anmeldung.external_helper.nachname}`
-      : anmeldung.external_name || 'Unbekannt'
+    : anmeldung.external_name || anmeldung.external_email || 'Unbekannt'
 
   const isExternal = !anmeldung.profile
 

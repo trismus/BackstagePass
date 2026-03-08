@@ -65,7 +65,7 @@ RETURNS TABLE (
   datum_end timestamptz,
   ort text,
   veranstaltung_id uuid,
-  public_token text,
+  public_token uuid,
   total_benoetigt int,
   total_belegt int,
   ampel text,
@@ -77,7 +77,7 @@ SET search_path = public
 AS $$
 BEGIN
   -- Permission check: only management can access
-  IF NOT has_role_permission('helferliste:read') THEN
+  IF NOT is_management() THEN
     RAISE EXCEPTION 'Insufficient permissions';
   END IF;
 

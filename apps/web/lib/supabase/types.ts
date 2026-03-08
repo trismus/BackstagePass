@@ -1785,7 +1785,6 @@ export type HelferEventVollDetails = HelferEvent & {
     template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
     anmeldungen: (HelferAnmeldung & {
       profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
-      external_helper: Pick<ExterneHelferProfil, 'id' | 'vorname' | 'nachname' | 'email'> | null
     })[]
     angemeldet_count: number
   })[]

@@ -102,16 +102,12 @@ export async function getHelferEventMitDetails(
           id,
           rollen_instanz_id,
           profile_id,
-          external_helper_id,
           external_name,
           external_email,
           external_telefon,
-          abmeldung_token,
-          datenschutz_akzeptiert,
           status,
           created_at,
-          profile:profiles(id, display_name, email),
-          external_helper:externe_helfer_profile(id, vorname, nachname, email)
+          profile:profiles(id, display_name, email)
         )
       `)
       .eq('helfer_event_id', eventId)
@@ -313,12 +309,6 @@ export async function assignProfileToRolle(
         rollen_instanz_id: rolleId,
         profile_id: profileId,
         status: 'angemeldet' as HelferAnmeldungStatus,
-        external_helper_id: null,
-        external_name: null,
-        external_email: null,
-        external_telefon: null,
-        abmeldung_token: null,
-        datenschutz_akzeptiert: null,
       })
 
     if (error) {
@@ -351,28 +341,12 @@ export async function assignExternalHelferToRolle(
     const validated = externalHelferAssignSchema.parse(data)
     const supabase = await createClient()
 
-    // Find or create external helper profile
-    const { data: helperId, error: helperError } = await supabase
-      .rpc('find_or_create_external_helper', {
-        p_email: validated.email,
-        p_vorname: validated.vorname,
-        p_nachname: validated.nachname,
-        p_telefon: validated.telefon || null,
-      })
-
-    if (helperError) {
-      console.error('Error finding/creating external helper:', helperError)
-      return { success: false, error: 'Fehler beim Erstellen des Helferprofils' }
-    }
-
-    const externalHelperId = helperId as string
-
-    // Check if already assigned
+    // Check if already assigned by email
     const { data: existing } = await supabase
       .from('helfer_anmeldungen')
       .select('id')
       .eq('rollen_instanz_id', rolleId)
-      .eq('external_helper_id', externalHelperId)
+      .eq('external_email', validated.email)
       .neq('status', 'abgelehnt')
       .maybeSingle()
 
@@ -384,14 +358,10 @@ export async function assignExternalHelferToRolle(
       .from('helfer_anmeldungen')
       .insert({
         rollen_instanz_id: rolleId,
-        external_helper_id: externalHelperId,
-        status: 'angemeldet' as HelferAnmeldungStatus,
-        profile_id: null,
         external_name: `${validated.vorname} ${validated.nachname}`,
         external_email: validated.email,
         external_telefon: validated.telefon || null,
-        abmeldung_token: null,
-        datenschutz_akzeptiert: null,
+        status: 'angemeldet' as HelferAnmeldungStatus,
       })
 
     if (error) {
