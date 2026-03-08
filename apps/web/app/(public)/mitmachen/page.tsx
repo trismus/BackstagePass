@@ -43,6 +43,9 @@ export default async function MitmachenPage() {
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
             Mitmachen bei der Theatergruppe Widen
           </h1>
+          <p className="mt-1 text-sm italic text-neutral-400">
+            s&apos;Theater uf em Mutschelle
+          </p>
           <p className="mt-2 text-gray-600">
             Unterstütze uns bei unseren Veranstaltungen — jede helfende Hand
             zählt!
@@ -82,6 +85,7 @@ export default async function MitmachenPage() {
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-gray-500">
           <p>Theatergruppe Widen</p>
+          <p className="mt-0.5 text-xs italic text-gray-400">s&apos;Theater uf em Mutschelle</p>
           <p className="mt-1">
             <a href="/datenschutz" className="text-primary-600 hover:underline">
               Datenschutzerklärung

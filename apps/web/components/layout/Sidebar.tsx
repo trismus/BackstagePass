@@ -147,8 +147,13 @@ function MobileOverlay({
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-4">
-            <span className="text-xs font-semibold uppercase tracking-[0.35em] text-neutral-500">
-              BackstagePass
+            <span className="flex flex-col">
+              <span className="text-xs font-semibold uppercase tracking-[0.35em] text-neutral-500">
+                BackstagePass
+              </span>
+              <span className="text-[10px] italic text-neutral-400 leading-tight">
+                s&apos;Theater uf em Mutschelle
+              </span>
             </span>
             <button
               onClick={onClose}
