@@ -5,6 +5,7 @@ import { createClient } from '../supabase/server'
 import { createAdminClient } from '../supabase/admin'
 import { sendWaitlistAssignedEmail, sendTemplatedEmail } from './email-sender'
 import type { WartelisteStatus } from '../supabase/types'
+import { withConstantTime } from '../utils/timing-safe'
 
 // =============================================================================
 // Constants
@@ -128,151 +129,159 @@ export async function processWaitlistWithNotification(
 
 /**
  * Confirm waitlist assignment (accept the slot)
+ *
+ * Security: Constant response time to prevent timing attacks on token lookup.
  */
 export async function confirmWaitlistByToken(
   token: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createClient()
+  return withConstantTime(async () => {
+    const supabase = await createClient()
 
-  // Find the waitlist entry by token
-  const { data: entry, error: fetchError } = await supabase
-    .from('helfer_warteliste')
-    .select(`
-      id,
-      schicht_id,
-      profile_id,
-      status,
-      antwort_deadline,
-      profile:profiles(email)
-    `)
-    .eq('confirmation_token', token)
-    .single()
+    // Find the waitlist entry by token
+    const { data: entry, error: fetchError } = await supabase
+      .from('helfer_warteliste')
+      .select(`
+        id,
+        schicht_id,
+        profile_id,
+        status,
+        antwort_deadline,
+        profile:profiles(email)
+      `)
+      .eq('confirmation_token', token)
+      .single()
 
-  if (fetchError || !entry) {
-    return { success: false, error: 'Link ungültig oder abgelaufen' }
-  }
-
-  if (entry.status !== 'benachrichtigt') {
-    if (entry.status === 'zugewiesen') {
-      return { success: false, error: 'Du bist bereits für diese Schicht angemeldet' }
+    if (fetchError || !entry) {
+      return { success: false, error: 'Link ungültig oder abgelaufen' }
     }
-    if (entry.status === 'abgelehnt') {
-      return { success: false, error: 'Du hast diesen Platz bereits abgelehnt' }
+
+    if (entry.status !== 'benachrichtigt') {
+      if (entry.status === 'zugewiesen') {
+        return { success: false, error: 'Du bist bereits für diese Schicht angemeldet' }
+      }
+      if (entry.status === 'abgelehnt') {
+        return { success: false, error: 'Du hast diesen Platz bereits abgelehnt' }
+      }
+      return { success: false, error: 'Dieser Link ist nicht mehr gültig' }
     }
-    return { success: false, error: 'Dieser Link ist nicht mehr gültig' }
-  }
 
-  // Check if deadline has passed
-  if (entry.antwort_deadline && new Date(entry.antwort_deadline) < new Date()) {
-    return { success: false, error: 'Die Bestätigungsfrist ist abgelaufen' }
-  }
-
-  // Get person_id from profile
-  let personId: string | null = null
-  if (entry.profile_id) {
-    const profileData = entry.profile as unknown as { email: string } | null
-    if (profileData?.email) {
-      const { data: person } = await supabase
-        .from('personen')
-        .select('id')
-        .eq('email', profileData.email)
-        .single()
-      personId = person?.id || null
+    // Check if deadline has passed
+    if (entry.antwort_deadline && new Date(entry.antwort_deadline) < new Date()) {
+      return { success: false, error: 'Die Bestätigungsfrist ist abgelaufen' }
     }
-  }
 
-  if (!personId) {
-    return { success: false, error: 'Keine Person gefunden' }
-  }
-
-  // Create zuweisung
-  const { error: insertError } = await supabase
-    .from('auffuehrung_zuweisungen')
-    .insert({
-      schicht_id: entry.schicht_id,
-      person_id: personId,
-      status: 'zugesagt',
-    } as never)
-
-  if (insertError) {
-    console.error('Error creating zuweisung from waitlist:', insertError)
-    if (insertError.code === '23505') {
-      return { success: false, error: 'Du bist bereits für diese Schicht angemeldet' }
+    // Get person_id from profile
+    let personId: string | null = null
+    if (entry.profile_id) {
+      const profileData = entry.profile as unknown as { email: string } | null
+      if (profileData?.email) {
+        const { data: person } = await supabase
+          .from('personen')
+          .select('id')
+          .eq('email', profileData.email)
+          .single()
+        personId = person?.id || null
+      }
     }
-    return { success: false, error: 'Fehler beim Zuweisen' }
-  }
 
-  // Update waitlist entry
-  await supabase
-    .from('helfer_warteliste')
-    .update({
-      status: 'zugewiesen' as WartelisteStatus,
-    } as never)
-    .eq('id', entry.id)
+    if (!personId) {
+      return { success: false, error: 'Keine Person gefunden' }
+    }
 
-  // Get veranstaltung_id for revalidation
-  const { data: schicht } = await supabase
-    .from('auffuehrung_schichten')
-    .select('veranstaltung_id')
-    .eq('id', entry.schicht_id)
-    .single()
+    // Create zuweisung
+    const { error: insertError } = await supabase
+      .from('auffuehrung_zuweisungen')
+      .insert({
+        schicht_id: entry.schicht_id,
+        person_id: personId,
+        status: 'zugesagt',
+      } as never)
 
-  if (schicht) {
-    revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}/helferliste`)
-  }
+    if (insertError) {
+      console.error('Error creating zuweisung from waitlist:', insertError)
+      if (insertError.code === '23505') {
+        return { success: false, error: 'Du bist bereits für diese Schicht angemeldet' }
+      }
+      return { success: false, error: 'Fehler beim Zuweisen' }
+    }
 
-  return { success: true }
+    // Update waitlist entry
+    await supabase
+      .from('helfer_warteliste')
+      .update({
+        status: 'zugewiesen' as WartelisteStatus,
+      } as never)
+      .eq('id', entry.id)
+
+    // Get veranstaltung_id for revalidation
+    const { data: schicht } = await supabase
+      .from('auffuehrung_schichten')
+      .select('veranstaltung_id')
+      .eq('id', entry.schicht_id)
+      .single()
+
+    if (schicht) {
+      revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}/helferliste`)
+    }
+
+    return { success: true }
+  })
 }
 
 /**
  * Reject waitlist assignment (decline the slot)
+ *
+ * Security: Constant response time to prevent timing attacks on token lookup.
  */
 export async function rejectWaitlistByToken(
   token: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createClient()
+  return withConstantTime(async () => {
+    const supabase = await createClient()
 
-  // Find the waitlist entry by token
-  const { data: entry, error: fetchError } = await supabase
-    .from('helfer_warteliste')
-    .select('id, schicht_id, status')
-    .eq('confirmation_token', token)
-    .single()
+    // Find the waitlist entry by token
+    const { data: entry, error: fetchError } = await supabase
+      .from('helfer_warteliste')
+      .select('id, schicht_id, status')
+      .eq('confirmation_token', token)
+      .single()
 
-  if (fetchError || !entry) {
-    return { success: false, error: 'Link ungültig oder abgelaufen' }
-  }
-
-  if (entry.status !== 'benachrichtigt') {
-    if (entry.status === 'abgelehnt') {
-      return { success: false, error: 'Du hast diesen Platz bereits abgelehnt' }
+    if (fetchError || !entry) {
+      return { success: false, error: 'Link ungültig oder abgelaufen' }
     }
-    return { success: false, error: 'Dieser Link ist nicht mehr gültig' }
-  }
 
-  // Update waitlist entry to rejected
-  await supabase
-    .from('helfer_warteliste')
-    .update({
-      status: 'abgelehnt' as WartelisteStatus,
-    } as never)
-    .eq('id', entry.id)
+    if (entry.status !== 'benachrichtigt') {
+      if (entry.status === 'abgelehnt') {
+        return { success: false, error: 'Du hast diesen Platz bereits abgelehnt' }
+      }
+      return { success: false, error: 'Dieser Link ist nicht mehr gültig' }
+    }
 
-  // Process waitlist to notify next person
-  await processWaitlistWithNotification(entry.schicht_id)
+    // Update waitlist entry to rejected
+    await supabase
+      .from('helfer_warteliste')
+      .update({
+        status: 'abgelehnt' as WartelisteStatus,
+      } as never)
+      .eq('id', entry.id)
 
-  // Get veranstaltung_id for revalidation
-  const { data: schicht } = await supabase
-    .from('auffuehrung_schichten')
-    .select('veranstaltung_id')
-    .eq('id', entry.schicht_id)
-    .single()
+    // Process waitlist to notify next person
+    await processWaitlistWithNotification(entry.schicht_id)
 
-  if (schicht) {
-    revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}/helferliste`)
-  }
+    // Get veranstaltung_id for revalidation
+    const { data: schicht } = await supabase
+      .from('auffuehrung_schichten')
+      .select('veranstaltung_id')
+      .eq('id', entry.schicht_id)
+      .single()
 
-  return { success: true }
+    if (schicht) {
+      revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}/helferliste`)
+    }
+
+    return { success: true }
+  })
 }
 
 /**
