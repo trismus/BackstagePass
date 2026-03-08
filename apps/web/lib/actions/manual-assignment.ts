@@ -5,6 +5,7 @@ import { createClient, getUserProfile } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
 import { sanitizeSearchQuery } from '../utils/search'
 import { checkPersonConflicts } from './conflict-check'
+import { sendBookingConfirmation } from './email-sender'
 import type { PersonConflict } from '../supabase/types'
 
 // =============================================================================
@@ -339,7 +340,7 @@ export async function assignHelferManual(
       ? `${notizen}\n\nManuell zugewiesen von ${profile?.display_name || profile?.email}`
       : `Manuell zugewiesen von ${profile?.display_name || profile?.email}`
 
-    const { error } = await supabase
+    const { data: newZuweisung, error } = await supabase
       .from('auffuehrung_zuweisungen')
       .insert({
         schicht_id: schichtId,
@@ -347,6 +348,8 @@ export async function assignHelferManual(
         status: 'zugesagt',
         notizen: assignmentNotizen,
       } as never)
+      .select('id')
+      .single()
 
     if (error) {
       console.error('Error creating assignment:', error)
@@ -354,6 +357,11 @@ export async function assignHelferManual(
         return { success: false, error: 'Diese Person ist bereits für diese Schicht zugewiesen' }
       }
       return { success: false, error: 'Fehler beim Zuweisen' }
+    }
+
+    // Send confirmation email (fire-and-forget)
+    if (newZuweisung?.id) {
+      sendBookingConfirmation(newZuweisung.id).catch(console.error)
     }
   } else {
     // External helper - need to handle differently
@@ -437,7 +445,7 @@ export async function createExternalAndAssign(
   // Now assign
   const assignmentNotizen = `Manuell zugewiesen von ${profile?.display_name || profile?.email}\nNeu angelegt als externer Helfer`
 
-  const { error: assignError } = await supabase
+  const { data: newZuweisung, error: assignError } = await supabase
     .from('auffuehrung_zuweisungen')
     .insert({
       schicht_id: schichtId,
@@ -445,10 +453,17 @@ export async function createExternalAndAssign(
       status: 'zugesagt',
       notizen: assignmentNotizen,
     } as never)
+    .select('id')
+    .single()
 
   if (assignError) {
     console.error('Error assigning new person:', assignError)
     return { success: false, error: 'Fehler beim Zuweisen' }
+  }
+
+  // Send confirmation email (fire-and-forget)
+  if (newZuweisung?.id) {
+    sendBookingConfirmation(newZuweisung.id).catch(console.error)
   }
 
   revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}/helfer-koordination`)

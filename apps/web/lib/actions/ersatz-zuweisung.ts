@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { getUserProfile } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
+import { sendBookingConfirmation } from './email-sender'
 import type { Person, Zeitblock } from '../supabase/types'
 
 // =============================================================================
@@ -299,6 +300,11 @@ export async function assignReplacement(
     return { success: false, error: 'Fehler beim Erstellen der Ersatzzuweisung' }
   }
 
+  // Send confirmation email (fire-and-forget)
+  if (result?.id) {
+    sendBookingConfirmation(result.id).catch(console.error)
+  }
+
   // Get veranstaltung_id for revalidation
   const { data: schicht } = await supabase
     .from('auffuehrung_schichten')
@@ -371,7 +377,7 @@ export async function assignFromWarteliste(
     }
 
     // Create zuweisung
-    const { error: insertError } = await supabase
+    const { data: newZuweisung, error: insertError } = await supabase
       .from('auffuehrung_zuweisungen')
       .insert({
         schicht_id: schichtId,
@@ -381,10 +387,17 @@ export async function assignFromWarteliste(
         checked_in_by: profile.id,
         ersatz_grund: 'Warteliste Nachruecker',
       } as never)
+      .select('id')
+      .single()
 
     if (insertError) {
       console.error('Error creating zuweisung from warteliste:', insertError)
       return { success: false, error: 'Fehler beim Zuweisen' }
+    }
+
+    // Send confirmation email (fire-and-forget)
+    if (newZuweisung?.id) {
+      sendBookingConfirmation(newZuweisung.id).catch(console.error)
     }
   }
 

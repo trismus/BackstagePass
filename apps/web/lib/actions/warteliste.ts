@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { getUserProfile } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
+import { sendBookingConfirmation } from './email-sender'
 import type {
   WartelisteEintragMitDetails,
   WartelisteStatus,
@@ -84,6 +85,11 @@ export async function addToWaitlist(
     }
     return { success: false, error: 'Fehler beim Hinzufuegen zur Warteliste' }
   }
+
+  // TODO: Send waitlist confirmation email once a 'waitlist_confirmation' template exists
+  // Currently no EmailTemplateTyp for "you're on the waitlist" notifications.
+  // Requires: 1) Add 'waitlist_confirmation' to EmailTemplateTyp
+  //           2) Create template in DB  3) Add send function in email-sender.ts
 
   // Get veranstaltung_id for revalidation
   const { data: schicht } = await supabase
@@ -235,17 +241,24 @@ export async function processWaitlist(
   }
 
   // Create zuweisung
-  const { error: insertError } = await supabase
+  const { data: newZuweisung, error: insertError } = await supabase
     .from('auffuehrung_zuweisungen')
     .insert({
       schicht_id: schichtId,
       person_id: personId,
       status: 'zugesagt',
     } as never)
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('Error creating zuweisung from waitlist:', insertError)
     return { success: false, error: 'Fehler beim Zuweisen' }
+  }
+
+  // Send confirmation email (fire-and-forget)
+  if (newZuweisung?.id) {
+    sendBookingConfirmation(newZuweisung.id).catch(console.error)
   }
 
   // Update waitlist entry
@@ -429,17 +442,24 @@ export async function assignFromWaitlist(
   }
 
   // Create zuweisung
-  const { error: insertError } = await supabase
+  const { data: newZuweisung, error: insertError } = await supabase
     .from('auffuehrung_zuweisungen')
     .insert({
       schicht_id: entry.schicht_id,
       person_id: person.id,
       status: 'zugesagt',
     } as never)
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('Error assigning from waitlist:', insertError)
     return { success: false, error: 'Fehler beim Zuweisen' }
+  }
+
+  // Send confirmation email (fire-and-forget)
+  if (newZuweisung?.id) {
+    sendBookingConfirmation(newZuweisung.id).catch(console.error)
   }
 
   // Update waitlist entry
