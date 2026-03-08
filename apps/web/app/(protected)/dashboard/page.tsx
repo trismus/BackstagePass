@@ -679,14 +679,14 @@ export default async function DashboardPage({
 
           {/* Main Content Area */}
           <div className="space-y-6 lg:col-span-8 xl:col-span-9">
+            {/* Offene Schichten - full width, top priority */}
+            <OffeneSchichtenWidget schichten={offeneSchichten} maxEvents={10} />
+
             {/* Content Widgets */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
               <MeineProbenWidget proben={meineProben} />
             </div>
-
-            {/* Offene Schichten - full width */}
-            <OffeneSchichtenWidget schichten={offeneSchichten} maxEvents={10} />
 
             {/* History Section */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
