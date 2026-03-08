@@ -28,13 +28,13 @@ Willkommen bei **BackstagePass** - der Vereinsverwaltung für die Theatergruppe 
 
 ### Für Vorstand & Regie
 - [Mitglieder verwalten](./05-verwaltung/mitglieder.md)
+- [Helferliste verwalten](./05-verwaltung/helferliste.md)
 - [Events erstellen](./05-verwaltung/events-erstellen.md)
 - [Proben planen](./05-verwaltung/proben-planen.md)
-- [Berichte & Statistiken](./05-verwaltung/berichte.md)
 
 ### Administration
 - [Benutzer & Rollen](./06-admin/benutzer.md)
-- [Systemeinstellungen](./06-admin/einstellungen.md)
+- [E-Mail-Logs](./06-admin/email-logs.md)
 - [Audit Log](./06-admin/audit-log.md)
 
 ---
@@ -45,13 +45,13 @@ BackstagePass unterscheidet verschiedene Benutzerrollen mit unterschiedlichen Be
 
 | Rolle | Beschreibung | Zugriff |
 |-------|--------------|---------|
-| **Administrator** | Volle Systemverwaltung | Alle Bereiche |
-| **Vorstand** | Vereinsführung | Alle operativen Module |
-| **Aktives Mitglied** | Spielende Mitglieder | Eigene Daten, Anmeldungen, Stunden |
-| **Passives Mitglied** | Unterstützende Mitglieder | Eigenes Profil, öffentliche Infos |
-| **Helfer** | Externe Helfer | Zugewiesene Schichten |
-| **Partner** | Partnerorganisationen | Eigene Partnerdaten |
-| **Freunde** | Freunde des Vereins | Öffentliche Informationen |
+| **ADMIN** | Volle Systemverwaltung | Alle Bereiche |
+| **VORSTAND** | Vereinsführung | Alle operativen Module |
+| **MITGLIED_AKTIV** | Spielende Mitglieder | Eigene Daten, Anmeldungen, Stunden |
+| **MITGLIED_PASSIV** | Unterstützende Mitglieder | Eigenes Profil, öffentliche Infos |
+| **HELFER** | Externe Helfer | Dashboard, eigenes Profil |
+| **PARTNER** | Partnerorganisationen | Partner-Portal |
+| **FREUNDE** | Freunde des Vereins | Willkommensseite, Veranstaltungen |
 
 ---
 
@@ -59,8 +59,9 @@ BackstagePass unterscheidet verschiedene Benutzerrollen mit unterschiedlichen Be
 
 Bei Fragen oder Problemen:
 - Wende dich an den Vorstand
-- Schreibe eine E-Mail an support@tgw.ch
+- Schreibe eine E-Mail an [theatergruppewiden@gmail.com](mailto:theatergruppewiden@gmail.com)
+- Website: [https://www.theater-widen.ch](https://www.theater-widen.ch)
 
 ---
 
-*Stand: Januar 2026*
+*Stand: März 2026*

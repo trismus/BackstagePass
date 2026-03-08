@@ -24,6 +24,14 @@ Hier sammeln wir Projekt- und Fachdokumentation (z. B. Architektur, Entscheidung
 - [Kanban-Board](kanban.md)
 - [Mitarbeiter Beschreibungen](mitarbeiter-beschreibungen.md)
 
+### 📖 **Benutzerhandbuch (User Guide):**
+- [Übersicht](user-guide/README.md)
+- [Dashboard](user-guide/01-erste-schritte/dashboard.md)
+- [Navigation](user-guide/01-erste-schritte/navigation.md)
+- [Helferliste verwalten](user-guide/05-verwaltung/helferliste.md) *(Vorstand)*
+- [Benutzer & Rollen](user-guide/06-admin/benutzer.md) *(Admin)*
+- [E-Mail-Logs](user-guide/06-admin/email-logs.md) *(Admin)*
+
 ## 📁 Ordnerstruktur
 ```
 docs/

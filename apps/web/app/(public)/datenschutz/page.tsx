@@ -204,7 +204,7 @@ export default function DatenschutzPage() {
                   </h3>
                   <p className="text-gray-600">
                     Versand von Bestätigungen, Erinnerungen, Änderungen und
-                    informationen zu Veranstaltungen per E-Mail
+                    Informationen zu Veranstaltungen per E-Mail
                   </p>
                 </div>
               </div>
@@ -502,7 +502,7 @@ export default function DatenschutzPage() {
             </h2>
             <p className="mb-4">
               BackstagePass verwendet Cookies zur Verwaltung deiner
-              Benuttersession:
+              Benutzersession:
             </p>
 
             <div className="space-y-4 rounded-lg bg-gray-50 p-6">

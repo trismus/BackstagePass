@@ -151,10 +151,7 @@ Optionale Alerts bei:
 
 | Log-Typ | Aufbewahrungsdauer |
 |---------|-------------------|
-| **Login-Logs** | 90 Tage |
-| **Datenänderungen** | 1 Jahr |
-| **Admin-Aktionen** | 2 Jahre |
-| **Sicherheits-Events** | 2 Jahre |
+| **Alle Audit-Logs** | 1 Jahr |
 
 ### Alte Logs:
 - Werden automatisch archiviert
@@ -167,7 +164,7 @@ Optionale Alerts bei:
 
 Das Audit-Log unterstützt:
 
-- **DSGVO-Anforderungen** - Nachvollziehbarkeit von Datenänderungen
+- **nDSG-Anforderungen** (Schweizer Datenschutzgesetz) - Nachvollziehbarkeit von Datenänderungen
 - **Vereinsrecht** - Dokumentation von Beschlüssen
 - **Interne Revision** - Kontrolle der Admin-Tätigkeiten
 
@@ -184,8 +181,7 @@ Das Audit-Log unterstützt:
 - Keine Weitergabe an normale Benutzer
 
 ### Wie lange werden Logs gespeichert?
-- Siehe Aufbewahrungsfristen oben
-- Konfigurierbar in Einstellungen
+- Alle Audit-Logs werden 1 Jahr aufbewahrt (gemäss Datenschutzerklärung)
 
 ### Ich finde einen bestimmten Eintrag nicht
 - Prüfe den Zeitraum-Filter
