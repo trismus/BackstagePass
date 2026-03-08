@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getEmailTemplate } from '@/lib/actions/email-templates'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button } from '@/components/ui'
 import { TemplateEditor } from '@/components/admin/email-templates/TemplateEditor'
+import { CopyPlaceholderButton } from '@/components/admin/email-templates/CopyPlaceholderButton'
 import { EMAIL_TEMPLATE_TYP_LABELS, type EmailTemplateTyp } from '@/lib/supabase/types'
 
 export const metadata = {
@@ -98,15 +99,7 @@ export default async function EmailTemplateEditPage({
                     <code className="text-sm text-primary-600">
                       {`{{${placeholder}}}`}
                     </code>
-                    <button
-                      type="button"
-                      className="text-xs text-neutral-400 hover:text-neutral-600"
-                      onClick={() => {
-                        navigator.clipboard.writeText(`{{${placeholder}}}`)
-                      }}
-                    >
-                      Kopieren
-                    </button>
+                    <CopyPlaceholderButton placeholder={placeholder} />
                   </div>
                 ))}
               </div>
