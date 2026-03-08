@@ -317,10 +317,10 @@ export function OffeneSchichtenWidget({
       )}
       <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-2">
         <Link
-          href="/auffuehrungen"
+          href={"/mitmachen" as never}
           className="text-sm text-orange-600 hover:text-orange-800"
         >
-          Alle Aufführungen &rarr;
+          Alle Schichten ansehen &rarr;
         </Link>
       </div>
     </div>
