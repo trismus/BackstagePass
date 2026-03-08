@@ -12,8 +12,10 @@ import {
   ProduktionDashboardWidget,
   CircularProgress,
   MetricCard,
+  MitmachenDashboard,
 } from '@/components/dashboard'
 import { getAktuelleProduktionFuerDashboard, getMeineProduktionsAuffuehrungen } from '@/lib/actions/produktionen'
+import { getMitmachenDashboardData } from '@/lib/actions/mitmachen-dashboard'
 import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
 import { getMeineProben } from '@/lib/actions/proben'
 import { getRollenHistorie } from '@/lib/actions/historie'
@@ -118,6 +120,7 @@ export default async function DashboardPage({
       { data: aktivesStuck },
       { data: offeneSchichten },
       aktuelleProduktion,
+      mitmachenData,
     ] = await Promise.all([
       supabase.from('personen').select('*', { count: 'exact', head: true }),
       supabase.from('personen').select('*', { count: 'exact', head: true }).eq('aktiv', true),
@@ -141,6 +144,7 @@ export default async function DashboardPage({
         .select('id, rolle, anzahl_benoetigt')
         .limit(10),
       getAktuelleProduktionFuerDashboard(),
+      getMitmachenDashboardData(),
     ])
 
     // Calculate warnings
@@ -434,6 +438,9 @@ export default async function DashboardPage({
           besetzungStats={aktuelleProduktion.besetzungStats ?? undefined}
           naechsteTermine={aktuelleProduktion.naechsteTermine}
         />
+
+        {/* Mitmachen Dashboard */}
+        <MitmachenDashboard data={mitmachenData} />
 
         {/* Quick Actions */}
         <div className="rounded-xl border border-neutral-200 bg-white p-6" data-tour="quick-actions">
