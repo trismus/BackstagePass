@@ -145,7 +145,7 @@ async function performInvite(
       email,
       options: {
         data: { display_name: `${vorname} ${nachname}` },
-        redirectTo: `${siteUrl}/passwort-setzen`,
+        redirectTo: `${siteUrl}/auth/callback?next=/passwort-setzen`,
       },
     })
 
@@ -164,7 +164,7 @@ async function performInvite(
       email,
       {
         data: { display_name: `${vorname} ${nachname}` },
-        redirectTo: `${siteUrl}/passwort-setzen`,
+        redirectTo: `${siteUrl}/auth/callback?next=/passwort-setzen`,
       }
     )
 
