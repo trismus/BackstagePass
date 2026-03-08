@@ -131,7 +131,92 @@ export async function getAlleHelfer(
     if (externeError) {
       console.error('Error fetching external helpers:', externeError)
     } else if (externe) {
+      // Collect emails to find matching personen with auffuehrung_zuweisungen
+      const externeEmails = externe
+        .map((e) => e.email)
+        .filter((e): e is string => !!e)
+
+      // Build a map of email -> auffuehrung_zuweisungen count
+      const emailZuweisungCounts = new Map<string, { count: number; letzter: string | null }>()
+
+      if (externeEmails.length > 0) {
+        const { data: personenMatches } = await supabase
+          .from('personen')
+          .select('id, email')
+          .in('email', externeEmails)
+
+        if (personenMatches && personenMatches.length > 0) {
+          const personIds = personenMatches.map((p) => p.id)
+          const { data: zuweisungen } = await supabase
+            .from('auffuehrung_zuweisungen')
+            .select('person_id, created_at')
+            .in('person_id', personIds)
+
+          if (zuweisungen) {
+            // Group by person_id
+            const personCounts = new Map<string, { count: number; letzter: string | null }>()
+            for (const z of zuweisungen) {
+              const existing = personCounts.get(z.person_id)
+              if (existing) {
+                existing.count++
+                if (z.created_at > (existing.letzter || '')) {
+                  existing.letzter = z.created_at
+                }
+              } else {
+                personCounts.set(z.person_id, { count: 1, letzter: z.created_at })
+              }
+            }
+
+            // Map back to emails
+            for (const pm of personenMatches) {
+              if (pm.email) {
+                const counts = personCounts.get(pm.id)
+                if (counts) {
+                  emailZuweisungCounts.set(pm.email.toLowerCase(), counts)
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Track which emails are already in results (from intern query) to avoid duplicates
+      const internEmails = new Set(
+        results
+          .filter((r) => r.typ === 'intern' && r.email)
+          .map((r) => r.email!.toLowerCase())
+      )
+
       for (const ext of externe) {
+        const emailLower = ext.email?.toLowerCase()
+
+        // Skip if this external helper already appears as intern (same email)
+        if (emailLower && internEmails.has(emailLower)) {
+          // Add System A count to the existing intern entry
+          const systemACount = (ext.anmeldungen as unknown[] | null)?.length || 0
+          if (systemACount > 0) {
+            const internEntry = results.find(
+              (r) => r.typ === 'intern' && r.email?.toLowerCase() === emailLower
+            )
+            if (internEntry) {
+              internEntry.einsaetze_count += systemACount
+            }
+          }
+          continue
+        }
+
+        // Count from both systems
+        const systemACount = (ext.anmeldungen as unknown[] | null)?.length || 0
+        const systemBData = emailLower ? emailZuweisungCounts.get(emailLower) : undefined
+        const systemBCount = systemBData?.count || 0
+        const totalCount = systemACount + systemBCount
+
+        // Latest assignment from either system
+        let letzter = ext.letzter_einsatz
+        if (systemBData?.letzter && (!letzter || systemBData.letzter > letzter)) {
+          letzter = systemBData.letzter
+        }
+
         results.push({
           id: ext.id,
           typ: 'extern',
@@ -139,8 +224,8 @@ export async function getAlleHelfer(
           nachname: ext.nachname,
           email: ext.email,
           telefon: ext.telefon,
-          einsaetze_count: (ext.anmeldungen as unknown[] | null)?.length || 0,
-          letzter_einsatz: ext.letzter_einsatz,
+          einsaetze_count: totalCount,
+          letzter_einsatz: letzter,
         })
       }
     }
