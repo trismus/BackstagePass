@@ -1759,6 +1759,47 @@ export type CheckHelferTimeConflictsResult = {
 }
 
 // =============================================================================
+// Helferliste Management Dashboard Types
+// =============================================================================
+
+export type AmpelStatus = 'gruen' | 'gelb' | 'rot'
+
+export type HelferEventBelegung = {
+  event_id: string
+  name: string
+  typ: HelferEventTyp
+  datum_start: string
+  datum_end: string
+  ort: string | null
+  veranstaltung_id: string | null
+  public_token: string
+  total_benoetigt: number
+  total_belegt: number
+  ampel: AmpelStatus
+  rollen_count: number
+}
+
+export type HelferEventVollDetails = HelferEvent & {
+  veranstaltung: Pick<Veranstaltung, 'id' | 'titel'> | null
+  rollen: (HelferRollenInstanz & {
+    template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
+    anmeldungen: (HelferAnmeldung & {
+      profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
+      external_helper: Pick<ExterneHelferProfil, 'id' | 'vorname' | 'nachname' | 'email'> | null
+    })[]
+    angemeldet_count: number
+  })[]
+}
+
+export type ExterneHelferProfile = {
+  id: string
+  vorname: string
+  nachname: string
+  email: string
+  telefon: string | null
+}
+
+// =============================================================================
 // Cross-System Conflict Detection (Issue #343)
 // =============================================================================
 

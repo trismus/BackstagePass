@@ -145,6 +145,17 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
     ],
   },
   {
+    title: 'Verwaltung',
+    items: [
+      {
+        href: '/vorstand/helferliste',
+        label: 'Helferliste',
+        icon: 'helper',
+        permission: 'helferliste:read',
+      },
+    ],
+  },
+  {
     title: 'Mein Bereich',
     items: [
       { href: '/vorstand/termine', label: 'Meine Termine', icon: 'calendar' },
@@ -425,6 +436,7 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   users: 'Benutzer',
   audit: 'Audit Log',
   vorstand: 'Vorstand',
+  helferliste: 'Helferliste',
   'mein-bereich': 'Mein Bereich',
   termine: 'Meine Termine',
   stundenkonto: 'Stundenkonto',
