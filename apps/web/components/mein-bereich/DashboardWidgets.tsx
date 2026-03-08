@@ -231,10 +231,12 @@ export function QuickLinksWidget({
 
 interface OffeneSchichtenWidgetProps {
   schichten: DashboardSchicht[]
+  maxEvents?: number
 }
 
 export function OffeneSchichtenWidget({
   schichten,
+  maxEvents,
 }: OffeneSchichtenWidgetProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -248,9 +250,23 @@ export function OffeneSchichtenWidget({
     return `${start.slice(0, 5)}–${end.slice(0, 5)}`
   }
 
+  // Sort shifts: intern first, then by date
+  const sorted = [...schichten].sort((a, b) => {
+    // Intern shifts first
+    if (a.sichtbarkeit === 'intern' && b.sichtbarkeit !== 'intern') return -1
+    if (a.sichtbarkeit !== 'intern' && b.sichtbarkeit === 'intern') return 1
+    // Then by date
+    const dateCmp = a.veranstaltung.datum.localeCompare(b.veranstaltung.datum)
+    if (dateCmp !== 0) return dateCmp
+    // Then by time
+    const aStart = a.zeitblock?.startzeit ?? ''
+    const bStart = b.zeitblock?.startzeit ?? ''
+    return aStart.localeCompare(bStart)
+  })
+
   // Group shifts by veranstaltung
   const grouped = new Map<string, { veranstaltung: DashboardSchicht['veranstaltung']; schichten: DashboardSchicht[] }>()
-  for (const s of schichten) {
+  for (const s of sorted) {
     const key = s.veranstaltung.id
     if (!grouped.has(key)) {
       grouped.set(key, { veranstaltung: s.veranstaltung, schichten: [] })
@@ -258,15 +274,27 @@ export function OffeneSchichtenWidget({
     grouped.get(key)!.schichten.push(s)
   }
 
+  // Limit to maxEvents veranstaltungen if specified
+  const allGroups = [...grouped.values()]
+  const displayGroups = maxEvents ? allGroups.slice(0, maxEvents) : allGroups
+  const hasMore = maxEvents ? allGroups.length > maxEvents : false
+
   return (
     <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
       <div className="border-b border-orange-100 bg-orange-50 px-4 py-3">
-        <h3 className="font-medium text-orange-900">Offene Schichten</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-orange-900">Offene Schichten</h3>
+          {schichten.length > 0 && (
+            <span className="text-xs text-orange-700">
+              {allGroups.length} {allGroups.length === 1 ? 'Veranstaltung' : 'Veranstaltungen'}
+            </span>
+          )}
+        </div>
       </div>
-      {schichten.length > 0 ? (
-        <div className="space-y-4 p-4">
-          {[...grouped.values()].map(({ veranstaltung, schichten: items }) => (
-            <div key={veranstaltung.id}>
+      {displayGroups.length > 0 ? (
+        <div className="divide-y divide-neutral-100">
+          {displayGroups.map(({ veranstaltung, schichten: items }) => (
+            <div key={veranstaltung.id} className="p-4">
               <div className="mb-2 flex items-center justify-between">
                 <Link
                   href={`/auffuehrungen/${veranstaltung.id}/helferliste` as never}
@@ -291,7 +319,7 @@ export function OffeneSchichtenWidget({
                         {s.rolle}
                       </p>
                       {s.sichtbarkeit === 'intern' && (
-                        <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+                        <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                           Intern
                         </span>
                       )}
@@ -320,7 +348,7 @@ export function OffeneSchichtenWidget({
           href={"/mitmachen" as never}
           className="text-sm text-orange-600 hover:text-orange-800"
         >
-          Alle Schichten ansehen &rarr;
+          {hasMore ? 'Alle Schichten ansehen' : 'Zur Mitmachen-Seite'} &rarr;
         </Link>
       </div>
     </div>

@@ -605,8 +605,19 @@ export default async function DashboardPage({
       ) : (
         // Active Member View - Full Outlook-Style Layout
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Left Sidebar - Calendar */}
+          {/* Left Sidebar - Profile & Calendar */}
           <div className="space-y-6 lg:col-span-4 xl:col-span-3">
+            {/* Profile Completion */}
+            <ProfileCompletionWidget person={person} />
+
+            {/* Profile Card */}
+            <div id="profile-card">
+              <EditableProfileCard
+                person={person}
+                role={profile.role}
+              />
+            </div>
+
             <MiniKalender termine={kalenderTermine} />
 
             {/* Quick Stats */}
@@ -668,25 +679,14 @@ export default async function DashboardPage({
 
           {/* Main Content Area */}
           <div className="space-y-6 lg:col-span-8 xl:col-span-9">
-            {/* Profile Completion */}
-            <ProfileCompletionWidget person={person} />
-
-            {/* Profile Card */}
-            <div id="profile-card">
-              <EditableProfileCard
-                person={person}
-                role={profile.role}
-              />
-            </div>
-
             {/* Content Widgets */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
               <MeineProbenWidget proben={meineProben} />
             </div>
 
             {/* Offene Schichten - full width */}
-            <OffeneSchichtenWidget schichten={offeneSchichten} />
+            <OffeneSchichtenWidget schichten={offeneSchichten} maxEvents={10} />
 
             {/* History Section */}
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
