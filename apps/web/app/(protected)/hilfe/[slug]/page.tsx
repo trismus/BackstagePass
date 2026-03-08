@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getHelpContent } from '@/app/actions/help'
 import { HELP_TOPICS, type HelpContextKey } from '@/lib/help'
+import { sanitizeHtml } from '@/lib/utils/sanitize-html'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -92,7 +93,7 @@ export default async function HilfeTopicPage({ params }: PageProps) {
         <div className="px-6 py-6">
           <div
             className="prose prose-neutral max-w-none"
-            dangerouslySetInnerHTML={{ __html: content.html }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.html) }}
           />
         </div>
       </div>
