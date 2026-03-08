@@ -42,6 +42,7 @@ export async function getAllEmailTemplates(): Promise<EmailTemplate[]> {
 export async function getEmailTemplate(
   typ: EmailTemplateTyp
 ): Promise<EmailTemplate | null> {
+  await requirePermission('admin:access')
   const supabase = await createClient()
 
   const { data, error } = await supabase
