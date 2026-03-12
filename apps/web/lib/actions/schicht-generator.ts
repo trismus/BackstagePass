@@ -172,6 +172,8 @@ export async function generateSchichtenFromTemplate(
         name: sl.name,
         anzahl: sl.anzahl,
         beschreibung: sl.beschreibung,
+        kategorie: 'sonstiges' as const,
+        sichtbarkeit: 'public' as const,
       }))
 
       const { data: createdSachData, error: sachleistungError } = await supabase

@@ -18,6 +18,7 @@ import type {
   HelferZuweisungTyp,
   Zeitblock,
   ZuweisungStatus,
+  SachleistungenSummaryData,
 } from '../supabase/types'
 
 // =============================================================================
@@ -214,6 +215,46 @@ export async function getSchichtenDashboard(): Promise<{
       console.error('Error fetching orphan schichten:', orphanError)
     }
 
+    // 3b. Fetch sachleistungen and zusagen for summary
+    const { data: sachleistungen } = await supabase
+      .from('sachleistungen')
+      .select('id, veranstaltung_id, anzahl')
+      .in('veranstaltung_id', veranstaltungIds)
+
+    const sachleistungIds = (sachleistungen || []).map((s) => s.id)
+    let sachleistungZusagen: { sachleistung_id: string; anzahl: number; status: string }[] = []
+    if (sachleistungIds.length > 0) {
+      const { data: zusagenData } = await supabase
+        .from('sachleistung_zusagen')
+        .select('sachleistung_id, anzahl, status')
+        .in('sachleistung_id', sachleistungIds)
+
+      sachleistungZusagen = (zusagenData || []) as { sachleistung_id: string; anzahl: number; status: string }[]
+    }
+
+    // Build sachleistungen summary per veranstaltung
+    const sachleistungenSummaryMap = new Map<string, SachleistungenSummaryData>()
+    for (const v of veranstaltungen) {
+      const vSachleistungen = (sachleistungen || []).filter((s) => s.veranstaltung_id === v.id)
+      if (vSachleistungen.length === 0) continue
+
+      const total = vSachleistungen.reduce((sum, s) => sum + s.anzahl, 0)
+      const vSachleistungIds = vSachleistungen.map((s) => s.id)
+      const vZusagen = sachleistungZusagen.filter((z) => vSachleistungIds.includes(z.sachleistung_id))
+      const activeZusagen = vZusagen.filter((z) => z.status !== 'storniert')
+      const zugesagt = activeZusagen.reduce((sum, z) => sum + z.anzahl, 0)
+      const geliefert = vZusagen
+        .filter((z) => z.status === 'geliefert')
+        .reduce((sum, z) => sum + z.anzahl, 0)
+
+      sachleistungenSummaryMap.set(v.id, {
+        total,
+        zugesagt,
+        offen: Math.max(0, total - zugesagt),
+        geliefert,
+      })
+    }
+
     // 4. Group data by veranstaltung and build dashboard structure
     const zeitblockMap = new Map<string, RawZeitblock[]>()
     const orphanMap = new Map<string, RawSchicht[]>()
@@ -293,6 +334,7 @@ export async function getSchichtenDashboard(): Promise<{
         ampel: computeAmpel(soll, ist),
         belegung: { soll, ist },
         zeitbloecke: dashboardZeitbloecke,
+        sachleistungen_summary: sachleistungenSummaryMap.get(v.id),
       }
     })
 

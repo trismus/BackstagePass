@@ -810,6 +810,8 @@ export async function applyTemplate(
         name: sl.name,
         anzahl: sl.anzahl,
         beschreibung: sl.beschreibung,
+        kategorie: 'sonstiges' as const,
+        sichtbarkeit: 'public' as const,
       })
     )
 

@@ -26,6 +26,8 @@ import { getAktiveRaeume } from '@/lib/actions/raeume'
 import { getAktiveRessourcen } from '@/lib/actions/ressourcen'
 import { getTemplates } from '@/lib/actions/templates'
 import { TemplateApplyDialog } from '@/components/templates/TemplateApplyDialog'
+import { getSachleistungenMitZusagen } from '@/lib/actions/sachleistungen'
+import { SachleistungenAdmin } from '@/components/sachleistungen'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -61,6 +63,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
     ressourcen,
     templates,
     produktionsKontext,
+    sachleistungen,
   ] = await Promise.all([
     getZeitbloecke(id),
     getSchichten(id),
@@ -73,6 +76,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
     getAktiveRessourcen(),
     getTemplates(),
     getProduktionForVeranstaltung(id),
+    getSachleistungenMitZusagen(id),
   ])
 
   const formatDate = (dateStr: string) => {
@@ -211,6 +215,13 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
               datum={veranstaltung.datum}
               reservierungen={ressourcenReservierungen}
               ressourcen={ressourcen}
+              canEdit={canEdit}
+            />
+
+            {/* Sachleistungen */}
+            <SachleistungenAdmin
+              veranstaltungId={id}
+              sachleistungen={sachleistungen}
               canEdit={canEdit}
             />
           </div>

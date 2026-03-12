@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { SelectableSchichtCard } from './SelectableSchichtCard'
+import { PublicSachleistungenSection } from '@/components/mitmachen/PublicSachleistungenSection'
 import type { PublicOverviewEventData } from '@/lib/actions/public-overview'
 
 interface EventGroupProps {
@@ -15,7 +16,7 @@ export function EventGroup({
   selectedSchichtIds,
   onToggleSchicht,
 }: EventGroupProps) {
-  const { veranstaltung, zeitbloecke } = event
+  const { veranstaltung, zeitbloecke, sachleistungen } = event
   const [showFull, setShowFull] = useState(false)
 
   const formatDate = (dateStr: string) => {
@@ -105,6 +106,14 @@ export function EventGroup({
               ? 'Belegte Rollen ausblenden'
               : `${fullSchichten.length} belegte ${fullSchichten.length === 1 ? 'Rolle' : 'Rollen'} anzeigen`}
           </button>
+        )}
+
+        {/* Sachleistungen Section */}
+        {sachleistungen && sachleistungen.length > 0 && (
+          <PublicSachleistungenSection
+            sachleistungen={sachleistungen}
+            veranstaltungTitel={veranstaltung.titel}
+          />
         )}
       </div>
     </div>

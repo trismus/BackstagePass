@@ -1049,17 +1049,79 @@ export type TemplateSachleistungInsert = Omit<
 >
 export type TemplateSachleistungUpdate = Partial<TemplateSachleistungInsert>
 
+export type SachleistungKategorie = 'kuchen' | 'getraenke' | 'salate' | 'material' | 'sonstiges'
+export type SachleistungSichtbarkeit = 'intern' | 'public'
+
+export const SACHLEISTUNG_KATEGORIE_LABELS: Record<SachleistungKategorie, string> = {
+  kuchen: 'Kuchen',
+  getraenke: 'Getränke',
+  salate: 'Salate',
+  material: 'Material',
+  sonstiges: 'Sonstiges',
+}
+
 export type Sachleistung = {
   id: string
   veranstaltung_id: string
   name: string
   anzahl: number
   beschreibung: string | null
+  kategorie: SachleistungKategorie
+  sichtbarkeit: SachleistungSichtbarkeit
   created_at: string
 }
 
 export type SachleistungInsert = Omit<Sachleistung, 'id' | 'created_at'>
 export type SachleistungUpdate = Partial<SachleistungInsert>
+
+// =============================================================================
+// Sachleistung Zusagen (Pledges) - Issue #463
+// =============================================================================
+
+export type ZusageStatus = 'zugesagt' | 'geliefert' | 'storniert'
+
+export type SachleistungZusage = {
+  id: string
+  sachleistung_id: string
+  person_id: string | null
+  external_name: string | null
+  external_email: string | null
+  external_telefon: string | null
+  anzahl: number
+  kommentar: string | null
+  status: ZusageStatus
+  geliefert_at: string | null
+  created_at: string
+}
+
+export type SachleistungZusageInsert = Omit<SachleistungZusage, 'id' | 'created_at' | 'geliefert_at'>
+export type SachleistungZusageUpdate = Partial<SachleistungZusageInsert>
+
+/** Sachleistung with aggregated pledge data for display */
+export type SachleistungMitZusagen = Sachleistung & {
+  zusagen: SachleistungZusage[]
+  /** Total pledged quantity (non-cancelled) */
+  zugesagt_anzahl: number
+  /** Total delivered quantity */
+  geliefert_anzahl: number
+  /** Remaining needed */
+  offen_anzahl: number
+}
+
+/** Zusage with resolved person name for display */
+export type ZusageMitName = SachleistungZusage & {
+  helfer_name: string
+  helfer_email: string | null
+  helfer_telefon: string | null
+}
+
+/** Summary for dashboard compact view */
+export type SachleistungenSummaryData = {
+  total: number
+  zugesagt: number
+  offen: number
+  geliefert: number
+}
 
 // Extended type with all template details
 export type TemplateMitDetails = AuffuehrungTemplate & {
@@ -1843,6 +1905,7 @@ export type DashboardAuffuehrung = {
   ampel: AmpelStatus
   belegung: { soll: number; ist: number }
   zeitbloecke: DashboardZeitblock[]
+  sachleistungen_summary?: SachleistungenSummaryData
 }
 
 export type SchichtenDashboardStats = {
@@ -3078,6 +3141,11 @@ export type Database = {
         Row: Sachleistung
         Insert: SachleistungInsert
         Update: SachleistungUpdate
+      }
+      sachleistung_zusagen: {
+        Row: SachleistungZusage
+        Insert: SachleistungZusageInsert
+        Update: SachleistungZusageUpdate
       }
       helfer_events: {
         Row: HelferEvent

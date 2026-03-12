@@ -270,6 +270,63 @@ export const templateSachleistungUpdateSchema = templateSachleistungSchema
   .partial()
 
 // =============================================================================
+// Instance Sachleistung Validations (Issue #463)
+// =============================================================================
+
+export const sachleistungSchema = z.object({
+  veranstaltung_id: uuid('Ungültige Veranstaltungs-ID'),
+  name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
+  anzahl: z.number().int().min(1, 'Anzahl muss mindestens 1 sein').default(1),
+  beschreibung: z
+    .string()
+    .max(500, 'Beschreibung zu lang')
+    .nullable()
+    .optional(),
+  kategorie: z
+    .enum(['kuchen', 'getraenke', 'salate', 'material', 'sonstiges'])
+    .default('sonstiges'),
+  sichtbarkeit: z
+    .enum(['intern', 'public'])
+    .default('public'),
+})
+
+export const sachleistungUpdateSchema = sachleistungSchema
+  .omit({ veranstaltung_id: true })
+  .partial()
+
+// =============================================================================
+// Sachleistung Zusage Validations (Issue #463)
+// =============================================================================
+
+export const sachleistungZusageSchema = z.object({
+  sachleistung_id: uuid('Ungültige Sachleistungs-ID'),
+  person_id: uuid().nullable().optional(),
+  external_name: z.string().min(1, 'Name ist erforderlich').max(100).nullable().optional(),
+  external_email: z.string().email('Ungültige E-Mail-Adresse').nullable().optional(),
+  external_telefon: z.string().max(30).nullable().optional(),
+  anzahl: z.number().int().min(1, 'Anzahl muss mindestens 1 sein').default(1),
+  kommentar: z.string().max(500, 'Kommentar zu lang').nullable().optional(),
+  status: z.enum(['zugesagt', 'geliefert', 'storniert']).default('zugesagt'),
+})
+
+/** Schema for internal helper pledges (logged-in users) */
+export const internZusageSchema = z.object({
+  sachleistung_id: uuid('Ungültige Sachleistungs-ID'),
+  anzahl: z.number().int().min(1, 'Anzahl muss mindestens 1 sein').default(1),
+  kommentar: z.string().max(500, 'Kommentar zu lang').nullable().optional(),
+})
+
+/** Schema for external helper pledges (mitmach page) */
+export const externZusageSchema = z.object({
+  sachleistung_id: uuid('Ungültige Sachleistungs-ID'),
+  external_name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
+  external_email: z.string().email('Ungültige E-Mail-Adresse'),
+  external_telefon: z.string().max(30, 'Telefonnummer zu lang').optional(),
+  anzahl: z.number().int().min(1, 'Anzahl muss mindestens 1 sein').default(1),
+  kommentar: z.string().max(500, 'Kommentar zu lang').nullable().optional(),
+})
+
+// =============================================================================
 // Helper function for validation
 // =============================================================================
 

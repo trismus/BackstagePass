@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import type { DashboardAuffuehrung, AmpelStatus } from '@/lib/supabase/types'
 import { ZeitblockSection } from './ZeitblockSection'
+import { SachleistungenSummary } from '@/components/sachleistungen'
 
 // =============================================================================
 // Types
@@ -177,6 +178,13 @@ export function AuffuehrungAccordion({
               Zur Helferliste &rarr;
             </Link>
           </div>
+
+          {/* Sachleistungen Summary */}
+          {auffuehrung.sachleistungen_summary && auffuehrung.sachleistungen_summary.total > 0 && (
+            <div className="mb-4">
+              <SachleistungenSummary summary={auffuehrung.sachleistungen_summary} />
+            </div>
+          )}
 
           {/* Zeitblöcke */}
           {auffuehrung.zeitbloecke.length > 0 ? (

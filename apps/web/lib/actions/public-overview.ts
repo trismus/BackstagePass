@@ -16,6 +16,7 @@ import type {
   PublicSchichtData,
   PublicZeitblockData,
 } from './external-registration'
+import type { SachleistungMitZusagen } from '../supabase/types'
 
 // =============================================================================
 // Types
@@ -24,6 +25,7 @@ import type {
 export type PublicOverviewEventData = {
   veranstaltung: PublicVeranstaltungData & { public_helfer_token: string }
   zeitbloecke: PublicZeitblockData[]
+  sachleistungen: SachleistungMitZusagen[]
 }
 
 export type PublicOverviewData = {
@@ -99,6 +101,27 @@ export async function getPublicShiftOverview(): Promise<PublicOverviewData> {
 
   const zeitbloecke = zeitblockResult.data || []
   const schichten = schichtenResult.data || []
+
+  // Fetch public sachleistungen for all events
+  const sachleistungenResult = await supabase
+    .from('sachleistungen')
+    .select('*')
+    .in('veranstaltung_id', veranstaltungIds)
+    .eq('sichtbarkeit', 'public')
+
+  const allSachleistungen = sachleistungenResult.data || []
+
+  // Fetch zusagen counts for sachleistungen
+  let allZusagen: { sachleistung_id: string; anzahl: number; status: string }[] = []
+  if (allSachleistungen.length > 0) {
+    const sachleistungIds = allSachleistungen.map((s) => s.id)
+    const zusagenResult = await supabase
+      .from('sachleistung_zusagen')
+      .select('sachleistung_id, anzahl, status')
+      .in('sachleistung_id', sachleistungIds)
+
+    allZusagen = (zusagenResult.data || []) as { sachleistung_id: string; anzahl: number; status: string }[]
+  }
 
   // Build events
   const events: PublicOverviewEventData[] = []
@@ -182,12 +205,36 @@ export async function getPublicShiftOverview(): Promise<PublicOverviewData> {
       })
     }
 
+    // Build sachleistungen for this event
+    const eventSachleistungen: SachleistungMitZusagen[] = allSachleistungen
+      .filter((s) => s.veranstaltung_id === v.id)
+      .map((sl) => {
+        const slZusagen = allZusagen.filter((z) => z.sachleistung_id === sl.id)
+        const activeZusagen = slZusagen.filter((z) => z.status !== 'storniert')
+        const zugesagt_anzahl = activeZusagen.reduce((sum, z) => sum + z.anzahl, 0)
+        const geliefert_anzahl = slZusagen
+          .filter((z) => z.status === 'geliefert')
+          .reduce((sum, z) => sum + z.anzahl, 0)
+
+        return {
+          ...sl,
+          kategorie: sl.kategorie || 'sonstiges',
+          sichtbarkeit: sl.sichtbarkeit || 'public',
+          zusagen: [], // Don't expose individual pledges publicly
+          zugesagt_anzahl,
+          geliefert_anzahl,
+          offen_anzahl: Math.max(0, sl.anzahl - zugesagt_anzahl),
+        } as SachleistungMitZusagen
+      })
+
     // Only include events that have at least one shift with free spots
+    // OR have open sachleistungen
     const hasFreeSpots = transformedZeitbloecke.some((zb) =>
       zb.schichten.some((s) => s.freie_plaetze > 0)
     )
+    const hasOpenSachleistungen = eventSachleistungen.some((s) => s.offen_anzahl > 0)
 
-    if (transformedZeitbloecke.length > 0 && hasFreeSpots) {
+    if ((transformedZeitbloecke.length > 0 && hasFreeSpots) || hasOpenSachleistungen) {
       events.push({
         veranstaltung: {
           id: v.id,
@@ -200,6 +247,7 @@ export async function getPublicShiftOverview(): Promise<PublicOverviewData> {
           public_helfer_token: v.public_helfer_token,
         },
         zeitbloecke: transformedZeitbloecke,
+        sachleistungen: eventSachleistungen,
       })
     }
   }
