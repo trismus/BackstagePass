@@ -7,15 +7,22 @@ import type {
   VeranstaltungInsert,
   VeranstaltungUpdate,
 } from '../supabase/types'
+import {
+  veranstaltungSchema,
+  veranstaltungUpdateSchema,
+} from '../validations/veranstaltungen'
+import { validateInput } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all veranstaltungen
  */
 export async function getVeranstaltungen(): Promise<Veranstaltung[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .order('datum', { ascending: true })
 
   if (error) {
@@ -32,12 +39,13 @@ export async function getVeranstaltungen(): Promise<Veranstaltung[]> {
 export async function getUpcomingVeranstaltungen(
   limit?: number
 ): Promise<Veranstaltung[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0]
 
   let query = supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .gte('datum', today)
     .neq('status', 'abgesagt')
     .order('datum', { ascending: true })
@@ -62,10 +70,11 @@ export async function getUpcomingVeranstaltungen(
 export async function getVeranstaltung(
   id: string
 ): Promise<Veranstaltung | null> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -84,6 +93,15 @@ export async function getVeranstaltung(
 export async function createVeranstaltung(
   data: VeranstaltungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
+  // Validate input
+  const validation = validateInput(veranstaltungSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase
     .from('veranstaltungen')
@@ -97,6 +115,7 @@ export async function createVeranstaltung(
   }
 
   revalidatePath('/veranstaltungen')
+  revalidatePath('/auffuehrungen')
   return { success: true, id: result?.id }
 }
 
@@ -108,6 +127,15 @@ export async function updateVeranstaltung(
   id: string,
   data: VeranstaltungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
+  // Validate input
+  const validation = validateInput(veranstaltungUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('veranstaltungen')
@@ -120,7 +148,9 @@ export async function updateVeranstaltung(
   }
 
   revalidatePath('/veranstaltungen')
+  revalidatePath('/auffuehrungen')
   revalidatePath(`/veranstaltungen/${id}`)
+  revalidatePath(`/auffuehrungen/${id}`)
   return { success: true }
 }
 
@@ -131,6 +161,9 @@ export async function updateVeranstaltung(
 export async function deleteVeranstaltung(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:delete') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('veranstaltungen').delete().eq('id', id)
 
@@ -140,6 +173,7 @@ export async function deleteVeranstaltung(
   }
 
   revalidatePath('/veranstaltungen')
+  revalidatePath('/auffuehrungen')
   return { success: true }
 }
 
@@ -149,6 +183,7 @@ export async function deleteVeranstaltung(
 export async function getAnmeldungCount(
   veranstaltungId: string
 ): Promise<number> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { count, error } = await supabase
     .from('anmeldungen')

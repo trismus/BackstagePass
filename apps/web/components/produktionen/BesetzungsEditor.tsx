@@ -56,6 +56,7 @@ export function BesetzungsEditor({
   const [showAddForm, setShowAddForm] = useState(false)
   const [vorschlaege, setVorschlaege] = useState<BesetzungsVorschlag[]>([])
   const [loadingVorschlaege, setLoadingVorschlaege] = useState(false)
+  const [nurVerfuegbar, setNurVerfuegbar] = useState(false)
 
   const [newEntry, setNewEntry] = useState({
     person_id: '',
@@ -330,10 +331,23 @@ export function BesetzungsEditor({
 
       {/* Suggestions */}
       <div className="border-t border-gray-200 pt-3">
+        <div className="mb-2 flex items-center gap-2">
+          <label className="flex items-center gap-1.5 text-xs text-gray-600">
+            <input
+              type="checkbox"
+              checked={nurVerfuegbar}
+              onChange={(e) => setNurVerfuegbar(e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            Nur verfügbare Kandidaten
+          </label>
+        </div>
         <BesetzungsVorschlagList
-          vorschlaege={vorschlaege.filter(
-            (v) => !besetztPersonIds.includes(v.person.id)
-          )}
+          vorschlaege={vorschlaege
+            .filter((v) => !besetztPersonIds.includes(v.person.id))
+            .filter(
+              (v) => !nurVerfuegbar || v.verfuegbarkeit !== 'nicht_verfuegbar'
+            )}
           onSelect={handleSuggestSelect}
           isLoading={loadingVorschlaege}
         />

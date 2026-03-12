@@ -6,11 +6,13 @@ export type AuditAction =
   | 'auth.login'
   | 'auth.logout'
   | 'auth.signup'
+  | 'auth.password_changed'
   | 'profile.updated'
   | 'role.assigned'
   | 'role.removed'
   | 'user.disabled'
   | 'user.enabled'
+  | 'user.password_reset_by_management'
 
 export interface AuditLogEntry {
   id: string

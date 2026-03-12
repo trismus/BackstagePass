@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { addTemplateSachleistung, removeTemplateSachleistung } from '@/lib/actions/templates'
+import { addTemplateSachleistung, removeTemplateSachleistung, updateTemplateSachleistung } from '@/lib/actions/templates'
 import type { TemplateSachleistung } from '@/lib/supabase/types'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, ConfirmDialog } from '@/components/ui'
 
@@ -16,6 +16,16 @@ export function SachleistungenEditor({ templateId, sachleistungen }: Sachleistun
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editData, setEditData] = useState({
+    name: '',
+    anzahl: 1,
+    beschreibung: '',
+  })
 
   const [formData, setFormData] = useState({
     name: '',
@@ -74,6 +84,44 @@ export function SachleistungenEditor({ templateId, sachleistungen }: Sachleistun
     } finally {
       setIsDeleting(false)
       setDeletingId(null)
+    }
+  }
+
+  const startEdit = (sl: TemplateSachleistung) => {
+    setEditingId(sl.id)
+    setEditData({
+      name: sl.name,
+      anzahl: sl.anzahl,
+      beschreibung: sl.beschreibung ?? '',
+    })
+    setEditError(null)
+  }
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingId) return
+
+    setIsEditSubmitting(true)
+    setEditError(null)
+
+    try {
+      const result = await updateTemplateSachleistung(editingId, templateId, {
+        name: editData.name.trim(),
+        anzahl: editData.anzahl,
+        beschreibung: editData.beschreibung.trim() || null,
+      })
+
+      if (!result.success) {
+        setEditError(result.error ?? 'Fehler beim Aktualisieren')
+        return
+      }
+
+      setEditingId(null)
+    } catch (err) {
+      console.error('Error updating sachleistung:', err)
+      setEditError('Ein unerwarteter Fehler ist aufgetreten')
+    } finally {
+      setIsEditSubmitting(false)
     }
   }
 
@@ -190,31 +238,102 @@ export function SachleistungenEditor({ templateId, sachleistungen }: Sachleistun
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
-                  {sachleistungen.map((sl) => (
-                    <tr key={sl.id} className="hover:bg-neutral-50">
-                      <td className="py-3 font-medium text-neutral-900">
-                        {sl.name}
-                      </td>
-                      <td className="py-3">
-                        <span className="inline-flex items-center justify-center rounded-full bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
-                          {sl.anzahl}
-                        </span>
-                      </td>
-                      <td className="max-w-xs truncate py-3 text-sm text-neutral-600">
-                        {sl.beschreibung ?? '-'}
-                      </td>
-                      <td className="py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-error-600 hover:text-error-700"
-                          onClick={() => setDeletingId(sl.id)}
-                        >
-                          Entfernen
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {sachleistungen.map((sl) =>
+                    editingId === sl.id ? (
+                      <tr key={sl.id}>
+                        <td colSpan={4} className="p-0">
+                          <form onSubmit={handleEdit} className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+                            {editError && (
+                              <div className="mb-4 rounded-lg bg-error-50 p-3 text-sm text-error-700">
+                                {editError}
+                              </div>
+                            )}
+                            <div className="grid gap-4 sm:grid-cols-3">
+                              <Input
+                                label="Name"
+                                name="edit-name"
+                                value={editData.name}
+                                onChange={(e) => setEditData((prev) => ({ ...prev, name: e.target.value }))}
+                                required
+                              />
+                              <Input
+                                label="Anzahl benoetigt"
+                                name="edit-anzahl"
+                                type="number"
+                                min={1}
+                                value={editData.anzahl}
+                                onChange={(e) => setEditData((prev) => ({ ...prev, anzahl: parseInt(e.target.value) || 1 }))}
+                                required
+                              />
+                              <div className="w-full">
+                                <label
+                                  htmlFor="edit-beschreibung"
+                                  className="mb-1 block text-sm font-medium text-neutral-700"
+                                >
+                                  Beschreibung
+                                </label>
+                                <input
+                                  id="edit-beschreibung"
+                                  name="edit-beschreibung"
+                                  value={editData.beschreibung}
+                                  onChange={(e) => setEditData((prev) => ({ ...prev, beschreibung: e.target.value }))}
+                                  className="block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black"
+                                  placeholder="Optionale Details..."
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-4 flex justify-end gap-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingId(null)}
+                                disabled={isEditSubmitting}
+                              >
+                                Abbrechen
+                              </Button>
+                              <Button type="submit" size="sm" loading={isEditSubmitting}>
+                                Speichern
+                              </Button>
+                            </div>
+                          </form>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={sl.id} className="hover:bg-neutral-50">
+                        <td className="py-3 font-medium text-neutral-900">
+                          {sl.name}
+                        </td>
+                        <td className="py-3">
+                          <span className="inline-flex items-center justify-center rounded-full bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
+                            {sl.anzahl}
+                          </span>
+                        </td>
+                        <td className="max-w-xs truncate py-3 text-sm text-neutral-600">
+                          {sl.beschreibung ?? '-'}
+                        </td>
+                        <td className="py-3 text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEdit(sl)}
+                            >
+                              Bearbeiten
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-error-600 hover:text-error-700"
+                              onClick={() => setDeletingId(sl.id)}
+                            >
+                              Entfernen
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </div>

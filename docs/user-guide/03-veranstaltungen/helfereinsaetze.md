@@ -105,7 +105,6 @@ Jeder Helfereinsatz hat einen **Einsatzleiter**:
 - Sei pünktlich!
 - Melde dich beim Einsatzleiter
 - Trage passende Kleidung
-- Bringe gute Laune mit 😊
 
 ### Nach dem Einsatz:
 - Prüfe dein Stundenkonto

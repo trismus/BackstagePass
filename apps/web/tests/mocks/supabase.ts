@@ -52,6 +52,7 @@ export function createMockClient(overrides?: {
       const result = overrides?.fromResults?.[table] || defaultResult
       return createMockQueryBuilder(result)
     }),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     auth: {
       getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
@@ -68,6 +69,7 @@ export const mockHelferEvent = {
   datum_start: '2026-03-01T18:00:00Z',
   datum_end: '2026-03-01T22:00:00Z',
   ort: 'Gemeindesaal',
+  abmeldung_frist: null,
   status: 'aktiv' as const,
   public_token: 'abc123',
   created_at: '2026-01-01T00:00:00Z',
@@ -101,6 +103,7 @@ export const mockAnmeldung = {
   external_name: null,
   external_email: null,
   external_telefon: null,
+  abmeldung_token: 'abmeldung-token-1',
   status: 'angemeldet' as const,
   created_at: '2026-01-01T00:00:00Z',
 }

@@ -79,3 +79,4 @@ coverage/
 .claude/settings.local.json
 .claude/agent-memory/
 .claude/agents/
+.env*.local

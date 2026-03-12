@@ -45,7 +45,7 @@ export default async function MeineVerfuegbarkeitPage() {
   // Also get past entries for the complete list
   const { data: allVerfuegbarkeiten } = await supabase
     .from('verfuegbarkeiten')
-    .select('*')
+    .select('id, mitglied_id, datum_von, datum_bis, zeitfenster_von, zeitfenster_bis, status, wiederholung, grund, notiz, created_at, updated_at')
     .eq('mitglied_id', person.id)
     .order('datum_von', { ascending: false })
 
@@ -55,8 +55,8 @@ export default async function MeineVerfuegbarkeitPage() {
       <div className="flex items-center justify-between">
         <div>
           <nav className="mb-2 text-sm text-neutral-500">
-            <Link href="/mein-bereich" className="hover:text-neutral-700">
-              Mein Bereich
+            <Link href="/dashboard" className="hover:text-neutral-700">
+              Dashboard
             </Link>
             <span className="mx-2">/</span>
             <span>Verfügbarkeit</span>

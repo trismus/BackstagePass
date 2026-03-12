@@ -1,17 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   createZuweisung,
   deleteZuweisung,
   updateZuweisung,
 } from '@/lib/actions/auffuehrung-schichten'
+import { checkPersonConflicts } from '@/lib/actions/conflict-check'
+import { ConflictWarning } from '@/components/ui/ConflictWarning'
 import type {
   SchichtMitZeitblock,
   ZuweisungMitPerson,
   Person,
   ZuweisungStatus,
+  PersonConflict,
 } from '@/lib/supabase/types'
 
 interface SchichtZuweisungListeProps {
@@ -19,10 +22,15 @@ interface SchichtZuweisungListeProps {
   zuweisungen: ZuweisungMitPerson[]
   personen: Person[]
   canEdit: boolean
+  datum: string
 }
 
 const statusLabels: Record<ZuweisungStatus, { label: string; color: string }> =
   {
+    vorgeschlagen: {
+      label: 'Vorgeschlagen',
+      color: 'bg-purple-100 text-purple-800',
+    },
     zugesagt: { label: 'Zugesagt', color: 'bg-green-100 text-green-800' },
     abgesagt: { label: 'Abgesagt', color: 'bg-red-100 text-red-800' },
     erschienen: { label: 'Erschienen', color: 'bg-blue-100 text-blue-800' },
@@ -37,11 +45,55 @@ export function SchichtZuweisungListe({
   zuweisungen,
   personen,
   canEdit,
+  datum,
 }: SchichtZuweisungListeProps) {
   const router = useRouter()
   const [addingToSchicht, setAddingToSchicht] = useState<string | null>(null)
   const [selectedPersonId, setSelectedPersonId] = useState('')
   const [loading, setLoading] = useState(false)
+  const [conflicts, setConflicts] = useState<PersonConflict[]>([])
+  const [isCheckingConflicts, setIsCheckingConflicts] = useState(false)
+
+  // Check conflicts when person is selected
+  useEffect(() => {
+    if (!selectedPersonId || !addingToSchicht) {
+      setConflicts([])
+      return
+    }
+
+    const schicht = schichten.find((s) => s.id === addingToSchicht)
+    if (!schicht?.zeitblock) {
+      setConflicts([])
+      return
+    }
+
+    const startTimestamp = `${datum}T${schicht.zeitblock.startzeit}`
+    const endTimestamp = `${datum}T${schicht.zeitblock.endzeit}`
+
+    let cancelled = false
+    setIsCheckingConflicts(true)
+
+    checkPersonConflicts(selectedPersonId, startTimestamp, endTimestamp)
+      .then((result) => {
+        if (!cancelled) {
+          setConflicts(result.conflicts)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setConflicts([])
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsCheckingConflicts(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedPersonId, addingToSchicht, schichten, datum])
 
   // Group zuweisungen by schicht_id
   const zuweisungenBySchicht = zuweisungen.reduce(
@@ -134,35 +186,41 @@ export function SchichtZuweisungListe({
 
               {/* Add person form */}
               {addingToSchicht === schicht.id && canEdit && (
-                <div className="mb-3 flex gap-2">
-                  <select
-                    value={selectedPersonId}
-                    onChange={(e) => setSelectedPersonId(e.target.value)}
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">Person auswählen...</option>
-                    {availablePersonen.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.vorname} {p.nachname}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={() => handleAddZuweisung(schicht.id)}
-                    disabled={loading || !selectedPersonId}
-                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white disabled:bg-blue-400"
-                  >
-                    Hinzufügen
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAddingToSchicht(null)
-                      setSelectedPersonId('')
-                    }}
-                    className="px-3 py-2 text-sm text-gray-600"
-                  >
-                    Abbrechen
-                  </button>
+                <div className="mb-3 space-y-2">
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedPersonId}
+                      onChange={(e) => setSelectedPersonId(e.target.value)}
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">Person auswählen...</option>
+                      {availablePersonen.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.vorname} {p.nachname}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => handleAddZuweisung(schicht.id)}
+                      disabled={loading || !selectedPersonId}
+                      className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white disabled:bg-blue-400"
+                    >
+                      Hinzufügen
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAddingToSchicht(null)
+                        setSelectedPersonId('')
+                      }}
+                      className="px-3 py-2 text-sm text-gray-600"
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                  <ConflictWarning
+                    conflicts={conflicts}
+                    isLoading={isCheckingConflicts}
+                  />
                 </div>
               )}
 
@@ -175,7 +233,14 @@ export function SchichtZuweisungListe({
                       className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
                     >
                       <span className="text-sm text-gray-900">
-                        {z.person.vorname} {z.person.nachname}
+                        {z.person
+                          ? `${z.person.vorname} ${z.person.nachname}`
+                          : z.external_helper
+                            ? `${z.external_helper.vorname} ${z.external_helper.nachname}`
+                            : 'Unbekannt'}
+                        {!z.person && (
+                          <span className="ml-1 text-xs text-gray-500">(Extern)</span>
+                        )}
                       </span>
                       <div className="flex items-center gap-2">
                         {canEdit ? (

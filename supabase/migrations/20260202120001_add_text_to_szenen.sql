@@ -3,7 +3,7 @@
 
 -- Add text column to szenen table
 ALTER TABLE szenen
-ADD COLUMN text TEXT;
+ADD COLUMN IF NOT EXISTS text TEXT;
 
 -- Add comment to document the column
 COMMENT ON COLUMN szenen.text IS 'Der Szenentext (Script) - editierbar während Proben';

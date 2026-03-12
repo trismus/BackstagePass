@@ -17,7 +17,6 @@ export type HelpContextKey =
   // Veranstaltungen
   | 'veranstaltungen'
   | 'veranstaltungen:anmeldung'
-  | 'helfereinsaetze'
   // Künstlerisch
   | 'stuecke'
   | 'besetzungen'
@@ -28,10 +27,10 @@ export type HelpContextKey =
   | 'mitglieder:rollen'
   | 'events:erstellen'
   | 'proben:planen'
-  | 'berichte'
+  | 'helferliste'
   // Admin
   | 'admin:benutzer'
-  | 'admin:einstellungen'
+  | 'admin:email-logs'
   | 'admin:audit'
   // Overview
   | 'hilfe'
@@ -96,7 +95,7 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'Übersicht über deine zugewiesenen Aufgaben',
     accessLevel: 'all',
     section: 'Mein Bereich',
-    relatedTopics: ['stundenkonto', 'helfereinsaetze'],
+    relatedTopics: ['stundenkonto'],
   },
   stundenkonto: {
     file: '02-mein-bereich/stundenkonto.md',
@@ -114,7 +113,7 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'Alle Vereinsveranstaltungen im Überblick',
     accessLevel: 'all',
     section: 'Veranstaltungen',
-    relatedTopics: ['veranstaltungen:anmeldung', 'helfereinsaetze'],
+    relatedTopics: ['veranstaltungen:anmeldung'],
   },
   'veranstaltungen:anmeldung': {
     file: '03-veranstaltungen/anmeldung.md',
@@ -122,17 +121,8 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'Wie du dich für Events an- und abmeldest',
     accessLevel: 'all',
     section: 'Veranstaltungen',
-    relatedTopics: ['veranstaltungen', 'helfereinsaetze'],
+    relatedTopics: ['veranstaltungen'],
   },
-  helfereinsaetze: {
-    file: '03-veranstaltungen/helfereinsaetze.md',
-    title: 'Helfereinsätze',
-    description: 'Externe Helferjobs und Arbeitseinsätze',
-    accessLevel: 'all',
-    section: 'Veranstaltungen',
-    relatedTopics: ['einsaetze', 'stundenkonto'],
-  },
-
   // Künstlerisch
   stuecke: {
     file: '04-kuenstlerisch/stuecke.md',
@@ -200,13 +190,13 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     section: 'Verwaltung',
     relatedTopics: ['proben', 'stuecke'],
   },
-  berichte: {
-    file: '05-verwaltung/berichte.md',
-    title: 'Berichte & Statistiken',
-    description: 'Auswertungen und Übersichten',
+  helferliste: {
+    file: '05-verwaltung/helferliste.md',
+    title: 'Helferliste verwalten',
+    description: 'Helfer-Events mit Ampelstatus und Belegungsübersicht',
     accessLevel: 'management',
     section: 'Verwaltung',
-    relatedTopics: ['stundenkonto', 'mitglieder'],
+    relatedTopics: ['mitglieder', 'events:erstellen'],
   },
 
   // Admin
@@ -216,12 +206,12 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'App-Benutzer und Zugriffsrechte verwalten',
     accessLevel: 'admin',
     section: 'Administration',
-    relatedTopics: ['admin:einstellungen', 'mitglieder:rollen'],
+    relatedTopics: ['admin:email-logs', 'mitglieder:rollen'],
   },
-  'admin:einstellungen': {
-    file: '06-admin/einstellungen.md',
-    title: 'Systemeinstellungen',
-    description: 'Globale App-Einstellungen',
+  'admin:email-logs': {
+    file: '06-admin/email-logs.md',
+    title: 'E-Mail-Logs',
+    description: 'Protokoll aller versendeten E-Mails',
     accessLevel: 'admin',
     section: 'Administration',
     relatedTopics: ['admin:benutzer', 'admin:audit'],
@@ -232,7 +222,7 @@ export const HELP_TOPICS: Record<HelpContextKey, HelpTopic> = {
     description: 'Protokoll aller Systemaktivitäten',
     accessLevel: 'admin',
     section: 'Administration',
-    relatedTopics: ['admin:benutzer', 'admin:einstellungen'],
+    relatedTopics: ['admin:benutzer', 'admin:email-logs'],
   },
 
   // Overview

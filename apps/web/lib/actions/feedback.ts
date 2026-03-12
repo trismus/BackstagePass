@@ -74,12 +74,7 @@ export async function submitFeedback(formData: FormData): Promise<FeedbackResult
   }
 
   // 4. GitHub Issue Body zusammenbauen
-  const kategorieLabel =
-    kategorie === 'bug'
-      ? 'Bug-Meldung'
-      : kategorie === 'feature'
-        ? 'Feature-Wunsch'
-        : 'Sonstiges Feedback'
+  const kategorieLabel = 'Feature-Wunsch'
 
   let body = `## ${kategorieLabel}\n\n${beschreibung}\n\n`
   body += `### Benutzer-Info\n`

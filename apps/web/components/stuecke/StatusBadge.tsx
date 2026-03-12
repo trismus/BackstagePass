@@ -1,4 +1,5 @@
 import type { StueckStatus, RollenTyp } from '@/lib/supabase/types'
+import { STUECK_STATUS_LABELS } from '@/lib/supabase/types'
 
 interface StatusBadgeProps {
   status: StueckStatus
@@ -7,23 +8,23 @@ interface StatusBadgeProps {
 const statusConfig: Record<StueckStatus, { label: string; className: string }> =
   {
     in_planung: {
-      label: 'In Planung',
+      label: STUECK_STATUS_LABELS.in_planung,
       className: 'bg-gray-100 text-gray-800',
     },
     in_proben: {
-      label: 'In Proben',
+      label: STUECK_STATUS_LABELS.in_proben,
       className: 'bg-blue-100 text-blue-800',
     },
     aktiv: {
-      label: 'Aktiv',
+      label: STUECK_STATUS_LABELS.aktiv,
       className: 'bg-green-100 text-green-800',
     },
     abgeschlossen: {
-      label: 'Abgeschlossen',
+      label: STUECK_STATUS_LABELS.abgeschlossen,
       className: 'bg-purple-100 text-purple-800',
     },
     archiviert: {
-      label: 'Archiviert',
+      label: STUECK_STATUS_LABELS.archiviert,
       className: 'bg-gray-200 text-gray-600',
     },
   }

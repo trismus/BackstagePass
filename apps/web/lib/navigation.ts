@@ -64,9 +64,9 @@ export type NavIcon =
 export const ROLE_START_PAGES: Record<UserRole, string> = {
   ADMIN: '/dashboard',
   VORSTAND: '/dashboard',
-  MITGLIED_AKTIV: '/mein-bereich',
-  MITGLIED_PASSIV: '/mein-bereich',
-  HELFER: '/helfer',
+  MITGLIED_AKTIV: '/dashboard',
+  MITGLIED_PASSIV: '/dashboard',
+  HELFER: '/dashboard',
   PARTNER: '/partner-portal',
   FREUNDE: '/willkommen',
 }
@@ -97,6 +97,12 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
         icon: 'partner',
         permission: 'partner:read',
       },
+      {
+        href: '/alle-helfer',
+        label: 'Alle Helfer',
+        icon: 'users',
+        permission: 'mitglieder:read',
+      },
     ],
   },
   {
@@ -118,18 +124,6 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
         permission: 'stuecke:read',
       },
       { href: '/proben', label: 'Proben', icon: 'rehearsal' },
-      {
-        href: '/helfereinsaetze',
-        label: 'Helfereinsätze',
-        icon: 'helper',
-        permission: 'helfereinsaetze:read',
-      },
-      {
-        href: '/helferliste',
-        label: 'Helferliste',
-        icon: 'list',
-        permission: 'helferliste:read',
-      },
     ],
   },
   {
@@ -151,9 +145,28 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
     ],
   },
   {
+    title: 'Verwaltung',
+    items: [
+      {
+        href: '/vorstand/helferliste',
+        label: 'Helferliste',
+        icon: 'helper',
+        permission: 'helferliste:read',
+      },
+    ],
+  },
+  {
+    title: 'Mein Bereich',
+    items: [
+      { href: '/vorstand/termine', label: 'Meine Termine', icon: 'calendar' },
+      { href: '/vorstand/stundenkonto', label: 'Stundenkonto', icon: 'clock' },
+      { href: '/vorstand/einsaetze', label: 'Meine Einsätze', icon: 'check' },
+    ],
+  },
+  {
     title: 'Ansichten',
     items: [
-      { href: '/helfer', label: 'Helfer-Ansicht', icon: 'eye' },
+      { href: '/dashboard?ansicht=mitglied', label: 'Mitglieder-Ansicht', icon: 'eye' },
       { href: '/partner-portal', label: 'Partner-Ansicht', icon: 'eye' },
     ],
   },
@@ -181,7 +194,7 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
  */
 const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
   {
-    items: [{ href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' }],
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' }],
   },
   {
     title: 'Meine Aktivitäten',
@@ -190,11 +203,6 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
         href: '/mein-bereich/termine',
         label: 'Meine Termine',
         icon: 'calendar',
-      },
-      {
-        href: '/mein-bereich/stundenkonto',
-        label: 'Stundenkonto',
-        icon: 'clock',
       },
       {
         href: '/mein-bereich/anmeldungen',
@@ -212,13 +220,6 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
     ],
   },
   {
-    title: 'Helfen',
-    items: [
-      { href: '/helfereinsaetze', label: 'Helfereinsätze', icon: 'helper' },
-      { href: '/helferliste', label: 'Helferliste', icon: 'list' },
-    ],
-  },
-  {
     title: 'Ressourcen',
     items: [{ href: '/raeume', label: 'Räume', icon: 'room' }],
   },
@@ -229,7 +230,7 @@ const MITGLIED_AKTIV_NAVIGATION: NavSection[] = [
  */
 const MITGLIED_PASSIV_NAVIGATION: NavSection[] = [
   {
-    items: [{ href: '/mein-bereich', label: 'Mein Bereich', icon: 'home' }],
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' }],
   },
   {
     title: 'Theater',
@@ -246,18 +247,7 @@ const MITGLIED_PASSIV_NAVIGATION: NavSection[] = [
  */
 const HELFER_NAVIGATION: NavSection[] = [
   {
-    items: [{ href: '/helfer', label: 'Übersicht', icon: 'home' }],
-  },
-  {
-    title: 'Meine Einsätze',
-    items: [
-      { href: '/helfer/schichten', label: 'Meine Schichten', icon: 'list' },
-      {
-        href: '/helfer/einsaetze',
-        label: 'Verfügbare Einsätze',
-        icon: 'helper',
-      },
-    ],
+    items: [{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' }],
   },
   {
     items: [{ href: '/profile', label: 'Mein Profil', icon: 'user' }],
@@ -362,14 +352,13 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
 
   // Prüfe rollenspezifische Routen
   const roleRoutes: Record<string, UserRole[]> = {
-    '/dashboard': ['ADMIN', 'VORSTAND'],
+    '/dashboard': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'MITGLIED_PASSIV'],
     '/mitglieder': ['ADMIN', 'VORSTAND'],
+    '/alle-helfer': ['ADMIN', 'VORSTAND'],
     '/partner': ['ADMIN', 'VORSTAND', 'PARTNER'],
-    '/helfer': ['ADMIN', 'VORSTAND', 'HELFER'],
     '/partner-portal': ['ADMIN', 'VORSTAND', 'PARTNER'],
     '/admin': ['ADMIN'],
-    '/helfereinsaetze': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
-    '/helferliste': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'HELFER'],
+    '/vorstand': ['ADMIN', 'VORSTAND'],
     '/mein-bereich': ['ADMIN', 'VORSTAND', 'MITGLIED_AKTIV', 'MITGLIED_PASSIV'],
   }
 
@@ -433,27 +422,26 @@ export const BREADCRUMB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
   mitglieder: 'Mitglieder',
   partner: 'Partner',
+  'alle-helfer': 'Alle Helfer',
   kalender: 'Kalender',
   veranstaltungen: 'Veranstaltungen',
   auffuehrungen: 'Aufführungen',
   produktionen: 'Produktionen',
   stuecke: 'Stücke',
   proben: 'Proben',
-  helfereinsaetze: 'Helfereinsätze',
-  helferliste: 'Helferliste',
   raeume: 'Räume',
   ressourcen: 'Ausstattung',
   templates: 'Templates',
   admin: 'Admin',
   users: 'Benutzer',
   audit: 'Audit Log',
+  vorstand: 'Vorstand',
+  helferliste: 'Helferliste',
   'mein-bereich': 'Mein Bereich',
   termine: 'Meine Termine',
   stundenkonto: 'Stundenkonto',
   anmeldungen: 'Anmeldungen',
-  helfer: 'Helfer',
-  schichten: 'Meine Schichten',
-  einsaetze: 'Verfügbare Einsätze',
+  'meine-einsaetze': 'Meine Einsätze',
   'partner-portal': 'Partner-Portal',
   daten: 'Meine Daten',
   kontakt: 'Kontakt',

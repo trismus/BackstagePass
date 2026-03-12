@@ -28,10 +28,21 @@ BackstagePass ist der digitale Backstage-Bereich für die Theatergruppe Widen �
 |------------|--------|------|
 | GitHub Issues | ✅ Aktiv | [Issues](https://github.com/trismus/BackstagePass/issues) |
 | Project Board | ✅ Aktiv | [Kanban](https://github.com/users/trismus/projects/2/views/1) |
-| Vercel | ✅ Erstellt | Dashboard |
+| Vercel | ✅ Produktiv | Dashboard |
 | Supabase | ✅ Integriert | via Vercel Integration |
 
-**Nächster Meilenstein:** M1 – Basis-Setup (Mockup-Seiten)
+**Stand:** 2026-02-16 | **Issues:** 36 Open, 40 Closed
+
+### Aktuelle Features (Feb 2026)
+
+✅ **Dashboard-Konsolidierung** – Einheitliche Startseite für alle Rollen (Admin, Vorstand, Mitglieder, Helfer)
+✅ **Template-System** – Vollständig editierbare Aufführungs-Templates mit Zeitblöcken, Schichten, Info-Blöcken, Sachleistungen
+✅ **Helferliste** – Strukturierte Planung und Besetzung von Helferrollen mit öffentlichem Anmeldesystem
+✅ **Helfer-Dashboard** – Persönliche Einsatzübersicht für externe Helfer
+✅ **Email-Integration** – SMTP-Versand für Registrierungs- und Buchungsbestätigungen
+✅ **Rollenbasierte Navigation** – Dynamische Sidebar mit Berechtigungsprüfung
+
+**Nächste Schritte:** Partner-Portal, Passive Mitglieder Ansicht, Gäste-Willkommensseite
 
 ## Projekt-Setup
 - Editor- und Stilregeln: siehe `.editorconfig`

@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { canEdit as canEditFn } from '@/lib/supabase/auth-helpers'
 import { getVeranstaltung } from '@/lib/actions/veranstaltungen'
+import { getProduktionForVeranstaltung } from '@/lib/actions/produktionen'
 import { getZeitbloecke } from '@/lib/actions/zeitbloecke'
 import {
   getSchichten,
@@ -59,6 +60,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
     raeume,
     ressourcen,
     templates,
+    produktionsKontext,
   ] = await Promise.all([
     getZeitbloecke(id),
     getSchichten(id),
@@ -70,6 +72,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
     getAktiveRaeume(),
     getAktiveRessourcen(),
     getTemplates(),
+    getProduktionForVeranstaltung(id),
   ])
 
   const formatDate = (dateStr: string) => {
@@ -93,6 +96,16 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
         <div className="mb-8">
           <div className="flex items-start justify-between">
             <div>
+              {produktionsKontext && (
+                <div className="mb-1">
+                  <Link
+                    href={`/produktionen/${produktionsKontext.produktion.id}` as never}
+                    className="text-sm text-primary-600 hover:text-primary-800"
+                  >
+                    {produktionsKontext.produktion.titel} / {produktionsKontext.serieName}
+                  </Link>
+                </div>
+              )}
               <div className="mb-2 flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
                   {veranstaltung.titel}
@@ -140,7 +153,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
                     Live-Board
                   </Link>
                   <Link
-                    href={`/veranstaltungen/${id}/bearbeiten` as never}
+                    href={`/veranstaltungen/${id}?edit=true` as never}
                     className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                   >
                     Bearbeiten
@@ -213,6 +226,7 @@ export default async function AuffuehrungDetailPage({ params }: PageProps) {
               zuweisungen={zuweisungen}
               personen={personen}
               canEdit={canEdit}
+              datum={veranstaltung.datum}
             />
           </div>
         </div>

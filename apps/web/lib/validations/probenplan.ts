@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') =>
+  z.string().regex(UUID_REGEX, message)
+
 // Recurring pattern options
 export const wiederholungTypSchema = z.enum([
   'woechentlich',
@@ -28,7 +33,7 @@ export const WOCHENTAG_LABELS: Record<number, string> = {
 
 // Schema for generating proben (recurring)
 export const probenGeneratorSchema = z.object({
-  stueck_id: z.string().uuid('Ungültige Stück-ID'),
+  stueck_id: uuid('Ungültige Stück-ID'),
   titel_prefix: z.string().min(1, 'Titel-Präfix ist erforderlich'),
   beschreibung: z.string().optional(),
   // Recurring settings
@@ -42,7 +47,7 @@ export const probenGeneratorSchema = z.object({
   // Location
   ort: z.string().optional(),
   // Scenes to include
-  szenen_ids: z.array(z.string().uuid()).optional(),
+  szenen_ids: z.array(uuid()).optional(),
   // Auto-invite based on cast
   auto_einladen: z.boolean().default(true),
 }).refine(
@@ -57,7 +62,7 @@ export type ProbenGeneratorFormData = z.infer<typeof probenGeneratorSchema>
 
 // Schema for saving a template
 export const probenplanTemplateSchema = z.object({
-  stueck_id: z.string().uuid('Ungültige Stück-ID'),
+  stueck_id: uuid('Ungültige Stück-ID'),
   name: z.string().min(1, 'Name ist erforderlich'),
   beschreibung: z.string().optional(),
   wiederholung_typ: wiederholungTypSchema,
@@ -66,18 +71,18 @@ export const probenplanTemplateSchema = z.object({
   endzeit: z.string().regex(/^\d{2}:\d{2}$/, 'Ungültiges Zeitformat'),
   dauer_wochen: z.number().min(1).max(52).default(1),
   ort: z.string().optional(),
-  szenen_ids: z.array(z.string().uuid()).optional(),
+  szenen_ids: z.array(uuid()).optional(),
 })
 
 export type ProbenplanTemplateFormData = z.infer<typeof probenplanTemplateSchema>
 
 // Schema for conflict check request
 export const konfliktCheckSchema = z.object({
-  stueck_id: z.string().uuid(),
+  stueck_id: uuid(),
   datum: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   startzeit: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   endzeit: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-  szenen_ids: z.array(z.string().uuid()).optional(),
+  szenen_ids: z.array(uuid()).optional(),
 })
 
 export type KonfliktCheckData = z.infer<typeof konfliktCheckSchema>

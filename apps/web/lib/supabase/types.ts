@@ -76,9 +76,13 @@ export type Person = {
   archiviert_von: string | null
   created_at: string
   updated_at: string
+  profile_id: string | null
+  // Invitation tracking (Issue #325)
+  invited_at: string | null
+  invitation_accepted_at: string | null
 }
 
-export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at'>
+export type PersonInsert = Omit<Person, 'id' | 'created_at' | 'updated_at' | 'profile_id' | 'invited_at' | 'invitation_accepted_at'>
 
 export type PersonUpdate = Partial<PersonInsert>
 
@@ -273,6 +277,8 @@ export type Profile = {
   email: string
   display_name: string | null
   role: UserRole
+  is_active: boolean
+  onboarding_completed: boolean
   created_at: string
   updated_at: string
 }
@@ -611,14 +617,16 @@ export type AuffuehrungSchicht = {
   rolle: string
   anzahl_benoetigt: number
   sichtbarkeit: SchichtSichtbarkeit
+  benoetigte_skills: string[]
   created_at: string
 }
 
 export type AuffuehrungSchichtInsert = Omit<
   AuffuehrungSchicht,
-  'id' | 'created_at' | 'sichtbarkeit'
+  'id' | 'created_at' | 'sichtbarkeit' | 'benoetigte_skills'
 > & {
   sichtbarkeit?: SchichtSichtbarkeit // defaults to 'intern' in DB
+  benoetigte_skills?: string[] // defaults to '{}' in DB
 }
 export type AuffuehrungSchichtUpdate = Partial<AuffuehrungSchichtInsert>
 
@@ -635,6 +643,7 @@ export type SchichtMitZeitblock = AuffuehrungSchicht & {
 // =============================================================================
 
 export type ZuweisungStatus =
+  | 'vorgeschlagen'
   | 'zugesagt'
   | 'abgesagt'
   | 'erschienen'
@@ -684,9 +693,10 @@ export type AuffuehrungZuweisungInsert = Omit<
 }
 export type AuffuehrungZuweisungUpdate = Partial<AuffuehrungZuweisungInsert>
 
-// Extended type with person details
+// Extended type with person/external helper details
 export type ZuweisungMitPerson = AuffuehrungZuweisung & {
-  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'>
+  person: Pick<Person, 'id' | 'vorname' | 'nachname' | 'email'> | null
+  external_helper: Pick<ExterneHelferProfil, 'id' | 'vorname' | 'nachname' | 'email'> | null
 }
 
 // Extended type with full shift details
@@ -954,8 +964,8 @@ export type TemplateZeitblock = {
   id: string
   template_id: string
   name: string
-  offset_minuten: number
-  dauer_minuten: number
+  startzeit: string
+  endzeit: string
   typ: ZeitblockTyp
   sortierung: number
 }
@@ -969,9 +979,13 @@ export type TemplateSchicht = {
   zeitblock_name: string | null
   rolle: string
   anzahl_benoetigt: number
+  nur_mitglieder: boolean
+  benoetigte_skills: string[]
 }
 
-export type TemplateSchichtInsert = Omit<TemplateSchicht, 'id'>
+export type TemplateSchichtInsert = Omit<TemplateSchicht, 'id' | 'benoetigte_skills'> & {
+  benoetigte_skills?: string[] // defaults to '{}' in DB
+}
 export type TemplateSchichtUpdate = Partial<TemplateSchichtInsert>
 
 export type TemplateRessource = {
@@ -993,8 +1007,8 @@ export type TemplateInfoBlock = {
   template_id: string
   titel: string
   beschreibung: string | null
-  offset_minuten: number
-  dauer_minuten: number
+  startzeit: string
+  endzeit: string
   sortierung: number
   created_at: string
 }
@@ -1080,6 +1094,21 @@ export type StueckStatus =
   | 'aktiv'
   | 'abgeschlossen'
   | 'archiviert'
+export const STUECK_STATUS_LABELS: Record<StueckStatus, string> = {
+  in_planung: 'In Planung',
+  in_proben: 'In Proben',
+  aktiv: 'Aktiv',
+  abgeschlossen: 'Abgeschlossen',
+  archiviert: 'Archiviert',
+}
+
+/** Stücke eligible for the Probenplan-Generator */
+export const PROBENPLAN_ELIGIBLE_STATUS: readonly StueckStatus[] = [
+  'in_planung',
+  'in_proben',
+  'aktiv',
+] as const
+
 export type RollenTyp = 'hauptrolle' | 'nebenrolle' | 'ensemble' | 'statisterie'
 
 export type Stueck = {
@@ -1463,6 +1492,18 @@ export type KommendeProbe = Probe & {
   zusagen_count: number
 }
 
+export type MeineProbe = {
+  id: string // proben_teilnehmer.id
+  probe_id: string
+  titel: string
+  stueck_titel: string | null
+  datum: string
+  startzeit: string | null
+  endzeit: string | null
+  ort: string | null
+  status: TeilnehmerStatus
+}
+
 // =============================================================================
 // Externe Helfer Profile (Issue #208)
 // =============================================================================
@@ -1474,6 +1515,7 @@ export type ExterneHelferProfil = {
   nachname: string
   telefon: string | null
   notizen: string | null
+  dashboard_token: string               // Public dashboard access token (US-8)
   erstellt_am: string
   letzter_einsatz: string | null
 }
@@ -1571,20 +1613,27 @@ export type HelferEvent = {
   id: string
   typ: HelferEventTyp
   veranstaltung_id: string | null
+  koordinator_id: string | null
   name: string
   beschreibung: string | null
   datum_start: string
   datum_end: string
   ort: string | null
+  abmeldung_frist: string | null         // Per-event cancellation deadline (US-10)
   public_token: string
+  max_anmeldungen_pro_helfer: number | null
   created_at: string
   updated_at: string
 }
 
 export type HelferEventInsert = Omit<
   HelferEvent,
-  'id' | 'public_token' | 'created_at' | 'updated_at'
->
+  'id' | 'public_token' | 'koordinator_id' | 'max_anmeldungen_pro_helfer' | 'abmeldung_frist' | 'created_at' | 'updated_at'
+> & {
+  koordinator_id?: string | null
+  max_anmeldungen_pro_helfer?: number | null
+  abmeldung_frist?: string | null
+}
 export type HelferEventUpdate = Partial<HelferEventInsert>
 
 export type HelferRollenTemplate = {
@@ -1629,6 +1678,8 @@ export type HelferAnmeldung = {
   external_name: string | null       // Legacy: inline name for external helpers
   external_email: string | null      // Legacy: inline email
   external_telefon: string | null    // Legacy: inline phone
+  abmeldung_token: string | null     // Public cancellation token (US-7)
+  datenschutz_akzeptiert: string | null // GDPR consent timestamp (US-3)
   status: HelferAnmeldungStatus
   created_at: string
 }
@@ -1658,6 +1709,10 @@ export type HelferEventMitRollen = HelferEvent & {
   rollen: RollenInstanzMitAnmeldungen[]
 }
 
+export type PublicHelferEventData = HelferEventMitRollen & {
+  infoBloecke: InfoBlock[]
+}
+
 export type HelferAnmeldungMitDetails = HelferAnmeldung & {
   rollen_instanz: HelferRollenInstanz & {
     template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
@@ -1667,6 +1722,230 @@ export type HelferAnmeldungMitDetails = HelferAnmeldung & {
     >
   }
   profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
+}
+
+// =============================================================================
+// Atomic Booking RPC Return Types (Issue #248)
+// =============================================================================
+
+export type BookHelferSlotResult = {
+  success: boolean
+  rollen_instanz_id?: string
+  anmeldung_id?: string
+  status?: HelferAnmeldungStatus
+  is_waitlist?: boolean
+  abmeldung_token?: string
+  error?: string
+}
+
+export type BookHelferSlotsResult = {
+  success: boolean
+  results?: BookHelferSlotResult[]
+  error?: string
+}
+
+export type HelferTimeConflict = {
+  instanz_a: string
+  rolle_a: string
+  event_a: string
+  instanz_b: string
+  rolle_b: string
+  event_b: string
+}
+
+export type CheckHelferTimeConflictsResult = {
+  has_conflicts: boolean
+  conflicts: HelferTimeConflict[]
+}
+
+// =============================================================================
+// Helferliste Management Dashboard Types
+// =============================================================================
+
+export type AmpelStatus = 'gruen' | 'gelb' | 'rot'
+
+export type HelferEventBelegung = {
+  event_id: string
+  name: string
+  typ: HelferEventTyp
+  datum_start: string
+  datum_end: string
+  ort: string | null
+  veranstaltung_id: string | null
+  public_token: string
+  total_benoetigt: number
+  total_belegt: number
+  ampel: AmpelStatus
+  rollen_count: number
+}
+
+export type HelferEventVollDetails = HelferEvent & {
+  veranstaltung: Pick<Veranstaltung, 'id' | 'titel'> | null
+  rollen: (HelferRollenInstanz & {
+    template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
+    anmeldungen: (HelferAnmeldung & {
+      profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
+    })[]
+    angemeldet_count: number
+  })[]
+}
+
+export type ExterneHelferProfile = {
+  id: string
+  vorname: string
+  nachname: string
+  email: string
+  telefon: string | null
+}
+
+// =============================================================================
+// Cross-System Conflict Detection (Issue #343)
+// =============================================================================
+
+export type PersonConflictType = 'verfuegbarkeit' | 'zuweisung' | 'anmeldung' | 'probe' | 'helfer'
+
+export type PersonConflict = {
+  type: PersonConflictType
+  description: string
+  start_time: string
+  end_time: string
+  reference_id: string
+  severity?: string
+}
+
+export type CheckPersonConflictsResult = {
+  has_conflicts: boolean
+  conflicts: PersonConflict[]
+}
+
+// =============================================================================
+// Schicht-Kandidat (Issue #347)
+// =============================================================================
+
+export type SchichtKandidat = {
+  person_id: string
+  vorname: string
+  nachname: string
+  email: string | null
+  skills: string[]
+  matching_skills: string[]
+  match_count: number
+  total_required: number
+  has_conflicts: boolean
+  conflicts: PersonConflict[]
+}
+
+// =============================================================================
+// Zuweisungen Generator (Issue #344)
+// =============================================================================
+
+export type ZuweisungVorschlag = {
+  key: string
+  person_id: string
+  person_name: string
+  schicht_id: string
+  schicht_rolle: string
+  veranstaltung_id: string
+  veranstaltung_titel: string
+  veranstaltung_datum: string
+  zeitblock_name: string | null
+  zeitblock_startzeit: string | null
+  zeitblock_endzeit: string | null
+  bereits_vorhanden: boolean
+  konflikte: PersonConflict[]
+}
+
+export type ZuweisungenPreviewResult = {
+  vorschlaege: ZuweisungVorschlag[]
+  auffuehrungen_ohne_veranstaltung: {
+    id: string
+    datum: string
+    serie_name: string
+  }[]
+  veranstaltungen_ohne_vorfuehrung: {
+    veranstaltung_id: string
+    titel: string
+    datum: string
+  }[]
+  stats: {
+    total_besetzt: number
+    total_auffuehrungen: number
+    total_vorschlaege: number
+    total_bereits_vorhanden: number
+    total_mit_konflikten: number
+  }
+}
+
+// =============================================================================
+// Proben-Teilnehmer Suggestion (Issue #345)
+// =============================================================================
+
+export type TeilnehmerVorschlag = {
+  person_id: string
+  person_name: string
+  rollen: string[]
+  bereits_vorhanden: boolean
+  konflikte: PersonConflict[]
+}
+
+export type TeilnehmerSuggestionResult = {
+  vorschlaege: TeilnehmerVorschlag[]
+  quelle: 'szenen' | 'alle_besetzungen'
+  stats: {
+    total_vorgeschlagen: number
+    total_bereits_vorhanden: number
+    total_mit_konflikten: number
+  }
+}
+
+// =============================================================================
+// Helfer Dashboard (US-9)
+// =============================================================================
+
+export type HelferDashboardAnmeldung = {
+  id: string
+  status: HelferAnmeldungStatus | ZuweisungStatus
+  abmeldung_token: string | null
+  created_at: string
+  rolle_name: string
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  rollen_instanz_id: string
+  event_id: string
+  event_name: string
+  event_datum_start: string
+  event_datum_end: string
+  event_ort: string | null
+  event_public_token: string
+  event_abmeldung_frist: string | null
+  /** Which booking system this entry comes from */
+  system: 'a' | 'b'
+}
+
+/** Raw System B zuweisung as returned by the RPC */
+export type HelferDashboardZuweisung = {
+  id: string
+  status: ZuweisungStatus
+  abmeldung_token: string | null
+  created_at: string
+  rolle: string
+  schicht_id: string
+  zeitblock_id: string | null
+  zeitblock_name: string | null
+  zeitblock_start: string | null
+  zeitblock_end: string | null
+  veranstaltung_id: string
+  veranstaltung_titel: string
+  veranstaltung_datum: string
+  veranstaltung_startzeit: string | null
+  veranstaltung_ort: string | null
+  veranstaltung_public_helfer_token: string | null
+  veranstaltung_helfer_buchung_deadline: string | null
+}
+
+export type HelferDashboardData = {
+  helper: { vorname: string; nachname: string; email: string; telefon: string | null }
+  anmeldungen: HelferDashboardAnmeldung[]
 }
 
 // =============================================================================
@@ -1992,6 +2271,168 @@ export type RolleMitProduktionsBesetzungen = StueckRolle & {
 }
 
 // =============================================================================
+// Produktions-Dashboard (Issue #348)
+// =============================================================================
+
+export type BesetzungsFortschritt = {
+  totalRollen: number
+  besetztRollen: number
+  vorgemerktRollen: number
+  offeneRollen: number
+  progressProzent: number
+  nachTyp: { typ: RollenTyp; total: number; besetzt: number; offen: number }[]
+  unbesetzteHauptrollen: string[]
+}
+
+export type SchichtAbdeckungProAuffuehrung = {
+  serienauffuehrungId: string
+  datum: string
+  typ: AuffuehrungsTyp
+  hatVeranstaltung: boolean
+  totalBenoetigt: number
+  totalZugewiesen: number
+  totalOffen: number
+  abdeckungProzent: number
+}
+
+export type ProbenAnwesenheit = {
+  personId: string
+  personName: string
+  eingeladen: number
+  erschienen: number
+  anwesenheitsquote: number
+}
+
+export type ProbenDashboardStats = {
+  total: number
+  geplant: number
+  abgeschlossen: number
+  abgesagt: number
+  progressProzent: number
+  anwesenheiten: ProbenAnwesenheit[]
+  topAbwesende: ProbenAnwesenheit[]
+}
+
+export type DashboardWarnung = {
+  typ: 'kritisch' | 'warnung' | 'info'
+  kategorie: 'besetzung' | 'schicht' | 'probe'
+  titel: string
+  beschreibung: string
+}
+
+export type ProduktionDashboardData = {
+  besetzung: BesetzungsFortschritt
+  schichtAbdeckung: SchichtAbdeckungProAuffuehrung[]
+  proben: ProbenDashboardStats
+  warnungen: DashboardWarnung[]
+}
+
+// =============================================================================
+// Person Engagement History (Issue #349)
+// =============================================================================
+
+export type StueckBesetzungHistorie = {
+  besetzungId: string
+  stueckId: string
+  stueckTitel: string
+  rolleName: string
+  rolleTyp: RollenTyp
+  besetzungTyp: BesetzungTyp
+  gueltigVon: string | null
+  gueltigBis: string | null
+}
+
+export type ProduktionsBesetzungHistorie = {
+  besetzungId: string
+  produktionId: string
+  produktionTitel: string
+  produktionStatus: ProduktionStatus
+  rolleName: string
+  rolleTyp: RollenTyp
+  besetzungTyp: BesetzungTyp
+  besetzungStatus: ProduktionsBesetzungStatus
+}
+
+export type ProduktionsStabHistorie = {
+  stabId: string
+  produktionId: string
+  produktionTitel: string
+  produktionStatus: ProduktionStatus
+  funktion: string
+  istLeitung: boolean
+  von: string | null
+  bis: string | null
+}
+
+export type AuffuehrungsZuweisungHistorie = {
+  zuweisungId: string
+  veranstaltungId: string
+  veranstaltungTitel: string
+  veranstaltungDatum: string
+  schichtRolle: string
+  zeitblockName: string | null
+  zeitblockStartzeit: string | null
+  zeitblockEndzeit: string | null
+  status: ZuweisungStatus
+  checkedInAt: string | null
+}
+
+export type ProbenTeilnahmeHistorie = {
+  teilnehmerId: string
+  probeId: string
+  probeTitel: string
+  probeDatum: string
+  stueckId: string
+  stueckTitel: string
+  status: TeilnehmerStatus
+}
+
+export type HelferAnmeldungHistorie = {
+  anmeldungId: string
+  eventId: string
+  eventName: string
+  eventDatum: string
+  rollenName: string
+  zeitblockStart: string | null
+  zeitblockEnd: string | null
+  status: HelferAnmeldungStatus
+}
+
+export type EngagementStatistik = {
+  totalAuffuehrungen: number
+  totalProben: number
+  probenAnwesenheitsquote: number
+  totalHelferEinsaetze: number
+  totalProduktionen: number
+  totalStueckBesetzungen: number
+}
+
+export type PersonEngagements = {
+  stueckBesetzungen: StueckBesetzungHistorie[]
+  produktionsBesetzungen: ProduktionsBesetzungHistorie[]
+  produktionsStab: ProduktionsStabHistorie[]
+  auffuehrungsZuweisungen: AuffuehrungsZuweisungHistorie[]
+  probenTeilnahmen: ProbenTeilnahmeHistorie[]
+  helferAnmeldungen: HelferAnmeldungHistorie[]
+  statistik: EngagementStatistik
+}
+
+// =============================================================================
+// Optimal Probe Termin Suggestion (Issue #350)
+// =============================================================================
+
+export type OptimalProbeTermin = {
+  datum: string
+  wochentag: string
+  verfuegbareCount: number
+  eingeschraenktCount: number
+  nichtVerfuegbarCount: number
+  totalCast: number
+  verfuegbarkeitsProzent: number
+  nichtVerfuegbar: { personId: string; personName: string; grund: string | null }[]
+}
+
+// =============================================================================
 // Gruppen (Teams, Gremien, Produktions-Casts) - Dashboards Milestone
 // =============================================================================
 
@@ -2059,15 +2500,19 @@ export type EmailTemplateTyp =
   | 'reminder_48h'
   | 'reminder_6h'
   | 'cancellation'
+  | 'waitlist_confirmation'
   | 'waitlist_assigned'
   | 'waitlist_timeout'
   | 'thank_you'
+  | 'member_invitation'
 
 export const EMAIL_TEMPLATE_TYP_LABELS: Record<EmailTemplateTyp, string> = {
   confirmation: 'Buchungsbestätigung',
   reminder_48h: 'Erinnerung (48h vorher)',
   reminder_6h: 'Erinnerung (6h vorher)',
   cancellation: 'Abmeldebestätigung',
+  member_invitation: 'Mitglieder-Einladung',
+  waitlist_confirmation: 'Warteliste: Anmeldung',
   waitlist_assigned: 'Warteliste: Platz frei',
   waitlist_timeout: 'Warteliste: Timeout',
   thank_you: 'Dankeschön',
@@ -2114,7 +2559,9 @@ export type EmailPlaceholderData = {
   koordinator_name?: string
   koordinator_email?: string
   koordinator_telefon?: string
+  position?: string
   frist?: string
+  magic_link?: string
 }
 
 // =============================================================================

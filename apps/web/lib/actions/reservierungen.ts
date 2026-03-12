@@ -13,6 +13,7 @@ import {
   ressourcenReservierungSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 // =============================================================================
 // Room Reservations
@@ -24,6 +25,7 @@ import {
 export async function getRaumReservierungen(
   veranstaltungId: string
 ): Promise<RaumReservierungMitRaum[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('raum_reservierungen')
@@ -50,6 +52,9 @@ export async function getRaumReservierungen(
 export async function createRaumReservierung(
   data: RaumReservierungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(raumReservierungSchema, data)
   if (!validation.success) {
@@ -83,6 +88,9 @@ export async function deleteRaumReservierung(
   id: string,
   veranstaltungId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('raum_reservierungen')
@@ -107,6 +115,7 @@ export async function checkRaumKonflikt(
   datum: string,
   excludeVeranstaltungId?: string
 ): Promise<{ hasConflict: boolean; conflictingEvents: string[] }> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // Get all veranstaltungen on this date
@@ -160,6 +169,7 @@ export async function checkRaumKonflikt(
 export async function getRessourcenReservierungen(
   veranstaltungId: string
 ): Promise<RessourcenReservierungMitRessource[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen_reservierungen')
@@ -186,6 +196,9 @@ export async function getRessourcenReservierungen(
 export async function createRessourcenReservierung(
   data: RessourcenReservierungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(ressourcenReservierungSchema, data)
   if (!validation.success) {
@@ -219,6 +232,9 @@ export async function updateRessourcenReservierung(
   menge: number,
   notizen?: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('ressourcen_reservierungen')
@@ -242,6 +258,9 @@ export async function deleteRessourcenReservierung(
   id: string,
   veranstaltungId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('ressourcen_reservierungen')
@@ -266,6 +285,7 @@ export async function checkRessourceVerfuegbarkeit(
   datum: string,
   excludeVeranstaltungId?: string
 ): Promise<{ total: number; reserved: number; available: number }> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // Get total quantity of the resource

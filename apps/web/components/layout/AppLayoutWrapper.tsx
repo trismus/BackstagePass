@@ -3,6 +3,7 @@
 import { useCallback } from 'react'
 import type { UserRole } from '@/lib/supabase/types'
 import { AppLayout } from './AppLayout'
+import { TourProvider } from '@/components/tours'
 
 interface AppLayoutWrapperProps {
   children: React.ReactNode
@@ -26,13 +27,15 @@ export function AppLayoutWrapper({
   }, [onLogout])
 
   return (
-    <AppLayout
-      userEmail={userEmail}
-      userRole={userRole}
-      displayName={displayName}
-      onLogout={handleLogout}
-    >
-      {children}
-    </AppLayout>
+    <TourProvider>
+      <AppLayout
+        userEmail={userEmail}
+        userRole={userRole}
+        displayName={displayName}
+        onLogout={handleLogout}
+      >
+        {children}
+      </AppLayout>
+    </TourProvider>
   )
 }

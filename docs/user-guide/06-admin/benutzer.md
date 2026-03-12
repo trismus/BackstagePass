@@ -2,11 +2,13 @@
 
 > **Hinweis:** Dieser Bereich ist nur für **Administratoren** zugänglich.
 
+Pfad: `/admin/users`
+
 ---
 
 ## Übersicht
 
-Als Administrator verwaltest du Benutzerkonten, Berechtigungen und Systemzugang.
+Als Administrator verwaltest du Benutzerkonten und Zugriffsrechte.
 
 ---
 
@@ -14,10 +16,10 @@ Als Administrator verwaltest du Benutzerkonten, Berechtigungen und Systemzugang.
 
 | Begriff | Beschreibung |
 |---------|--------------|
-| **Mitglied** | Person im Vereinsverzeichnis |
+| **Mitglied** | Person im Vereinsverzeichnis (Personen-Daten) |
 | **Benutzer** | Login-Konto mit Systemzugang |
 
-Jedes Mitglied kann ein Benutzerkonto haben, muss aber nicht.
+Jedes Mitglied kann ein Benutzerkonto haben, muss aber nicht. Ein Benutzer ist mit einem Mitglied verknüpft.
 
 ---
 
@@ -27,31 +29,29 @@ Jedes Mitglied kann ein Benutzerkonto haben, muss aber nicht.
 1. Gehe zu **"Admin"** → **"Benutzer"**
 2. Die Liste aller Benutzerkonten wird angezeigt
 
-### Spalten:
+### Angezeigte Informationen:
 
 | Spalte | Beschreibung |
 |--------|--------------|
 | **E-Mail** | Login-E-Mail |
 | **Mitglied** | Verknüpftes Mitglied |
 | **Rolle** | System-Rolle |
-| **Status** | Aktiv/Gesperrt |
-| **Letzter Login** | Wann zuletzt angemeldet |
+| **Status** | Aktiv / Gesperrt |
+| **Letzter Login** | Zeitstempel der letzten Anmeldung |
 
 ---
 
-## Benutzerrollen
-
-### Systemrollen:
+## Systemrollen
 
 | Rolle | Beschreibung | Berechtigungen |
 |-------|--------------|----------------|
-| **ADMIN** | Administrator | Voller Systemzugang |
-| **VORSTAND** | Vereinsvorstand | Verwaltung, Events, Mitglieder |
+| **ADMIN** | Administrator | Voller Systemzugang inkl. Admin-Bereich |
+| **VORSTAND** | Vereinsvorstand | Verwaltung, Events, Mitglieder, Helferliste |
 | **MITGLIED_AKTIV** | Aktives Mitglied | Anmeldungen, Proben, Stundenkonto |
 | **MITGLIED_PASSIV** | Passives Mitglied | Eingeschränkter Zugang |
-| **HELFER** | Externer Helfer | Nur Helfereinsätze |
-| **PARTNER** | Partner-Kontakt | Partner-Bereich |
-| **FREUNDE** | Vereinsfreunde | Minimaler Zugang |
+| **HELFER** | Externer Helfer | Dashboard, eigenes Profil |
+| **PARTNER** | Partner-Kontakt | Partner-Portal |
+| **FREUNDE** | Vereinsfreunde | Willkommensseite, Veranstaltungen |
 
 ### Rolle ändern:
 1. Öffne den Benutzer
@@ -61,55 +61,35 @@ Jedes Mitglied kann ein Benutzerkonto haben, muss aber nicht.
 
 ---
 
-## Benutzer erstellen
+## Passwort verwalten
 
-### Manuell:
-1. Gehe zu **"Admin"** → **"Benutzer"**
-2. Klicke auf **"Neuer Benutzer"**
-3. Gib die E-Mail-Adresse ein
-4. Wähle die Rolle
-5. Optional: Verknüpfe mit Mitglied
-6. Klicke auf **"Erstellen"**
-
-### Automatisch (bei Mitglied-Erstellung):
-- Beim Anlegen eines Mitglieds wird automatisch ein Benutzerkonto erstellt
-- Das Mitglied erhält eine Einladungs-E-Mail
-
----
-
-## Passwort zurücksetzen
-
-### Für einen Benutzer:
+### Passwort-Reset per E-Mail:
 1. Finde den Benutzer in der Liste
 2. Klicke auf **"Passwort zurücksetzen"**
 3. Der Benutzer erhält eine E-Mail mit Reset-Link
 
-### Manuelles Passwort setzen:
+### Manuelles Passwort setzen (Vorstand und Admin):
 1. Öffne den Benutzer
 2. Klicke auf **"Passwort setzen"**
 3. Gib das neue Passwort ein
-4. Teile es dem Benutzer mit (sicher!)
+4. Teile es dem Benutzer sicher mit
+
+> Vorstand-Mitglieder können ebenfalls Passwörter für andere Benutzer setzen — dies ist über das Mitgliederprofil unter `/mitglieder` möglich.
 
 ---
 
-## Benutzer sperren
+## Benutzer sperren und entsperren
 
-Bei Problemen oder Austritten:
-
+### Konto sperren:
 1. Öffne den Benutzer
 2. Klicke auf **"Konto sperren"**
-3. Gib optional einen Grund an
-4. Bestätige
+3. Bestätige die Aktion
 
-### Auswirkungen:
-- Benutzer kann sich nicht mehr anmelden
-- Laufende Sitzungen werden beendet
-- Daten bleiben erhalten
+Gesperrte Benutzer können sich nicht mehr anmelden. Ihre Daten bleiben erhalten.
 
 ### Konto entsperren:
 1. Öffne den gesperrten Benutzer
 2. Klicke auf **"Entsperren"**
-3. Der Benutzer kann sich wieder anmelden
 
 ---
 
@@ -117,45 +97,9 @@ Bei Problemen oder Austritten:
 
 > **Warnung:** Diese Aktion kann nicht rückgängig gemacht werden!
 
-1. Öffne den Benutzer
-2. Klicke auf **"Löschen"**
-3. Bestätige zweimal
-4. Das Konto wird dauerhaft entfernt
+Das Löschen eines Benutzers entfernt den Login-Zugang dauerhaft. Mitgliedsdaten in der Vereinsverwaltung bleiben erhalten.
 
-### Besser: Sperren statt Löschen
-- Für die Historie
-- Falls später erneut Zugang benötigt wird
-
----
-
-## Anmeldungen überwachen
-
-### Login-Historie:
-1. Öffne einen Benutzer
-2. Gehe zu **"Anmeldungen"**
-3. Sieh alle Login-Versuche:
-   - Datum und Uhrzeit
-   - IP-Adresse
-   - Erfolg/Misserfolg
-
-### Verdächtige Aktivitäten:
-- Mehrere fehlgeschlagene Logins
-- Unbekannte IP-Adressen
-- Logins zu ungewöhnlichen Zeiten
-
----
-
-## Massenoperationen
-
-### Mehrere Benutzer bearbeiten:
-1. Markiere die Benutzer
-2. Wähle die Aktion:
-   - Rolle ändern
-   - Sperren
-   - E-Mail senden
-
-### Einladungen erneut senden:
-- Für alle Benutzer, die sich noch nie angemeldet haben
+Empfehlung: Sperren statt Löschen — für die Nachvollziehbarkeit und falls der Benutzer später wieder Zugang benötigt.
 
 ---
 
@@ -163,17 +107,15 @@ Bei Problemen oder Austritten:
 
 ### Ein Benutzer kann sich nicht anmelden
 1. Prüfe, ob das Konto gesperrt ist
-2. Prüfe die E-Mail-Adresse
-3. Sende einen Passwort-Reset
+2. Prüfe die E-Mail-Adresse (Tippfehler?)
+3. Sende einen Passwort-Reset oder setze das Passwort manuell
 
 ### Wie entferne ich Admin-Rechte?
-- Ändere die Rolle auf "VORSTAND" oder niedriger
-- Es muss mindestens ein Admin bleiben
+Ändere die Rolle auf `VORSTAND` oder eine niedrigere Rolle. Es sollte immer mindestens ein Administrator-Konto aktiv bleiben.
 
-### Kann ich mein eigenes Konto löschen?
-- Nein, nicht als einziger Admin
-- Ein anderer Admin muss es tun
+### Kann ich mein eigenes Admin-Konto löschen?
+Nein — als einziger Administrator ist das nicht möglich. Ein zweiter Admin muss die Aktion durchführen.
 
 ---
 
-*Weiter zu: [Systemeinstellungen](./einstellungen.md)*
+*Weiter zu: [E-Mail-Logs](./email-logs.md)*

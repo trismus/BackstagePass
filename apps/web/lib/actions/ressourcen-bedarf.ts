@@ -288,7 +288,7 @@ export async function getVerfuegbareRessourcen(): Promise<Ressource[]> {
 
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, beschreibung, kategorie, menge, aktiv, created_at, updated_at')
     .eq('aktiv', true)
     .order('kategorie', { ascending: true })
     .order('name', { ascending: true })

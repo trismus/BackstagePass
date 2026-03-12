@@ -4,11 +4,13 @@ import { useState, useTransition } from 'react'
 import {
   updateDesignSettings,
   resetDesignSettings,
-  AVAILABLE_FONTS,
-  BORDER_RADIUS_OPTIONS,
   type DesignSettings,
   type DesignSettingsUpdate,
 } from '@/lib/actions/design-settings'
+import {
+  AVAILABLE_FONTS,
+  BORDER_RADIUS_OPTIONS,
+} from '@/lib/actions/design-settings-utils'
 import {
   Card,
   CardHeader,

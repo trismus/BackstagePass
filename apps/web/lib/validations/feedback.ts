@@ -1,18 +1,14 @@
 import { z } from 'zod'
 
-export const FEEDBACK_KATEGORIEN = ['bug', 'feature', 'sonstiges'] as const
+export const FEEDBACK_KATEGORIEN = ['feature'] as const
 export type FeedbackKategorie = (typeof FEEDBACK_KATEGORIEN)[number]
 
 export const KATEGORIE_LABELS: Record<FeedbackKategorie, string> = {
-  bug: 'Bug melden',
   feature: 'Feature-Wunsch',
-  sonstiges: 'Sonstiges Feedback',
 }
 
 export const KATEGORIE_GITHUB_LABELS: Record<FeedbackKategorie, string> = {
-  bug: 'bug',
   feature: 'enhancement',
-  sonstiges: 'feedback',
 }
 
 export const feedbackSchema = z.object({

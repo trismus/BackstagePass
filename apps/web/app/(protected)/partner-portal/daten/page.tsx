@@ -1,17 +1,23 @@
 import Link from 'next/link'
 import { getUserProfile } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
+import type { Partner } from '@/lib/supabase/types'
+
+// Extended partner type for legacy template fields not yet in DB schema
+type PartnerExtended = Partner & Record<string, string | null | undefined>
 
 export default async function PartnerDatenPage() {
   const profile = await getUserProfile()
   const supabase = await createClient()
 
   // Try to find partner linked to this user's email
-  const { data: partner } = await supabase
+  // Note: Template accesses legacy fields (typ, beschreibung, kontakt_person, strasse, plz, ort)
+  // that are not in the current DB schema - they render as undefined (no-op in React)
+  const { data: partner } = (await supabase
     .from('partner')
-    .select('*')
+    .select('id, name, kontakt_name, kontakt_email, kontakt_telefon, adresse, notizen, aktiv, created_at, updated_at')
     .eq('kontakt_email', profile?.email ?? '')
-    .single()
+    .single()) as { data: PartnerExtended | null }
 
   return (
     <main className="min-h-screen bg-gray-50">

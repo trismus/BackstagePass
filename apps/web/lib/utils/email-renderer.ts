@@ -7,18 +7,46 @@
 import type { EmailPlaceholderData } from '@/lib/supabase/types'
 
 /**
- * Replace placeholders in a string with actual values
+ * Escape HTML entities to prevent XSS in email templates
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
+ * Placeholder keys that contain trusted URLs/HTML (not user input)
+ */
+const TRUSTED_PLACEHOLDERS = new Set([
+  'absage_link',
+  'public_link',
+  'magic_link',
+])
+
+/**
+ * Replace placeholders in a string with actual values.
+ * When escapeForHtml is true, user-provided values are HTML-escaped
+ * to prevent XSS in email HTML bodies.
  */
 export function replacePlaceholders(
   template: string,
-  data: EmailPlaceholderData
+  data: EmailPlaceholderData,
+  escapeForHtml: boolean = false
 ): string {
   let result = template
 
   // Replace all placeholders with their values or empty string if not provided
   for (const [key, value] of Object.entries(data)) {
     const placeholder = `{{${key}}}`
-    result = result.replace(new RegExp(placeholder, 'g'), value || '')
+    const raw = value || ''
+    const safeValue = escapeForHtml && !TRUSTED_PLACEHOLDERS.has(key)
+      ? escapeHtml(raw)
+      : raw
+    result = result.replace(new RegExp(placeholder, 'g'), safeValue)
   }
 
   // Remove any remaining unreplaced placeholders (set to empty)
@@ -36,7 +64,7 @@ export function renderEmailTemplate(
 ): { subject: string; html: string; text: string } {
   return {
     subject: replacePlaceholders(template.subject, data),
-    html: replacePlaceholders(template.body_html, data),
+    html: replacePlaceholders(template.body_html, data, true),
     text: replacePlaceholders(template.body_text, data),
   }
 }
@@ -62,9 +90,10 @@ export const SAMPLE_PLACEHOLDER_DATA: EmailPlaceholderData = {
   absage_link: 'https://example.com/helfer/abmeldung/abc123',
   public_link: 'https://example.com/helfer/anmeldung/xyz789',
   koordinator_name: 'Anna Koordinator',
-  koordinator_email: 'anna@tgw.ch',
+  koordinator_email: 'theatergruppewiden@gmail.com',
   koordinator_telefon: '+41 79 123 45 67',
   frist: 'Freitag, 14. März 2026, 18:00 Uhr',
+  magic_link: 'https://example.com/auth/confirm?token_hash=abc123&type=invite',
 }
 
 /**

@@ -14,6 +14,9 @@ export default function LoginPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-neutral-500">
             BackstagePass
           </p>
+          <p className="mt-0.5 text-xs italic text-neutral-400">
+            s&apos;Theater uf em Mutschelle
+          </p>
           <h1 className="mt-2 text-2xl font-semibold text-neutral-900">
             Anmelden
           </h1>

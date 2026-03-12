@@ -1,9 +1,14 @@
 import { z } from 'zod'
 
+const UUID_REGEX =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const uuid = (message = 'Ungültige UUID') =>
+  z.string().regex(UUID_REGEX, message)
+
 export const produktionsBesetzungSchema = z.object({
-  produktion_id: z.string().uuid('Ungültige Produktions-ID'),
-  rolle_id: z.string().uuid('Ungültige Rollen-ID'),
-  person_id: z.string().uuid().nullable().optional(),
+  produktion_id: uuid('Ungültige Produktions-ID'),
+  rolle_id: uuid('Ungültige Rollen-ID'),
+  person_id: uuid().nullable().optional(),
   typ: z
     .enum(['hauptbesetzung', 'zweitbesetzung', 'ersatz'])
     .default('hauptbesetzung'),

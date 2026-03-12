@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, getUserProfile } from '../supabase/server'
+import { requirePermission } from '../supabase/auth-helpers'
 import type {
   Veranstaltung,
   Probe,
@@ -8,13 +9,18 @@ import type {
   ProbeTeilnehmer,
   AuffuehrungZuweisung,
   TeilnehmerStatus,
+  VerfuegbarkeitStatus,
 } from '../supabase/types'
 
 // =============================================================================
 // Types
 // =============================================================================
 
-export type PersonalEventTyp = 'veranstaltung' | 'probe' | 'schicht'
+export type PersonalEventTyp =
+  | 'veranstaltung'
+  | 'probe'
+  | 'schicht'
+  | 'helfer'
 
 export type PersonalEventStatus =
   | 'angemeldet'
@@ -24,6 +30,9 @@ export type PersonalEventStatus =
   | 'abgesagt'
   | 'abgemeldet'
   | 'erschienen'
+  | 'bestaetigt'
+  | 'abgelehnt'
+  | 'nicht_erschienen'
 
 export type PersonalEvent = {
   id: string
@@ -42,6 +51,9 @@ export type PersonalEvent = {
   anmeldung_id?: string | null
   teilnehmer_id?: string | null
   zuweisung_id?: string | null
+  helfer_anmeldung_id?: string | null
+  helfer_event_id?: string | null
+  helfer_rolle?: string | null
   // Extra info
   stueck_titel?: string | null
   rolle?: string | null
@@ -51,36 +63,74 @@ export type PersonalEvent = {
   kann_absagen: boolean
 }
 
+export type VerfuegbarkeitEvent = {
+  id: string
+  datum_von: string
+  datum_bis: string
+  zeitfenster_von: string | null
+  zeitfenster_bis: string | null
+  status: VerfuegbarkeitStatus
+  grund: string | null
+  notiz: string | null
+}
+
+// =============================================================================
+// Person Resolution Helper
+// =============================================================================
+
+async function resolvePersonIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  personId?: string
+): Promise<{ resolvedPersonId: string; profileId: string | null } | null> {
+  if (personId) {
+    // Management view: require permission and look up profile_id
+    await requirePermission('mitglieder:read')
+
+    const { data: person } = await supabase
+      .from('personen')
+      .select('id, profile_id')
+      .eq('id', personId)
+      .single()
+
+    if (!person) return null
+    return { resolvedPersonId: person.id, profileId: person.profile_id ?? null }
+  }
+
+  // Current user: resolve via email
+  const profile = await getUserProfile()
+  if (!profile) return null
+
+  const { data: person } = await supabase
+    .from('personen')
+    .select('id, profile_id')
+    .eq('email', profile.email)
+    .single()
+
+  if (!person) return null
+  return { resolvedPersonId: person.id, profileId: person.profile_id ?? null }
+}
+
 // =============================================================================
 // Get Personal Events
 // =============================================================================
 
 /**
- * Get all events where the current user is a participant
+ * Get all events where a person is a participant.
+ * When personId is provided, requires mitglieder:read permission.
+ * Otherwise resolves the current user.
  */
 export async function getPersonalEvents(
   startDatum?: string,
-  endDatum?: string
+  endDatum?: string,
+  personId?: string
 ): Promise<PersonalEvent[]> {
   const supabase = await createClient()
-  const profile = await getUserProfile()
+  const resolved = await resolvePersonIds(supabase, personId)
 
-  if (!profile) {
-    return []
-  }
+  if (!resolved) return []
 
+  const { resolvedPersonId, profileId } = resolved
   const events: PersonalEvent[] = []
-
-  // Find the person linked to this user
-  const { data: person } = await supabase
-    .from('personen')
-    .select('id')
-    .eq('email', profile.email)
-    .single()
-
-  if (!person) {
-    return []
-  }
 
   // 1. Get Veranstaltung Anmeldungen
   let anmeldungenQuery = supabase
@@ -91,7 +141,7 @@ export async function getPersonalEvents(
         id, titel, beschreibung, datum, startzeit, endzeit, ort, typ, status
       )
     `)
-    .eq('person_id', person.id)
+    .eq('person_id', resolvedPersonId)
     .neq('status', 'abgemeldet')
 
   if (startDatum) {
@@ -142,7 +192,7 @@ export async function getPersonalEvents(
         stueck:stuecke(id, titel)
       )
     `)
-    .eq('person_id', person.id)
+    .eq('person_id', resolvedPersonId)
     .not('status', 'in', '("abgesagt","nicht_erschienen")')
 
   const { data: probenTeilnahmen } = await probenQuery
@@ -194,7 +244,7 @@ export async function getPersonalEvents(
         veranstaltung:veranstaltungen(id, titel, datum, ort)
       )
     `)
-    .eq('person_id', person.id)
+    .eq('person_id', resolvedPersonId)
     .neq('status', 'abgesagt')
 
   type ZuweisungWithDetails = AuffuehrungZuweisung & {
@@ -237,6 +287,167 @@ export async function getPersonalEvents(
     }
   }
 
+  // 4. Get Helfer Anmeldungen (new Helferliste system)
+  if (profileId) {
+    const { data: helferAnmeldungen } = await supabase
+      .from('helfer_anmeldungen')
+      .select(`
+        id,
+        status,
+        helfer_rollen_instanzen!inner (
+          id,
+          custom_name,
+          zeitblock_start,
+          zeitblock_end,
+          helfer_rollen_templates ( name ),
+          helfer_events!inner (
+            id, name, beschreibung, datum_start, datum_end, ort
+          )
+        )
+      `)
+      .eq('profile_id', profileId)
+      .neq('status', 'abgelehnt')
+
+    type HelferAnmeldungWithDetails = {
+      id: string
+      status: string
+      helfer_rollen_instanzen: {
+        id: string
+        custom_name: string | null
+        zeitblock_start: string | null
+        zeitblock_end: string | null
+        helfer_rollen_templates: { name: string } | null
+        helfer_events: {
+          id: string
+          name: string
+          beschreibung: string | null
+          datum_start: string
+          datum_end: string
+          ort: string | null
+        }
+      }
+    }
+
+    if (helferAnmeldungen) {
+      for (const ha of helferAnmeldungen as unknown as HelferAnmeldungWithDetails[]) {
+        const instanz = ha.helfer_rollen_instanzen
+        const event = instanz.helfer_events
+        const rolleName = instanz.helfer_rollen_templates?.name ?? instanz.custom_name ?? 'Helfer'
+
+        // Use datum_start as the date (format: YYYY-MM-DD or datetime)
+        const datum = event.datum_start.split('T')[0]
+
+        if (startDatum && datum < startDatum) continue
+        if (endDatum && datum > endDatum) continue
+
+        events.push({
+          id: `ha-${ha.id}`,
+          titel: `${event.name} - ${rolleName}`,
+          beschreibung: event.beschreibung,
+          datum,
+          startzeit: instanz.zeitblock_start,
+          endzeit: instanz.zeitblock_end,
+          ort: event.ort,
+          typ: 'helfer',
+          status: ha.status as PersonalEventStatus,
+          helfer_anmeldung_id: ha.id,
+          helfer_event_id: event.id,
+          helfer_rolle: rolleName,
+          kann_zusagen: false,
+          kann_absagen: ha.status === 'angemeldet' || ha.status === 'bestaetigt',
+        })
+      }
+    }
+  }
+
+  // 5. Get Produktions-Aufführungen (via Besetzung/Stab → Produktion → Serie → Veranstaltung)
+  // Collect veranstaltung_ids already present to deduplicate
+  const existingVeranstaltungIds = new Set(
+    events
+      .filter((e) => e.veranstaltung_id)
+      .map((e) => e.veranstaltung_id!)
+  )
+
+  const [{ data: prodBesetzungen }, { data: prodStab }] = await Promise.all([
+    supabase
+      .from('produktions_besetzungen')
+      .select('produktion_id')
+      .eq('person_id', resolvedPersonId)
+      .in('status', ['besetzt', 'vorgemerkt']),
+    supabase
+      .from('produktions_stab')
+      .select('produktion_id')
+      .eq('person_id', resolvedPersonId),
+  ])
+
+  const produktionIds = [
+    ...new Set([
+      ...(prodBesetzungen || []).map((b) => b.produktion_id),
+      ...(prodStab || []).map((s) => s.produktion_id),
+    ]),
+  ]
+
+  if (produktionIds.length > 0) {
+    // Get produktion titles
+    const { data: produktionen } = await supabase
+      .from('produktionen')
+      .select('id, titel')
+      .in('id', produktionIds)
+
+    const produktionMap = new Map(
+      (produktionen || []).map((p: { id: string; titel: string }) => [p.id, p.titel])
+    )
+
+    // Get serien
+    const { data: serien } = await supabase
+      .from('auffuehrungsserien')
+      .select('id, produktion_id')
+      .in('produktion_id', produktionIds)
+
+    if (serien && serien.length > 0) {
+      const serieProduktionMap = new Map(
+        serien.map((s: { id: string; produktion_id: string }) => [s.id, s.produktion_id])
+      )
+      const serieIds = serien.map((s) => s.id)
+
+      let auffQuery = supabase
+        .from('serienauffuehrungen')
+        .select('id, serie_id, veranstaltung_id, datum, startzeit, ort')
+        .in('serie_id', serieIds)
+        .not('veranstaltung_id', 'is', null)
+
+      if (startDatum) auffQuery = auffQuery.gte('datum', startDatum)
+      if (endDatum) auffQuery = auffQuery.lte('datum', endDatum)
+
+      const { data: auffuehrungen } = await auffQuery
+
+      if (auffuehrungen) {
+        for (const a of auffuehrungen) {
+          if (!a.veranstaltung_id) continue
+          if (existingVeranstaltungIds.has(a.veranstaltung_id)) continue
+          existingVeranstaltungIds.add(a.veranstaltung_id)
+
+          const produktionId = serieProduktionMap.get(a.serie_id) ?? ''
+
+          events.push({
+            id: `pa-${a.id}`,
+            titel: produktionMap.get(produktionId) ?? 'Aufführung',
+            beschreibung: null,
+            datum: a.datum,
+            startzeit: a.startzeit,
+            endzeit: null,
+            ort: a.ort,
+            typ: 'veranstaltung',
+            status: 'angemeldet',
+            veranstaltung_id: a.veranstaltung_id,
+            kann_zusagen: false,
+            kann_absagen: false,
+          })
+        }
+      }
+    }
+  }
+
   // Sort by date and time
   events.sort((a, b) => {
     const dateCompare = a.datum.localeCompare(b.datum)
@@ -250,6 +461,44 @@ export async function getPersonalEvents(
 }
 
 // =============================================================================
+// Get Person Verfuegbarkeiten
+// =============================================================================
+
+/**
+ * Get availability entries for a person.
+ * When personId is provided, requires mitglieder:read permission.
+ * Otherwise resolves the current user.
+ */
+export async function getPersonVerfuegbarkeiten(
+  personId?: string,
+  startDatum?: string,
+  endDatum?: string
+): Promise<VerfuegbarkeitEvent[]> {
+  const supabase = await createClient()
+  const resolved = await resolvePersonIds(supabase, personId)
+
+  if (!resolved) return []
+
+  let query = supabase
+    .from('verfuegbarkeiten')
+    .select('id, datum_von, datum_bis, zeitfenster_von, zeitfenster_bis, status, grund, notiz')
+    .eq('mitglied_id', resolved.resolvedPersonId)
+
+  if (startDatum) {
+    query = query.gte('datum_bis', startDatum)
+  }
+  if (endDatum) {
+    query = query.lte('datum_von', endDatum)
+  }
+
+  const { data } = await query
+
+  if (!data) return []
+
+  return data as VerfuegbarkeitEvent[]
+}
+
+// =============================================================================
 // Accept/Decline Actions
 // =============================================================================
 
@@ -260,24 +509,26 @@ export async function acceptPersonalEvent(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const profile = await getUserProfile()
+  const resolved = await resolvePersonIds(supabase)
 
-  if (!profile) {
+  if (!resolved) {
     return { success: false, error: 'Nicht angemeldet' }
   }
 
+  const { resolvedPersonId } = resolved
   const [type, id] = eventId.split('-')
 
   if (type === 'pt') {
-    // Update Probe Teilnehmer status
+    // Update Probe Teilnehmer status — with ownership filter
     const { error } = await supabase
       .from('proben_teilnehmer')
       .update({ status: 'zugesagt' as TeilnehmerStatus } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error accepting probe:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Akzeptieren' }
     }
 
     return { success: true }
@@ -293,54 +544,74 @@ export async function declinePersonalEvent(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  const profile = await getUserProfile()
+  const resolved = await resolvePersonIds(supabase)
 
-  if (!profile) {
+  if (!resolved) {
     return { success: false, error: 'Nicht angemeldet' }
   }
 
+  const { resolvedPersonId } = resolved
   const [type, id] = eventId.split('-')
 
   if (type === 'a') {
-    // Update Anmeldung status
+    // Update Anmeldung status — with ownership filter
     const { error } = await supabase
       .from('anmeldungen')
       .update({ status: 'abgemeldet' } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining anmeldung:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }
   }
 
   if (type === 'pt') {
-    // Update Probe Teilnehmer status
+    // Update Probe Teilnehmer status — with ownership filter
     const { error } = await supabase
       .from('proben_teilnehmer')
       .update({ status: 'abgesagt' as TeilnehmerStatus } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining probe:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }
   }
 
   if (type === 'z') {
-    // Update Zuweisung status
+    // Update Zuweisung status — with ownership filter
     const { error } = await supabase
       .from('auffuehrung_zuweisungen')
       .update({ status: 'abgesagt' } as never)
       .eq('id', id)
+      .eq('person_id', resolvedPersonId)
 
     if (error) {
       console.error('Error declining zuweisung:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Fehler beim Absagen' }
+    }
+
+    return { success: true }
+  }
+
+  if (type === 'ha') {
+    // Update Helfer Anmeldung status (new system) — with ownership filter
+    const { error } = await supabase
+      .from('helfer_anmeldungen')
+      .update({ status: 'abgelehnt' } as never)
+      .eq('id', id)
+      .eq('person_id', resolvedPersonId)
+
+    if (error) {
+      console.error('Error declining helfer anmeldung:', error)
+      return { success: false, error: 'Fehler beim Absagen' }
     }
 
     return { success: true }
@@ -363,7 +634,7 @@ export async function generatePersonalICalFeed(): Promise<string> {
     'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//BackstagePass//Meine Termine//DE\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Meine TGW Termine\r\n'
 
   for (const event of events) {
-    if (event.status === 'abgesagt' || event.status === 'abgemeldet') continue
+    if (event.status === 'abgesagt' || event.status === 'abgemeldet' || event.status === 'abgelehnt') continue
 
     const startDate = event.datum.replace(/-/g, '')
     const startTime = event.startzeit
@@ -386,14 +657,15 @@ export async function generatePersonalICalFeed(): Promise<string> {
     if (event.ort) {
       ical += `LOCATION:${escapeICalText(event.ort)}\r\n`
     }
-    if (event.rolle) {
-      ical += `X-TGW-ROLLE:${escapeICalText(event.rolle)}\r\n`
+    if (event.rolle || event.helfer_rolle) {
+      ical += `X-TGW-ROLLE:${escapeICalText(event.rolle || event.helfer_rolle || '')}\r\n`
     }
 
     const categoryMap: Record<PersonalEventTyp, string> = {
       veranstaltung: 'VERANSTALTUNG',
       probe: 'PROBE',
       schicht: 'SCHICHT',
+      helfer: 'HELFER',
     }
     ical += `CATEGORIES:${categoryMap[event.typ]}\r\n`
 

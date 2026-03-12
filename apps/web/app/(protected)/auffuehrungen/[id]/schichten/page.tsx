@@ -124,7 +124,7 @@ export default async function SchichtenPage({ params }: PageProps) {
                     Schicht-Zeiten korrekt berechnet werden koennen.
                   </p>
                   <Link
-                    href={`/veranstaltungen/${id}/bearbeiten` as never}
+                    href={`/veranstaltungen/${id}?edit=true` as never}
                     className="mt-3 inline-block text-sm font-medium text-warning-700 underline hover:text-warning-900"
                   >
                     Veranstaltung bearbeiten

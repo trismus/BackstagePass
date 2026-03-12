@@ -1,3 +1,4 @@
+import { ChangePasswordForm } from '@/components/account/ChangePasswordForm'
 import { NotificationSettings } from '@/components/notifications'
 import { getNotificationSettings } from '@/lib/actions/notifications'
 import Link from 'next/link'
@@ -16,18 +17,20 @@ export default async function EinstellungenPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Einstellungen</h1>
           <p className="mt-1 text-gray-600">
-            Verwalte deine Benachrichtigungseinstellungen
+            Verwalte deine Einstellungen
           </p>
         </div>
         <Link
-          href={'/mein-bereich' as Route}
+          href={'/dashboard' as Route}
           className="text-sm text-primary-600 hover:text-primary-700"
         >
-          Zurück zu Mein Bereich
+          Zurück zum Dashboard
         </Link>
       </div>
 
       <NotificationSettings settings={settings} />
+
+      <ChangePasswordForm />
     </div>
   )
 }

@@ -290,6 +290,10 @@ export async function sendWeeklySummaries(): Promise<ReminderResult> {
         subject: `Deine Woche bei TGW - ${probenCount + zuweisungenCount} Termine`,
         html: summaryHtml,
         text: `Wochenübersicht: ${probenCount} Proben, ${zuweisungenCount} Veranstaltungen`,
+        logging: {
+          templateTyp: 'weekly_summary',
+          recipientName: person.vorname,
+        },
       })
 
       if (sendResult.success) {

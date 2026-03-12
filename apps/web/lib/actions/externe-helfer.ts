@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
+import { sanitizeSearchQuery } from '../utils/search'
 import type {
   ExterneHelferProfil,
   ExterneHelferProfilMitEinsaetze,
@@ -27,6 +28,7 @@ export async function findOrCreateExternalHelper(
   nachname: string,
   telefon?: string | null
 ): Promise<{ success: boolean; error?: string; id?: string; isNew?: boolean }> {
+  await requirePermission('helfereinsaetze:write')
   const supabase = await createClient()
 
   // Normalize email
@@ -140,7 +142,7 @@ export async function getExterneHelferProfil(
 
   const { data, error } = await supabase
     .from('externe_helfer_profile')
-    .select('*')
+    .select('id, email, vorname, nachname, telefon, notizen, dashboard_token, erstellt_am, letzter_einsatz')
     .eq('id', id)
     .single()
 
@@ -158,11 +160,12 @@ export async function getExterneHelferProfil(
 export async function getExterneHelferProfilByEmail(
   email: string
 ): Promise<ExterneHelferProfil | null> {
+  await requirePermission('mitglieder:read')
   const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('externe_helfer_profile')
-    .select('*')
+    .select('id, email, vorname, nachname, telefon, notizen, dashboard_token, erstellt_am, letzter_einsatz')
     .ilike('email', email.toLowerCase().trim())
     .single()
 
@@ -235,11 +238,11 @@ export async function searchExterneHelfer(
 
   const supabase = await createClient()
 
-  const searchTerm = `%${query}%`
+  const searchTerm = `%${sanitizeSearchQuery(query)}%`
 
   const { data, error } = await supabase
     .from('externe_helfer_profile')
-    .select('*')
+    .select('id, email, vorname, nachname, telefon, notizen, dashboard_token, erstellt_am, letzter_einsatz')
     .or(`vorname.ilike.${searchTerm},nachname.ilike.${searchTerm},email.ilike.${searchTerm}`)
     .order('nachname', { ascending: true })
     .limit(20)

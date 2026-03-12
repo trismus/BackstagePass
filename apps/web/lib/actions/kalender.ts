@@ -73,7 +73,7 @@ export async function getKalenderEvents(
   // Fetch Veranstaltungen
   let veranstaltungenQuery = supabase
     .from('veranstaltungen')
-    .select('*')
+    .select('id, titel, beschreibung, datum, startzeit, endzeit, ort, max_teilnehmer, warteliste_aktiv, organisator_id, typ, status, helfer_template_id, helfer_status, public_helfer_token, max_schichten_pro_helfer, helfer_buchung_deadline, helfer_buchung_limit_aktiv, koordinator_id, created_at, updated_at')
     .order('datum', { ascending: true })
 
   if (startDatum) {

@@ -221,7 +221,7 @@ export async function getPublicHelferLink(
   }
 
   // Build URL based on environment
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const url = `${baseUrl}/helfer/anmeldung/${data.public_helfer_token}`
 
   return { url, status: data.helfer_status }

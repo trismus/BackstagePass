@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, getUserProfile } from '../supabase/server'
 import { createAdminClient } from '../supabase/admin'
+import { requirePermission } from '../supabase/auth-helpers'
 import type {
   Benachrichtigung,
   BenachrichtigungsEinstellungen,
@@ -30,7 +31,7 @@ export async function getUserNotifications(
 
   let query = supabase
     .from('benachrichtigungen')
-    .select('*')
+    .select('id, profile_id, typ, titel, nachricht, referenz_typ, referenz_id, metadata, gelesen, gelesen_am, action_url, created_at')
     .eq('profile_id', profile.id)
     .order('created_at', { ascending: false })
 
@@ -63,7 +64,7 @@ export async function getUnreadNotificationCount(): Promise<number> {
 
   const { count, error } = await supabase
     .from('benachrichtigungen')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('profile_id', profile.id)
     .eq('gelesen', false)
 
@@ -103,6 +104,7 @@ export async function markNotificationRead(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -136,6 +138,7 @@ export async function markAllNotificationsRead(): Promise<{
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true, count: count || 0 }
 }
 
@@ -164,6 +167,7 @@ export async function deleteNotification(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -182,7 +186,7 @@ export async function getNotificationSettings(): Promise<BenachrichtigungsEinste
 
   const { data, error } = await supabase
     .from('benachrichtigungs_einstellungen')
-    .select('*')
+    .select('id, profile_id, email_48h_erinnerung, email_6h_erinnerung, email_24h_probe_erinnerung, email_wochenzusammenfassung, email_aenderungsbenachrichtigung, inapp_termin_erinnerung, inapp_aenderungen, inapp_neue_termine, eigene_erinnerungszeiten, ruhezeit_von, ruhezeit_bis, created_at, updated_at')
     .eq('profile_id', profile.id)
     .single()
 
@@ -263,6 +267,9 @@ export async function createNotification(
     metadata?: Record<string, unknown>
   } = {}
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const adminClient = createAdminClient()
 
   const { data, error } = await adminClient
@@ -304,6 +311,9 @@ export async function createBulkNotifications(
     metadata?: Record<string, unknown>
   } = {}
 ): Promise<{ success: boolean; error?: string; count?: number }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   if (profileIds.length === 0) {
     return { success: true, count: 0 }
   }
@@ -346,6 +356,9 @@ export async function notifyNewProbe(
   probeTitel: string,
   probeDatum: string
 ): Promise<{ success: boolean; count?: number }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false } }
+
   const supabase = await createClient()
 
   // Get all participants with their profile IDs
@@ -406,6 +419,9 @@ export async function notifyResponseConfirmed(
   personId: string,
   status: 'zugesagt' | 'abgesagt' | 'vielleicht'
 ): Promise<{ success: boolean }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false } }
+
   const supabase = await createClient()
 
   // Get person and probe info

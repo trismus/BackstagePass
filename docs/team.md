@@ -693,16 +693,16 @@ Nur wenn Feature user-facing ist!
 
 | Agent | Empfohlenes Model | Grund |
 |-------|-------------------|-------|
-| Regisseur | **GPT-4 / Claude Sonnet** | Braucht gutes Verständnis von User Needs |
-| Springer | **GPT-4 / Claude Sonnet** | Koordination, Priorisierung, Issue-Triage |
-| Bühnenmeister | **GPT-4 / Claude Sonnet** | Komplexe Architektur-Entscheidungen |
-| Kulissenbauer | **GPT-4 Turbo / Claude Sonnet** | Code-Generation, braucht Kontext |
-| Kritiker | **GPT-4 / Claude Opus** | Tiefe Code-Analyse nötig |
-| Redakteur | **Claude Sonnet / GPT-4** | Kreatives Schreiben + SEO-Verständnis |
-| Chronist | **GPT-3.5 / Gemini Flash** | Einfache Dokumentations-Tasks |
+| Regisseur | **Claude Sonnet 4.5** | Gutes Verständnis von User Needs, schnell |
+| Springer | **Claude Sonnet 4.5** | Koordination, Priorisierung, Issue-Triage |
+| Bühnenmeister | **Claude Opus 4.6** | Komplexe Architektur-Entscheidungen |
+| Kulissenbauer | **Claude Opus 4.6** | Code-Generation, braucht grossen Kontext |
+| Maler | **Claude Sonnet 4.5** | UI/UX-Leitlinien, Design-Konsistenz |
+| Kritiker | **Claude Opus 4.6** | Tiefe Code-Analyse und Security-Audit |
+| Redakteur | **Claude Sonnet 4.5** | Kreatives Schreiben + SEO-Verständnis |
+| Chronist | **Claude Haiku 4.5** | Einfache Dokumentations-Tasks, kosteneffizient |
 
-**Alternative (Kosten-Optimiert):**
-- Alle Agents: **Google Gemini 1.5 Pro/Flash** (gutes Preis-Leistungs-Verhältnis)
+**Kosten-Optimiert:** Claude Haiku 4.5 für alle Agents (schnell, günstig, gute Qualität)
 
 ---
 

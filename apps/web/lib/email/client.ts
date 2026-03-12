@@ -1,21 +1,19 @@
 /**
  * Email Service Client
  *
- * Uses Resend for sending transactional emails.
- * Falls back gracefully if API key is not configured.
+ * Uses Nodemailer for sending transactional emails via SMTP (e.g. Gmail).
+ * Falls back gracefully if SMTP credentials are not configured.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ResendClient = any
+import nodemailer from 'nodemailer'
+import type { Transporter } from 'nodemailer'
+import { createClient } from '@supabase/supabase-js'
 
-// Check if Resend is available (for optional dependency handling)
-let ResendClass: ResendClient = null
-try {
-  // Dynamic import to handle cases where resend is not installed
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  ResendClass = require('resend').Resend
-} catch {
-  // Resend not installed - will use mock/log mode
+export interface EmailLogContext {
+  templateTyp?: string
+  recipientName?: string
+  anmeldungId?: string
+  helferAnmeldungId?: string
 }
 
 interface EmailSendOptions {
@@ -30,6 +28,7 @@ interface EmailSendOptions {
     content: string | Buffer
     contentType?: string
   }>
+  logging?: EmailLogContext
 }
 
 interface EmailSendResult {
@@ -42,33 +41,86 @@ interface EmailSendResult {
  * Get the configured email sender address
  */
 function getSenderAddress(): string {
-  return process.env.EMAIL_FROM_ADDRESS || 'BackstagePass <noreply@tgw.ch>'
+  return process.env.EMAIL_FROM_ADDRESS || 'BackstagePass <theatergruppewiden@gmail.com>'
 }
 
 /**
- * Get Resend client instance
+ * Create SMTP transporter
  */
-function getResendClient(): ResendClient {
-  const apiKey = process.env.RESEND_API_KEY
+function createTransporter(): Transporter | null {
+  const host = process.env.SMTP_HOST
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
 
-  if (!apiKey || !ResendClass) {
+  if (!host || !user || !pass) {
     return null
   }
 
-  return new ResendClass(apiKey)
+  const port = parseInt(process.env.SMTP_PORT || '587', 10)
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  })
 }
 
 /**
- * Send an email using Resend
+ * Write an email log entry to the database (fire-and-forget).
+ * Never throws — silently skips if env vars are missing.
+ */
+async function writeEmailLog(
+  recipientEmail: string,
+  status: 'sent' | 'failed',
+  logging?: EmailLogContext,
+  errorMessage?: string
+): Promise<void> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
+    const { error } = await supabase
+      .from('email_logs')
+      .insert({
+        template_typ: logging?.templateTyp || 'unknown',
+        recipient_email: recipientEmail,
+        recipient_name: logging?.recipientName || null,
+        anmeldung_id: logging?.anmeldungId || null,
+        helfer_anmeldung_id: logging?.helferAnmeldungId || null,
+        status,
+        error_message: errorMessage || null,
+        sent_at: status === 'sent' ? new Date().toISOString() : null,
+      } as never)
+
+    if (error) {
+      console.error('[Email] Failed to write email log:', error)
+    }
+  } catch (err) {
+    console.error('[Email] Error in writeEmailLog:', err)
+  }
+}
+
+/**
+ * Send an email using SMTP
  */
 export async function sendEmail(options: EmailSendOptions): Promise<EmailSendResult> {
-  const { to, subject, html, text, from, replyTo, attachments } = options
+  const { to, subject, html, text, from, replyTo, attachments, logging } = options
 
-  const resend = getResendClient()
+  const recipientEmail = Array.isArray(to) ? to[0] : to
+  const transporter = createTransporter()
 
-  // If no Resend client available, log the email (development mode)
-  if (!resend) {
-    console.warn('[Email] Resend not configured. Would send email:', {
+  // If no transporter available, log the email (development mode)
+  if (!transporter) {
+    console.warn('[Email] SMTP not configured. Would send email:', {
       to,
       subject,
       from: from || getSenderAddress(),
@@ -76,50 +128,50 @@ export async function sendEmail(options: EmailSendOptions): Promise<EmailSendRes
 
     // In development, treat as success
     if (process.env.NODE_ENV === 'development') {
-      return {
+      const result: EmailSendResult = {
         success: true,
         messageId: `dev-${Date.now()}`,
       }
+      void writeEmailLog(recipientEmail, 'sent', logging)
+      return result
     }
 
-    return {
+    const result: EmailSendResult = {
       success: false,
       error: 'Email service not configured',
     }
+    void writeEmailLog(recipientEmail, 'failed', logging, result.error)
+    return result
   }
 
   try {
-    const result = await resend.emails.send({
+    const result = await transporter.sendMail({
       from: from || getSenderAddress(),
-      to: Array.isArray(to) ? to : [to],
+      to: Array.isArray(to) ? to.join(', ') : to,
       subject,
       html,
       text,
-      reply_to: replyTo,
+      replyTo,
       attachments: attachments?.map((a) => ({
         filename: a.filename,
-        content: typeof a.content === 'string' ? Buffer.from(a.content) : a.content,
-        content_type: a.contentType,
+        content: a.content,
+        contentType: a.contentType,
       })),
     })
 
-    if (result.error) {
-      console.error('[Email] Resend error:', result.error)
-      return {
-        success: false,
-        error: result.error.message,
-      }
-    }
+    void writeEmailLog(recipientEmail, 'sent', logging)
 
     return {
       success: true,
-      messageId: result.data?.id,
+      messageId: result.messageId,
     }
   } catch (error) {
     console.error('[Email] Failed to send:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    void writeEmailLog(recipientEmail, 'failed', logging, errorMsg)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMsg,
     }
   }
 }
@@ -169,7 +221,7 @@ export async function sendEmailWithRetry(
  * Check if email service is configured
  */
 export function isEmailServiceConfigured(): boolean {
-  return !!process.env.RESEND_API_KEY && !!ResendClass
+  return !!process.env.SMTP_HOST && !!process.env.SMTP_USER && !!process.env.SMTP_PASS
 }
 
 /**
@@ -180,13 +232,12 @@ export function getEmailServiceStatus(): {
   provider: string
   mode: 'production' | 'development' | 'disabled'
 } {
-  const hasApiKey = !!process.env.RESEND_API_KEY
-  const hasResend = !!ResendClass
+  const hasSmtp = isEmailServiceConfigured()
 
-  if (hasApiKey && hasResend) {
+  if (hasSmtp) {
     return {
       configured: true,
-      provider: 'Resend',
+      provider: 'SMTP',
       mode: 'production',
     }
   }

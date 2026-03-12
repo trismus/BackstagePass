@@ -13,7 +13,6 @@ import type {
   AuffuehrungsserieInsert,
   AuffuehrungsserieUpdate,
   Serienauffuehrung,
-  SerienauffuehrungInsert,
   SerienauffuehrungUpdate,
   AuffuehrungsTyp,
 } from '../supabase/types'
@@ -26,7 +25,7 @@ export async function getProduktionen(): Promise<Produktion[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -41,7 +40,7 @@ export async function getAktiveProduktionen(): Promise<Produktion[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .not('status', 'in', '("abgeschlossen","abgesagt")')
     .order('premiere', { ascending: true, nullsFirst: false })
 
@@ -64,7 +63,7 @@ export async function getAktuelleProduktionFuerDashboard(): Promise<{
   // Find the current production: laufend > premiere > proben > casting > planung
   const { data: produktionen } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .not('status', 'in', '("abgeschlossen","abgesagt","draft")')
     .order('premiere', { ascending: true, nullsFirst: false })
     .limit(5)
@@ -173,7 +172,7 @@ export async function getProduktion(id: string): Promise<Produktion | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('produktionen')
-    .select('*')
+    .select('id, titel, beschreibung, stueck_id, status, saison, proben_start, premiere, derniere, produktionsleitung_id, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -317,7 +316,7 @@ export async function getSerien(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrungsserien')
-    .select('*')
+    .select('id, produktion_id, name, beschreibung, status, standard_ort, standard_startzeit, template_id, stueck_id, datum_von, datum_bis, created_at, updated_at')
     .eq('produktion_id', produktionId)
     .order('created_at', { ascending: false })
 
@@ -335,7 +334,7 @@ export async function getSerie(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrungsserien')
-    .select('*')
+    .select('id, produktion_id, name, beschreibung, status, standard_ort, standard_startzeit, template_id, stueck_id, datum_von, datum_bis, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -418,15 +417,14 @@ export async function deleteSerie(
     }
   }
 
-  const supabase = await createClient()
-
   const serie = await getSerie(id)
   const produktionId = serie?.produktion_id
 
-  const { error } = await supabase
-    .from('auffuehrungsserien')
-    .delete()
-    .eq('id', id)
+  const supabase = await createClient()
+  const { error } = await supabase.rpc(
+    'delete_serie_with_veranstaltungen' as never,
+    { p_serie_id: id } as never
+  )
 
   if (error) {
     console.error('Error deleting serie:', error)
@@ -436,6 +434,7 @@ export async function deleteSerie(
   if (produktionId) {
     revalidatePath(`/produktionen/${produktionId}`)
   }
+  revalidatePath('/auffuehrungen')
   return { success: true }
 }
 
@@ -449,7 +448,7 @@ export async function getSerienAuffuehrungen(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('serienauffuehrungen')
-    .select('*')
+    .select('id, serie_id, veranstaltung_id, datum, startzeit, ort, typ, ist_ausnahme, notizen, created_at, updated_at')
     .eq('serie_id', serieId)
     .order('datum', { ascending: true })
 
@@ -481,7 +480,7 @@ export async function getAllAuffuehrungenForProduktion(
   // Fetch all auffuehrungen for these serien
   const { data, error } = await supabase
     .from('serienauffuehrungen')
-    .select('*')
+    .select('id, serie_id, veranstaltung_id, datum, startzeit, ort, typ, ist_ausnahme, notizen, created_at, updated_at')
     .in('serie_id', serieIds)
     .order('datum', { ascending: true })
 
@@ -523,21 +522,31 @@ export async function generiereAuffuehrungen(
     return { success: false, error: 'Serie nicht gefunden.' }
   }
 
-  const inserts: SerienauffuehrungInsert[] = termine.map((t) => ({
-    serie_id: serieId,
+  // Fetch produktion titel for veranstaltung naming
+  const supabase = await createClient()
+  const { data: produktion } = await supabase
+    .from('produktionen')
+    .select('titel')
+    .eq('id', serie.produktion_id)
+    .single()
+
+  const produktionTitel = produktion?.titel ?? 'Aufführung'
+
+  const termineJsonb = termine.map((t) => ({
     datum: t.datum,
     startzeit: t.startzeit || serie.standard_startzeit || null,
     ort: serie.standard_ort || null,
     typ: t.typ || 'regulaer',
-    ist_ausnahme: false,
-    veranstaltung_id: null,
-    notizen: null,
   }))
 
-  const supabase = await createClient()
-  const { error } = await supabase
-    .from('serienauffuehrungen')
-    .insert(inserts as never)
+  const { data, error } = await supabase.rpc(
+    'generate_serienauffuehrungen_with_veranstaltungen' as never,
+    {
+      p_serie_id: serieId,
+      p_produktion_titel: produktionTitel,
+      p_termine: termineJsonb,
+    } as never
+  )
 
   if (error) {
     console.error('Error generating auffuehrungen:', error)
@@ -545,7 +554,8 @@ export async function generiereAuffuehrungen(
   }
 
   revalidatePath(`/produktionen/${serie.produktion_id}`)
-  return { success: true, count: inserts.length }
+  revalidatePath('/auffuehrungen')
+  return { success: true, count: (data as unknown[])?.length ?? termine.length }
 }
 
 export async function generiereAuffuehrungenWiederholung(
@@ -617,6 +627,32 @@ export async function updateSerienauffuehrung(
     return { success: false, error: error.message }
   }
 
+  // Sync changes to linked veranstaltung if it exists
+  if (data.datum || data.startzeit || data.ort) {
+    const { data: sa } = await supabase
+      .from('serienauffuehrungen')
+      .select('veranstaltung_id')
+      .eq('id', id)
+      .single()
+
+    if (sa?.veranstaltung_id) {
+      const veranstaltungUpdate: Record<string, unknown> = {}
+      if (data.datum) veranstaltungUpdate.datum = data.datum
+      if (data.startzeit) veranstaltungUpdate.startzeit = data.startzeit
+      if (data.ort) veranstaltungUpdate.ort = data.ort
+
+      const { error: vError } = await supabase
+        .from('veranstaltungen')
+        .update(veranstaltungUpdate as never)
+        .eq('id', sa.veranstaltung_id)
+
+      if (vError) {
+        console.error('Error syncing veranstaltung:', vError)
+      }
+    }
+  }
+
+  revalidatePath('/auffuehrungen')
   return { success: true }
 }
 
@@ -629,15 +665,157 @@ export async function deleteSerienauffuehrung(
   }
 
   const supabase = await createClient()
-  const { error } = await supabase
-    .from('serienauffuehrungen')
-    .delete()
-    .eq('id', id)
+  const { error } = await supabase.rpc(
+    'delete_serienauffuehrung_with_veranstaltung' as never,
+    { p_serienauffuehrung_id: id } as never
+  )
 
   if (error) {
     console.error('Error deleting serienauffuehrung:', error)
     return { success: false, error: error.message }
   }
 
+  revalidatePath('/auffuehrungen')
   return { success: true }
+}
+
+// =============================================================================
+// Meine Produktions-Aufführungen (Dashboard)
+// =============================================================================
+
+export type MeineProduktionsAuffuehrung = {
+  id: string
+  veranstaltung_id: string
+  titel: string
+  datum: string
+  startzeit: string | null
+  ort: string | null
+}
+
+/**
+ * Get upcoming Aufführungen for a person based on their Produktions-Besetzungen/Stab.
+ * Pattern: multi-query with in-memory join (like getMeineProben).
+ */
+export async function getMeineProduktionsAuffuehrungen(
+  personId: string
+): Promise<MeineProduktionsAuffuehrung[]> {
+  try {
+    const supabase = await createClient()
+    const today = new Date().toISOString().split('T')[0]
+
+    // Step 1: Find produktion_ids where person is besetzt/vorgemerkt OR on stab
+    const [{ data: besetzungen }, { data: stab }] = await Promise.all([
+      supabase
+        .from('produktions_besetzungen')
+        .select('produktion_id')
+        .eq('person_id', personId)
+        .in('status', ['besetzt', 'vorgemerkt']),
+      supabase
+        .from('produktions_stab')
+        .select('produktion_id')
+        .eq('person_id', personId),
+    ])
+
+    const produktionIds = [
+      ...new Set([
+        ...(besetzungen || []).map((b) => b.produktion_id),
+        ...(stab || []).map((s) => s.produktion_id),
+      ]),
+    ]
+
+    if (produktionIds.length === 0) return []
+
+    // Step 2: Get produktion titles
+    const { data: produktionen } = await supabase
+      .from('produktionen')
+      .select('id, titel')
+      .in('id', produktionIds)
+
+    const produktionMap = new Map(
+      (produktionen || []).map((p: { id: string; titel: string }) => [p.id, p.titel])
+    )
+
+    // Step 3: Get auffuehrungsserien for these produktionen
+    const { data: serien } = await supabase
+      .from('auffuehrungsserien')
+      .select('id, produktion_id')
+      .in('produktion_id', produktionIds)
+
+    if (!serien || serien.length === 0) return []
+
+    const serieProduktionMap = new Map(
+      serien.map((s: { id: string; produktion_id: string }) => [s.id, s.produktion_id])
+    )
+    const serieIds = serien.map((s) => s.id)
+
+    // Step 4: Get serienauffuehrungen with linked veranstaltungen
+    const { data: auffuehrungen } = await supabase
+      .from('serienauffuehrungen')
+      .select('id, serie_id, veranstaltung_id, datum, startzeit, ort')
+      .in('serie_id', serieIds)
+      .not('veranstaltung_id', 'is', null)
+      .gte('datum', today)
+      .order('datum', { ascending: true })
+      .limit(10)
+
+    if (!auffuehrungen || auffuehrungen.length === 0) return []
+
+    // Step 5: Join in application code
+    return auffuehrungen.map((a) => {
+      const produktionId = serieProduktionMap.get(a.serie_id) ?? ''
+      return {
+        id: a.id,
+        veranstaltung_id: a.veranstaltung_id!,
+        titel: produktionMap.get(produktionId) ?? 'Aufführung',
+        datum: a.datum,
+        startzeit: a.startzeit,
+        ort: a.ort,
+      }
+    })
+  } catch (error) {
+    console.error('Unexpected error in getMeineProduktionsAuffuehrungen:', error)
+    return []
+  }
+}
+
+// =============================================================================
+// Reverse Lookup: Veranstaltung → Produktion
+// =============================================================================
+
+export async function getProduktionForVeranstaltung(
+  veranstaltungId: string
+): Promise<{
+  produktion: { id: string; titel: string }
+  serieName: string
+} | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('serienauffuehrungen')
+    .select(
+      'serie_id, auffuehrungsserien(id, name, produktion_id, produktionen(id, titel))'
+    )
+    .eq('veranstaltung_id', veranstaltungId)
+    .limit(1)
+    .single()
+
+  if (error || !data) {
+    return null
+  }
+
+  const serie = data.auffuehrungsserien as unknown as {
+    id: string
+    name: string
+    produktion_id: string
+    produktionen: { id: string; titel: string }
+  }
+
+  if (!serie?.produktionen) {
+    return null
+  }
+
+  return {
+    produktion: { id: serie.produktionen.id, titel: serie.produktionen.titel },
+    serieName: serie.name,
+  }
 }

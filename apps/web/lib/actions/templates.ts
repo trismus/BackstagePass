@@ -9,13 +9,18 @@ import type {
   TemplateMitDetails,
   TemplateZeitblock,
   TemplateZeitblockInsert,
+  TemplateZeitblockUpdate,
   TemplateSchicht,
   TemplateSchichtInsert,
+  TemplateSchichtUpdate,
   TemplateRessourceInsert,
+  TemplateRessourceUpdate,
   TemplateInfoBlock,
   TemplateInfoBlockInsert,
+  TemplateInfoBlockUpdate,
   TemplateSachleistung,
   TemplateSachleistungInsert,
+  TemplateSachleistungUpdate,
   ZeitblockInsert,
   AuffuehrungSchichtInsert,
   InfoBlockInsert,
@@ -25,21 +30,34 @@ import {
   templateSchema,
   templateUpdateSchema,
   templateZeitblockSchema,
+  templateZeitblockUpdateSchema,
   templateSchichtSchema,
+  templateSchichtUpdateSchema,
   templateRessourceSchema,
+  templateRessourceUpdateSchema,
   templateInfoBlockSchema,
+  templateInfoBlockUpdateSchema,
   templateSachleistungSchema,
+  templateSachleistungUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
+
+/** Revalidate both template pages (user-facing + admin) */
+function revalidateTemplate(templateId: string) {
+  revalidatePath(`/templates/${templateId}`)
+  revalidatePath(`/admin/schicht-templates/${templateId}`)
+}
 
 /**
  * Get all templates (non-archived)
  */
 export async function getTemplates(): Promise<AuffuehrungTemplate[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_templates')
-    .select('*')
+    .select('id, name, beschreibung, archiviert, created_at, updated_at')
     .eq('archiviert', false)
     .order('name', { ascending: true })
 
@@ -55,10 +73,11 @@ export async function getTemplates(): Promise<AuffuehrungTemplate[]> {
  * Get all templates including archived
  */
 export async function getAllTemplates(): Promise<AuffuehrungTemplate[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_templates')
-    .select('*')
+    .select('id, name, beschreibung, archiviert, created_at, updated_at')
     .order('name', { ascending: true })
 
   if (error) {
@@ -75,12 +94,13 @@ export async function getAllTemplates(): Promise<AuffuehrungTemplate[]> {
 export async function getTemplate(
   id: string
 ): Promise<TemplateMitDetails | null> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // Get template
   const { data: template, error: templateError } = await supabase
     .from('auffuehrung_templates')
-    .select('*')
+    .select('id, name, beschreibung, archiviert, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -92,14 +112,14 @@ export async function getTemplate(
   // Get zeitbloecke
   const { data: zeitbloecke } = await supabase
     .from('template_zeitbloecke')
-    .select('*')
+    .select('id, template_id, name, startzeit, endzeit, typ, sortierung')
     .eq('template_id', id)
     .order('sortierung', { ascending: true })
 
   // Get schichten
   const { data: schichten } = await supabase
     .from('template_schichten')
-    .select('*')
+    .select('id, template_id, zeitblock_name, rolle, anzahl_benoetigt, nur_mitglieder')
     .eq('template_id', id)
 
   // Get ressourcen with details
@@ -116,14 +136,14 @@ export async function getTemplate(
   // Get info_bloecke
   const { data: info_bloecke } = await supabase
     .from('template_info_bloecke')
-    .select('*')
+    .select('id, template_id, titel, beschreibung, startzeit, endzeit, sortierung, created_at')
     .eq('template_id', id)
     .order('sortierung', { ascending: true })
 
   // Get sachleistungen
   const { data: sachleistungen } = await supabase
     .from('template_sachleistungen')
-    .select('*')
+    .select('id, template_id, name, anzahl, beschreibung, created_at')
     .eq('template_id', id)
 
   return {
@@ -143,6 +163,9 @@ export async function getTemplate(
 export async function createTemplate(
   data: AuffuehrungTemplateInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateSchema, data)
   if (!validation.success) {
@@ -162,6 +185,7 @@ export async function createTemplate(
   }
 
   revalidatePath('/templates')
+  revalidatePath('/admin/schicht-templates')
   return { success: true, id: result?.id }
 }
 
@@ -173,6 +197,9 @@ export async function updateTemplate(
   id: string,
   data: AuffuehrungTemplateUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateUpdateSchema, data)
   if (!validation.success) {
@@ -191,7 +218,8 @@ export async function updateTemplate(
   }
 
   revalidatePath('/templates')
-  revalidatePath(`/templates/${id}`)
+  revalidatePath('/admin/schicht-templates')
+  revalidateTemplate(id)
   return { success: true }
 }
 
@@ -201,6 +229,9 @@ export async function updateTemplate(
 export async function archiveTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   return updateTemplate(id, { archiviert: true })
 }
 
@@ -211,6 +242,9 @@ export async function archiveTemplate(
 export async function deleteTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('auffuehrung_templates')
@@ -223,6 +257,7 @@ export async function deleteTemplate(
   }
 
   revalidatePath('/templates')
+  revalidatePath('/admin/schicht-templates')
   return { success: true }
 }
 
@@ -233,6 +268,9 @@ export async function deleteTemplate(
 export async function addTemplateZeitblock(
   data: TemplateZeitblockInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateZeitblockSchema, data)
   if (!validation.success) {
@@ -251,7 +289,7 @@ export async function addTemplateZeitblock(
     return { success: false, error: 'Fehler beim Hinzufügen des Zeitblocks' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -259,6 +297,9 @@ export async function removeTemplateZeitblock(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_zeitbloecke')
@@ -270,7 +311,35 @@ export async function removeTemplateZeitblock(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
+  return { success: true }
+}
+
+export async function updateTemplateZeitblock(
+  id: string,
+  templateId: string,
+  data: TemplateZeitblockUpdate
+): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
+  const validation = validateInput(templateZeitblockUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_zeitbloecke')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template zeitblock:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren des Zeitblocks' }
+  }
+
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -281,6 +350,9 @@ export async function removeTemplateZeitblock(
 export async function addTemplateSchicht(
   data: TemplateSchichtInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateSchichtSchema, data)
   if (!validation.success) {
@@ -299,7 +371,7 @@ export async function addTemplateSchicht(
     return { success: false, error: 'Fehler beim Hinzufügen der Schicht' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -307,6 +379,9 @@ export async function removeTemplateSchicht(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_schichten')
@@ -318,7 +393,35 @@ export async function removeTemplateSchicht(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
+  return { success: true }
+}
+
+export async function updateTemplateSchicht(
+  id: string,
+  templateId: string,
+  data: TemplateSchichtUpdate
+): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
+  const validation = validateInput(templateSchichtUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_schichten')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template schicht:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren der Schicht' }
+  }
+
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -329,6 +432,9 @@ export async function removeTemplateSchicht(
 export async function addTemplateRessource(
   data: TemplateRessourceInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateRessourceSchema, data)
   if (!validation.success) {
@@ -347,7 +453,7 @@ export async function addTemplateRessource(
     return { success: false, error: 'Fehler beim Hinzufügen der Ressource' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -355,6 +461,9 @@ export async function removeTemplateRessource(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_ressourcen')
@@ -366,7 +475,35 @@ export async function removeTemplateRessource(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
+  return { success: true }
+}
+
+export async function updateTemplateRessource(
+  id: string,
+  templateId: string,
+  data: TemplateRessourceUpdate
+): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
+  const validation = validateInput(templateRessourceUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_ressourcen')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template ressource:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren der Ressource' }
+  }
+
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -377,6 +514,9 @@ export async function removeTemplateRessource(
 export async function addTemplateInfoBlock(
   data: TemplateInfoBlockInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateInfoBlockSchema, data)
   if (!validation.success) {
@@ -395,7 +535,7 @@ export async function addTemplateInfoBlock(
     return { success: false, error: 'Fehler beim Hinzufügen des Info-Blocks' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -403,6 +543,9 @@ export async function removeTemplateInfoBlock(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_info_bloecke')
@@ -414,7 +557,35 @@ export async function removeTemplateInfoBlock(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
+  return { success: true }
+}
+
+export async function updateTemplateInfoBlock(
+  id: string,
+  templateId: string,
+  data: TemplateInfoBlockUpdate
+): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
+  const validation = validateInput(templateInfoBlockUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_info_bloecke')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template info block:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren des Info-Blocks' }
+  }
+
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -425,6 +596,9 @@ export async function removeTemplateInfoBlock(
 export async function addTemplateSachleistung(
   data: TemplateSachleistungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(templateSachleistungSchema, data)
   if (!validation.success) {
@@ -443,7 +617,7 @@ export async function addTemplateSachleistung(
     return { success: false, error: 'Fehler beim Hinzufügen der Sachleistung' }
   }
 
-  revalidatePath(`/templates/${data.template_id}`)
+  revalidateTemplate(data.template_id)
   return { success: true, id: result?.id }
 }
 
@@ -451,6 +625,9 @@ export async function removeTemplateSachleistung(
   id: string,
   templateId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('template_sachleistungen')
@@ -462,7 +639,35 @@ export async function removeTemplateSachleistung(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/templates/${templateId}`)
+  revalidateTemplate(templateId)
+  return { success: true }
+}
+
+export async function updateTemplateSachleistung(
+  id: string,
+  templateId: string,
+  data: TemplateSachleistungUpdate
+): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
+  const validation = validateInput(templateSachleistungUpdateSchema, data)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('template_sachleistungen')
+    .update(validation.data as never)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating template sachleistung:', error)
+    return { success: false, error: 'Fehler beim Aktualisieren der Sachleistung' }
+  }
+
+  revalidateTemplate(templateId)
   return { success: true }
 }
 
@@ -476,13 +681,16 @@ export async function removeTemplateSachleistung(
  *
  * @param templateId - The template to apply
  * @param veranstaltungId - The performance to apply the template to
- * @param startzeit - The start time of the performance (used to calculate zeitblock times)
+ * @param _startzeit - Unused (kept for API compatibility)
  */
 export async function applyTemplate(
   templateId: string,
   veranstaltungId: string,
-  startzeit: string
+  _startzeit: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
 
   // Get the template with all details
@@ -491,18 +699,7 @@ export async function applyTemplate(
     return { success: false, error: 'Template nicht gefunden' }
   }
 
-  // Parse the start time
-  const [startHours, startMinutes] = startzeit.split(':').map(Number)
-  const startTotalMinutes = startHours * 60 + startMinutes
-
-  // Helper function to convert offset minutes to TIME string
-  const minutesToTime = (totalMinutes: number): string => {
-    const hours = Math.floor(totalMinutes / 60) % 24
-    const minutes = totalMinutes % 60
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-  }
-
-  // Create zeitbloecke from template
+  // Create zeitbloecke from template (direct time copy)
   const zeitblockMap: Record<string, string> = {} // name -> id mapping for schichten
 
   if (template.zeitbloecke.length > 0) {
@@ -510,10 +707,8 @@ export async function applyTemplate(
       (tz) => ({
         veranstaltung_id: veranstaltungId,
         name: tz.name,
-        startzeit: minutesToTime(startTotalMinutes + tz.offset_minuten),
-        endzeit: minutesToTime(
-          startTotalMinutes + tz.offset_minuten + tz.dauer_minuten
-        ),
+        startzeit: tz.startzeit,
+        endzeit: tz.endzeit,
         typ: tz.typ,
         sortierung: tz.sortierung,
       })
@@ -545,6 +740,7 @@ export async function applyTemplate(
           : null,
         rolle: ts.rolle,
         anzahl_benoetigt: ts.anzahl_benoetigt,
+        sichtbarkeit: ts.nur_mitglieder ? 'intern' as const : 'public' as const,
       })
     )
 
@@ -583,17 +779,15 @@ export async function applyTemplate(
     }
   }
 
-  // Create info_bloecke from template (with calculated times from offsets)
+  // Create info_bloecke from template (direct time copy)
   if (template.info_bloecke && template.info_bloecke.length > 0) {
     const infoBlockInserts: InfoBlockInsert[] = template.info_bloecke.map(
       (ib) => ({
         veranstaltung_id: veranstaltungId,
         titel: ib.titel,
         beschreibung: ib.beschreibung,
-        startzeit: minutesToTime(startTotalMinutes + ib.offset_minuten),
-        endzeit: minutesToTime(
-          startTotalMinutes + ib.offset_minuten + ib.dauer_minuten
-        ),
+        startzeit: ib.startzeit,
+        endzeit: ib.endzeit,
         sortierung: ib.sortierung,
       })
     )
@@ -645,24 +839,10 @@ export async function createTemplateFromVeranstaltung(
   templateName: string,
   beschreibung?: string
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
-
-  // Get the veranstaltung start time
-  const { data: veranstaltung } = await supabase
-    .from('veranstaltungen')
-    .select('startzeit')
-    .eq('id', veranstaltungId)
-    .single()
-
-  if (!veranstaltung?.startzeit) {
-    return { success: false, error: 'Veranstaltung hat keine Startzeit' }
-  }
-
-  // Parse the start time
-  const [startHours, startMinutes] = veranstaltung.startzeit
-    .split(':')
-    .map(Number)
-  const startTotalMinutes = startHours * 60 + startMinutes
 
   // Create the template
   const { data: template, error: templateError } = await supabase
@@ -682,30 +862,18 @@ export async function createTemplateFromVeranstaltung(
   // Get existing zeitbloecke
   const { data: zeitbloecke } = await supabase
     .from('zeitbloecke')
-    .select('*')
+    .select('id, veranstaltung_id, name, startzeit, endzeit, typ, sortierung, created_at')
     .eq('veranstaltung_id', veranstaltungId)
     .order('sortierung', { ascending: true })
 
-  // Helper function to convert TIME to offset minutes
-  const timeToOffset = (time: string): number => {
-    const [hours, minutes] = time.split(':').map(Number)
-    return hours * 60 + minutes - startTotalMinutes
-  }
-
-  const timeToDuration = (start: string, end: string): number => {
-    const [startH, startM] = start.split(':').map(Number)
-    const [endH, endM] = end.split(':').map(Number)
-    return endH * 60 + endM - (startH * 60 + startM)
-  }
-
-  // Create template zeitbloecke
+  // Create template zeitbloecke (direct time copy)
   if (zeitbloecke && zeitbloecke.length > 0) {
     const templateZeitbloecke: TemplateZeitblockInsert[] = zeitbloecke.map(
       (zb) => ({
         template_id: template.id,
         name: zb.name,
-        offset_minuten: timeToOffset(zb.startzeit),
-        dauer_minuten: timeToDuration(zb.startzeit, zb.endzeit),
+        startzeit: zb.startzeit,
+        endzeit: zb.endzeit,
         typ: zb.typ,
         sortierung: zb.sortierung,
       })
@@ -734,6 +902,7 @@ export async function createTemplateFromVeranstaltung(
       zeitblock_name: (s.zeitblock as { name: string } | null)?.name || null,
       rolle: s.rolle,
       anzahl_benoetigt: s.anzahl_benoetigt,
+      nur_mitglieder: s.sichtbarkeit === 'intern',
     }))
 
     await supabase
@@ -763,5 +932,6 @@ export async function createTemplateFromVeranstaltung(
   }
 
   revalidatePath('/templates')
+  revalidatePath('/admin/schicht-templates')
   return { success: true, id: template.id }
 }

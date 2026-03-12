@@ -49,7 +49,7 @@ export default async function ProbeDetailPage({
   // Hole alle verfügbaren Personen für Teilnehmer-Auswahl
   const { data: personen } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
     .eq('aktiv', true)
     .order('nachname')
 
@@ -60,7 +60,7 @@ export default async function ProbeDetailPage({
   // Hole alle Szenen des Stücks für das Protokoll
   const { data: alleSzenen } = await supabase
     .from('szenen')
-    .select('*')
+    .select('id, stueck_id, nummer, titel, beschreibung, text, dauer_minuten, created_at, updated_at')
     .eq('stueck_id', probe.stueck_id)
     .order('nummer')
 
@@ -216,6 +216,9 @@ export default async function ProbeDetailPage({
         personen={personen ?? []}
         canEdit={canEdit}
         hasSzenen={probeSzenen.length > 0}
+        datum={probe.datum}
+        startzeit={probe.startzeit}
+        endzeit={probe.endzeit}
       />
 
       {/* Notizen (nur für Regie) */}

@@ -1,6 +1,7 @@
 export { ProbenList } from './ProbenList'
 export { ProbeForm } from './ProbeForm'
 export { TeilnehmerList } from './TeilnehmerList'
+export { TeilnehmerPreviewDialog } from './TeilnehmerPreviewDialog'
 export { TeilnahmeUebersicht } from './TeilnahmeUebersicht'
 export { ProbeStatusBadge, TeilnehmerStatusBadge } from './ProbeStatusBadge'
 export { ProbenplanGenerator } from './ProbenplanGenerator'

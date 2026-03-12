@@ -163,7 +163,7 @@ export async function getBesetzung(id: string): Promise<Besetzung | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('besetzungen')
-    .select('*')
+    .select('id, rolle_id, person_id, typ, gueltig_von, gueltig_bis, notizen, created_at, updated_at')
     .eq('id', id)
     .single()
 

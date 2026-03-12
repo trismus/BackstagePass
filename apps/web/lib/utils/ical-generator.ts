@@ -203,6 +203,33 @@ export function icalToDataUrl(icalContent: string): string {
 }
 
 /**
+ * Merge multiple VCALENDAR contents into a single file
+ * Extracts VEVENT blocks from each and combines under one VCALENDAR header.
+ */
+export function mergeICalEvents(icsContents: string[]): string {
+  if (icsContents.length === 0) return ''
+  if (icsContents.length === 1) return icsContents[0]
+
+  const vevents: string[] = []
+  let preamble = ''
+
+  for (let i = 0; i < icsContents.length; i++) {
+    const content = icsContents[i]
+    const veventMatch = content.match(
+      /BEGIN:VEVENT[\s\S]*?END:VEVENT/
+    )
+    if (veventMatch) {
+      vevents.push(veventMatch[0])
+    }
+    if (i === 0) {
+      preamble = content.substring(0, content.indexOf('BEGIN:VEVENT'))
+    }
+  }
+
+  return preamble + vevents.join('\r\n') + '\r\nEND:VCALENDAR'
+}
+
+/**
  * Generate a filename for the iCal file
  */
 export function generateIcalFilename(veranstaltung: string, rolle: string): string {

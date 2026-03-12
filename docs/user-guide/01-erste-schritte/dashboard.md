@@ -1,84 +1,66 @@
 # Dashboard Übersicht
 
-Das Dashboard ist deine zentrale Anlaufstelle in BackstagePass. Hier siehst du auf einen Blick alle wichtigen Informationen.
+Das Dashboard ist deine zentrale Anlaufstelle in BackstagePass. Die Inhalte passen sich je nach Rolle automatisch an.
 
 ---
 
-## Aufbau des Dashboards
+## Vorstand-Dashboard (ADMIN, VORSTAND)
 
-### Kopfzeile (Header)
-- **Logo** - Klicke darauf, um zum Dashboard zurückzukehren
-- **Navigation** - Schnellzugriff auf die wichtigsten Bereiche
-- **Benutzername** - Zugang zu deinem Profil und Abmeldung
+Das Vorstand-Dashboard zeigt eine umfassende Verwaltungsübersicht in drei Spalten:
 
-### Hauptbereich
+### Linke Spalte: Produktion & Termine
+- **Aktuelle Produktion** - Laufendes Stück mit Probenfortschritt und nächster Premiere
+- **Diese Woche** - Anstehende Proben und Aufführungen der laufenden Woche
+- **Offene Schichten** - Noch nicht besetzte Helferschichten bei Aufführungen
 
-Je nach deiner Rolle siehst du unterschiedliche Inhalte:
+### Mittlere Spalte: Kennzahlen & Helferliste
+- **Mitglieder-Statistik** - Anzahl aktiver und passiver Mitglieder
+- **Helferliste** - Belegungsübersicht mit Ampelstatus (grün/gelb/rot) für kommende Helfer-Events
 
-#### Für alle Mitglieder:
-- **Kommende Events** - Nächste Veranstaltungen und Proben
-- **Meine Einsätze** - Deine zugewiesenen Aufgaben
-- **Aktuelle Stücke** - Laufende Produktionen
+### Rechte Spalte: Mein Bereich
+- **Mein Profil** (bearbeitbar direkt im Dashboard)
+- **Mini-Kalender** - Eigene Termine auf einen Blick
+- **Rollen-Historie** - Vergangene Vereinsrollen
 
-#### Zusätzlich für Vorstand/Regie:
-- **Statistiken** - Übersicht über Anmeldungen
-- **Offene Aufgaben** - Zu erledigende Verwaltungsaufgaben
-- **Schnellaktionen** - Häufig genutzte Funktionen
+### Ampelsystem (Helferliste)
+Der Belegungsstatus der Helferliste wird mit Farbcodes visualisiert:
 
----
+| Farbe | Bedeutung |
+|-------|-----------|
+| Grün | Vollständig besetzt |
+| Gelb | Teilweise besetzt (weniger als 100 %) |
+| Rot | Kritisch unterbesetzt |
 
-## Dashboard-Karten
-
-### Kommende Events
-Zeigt die nächsten Veranstaltungen:
-- **Datum und Uhrzeit**
-- **Veranstaltungsname**
-- **Dein Anmeldestatus** (Zugesagt/Abgesagt/Offen)
-
-Klicke auf ein Event für mehr Details.
-
-### Meine Proben
-Zeigt deine nächsten Probentermine:
-- **Datum**
-- **Stück und Szenen**
-- **Ort**
-
-### Stundenkonto
-Zeigt deinen aktuellen Stundenstand:
-- **Geleistete Stunden**
-- **Offene Stunden** (falls Mindestbeitrag)
+### Mitglieder-Ansicht umschalten
+Über den Link "Mitglieder-Ansicht" in der Seitennavigation (Bereich "Ansichten") kann der Vorstand die Sicht eines aktiven Mitglieds einnehmen. Zurück zur Vorstand-Ansicht kommt man über denselben Link.
 
 ---
 
-## Schnellaktionen
+## Mitglieder-Dashboard (MITGLIED_AKTIV)
 
-Je nach Berechtigung stehen dir verschiedene Aktionen zur Verfügung:
+Das Mitglieder-Dashboard ist übersichtlich gestaltet und zeigt die persönlich relevanten Informationen:
 
-| Aktion | Beschreibung | Berechtigung |
-|--------|--------------|--------------|
-| Neues Event | Event erstellen | Vorstand |
-| Neue Probe | Probe planen | Regie |
-| Mitglied hinzufügen | Neues Mitglied anlegen | Vorstand |
+### Widgets
+- **Kommende Veranstaltungen** - Nächste Events mit eigenem Anmeldestatus
+- **Meine Proben** - Anstehende Probentermine mit Stück und Szene
+- **Offene Schichten** - Freie Helferschichten bei Aufführungen, für die man sich anmelden kann
+- **Profilabschluss** - Hinweis wenn Profilangaben unvollständig sind
 
 ---
 
-## Benachrichtigungen
+## HELFER-Dashboard
 
-Auf dem Dashboard siehst du wichtige Hinweise:
-
-- **Neue Einladungen** - Events, zu denen du eingeladen wurdest
-- **Erinnerungen** - Bevorstehende Termine
-- **Änderungen** - Aktualisierte Event-Details
+Helfer sehen nach dem Login ihr Dashboard mit:
+- Eigenem Profil
+- Zugewiesenen Einsätzen (soweit zugewiesen)
 
 ---
 
 ## Tipps
 
-> **Tipp 1:** Schaue regelmässig auf das Dashboard, um keine Termine zu verpassen.
+> Das Logo oben links bringt dich immer zum Dashboard zurück.
 
-> **Tipp 2:** Nutze die Navigation für schnellen Zugriff auf häufig genutzte Bereiche.
-
-> **Tipp 3:** Klicke auf Karten, um mehr Details zu sehen.
+> Vorstand-Mitglieder können über "Mitglieder-Ansicht" die Oberfläche aus Mitglieder-Perspektive testen.
 
 ---
 

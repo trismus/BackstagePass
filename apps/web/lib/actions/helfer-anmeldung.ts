@@ -61,7 +61,6 @@ export async function getHelferlisteData(
     .from('veranstaltungen')
     .select('id, titel, datum, startzeit, endzeit, ort, helfer_status, public_helfer_token')
     .eq('id', veranstaltungId)
-    .eq('typ', 'auffuehrung')
     .single()
 
   if (veranstaltungError || !veranstaltung) {
@@ -110,7 +109,7 @@ export async function getHelferlisteData(
   // Get info_bloecke
   const { data: infoBloecke, error: infoError } = await supabase
     .from('info_bloecke')
-    .select('*')
+    .select('id, veranstaltung_id, titel, beschreibung, startzeit, endzeit, sortierung, created_at')
     .eq('veranstaltung_id', veranstaltungId)
     .order('sortierung', { ascending: true })
 
@@ -299,14 +298,14 @@ export async function registerForSlot(
     return { success: false, error: 'Fehler bei der Anmeldung' }
   }
 
-  // Send confirmation email (async, don't wait)
+  // Send confirmation email
   if (insertedZuweisung?.id) {
-    // Dynamic import to avoid circular dependencies
-    import('./email-sender').then(({ sendBookingConfirmation }) => {
-      sendBookingConfirmation(insertedZuweisung.id).catch((err) => {
-        console.error('Error sending confirmation email:', err)
-      })
-    })
+    try {
+      const { sendBookingConfirmation } = await import('./email-sender')
+      await sendBookingConfirmation(insertedZuweisung.id)
+    } catch (err) {
+      console.error('Error sending confirmation email:', err)
+    }
   }
 
   // Revalidate paths
@@ -315,6 +314,7 @@ export async function registerForSlot(
     revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}`)
   }
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
 
   return { success: true, warnings }
 }
@@ -386,6 +386,7 @@ export async function unregisterFromSlot(
     revalidatePath(`/auffuehrungen/${schicht.veranstaltung_id}`)
   }
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
 
   return { success: true }
 }

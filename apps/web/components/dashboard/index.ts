@@ -10,3 +10,8 @@ export type {
 } from './VorstandModul'
 
 export { ProduktionDashboardWidget } from './ProduktionDashboardWidget'
+
+export { CircularProgress } from './CircularProgress'
+export { BarChart } from './BarChart'
+export { MetricCard } from './MetricCard'
+export { MitmachenDashboard } from './MitmachenDashboard'

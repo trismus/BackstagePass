@@ -7,8 +7,10 @@ import { vi } from 'vitest'
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
-process.env.RESEND_API_KEY = 'test-resend-key'
-process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+process.env.SMTP_HOST = 'smtp.test.local'
+process.env.SMTP_USER = 'test@test.local'
+process.env.SMTP_PASS = 'test-password'
+process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000'
 
 // Mock next/cache
 vi.mock('next/cache', () => ({

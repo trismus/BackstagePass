@@ -12,6 +12,7 @@ import {
   zeitblockUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all time blocks for a performance
@@ -19,10 +20,11 @@ import {
 export async function getZeitbloecke(
   veranstaltungId: string
 ): Promise<Zeitblock[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('zeitbloecke')
-    .select('*')
+    .select('id, veranstaltung_id, name, startzeit, endzeit, typ, sortierung, created_at')
     .eq('veranstaltung_id', veranstaltungId)
     .order('sortierung', { ascending: true })
 
@@ -38,10 +40,11 @@ export async function getZeitbloecke(
  * Get a single time block by ID
  */
 export async function getZeitblock(id: string): Promise<Zeitblock | null> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('zeitbloecke')
-    .select('*')
+    .select('id, veranstaltung_id, name, startzeit, endzeit, typ, sortierung, created_at')
     .eq('id', id)
     .single()
 
@@ -60,6 +63,9 @@ export async function getZeitblock(id: string): Promise<Zeitblock | null> {
 export async function createZeitblock(
   data: ZeitblockInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input (including startzeit < endzeit check)
   const validation = validateInput(zeitblockSchema, data)
   if (!validation.success) {
@@ -89,6 +95,9 @@ export async function createZeitblock(
 export async function createZeitbloecke(
   data: ZeitblockInsert[]
 ): Promise<{ success: boolean; error?: string; ids?: string[] }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   if (data.length === 0) {
     return { success: true, ids: [] }
   }
@@ -119,6 +128,9 @@ export async function updateZeitblock(
   id: string,
   data: ZeitblockUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(zeitblockUpdateSchema, data)
   if (!validation.success) {
@@ -158,6 +170,9 @@ export async function updateZeitblock(
 export async function deleteZeitblock(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
 
   // Get the veranstaltung_id for revalidation
@@ -188,6 +203,9 @@ export async function reorderZeitbloecke(
   veranstaltungId: string,
   orderedIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   if (orderedIds.length === 0) {
     return { success: true }
   }

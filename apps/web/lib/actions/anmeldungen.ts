@@ -1,7 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '../supabase/server'
+import { createClient, getUserProfile } from '../supabase/server'
+import { requirePermission } from '../supabase/auth-helpers'
 import type {
   Anmeldung,
   AnmeldungMitPerson,
@@ -19,6 +20,18 @@ export async function anmelden(
   personId: string,
   notizen?: string
 ): Promise<{ success: boolean; error?: string; status?: AnmeldungStatus }> {
+  const profile = await getUserProfile()
+  if (!profile) return { success: false, error: 'Nicht angemeldet' }
+
+  // Self-registration allowed; registering others requires write permission
+  if (profile.id !== personId) {
+    try {
+      await requirePermission('veranstaltungen:write')
+    } catch {
+      return { success: false, error: 'Keine Berechtigung' }
+    }
+  }
+
   const supabase = await createClient()
 
   // Check if already registered
@@ -90,6 +103,7 @@ export async function anmelden(
   revalidatePath('/veranstaltungen')
   revalidatePath(`/veranstaltungen/${veranstaltungId}`)
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true, status }
 }
 
@@ -100,6 +114,17 @@ export async function abmelden(
   veranstaltungId: string,
   personId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const profile = await getUserProfile()
+  if (!profile) return { success: false, error: 'Nicht angemeldet' }
+
+  if (profile.id !== personId) {
+    try {
+      await requirePermission('veranstaltungen:write')
+    } catch {
+      return { success: false, error: 'Keine Berechtigung' }
+    }
+  }
+
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -118,6 +143,7 @@ export async function abmelden(
   revalidatePath('/veranstaltungen')
   revalidatePath(`/veranstaltungen/${veranstaltungId}`)
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -177,12 +203,18 @@ export async function getAnmeldungenForPerson(
 
 /**
  * Update registration status (e.g., mark as teilgenommen)
- * Requires EDITOR or ADMIN role
+ * Requires veranstaltungen:write permission
  */
 export async function updateAnmeldungStatus(
   id: string,
   status: AnmeldungStatus
 ): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requirePermission('veranstaltungen:write')
+  } catch {
+    return { success: false, error: 'Keine Berechtigung' }
+  }
+
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -209,7 +241,7 @@ export async function getAnmeldung(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('anmeldungen')
-    .select('*')
+    .select('id, veranstaltung_id, person_id, status, anmeldedatum, notizen, absage_grund, created_at, updated_at')
     .eq('veranstaltung_id', veranstaltungId)
     .eq('person_id', personId)
     .single()

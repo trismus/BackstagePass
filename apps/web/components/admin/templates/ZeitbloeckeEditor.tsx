@@ -19,15 +19,6 @@ interface ZeitbloeckeEditorProps {
   zeitbloecke: TemplateZeitblock[]
 }
 
-function formatOffset(minutes: number): string {
-  const hours = Math.floor(Math.abs(minutes) / 60)
-  const mins = Math.abs(minutes) % 60
-  const sign = minutes < 0 ? '-' : '+'
-  if (hours === 0) return `${sign}${mins}min`
-  if (mins === 0) return `${sign}${hours}h`
-  return `${sign}${hours}h ${mins}min`
-}
-
 export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditorProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,8 +28,8 @@ export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditor
 
   const [formData, setFormData] = useState({
     name: '',
-    offset_minuten: 0,
-    dauer_minuten: 60,
+    startzeit: '19:00',
+    endzeit: '20:00',
     typ: 'standard' as ZeitblockTyp,
     sortierung: zeitbloecke.length,
   })
@@ -46,8 +37,8 @@ export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditor
   const resetForm = () => {
     setFormData({
       name: '',
-      offset_minuten: 0,
-      dauer_minuten: 60,
+      startzeit: '19:00',
+      endzeit: '20:00',
       typ: 'standard',
       sortierung: zeitbloecke.length,
     })
@@ -63,8 +54,8 @@ export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditor
       const result = await addTemplateZeitblock({
         template_id: templateId,
         name: formData.name.trim(),
-        offset_minuten: formData.offset_minuten,
-        dauer_minuten: formData.dauer_minuten,
+        startzeit: formData.startzeit,
+        endzeit: formData.endzeit,
         typ: formData.typ,
         sortierung: formData.sortierung,
       })
@@ -109,7 +100,7 @@ export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditor
             <div>
               <CardTitle>Zeitbloecke</CardTitle>
               <CardDescription>
-                Zeitraeume relativ zum Vorstellungsbeginn (Offset 0 = Beginn)
+                Zeitraeume mit festen Start- und Endzeiten
               </CardDescription>
             </div>
             {!isAdding && (
@@ -159,21 +150,20 @@ export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditor
                 </div>
 
                 <Input
-                  label="Offset (Minuten)"
-                  name="offset_minuten"
-                  type="number"
-                  value={formData.offset_minuten}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, offset_minuten: parseInt(e.target.value) || 0 }))}
-                  helperText="Negativ = vor Beginn"
+                  label="Startzeit"
+                  name="startzeit"
+                  type="time"
+                  value={formData.startzeit}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, startzeit: e.target.value }))}
+                  required
                 />
 
                 <Input
-                  label="Dauer (Minuten)"
-                  name="dauer_minuten"
-                  type="number"
-                  min={1}
-                  value={formData.dauer_minuten}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, dauer_minuten: parseInt(e.target.value) || 60 }))}
+                  label="Endzeit"
+                  name="endzeit"
+                  type="time"
+                  value={formData.endzeit}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, endzeit: e.target.value }))}
                   required
                 />
               </div>
@@ -218,10 +208,10 @@ export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditor
                       Typ
                     </th>
                     <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                      Offset
+                      Startzeit
                     </th>
                     <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
-                      Dauer
+                      Endzeit
                     </th>
                     <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                       Aktionen
@@ -245,10 +235,10 @@ export function ZeitbloeckeEditor({ templateId, zeitbloecke }: ZeitbloeckeEditor
                           </span>
                         </td>
                         <td className="py-3 text-sm text-neutral-600">
-                          {formatOffset(zb.offset_minuten)}
+                          {zb.startzeit}
                         </td>
                         <td className="py-3 text-sm text-neutral-600">
-                          {zb.dauer_minuten} min
+                          {zb.endzeit}
                         </td>
                         <td className="py-3 text-right">
                           <Button

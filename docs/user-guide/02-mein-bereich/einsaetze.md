@@ -71,32 +71,9 @@ Vereinsanlässe wie:
 
 ---
 
-## Kalenderansicht
-
-Du kannst deine Einsätze auch im Kalender sehen:
-
-1. Klicke auf **"Kalenderansicht"**
-2. Navigiere durch die Monate
-3. Klicke auf einen Tag für Details
-
-### Kalender exportieren
-
-Um deine Einsätze in deinen persönlichen Kalender zu übernehmen:
-
-1. Klicke auf **"Kalender exportieren"**
-2. Wähle das Format (iCal, Google, Outlook)
-3. Folge den Anweisungen
-
----
-
 ## Erinnerungen
 
-Du erhältst automatische Erinnerungen:
-
-- **1 Woche vorher** - Erste Erinnerung
-- **1 Tag vorher** - Letzte Erinnerung
-
-Die Erinnerungen kannst du in den Einstellungen anpassen.
+Für bestimmte Veranstaltungen werden automatisch Bestätigungs-E-Mails verschickt (z.B. nach Anmeldung zu einem Helfereinsatz). Die genaue Konfiguration der Erinnerungen wird vom Vorstand verwaltet.
 
 ---
 

@@ -191,9 +191,12 @@ export function Header({
           )}
 
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex flex-col">
             <span className="text-xs font-semibold uppercase tracking-[0.35em] text-neutral-500">
               BackstagePass
+            </span>
+            <span className="text-[10px] italic text-neutral-400 leading-tight">
+              s&apos;Theater uf em Mutschelle
             </span>
           </Link>
         </div>

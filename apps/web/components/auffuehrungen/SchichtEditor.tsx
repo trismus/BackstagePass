@@ -4,9 +4,27 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   createSchicht,
+  updateSchicht,
   deleteSchicht,
 } from '@/lib/actions/auffuehrung-schichten'
 import type { SchichtMitZeitblock, Zeitblock } from '@/lib/supabase/types'
+import { TagInput } from '@/components/ui/TagInput'
+
+const SKILL_SUGGESTIONS = [
+  'Licht',
+  'Ton',
+  'Bühnenbau',
+  'Kostüm',
+  'Maske',
+  'Requisite',
+  'Fotografie',
+  'Video',
+  'Kasse',
+  'Einlass',
+  'Service',
+  'Aufbau',
+  'Abbau',
+]
 
 interface SchichtEditorProps {
   veranstaltungId: string
@@ -29,6 +47,53 @@ export function SchichtEditor({
   const [rolle, setRolle] = useState('')
   const [zeitblockId, setZeitblockId] = useState('')
   const [anzahlBenoetigt, setAnzahlBenoetigt] = useState('1')
+  const [benoetigteSkills, setBenoetigteSkills] = useState<string[]>([])
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editRolle, setEditRolle] = useState('')
+  const [editZeitblockId, setEditZeitblockId] = useState('')
+  const [editAnzahlBenoetigt, setEditAnzahlBenoetigt] = useState('1')
+  const [editBenoetigteSkills, setEditBenoetigteSkills] = useState<string[]>([])
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+
+  function startEditing(s: SchichtMitZeitblock) {
+    setEditingId(s.id)
+    setEditRolle(s.rolle)
+    setEditZeitblockId(s.zeitblock_id || '')
+    setEditAnzahlBenoetigt(String(s.anzahl_benoetigt))
+    setEditBenoetigteSkills(s.benoetigte_skills ?? [])
+    setEditError(null)
+  }
+
+  function cancelEditing() {
+    setEditingId(null)
+    setEditError(null)
+  }
+
+  async function handleEditSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingId) return
+
+    setEditLoading(true)
+    setEditError(null)
+
+    const result = await updateSchicht(editingId, {
+      rolle: editRolle,
+      zeitblock_id: editZeitblockId || null,
+      anzahl_benoetigt: parseInt(editAnzahlBenoetigt, 10) || 1,
+      benoetigte_skills: editBenoetigteSkills,
+    })
+
+    if (result.success) {
+      setEditingId(null)
+      router.refresh()
+    } else {
+      setEditError(result.error || 'Ein Fehler ist aufgetreten')
+    }
+    setEditLoading(false)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -40,12 +105,14 @@ export function SchichtEditor({
       zeitblock_id: zeitblockId || null,
       rolle,
       anzahl_benoetigt: parseInt(anzahlBenoetigt, 10) || 1,
+      benoetigte_skills: benoetigteSkills,
     })
 
     if (result.success) {
       setRolle('')
       setZeitblockId('')
       setAnzahlBenoetigt('1')
+      setBenoetigteSkills([])
       setShowForm(false)
       router.refresh()
     } else {
@@ -61,6 +128,132 @@ export function SchichtEditor({
     if (result.success) {
       router.refresh()
     }
+  }
+
+  function renderSchichtRow(s: SchichtMitZeitblock) {
+    if (editingId === s.id) {
+      return (
+        <form
+          key={s.id}
+          onSubmit={handleEditSubmit}
+          className="bg-blue-50 p-4"
+        >
+          {editError && (
+            <div className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+              {editError}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="mb-1 block text-xs text-gray-500">Rolle</label>
+              <input
+                type="text"
+                placeholder="Rolle *"
+                required
+                value={editRolle}
+                onChange={(e) => setEditRolle(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="col-span-2">
+              <TagInput
+                label="Benötigte Skills"
+                value={editBenoetigteSkills}
+                onChange={setEditBenoetigteSkills}
+                suggestions={SKILL_SUGGESTIONS}
+                placeholder="Skill hinzufügen..."
+                maxTags={20}
+                maxTagLength={50}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-gray-500">
+                Zeitblock
+              </label>
+              <select
+                value={editZeitblockId}
+                onChange={(e) => setEditZeitblockId(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">Kein Zeitblock</option>
+                {zeitbloecke.map((zb) => (
+                  <option key={zb.id} value={zb.id}>
+                    {zb.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-gray-500">
+                Anzahl benötigt
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={editAnzahlBenoetigt}
+                onChange={(e) => setEditAnzahlBenoetigt(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="submit"
+              disabled={editLoading}
+              className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white disabled:bg-blue-400"
+            >
+              {editLoading ? 'Speichern...' : 'Speichern'}
+            </button>
+            <button
+              type="button"
+              onClick={cancelEditing}
+              className="px-3 py-1.5 text-sm text-gray-600"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </form>
+      )
+    }
+
+    return (
+      <div key={s.id} className="flex items-center justify-between p-4">
+        <div>
+          <span className="font-medium text-gray-900">{s.rolle}</span>
+          <span className="ml-2 text-sm text-gray-500">
+            ({s.anzahl_benoetigt} benötigt)
+          </span>
+          {s.benoetigte_skills && s.benoetigte_skills.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {s.benoetigte_skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        {canEdit && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => startEditing(s)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Bearbeiten
+            </button>
+            <button
+              onClick={() => handleDelete(s.id, s.rolle)}
+              className="text-sm text-red-600 hover:text-red-800"
+            >
+              Löschen
+            </button>
+          </div>
+        )}
+      </div>
+    )
   }
 
   // Group schichten by zeitblock
@@ -106,6 +299,17 @@ export function SchichtEditor({
                 value={rolle}
                 onChange={(e) => setRolle(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="col-span-2">
+              <TagInput
+                label="Benötigte Skills"
+                value={benoetigteSkills}
+                onChange={setBenoetigteSkills}
+                suggestions={SKILL_SUGGESTIONS}
+                placeholder="Skill hinzufügen..."
+                maxTags={20}
+                maxTagLength={50}
               />
             </div>
             <div>
@@ -160,27 +364,7 @@ export function SchichtEditor({
               Ohne Zeitblock
             </div>
             <div className="divide-y divide-gray-100">
-              {groupedSchichten['no-zeitblock'].map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-center justify-between p-4"
-                >
-                  <div>
-                    <span className="font-medium text-gray-900">{s.rolle}</span>
-                    <span className="ml-2 text-sm text-gray-500">
-                      ({s.anzahl_benoetigt} benötigt)
-                    </span>
-                  </div>
-                  {canEdit && (
-                    <button
-                      onClick={() => handleDelete(s.id, s.rolle)}
-                      className="text-sm text-red-600 hover:text-red-800"
-                    >
-                      Löschen
-                    </button>
-                  )}
-                </div>
-              ))}
+              {groupedSchichten['no-zeitblock'].map((s) => renderSchichtRow(s))}
             </div>
           </div>
         )}
@@ -197,29 +381,7 @@ export function SchichtEditor({
                 )
               </div>
               <div className="divide-y divide-gray-100">
-                {zbSchichten.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex items-center justify-between p-4"
-                  >
-                    <div>
-                      <span className="font-medium text-gray-900">
-                        {s.rolle}
-                      </span>
-                      <span className="ml-2 text-sm text-gray-500">
-                        ({s.anzahl_benoetigt} benötigt)
-                      </span>
-                    </div>
-                    {canEdit && (
-                      <button
-                        onClick={() => handleDelete(s.id, s.rolle)}
-                        className="text-sm text-red-600 hover:text-red-800"
-                      >
-                        Löschen
-                      </button>
-                    )}
-                  </div>
-                ))}
+                {zbSchichten.map((s) => renderSchichtRow(s))}
               </div>
             </div>
           )

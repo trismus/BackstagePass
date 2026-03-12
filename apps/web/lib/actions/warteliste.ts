@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { getUserProfile } from '../supabase/server'
 import { requirePermission } from '../supabase/auth-helpers'
+import { sendBookingConfirmation, sendWaitlistConfirmationEmail } from './email-sender'
 import type {
   WartelisteEintragMitDetails,
   WartelisteStatus,
@@ -68,7 +69,7 @@ export async function addToWaitlist(
   const position = maxPosition || 1
 
   // Add to waitlist
-  const { error: insertError } = await supabase
+  const { data: newEntry, error: insertError } = await supabase
     .from('helfer_warteliste')
     .insert({
       schicht_id: schichtId,
@@ -76,6 +77,8 @@ export async function addToWaitlist(
       position,
       status: 'wartend',
     } as never)
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('Error adding to waitlist:', insertError)
@@ -83,6 +86,11 @@ export async function addToWaitlist(
       return { success: false, error: 'Du bist bereits auf der Warteliste' }
     }
     return { success: false, error: 'Fehler beim Hinzufuegen zur Warteliste' }
+  }
+
+  // Send waitlist confirmation email (fire-and-forget)
+  if (newEntry?.id) {
+    sendWaitlistConfirmationEmail(newEntry.id, position).catch(console.error)
   }
 
   // Get veranstaltung_id for revalidation
@@ -235,17 +243,24 @@ export async function processWaitlist(
   }
 
   // Create zuweisung
-  const { error: insertError } = await supabase
+  const { data: newZuweisung, error: insertError } = await supabase
     .from('auffuehrung_zuweisungen')
     .insert({
       schicht_id: schichtId,
       person_id: personId,
       status: 'zugesagt',
     } as never)
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('Error creating zuweisung from waitlist:', insertError)
     return { success: false, error: 'Fehler beim Zuweisen' }
+  }
+
+  // Send confirmation email (fire-and-forget)
+  if (newZuweisung?.id) {
+    sendBookingConfirmation(newZuweisung.id).catch(console.error)
   }
 
   // Update waitlist entry
@@ -429,17 +444,24 @@ export async function assignFromWaitlist(
   }
 
   // Create zuweisung
-  const { error: insertError } = await supabase
+  const { data: newZuweisung, error: insertError } = await supabase
     .from('auffuehrung_zuweisungen')
     .insert({
       schicht_id: entry.schicht_id,
       person_id: person.id,
       status: 'zugesagt',
     } as never)
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('Error assigning from waitlist:', insertError)
     return { success: false, error: 'Fehler beim Zuweisen' }
+  }
+
+  // Send confirmation email (fire-and-forget)
+  if (newZuweisung?.id) {
+    sendBookingConfirmation(newZuweisung.id).catch(console.error)
   }
 
   // Update waitlist entry

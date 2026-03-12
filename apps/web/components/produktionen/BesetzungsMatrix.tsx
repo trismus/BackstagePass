@@ -10,6 +10,7 @@ import type {
 import { initBesetzungenFromStueck } from '@/lib/actions/produktions-besetzungen'
 import { BesetzungsStatusBadge } from './BesetzungsStatusBadge'
 import { BesetzungsEditor } from './BesetzungsEditor'
+import { ZuweisungenGeneratorButton } from './ZuweisungenGeneratorButton'
 
 const ROLLEN_TYP_LABELS: Record<RollenTyp, string> = {
   hauptrolle: 'Hauptrollen',
@@ -123,17 +124,26 @@ export function BesetzungsMatrix({
               )}
             </p>
           </div>
-          {canEdit && !hasAnyBesetzungen && (
-            <button
-              onClick={handleInit}
-              disabled={isInitializing}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:bg-gray-400"
-            >
-              {isInitializing
-                ? 'Importieren...'
-                : 'Rollen aus Stück importieren'}
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {canEdit && !hasAnyBesetzungen && (
+              <button
+                onClick={handleInit}
+                disabled={isInitializing}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:bg-gray-400"
+              >
+                {isInitializing
+                  ? 'Importieren...'
+                  : 'Rollen aus Stück importieren'}
+              </button>
+            )}
+            {canEdit && besetzteRollen > 0 && (
+              <ZuweisungenGeneratorButton
+                produktionId={produktionId}
+                hasBesetzteRollen={besetzteRollen > 0}
+                canEdit={canEdit}
+              />
+            )}
+          </div>
         </div>
 
         {/* Progress Bar */}

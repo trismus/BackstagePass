@@ -22,6 +22,7 @@ export function SchichtenEditor({ templateId, schichten, zeitbloecke }: Schichte
     rolle: '',
     zeitblock_name: '',
     anzahl_benoetigt: 1,
+    nur_mitglieder: false,
   })
 
   const resetForm = () => {
@@ -29,6 +30,7 @@ export function SchichtenEditor({ templateId, schichten, zeitbloecke }: Schichte
       rolle: '',
       zeitblock_name: '',
       anzahl_benoetigt: 1,
+      nur_mitglieder: false,
     })
     setError(null)
   }
@@ -44,6 +46,7 @@ export function SchichtenEditor({ templateId, schichten, zeitbloecke }: Schichte
         rolle: formData.rolle.trim(),
         zeitblock_name: formData.zeitblock_name || null,
         anzahl_benoetigt: formData.anzahl_benoetigt,
+        nur_mitglieder: formData.nur_mitglieder,
       })
 
       if (!result.success) {
@@ -164,6 +167,16 @@ export function SchichtenEditor({ templateId, schichten, zeitbloecke }: Schichte
                 />
               </div>
 
+              <label className="mt-3 flex items-center gap-2 text-sm text-neutral-700">
+                <input
+                  type="checkbox"
+                  checked={formData.nur_mitglieder}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, nur_mitglieder: e.target.checked }))}
+                  className="rounded border-neutral-300"
+                />
+                Nur Vereinsmitglieder
+              </label>
+
               <div className="mt-4 flex justify-end gap-2">
                 <Button
                   type="button"
@@ -209,6 +222,9 @@ export function SchichtenEditor({ templateId, schichten, zeitbloecke }: Schichte
                           <th className="pb-2 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                             Anzahl
                           </th>
+                          <th className="pb-2 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
+                            Nur Mitglieder
+                          </th>
                           <th className="pb-2 text-right text-xs font-medium uppercase tracking-wider text-neutral-500">
                             Aktionen
                           </th>
@@ -224,6 +240,15 @@ export function SchichtenEditor({ templateId, schichten, zeitbloecke }: Schichte
                               <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
                                 {schicht.anzahl_benoetigt}
                               </span>
+                            </td>
+                            <td className="py-2">
+                              {schicht.nur_mitglieder ? (
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                                  Ja
+                                </span>
+                              ) : (
+                                <span className="text-sm text-neutral-400">Nein</span>
+                              )}
                             </td>
                             <td className="py-2 text-right">
                               <Button

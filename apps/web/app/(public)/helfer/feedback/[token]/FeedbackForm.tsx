@@ -9,7 +9,7 @@ interface FeedbackFormProps {
   token: string
 }
 
-export function FeedbackForm({ zuweisungId, token: _token }: FeedbackFormProps) {
+export function FeedbackForm({ zuweisungId, token }: FeedbackFormProps) {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [feedbackPositiv, setFeedbackPositiv] = useState('')
@@ -33,6 +33,7 @@ export function FeedbackForm({ zuweisungId, token: _token }: FeedbackFormProps) 
     try {
       const result = await submitHelferFeedback({
         zuweisungId,
+        feedbackToken: token,
         rating,
         feedbackPositiv: feedbackPositiv || null,
         feedbackVerbesserung: feedbackVerbesserung || null,

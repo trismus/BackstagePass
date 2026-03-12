@@ -12,15 +12,17 @@ import {
   ressourceUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all resources
  */
 export async function getRessourcen(): Promise<Ressource[]> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .order('name', { ascending: true })
 
   if (error) {
@@ -35,10 +37,11 @@ export async function getRessourcen(): Promise<Ressource[]> {
  * Get all active resources only
  */
 export async function getAktiveRessourcen(): Promise<Ressource[]> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .eq('aktiv', true)
     .order('name', { ascending: true })
 
@@ -56,10 +59,11 @@ export async function getAktiveRessourcen(): Promise<Ressource[]> {
 export async function getRessourcenByKategorie(
   kategorie: string
 ): Promise<Ressource[]> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .eq('kategorie', kategorie)
     .eq('aktiv', true)
     .order('name', { ascending: true })
@@ -76,10 +80,11 @@ export async function getRessourcenByKategorie(
  * Get a single resource by ID
  */
 export async function getRessource(id: string): Promise<Ressource | null> {
+  await requirePermission('ressourcen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('ressourcen')
-    .select('*')
+    .select('id, name, kategorie, menge, beschreibung, aktiv, created_at, updated_at')
     .eq('id', id)
     .single()
 
@@ -98,6 +103,9 @@ export async function getRessource(id: string): Promise<Ressource | null> {
 export async function createRessource(
   data: RessourceInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('ressourcen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(ressourceSchema, data)
   if (!validation.success) {
@@ -128,6 +136,9 @@ export async function updateRessource(
   id: string,
   data: RessourceUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('ressourcen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(ressourceUpdateSchema, data)
   if (!validation.success) {
@@ -156,6 +167,9 @@ export async function updateRessource(
 export async function deleteRessource(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('ressourcen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('ressourcen').delete().eq('id', id)
 

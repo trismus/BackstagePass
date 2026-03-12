@@ -26,10 +26,12 @@ export function KoordinationView({ data: initialData }: KoordinationViewProps) {
     open: boolean
     schichtId: string
     schichtRolle: string
+    benoetigteSkills: string[]
   }>({
     open: false,
     schichtId: '',
     schichtRolle: '',
+    benoetigteSkills: [],
   })
 
   // Remove helfer confirm state
@@ -51,21 +53,23 @@ export function KoordinationView({ data: initialData }: KoordinationViewProps) {
     sichtbarkeit: 'all', // all, public, intern
   })
 
-  // Find schicht role by ID
-  const findSchichtRolle = (schichtId: string): string => {
+  // Find schicht by ID
+  const findSchicht = (schichtId: string) => {
     for (const zb of data.zeitbloecke) {
       const schicht = zb.schichten.find((s) => s.id === schichtId)
-      if (schicht) return schicht.rolle
+      if (schicht) return schicht
     }
-    return ''
+    return null
   }
 
   // Handle assignment
   const handleAssign = useCallback((schichtId: string) => {
+    const schicht = findSchicht(schichtId)
     setAssignmentModal({
       open: true,
       schichtId,
-      schichtRolle: findSchichtRolle(schichtId),
+      schichtRolle: schicht?.rolle ?? '',
+      benoetigteSkills: schicht?.benoetigte_skills ?? [],
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.zeitbloecke])
@@ -267,8 +271,9 @@ export function KoordinationView({ data: initialData }: KoordinationViewProps) {
         open={assignmentModal.open}
         schichtId={assignmentModal.schichtId}
         schichtRolle={assignmentModal.schichtRolle}
+        benoetigteSkills={assignmentModal.benoetigteSkills}
         veranstaltungId={data.veranstaltung.id}
-        onClose={() => setAssignmentModal({ open: false, schichtId: '', schichtRolle: '' })}
+        onClose={() => setAssignmentModal({ open: false, schichtId: '', schichtRolle: '', benoetigteSkills: [] })}
         onSuccess={handleAssignmentSuccess}
       />
 

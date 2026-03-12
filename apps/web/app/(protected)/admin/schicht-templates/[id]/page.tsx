@@ -74,30 +74,30 @@ export default async function TemplateDetailPage({ params }: PageProps) {
       />
 
       {/* Edit Grunddaten */}
-      <TemplateForm template={template} />
+      <TemplateForm template={template} templateId={id} />
 
       {/* Zeitbloecke */}
       <ZeitbloeckeEditor
-        templateId={template.id}
+        templateId={id}
         zeitbloecke={template.zeitbloecke}
       />
 
       {/* Schichten */}
       <SchichtenEditor
-        templateId={template.id}
+        templateId={id}
         schichten={template.schichten}
         zeitbloecke={template.zeitbloecke}
       />
 
       {/* Info-Bloecke */}
       <InfoBloeckeEditor
-        templateId={template.id}
+        templateId={id}
         infoBloecke={template.info_bloecke}
       />
 
       {/* Sachleistungen */}
       <SachleistungenEditor
-        templateId={template.id}
+        templateId={id}
         sachleistungen={template.sachleistungen}
       />
     </div>

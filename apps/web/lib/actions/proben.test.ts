@@ -7,10 +7,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   createMockClient,
   mockProbe,
-  mockSzene,
   mockVorstandProfile,
   mockProfile,
-  mockPerson,
 } from '@/tests/mocks/supabase'
 
 // Mock the Supabase client

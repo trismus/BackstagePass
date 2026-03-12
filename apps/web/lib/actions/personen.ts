@@ -3,13 +3,20 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '../supabase/server'
 import { createAdminClient } from '../supabase/admin'
+import { requirePermission } from '../supabase/auth-helpers'
 import { dummyPersonen, getPersonById, searchPersonen } from '../personen/data'
 import type {
   Person,
   PersonInsert,
   PersonUpdate,
+  Rolle,
   UserRole,
 } from '../supabase/types'
+import { sanitizeSearchQuery } from '../utils/search'
+import { getDefaultAppRole } from '../utils/roles'
+import { isEmailServiceConfigured } from '@/lib/email'
+import { sendInvitationEmail } from './invitation-email'
+import type { User } from '@supabase/supabase-js'
 
 const USE_DUMMY_DATA = !process.env.NEXT_PUBLIC_SUPABASE_URL
 
@@ -17,6 +24,8 @@ const USE_DUMMY_DATA = !process.env.NEXT_PUBLIC_SUPABASE_URL
  * Get all personen
  */
 export async function getPersonen(): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     return dummyPersonen
   }
@@ -24,7 +33,7 @@ export async function getPersonen(): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
     .order('nachname', { ascending: true })
 
   if (error) {
@@ -39,6 +48,8 @@ export async function getPersonen(): Promise<Person[]> {
  * Get a single person by ID
  */
 export async function getPerson(id: string): Promise<Person | null> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     return getPersonById(id) || null
   }
@@ -46,7 +57,7 @@ export async function getPerson(id: string): Promise<Person | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
     .eq('id', id)
     .single()
 
@@ -62,6 +73,8 @@ export async function getPerson(id: string): Promise<Person | null> {
  * Search personen by query
  */
 export async function searchPersonenAction(query: string): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     return searchPersonen(query)
   }
@@ -69,9 +82,9 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('personen')
-    .select('*')
+    .select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
     .or(
-      `vorname.ilike.%${query}%,nachname.ilike.%${query}%,email.ilike.%${query}%`
+      `vorname.ilike.%${sanitizeSearchQuery(query)}%,nachname.ilike.%${sanitizeSearchQuery(query)}%,email.ilike.%${sanitizeSearchQuery(query)}%`
     )
     .order('nachname', { ascending: true })
 
@@ -89,6 +102,8 @@ export async function searchPersonenAction(query: string): Promise<Person[]> {
 export async function createPerson(
   personData: PersonInsert
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     // In dummy mode, just pretend it worked
     revalidatePath('/mitglieder')
@@ -107,6 +122,57 @@ export async function createPerson(
   return { success: true }
 }
 
+// =============================================================================
+// Invite Helper (Issue #326 - Branded Invitation Email)
+// =============================================================================
+
+/**
+ * Perform user invite: generates auth user and sends branded email (if SMTP configured)
+ * or falls back to Supabase default email.
+ */
+async function performInvite(
+  adminClient: ReturnType<typeof createAdminClient>,
+  email: string,
+  vorname: string,
+  nachname: string
+): Promise<{ user: User | null; error?: string }> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  if (isEmailServiceConfigured()) {
+    // Custom branded email path: generate link without sending Supabase email
+    const { data, error } = await adminClient.auth.admin.generateLink({
+      type: 'invite',
+      email,
+      options: {
+        data: { display_name: `${vorname} ${nachname}` },
+        redirectTo: `${siteUrl}/auth/callback?next=/passwort-setzen`,
+      },
+    })
+
+    if (error) return { user: null, error: error.message }
+
+    const magicLink = data.properties.action_link
+    const emailResult = await sendInvitationEmail(email, vorname, magicLink)
+    if (!emailResult.success) {
+      console.warn('Custom invitation email failed, user still created:', emailResult.error)
+    }
+
+    return { user: data.user }
+  } else {
+    // Fallback: Supabase default invitation email
+    const { data, error } = await adminClient.auth.admin.inviteUserByEmail(
+      email,
+      {
+        data: { display_name: `${vorname} ${nachname}` },
+        redirectTo: `${siteUrl}/auth/callback?next=/passwort-setzen`,
+      }
+    )
+
+    if (error) return { user: null, error: error.message }
+    return { user: data.user }
+  }
+}
+
 /**
  * Create a new person with an app account
  * This will:
@@ -118,6 +184,8 @@ export async function createPersonWithAccount(
   personData: PersonInsert,
   appRole: UserRole
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (!personData.email) {
     return { success: false, error: 'E-Mail ist erforderlich für App-Zugang' }
   }
@@ -143,34 +211,38 @@ export async function createPersonWithAccount(
   try {
     const adminClient = createAdminClient()
 
-    const { data: inviteData, error: inviteError } =
-      await adminClient.auth.admin.inviteUserByEmail(personData.email, {
-        data: {
-          display_name: `${personData.vorname} ${personData.nachname}`,
-        },
-      })
+    const inviteResult = await performInvite(
+      adminClient,
+      personData.email,
+      personData.vorname,
+      personData.nachname
+    )
 
-    if (inviteError) {
-      console.error('Error inviting user:', inviteError)
-      // Person was created, but invite failed - still return success with warning
+    if (inviteResult.error) {
+      console.error('Error inviting user:', inviteResult.error)
       return {
         success: true,
-        error: `Mitglied erstellt, aber Einladung fehlgeschlagen: ${inviteError.message}`,
+        error: `Mitglied erstellt, aber Einladung fehlgeschlagen: ${inviteResult.error}`,
       }
     }
 
     // 3. Update the profile role (profile is created by trigger)
-    if (inviteData.user) {
+    if (inviteResult.user) {
       const { error: profileError } = await adminClient
         .from('profiles')
         .update({ role: appRole })
-        .eq('id', inviteData.user.id)
+        .eq('id', inviteResult.user.id)
 
       if (profileError) {
         console.error('Error updating profile role:', profileError)
-        // Don't fail - the user can still be updated later
       }
     }
+
+    // Track invitation timestamp
+    await adminClient
+      .from('personen')
+      .update({ invited_at: new Date().toISOString() } as never)
+      .eq('email', personData.email)
   } catch (err) {
     console.error('Error in invite flow:', err)
     return {
@@ -186,12 +258,99 @@ export async function createPersonWithAccount(
 }
 
 /**
+ * Invite an existing person to the app (create auth account)
+ * For members who were created without app access
+ */
+export async function inviteExistingPerson(
+  personId: string,
+  appRole: UserRole
+): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
+  if (USE_DUMMY_DATA) {
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Load the person
+  const { data: person, error: fetchError } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname, email, profile_id')
+    .eq('id', personId)
+    .single()
+
+  if (fetchError || !person) {
+    return { success: false, error: 'Person nicht gefunden' }
+  }
+
+  if (!person.email) {
+    return { success: false, error: 'E-Mail ist erforderlich für App-Zugang' }
+  }
+
+  if (person.profile_id) {
+    return { success: false, error: 'Person hat bereits einen App-Zugang' }
+  }
+
+  try {
+    const adminClient = createAdminClient()
+
+    const inviteResult = await performInvite(
+      adminClient,
+      person.email,
+      person.vorname,
+      person.nachname
+    )
+
+    if (inviteResult.error) {
+      console.error('Error inviting user:', inviteResult.error)
+      return {
+        success: false,
+        error: `Einladung fehlgeschlagen: ${inviteResult.error}`,
+      }
+    }
+
+    // Update the profile role (profile is created by trigger)
+    if (inviteResult.user) {
+      const { error: profileError } = await adminClient
+        .from('profiles')
+        .update({ role: appRole })
+        .eq('id', inviteResult.user.id)
+
+      if (profileError) {
+        console.error('Error updating profile role:', profileError)
+      }
+    }
+
+    // Track invitation timestamp
+    await adminClient
+      .from('personen')
+      .update({ invited_at: new Date().toISOString() } as never)
+      .eq('id', personId)
+  } catch (err) {
+    console.error('Error in invite flow:', err)
+    return {
+      success: false,
+      error:
+        'App-Zugang konnte nicht erstellt werden. Ist SUPABASE_SERVICE_ROLE_KEY konfiguriert?',
+    }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath(`/mitglieder/${personId}`)
+  revalidatePath('/admin/users')
+  return { success: true }
+}
+
+/**
  * Update an existing person
  */
 export async function updatePerson(
   id: string,
   personData: PersonUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     revalidatePath(`/mitglieder/${id}`)
@@ -220,6 +379,8 @@ export async function updatePerson(
 export async function deletePerson(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:delete')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     return { success: true }
@@ -245,10 +406,11 @@ export async function deletePerson(
  * Only allows updating certain fields and validates ownership
  */
 export async function updateOwnProfile(
-  personData: Pick<PersonUpdate, 'telefon' | 'strasse' | 'plz' | 'ort'>
+  personData: Pick<PersonUpdate, 'telefon' | 'strasse' | 'plz' | 'ort' | 'notfallkontakt_name' | 'notfallkontakt_telefon' | 'notfallkontakt_beziehung' | 'skills'>
 ): Promise<{ success: boolean; error?: string }> {
   if (USE_DUMMY_DATA) {
     revalidatePath('/mein-bereich')
+    revalidatePath('/dashboard')
     return { success: true }
   }
 
@@ -293,6 +455,10 @@ export async function updateOwnProfile(
       strasse: personData.strasse,
       plz: personData.plz,
       ort: personData.ort,
+      notfallkontakt_name: personData.notfallkontakt_name,
+      notfallkontakt_telefon: personData.notfallkontakt_telefon,
+      notfallkontakt_beziehung: personData.notfallkontakt_beziehung,
+      skills: personData.skills,
     } as never)
     .eq('id', person.id)
 
@@ -302,6 +468,7 @@ export async function updateOwnProfile(
   }
 
   revalidatePath('/mein-bereich')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -317,6 +484,8 @@ export type ArchiveFilter = 'alle' | 'aktiv' | 'archiviert'
 export async function getPersonenFiltered(
   filter: ArchiveFilter = 'aktiv'
 ): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     const filtered = dummyPersonen.filter((p) => {
       if (filter === 'aktiv') return p.aktiv
@@ -328,7 +497,7 @@ export async function getPersonenFiltered(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('*')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
 
   if (filter === 'aktiv') {
     query = query.eq('aktiv', true)
@@ -368,6 +537,8 @@ export interface MitgliederFilterParams {
 export async function getPersonenAdvanced(
   params: MitgliederFilterParams = {}
 ): Promise<Person[]> {
+  await requirePermission('mitglieder:read')
+
   const {
     search = '',
     status = 'aktiv',
@@ -428,7 +599,7 @@ export async function getPersonenAdvanced(
 
   const supabase = await createClient()
 
-  let query = supabase.from('personen').select('*')
+  let query = supabase.from('personen').select('id, vorname, nachname, strasse, plz, ort, geburtstag, email, telefon, rolle, aktiv, notizen, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, profilbild_url, biografie, mitglied_seit, austrittsdatum, austrittsgrund, skills, telefon_nummern, bevorzugte_kontaktart, social_media, kontakt_notizen, archiviert_am, archiviert_von, created_at, updated_at, profile_id, invited_at, invitation_accepted_at')
 
   // Status filter
   if (status === 'aktiv') {
@@ -439,8 +610,9 @@ export async function getPersonenAdvanced(
 
   // Search filter (use ilike for case-insensitive search)
   if (search) {
+    const sanitized = sanitizeSearchQuery(search)
     query = query.or(
-      `vorname.ilike.%${search}%,nachname.ilike.%${search}%,email.ilike.%${search}%`
+      `vorname.ilike.%${sanitized}%,nachname.ilike.%${sanitized}%,email.ilike.%${sanitized}%`
     )
   }
 
@@ -479,6 +651,8 @@ export async function getPersonenAdvanced(
  * Get unique skills from all personen (for filter dropdown)
  */
 export async function getAllSkills(): Promise<string[]> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     const allSkills = new Set<string>()
     dummyPersonen.forEach((p) => {
@@ -514,6 +688,8 @@ export async function archiveMitglied(
   id: string,
   austrittsgrund?: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     return { success: true }
@@ -553,6 +729,8 @@ export async function archiveMitglied(
 export async function reactivateMitglied(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
   if (USE_DUMMY_DATA) {
     revalidatePath('/mitglieder')
     return { success: true }
@@ -588,6 +766,8 @@ export async function getMitgliederStatistik(): Promise<{
   archivierte: number
   gesamt: number
 }> {
+  await requirePermission('mitglieder:read')
+
   if (USE_DUMMY_DATA) {
     const aktive = dummyPersonen.filter((p) => p.aktiv).length
     const archivierte = dummyPersonen.filter((p) => !p.aktiv).length
@@ -614,4 +794,206 @@ export async function getMitgliederStatistik(): Promise<{
     archivierte,
     gesamt: aktive + archivierte,
   }
+}
+
+// =============================================================================
+// Invitation Resend (Issue #325)
+// =============================================================================
+
+const RESEND_COOLDOWN_DAYS = 1
+
+/**
+ * Resend an invitation to a person who was already invited but hasn't accepted
+ */
+export async function resendInvitation(
+  personId: string
+): Promise<{ success: boolean; error?: string }> {
+  await requirePermission('mitglieder:write')
+
+  if (USE_DUMMY_DATA) {
+    return { success: true }
+  }
+
+  const supabase = await createClient()
+
+  // Load the person
+  const { data: person, error: fetchError } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname, email, profile_id, invited_at, invitation_accepted_at')
+    .eq('id', personId)
+    .single()
+
+  if (fetchError || !person) {
+    return { success: false, error: 'Person nicht gefunden' }
+  }
+
+  if (!person.email) {
+    return { success: false, error: 'E-Mail ist erforderlich' }
+  }
+
+  if (person.invitation_accepted_at || person.profile_id) {
+    return { success: false, error: 'Einladung wurde bereits angenommen' }
+  }
+
+  if (!person.invited_at) {
+    return { success: false, error: 'Noch keine Einladung gesendet' }
+  }
+
+  // Check cooldown
+  const invitedDate = new Date(person.invited_at)
+  const daysSinceInvite = Math.floor(
+    (Date.now() - invitedDate.getTime()) / (1000 * 60 * 60 * 24)
+  )
+
+  if (daysSinceInvite < RESEND_COOLDOWN_DAYS) {
+    const remaining = RESEND_COOLDOWN_DAYS - daysSinceInvite
+    return {
+      success: false,
+      error: `Erneutes Senden erst in ${remaining} Tag${remaining !== 1 ? 'en' : ''} möglich`,
+    }
+  }
+
+  try {
+    const adminClient = createAdminClient()
+
+    const inviteResult = await performInvite(
+      adminClient,
+      person.email,
+      person.vorname,
+      person.nachname
+    )
+
+    if (inviteResult.error) {
+      console.error('Error resending invitation:', inviteResult.error)
+      return {
+        success: false,
+        error: `Einladung fehlgeschlagen: ${inviteResult.error}`,
+      }
+    }
+
+    // Update invited_at timestamp
+    await adminClient
+      .from('personen')
+      .update({ invited_at: new Date().toISOString() } as never)
+      .eq('id', personId)
+  } catch (err) {
+    console.error('Error in resend flow:', err)
+    return {
+      success: false,
+      error: 'Einladung konnte nicht gesendet werden. Ist SUPABASE_SERVICE_ROLE_KEY konfiguriert?',
+    }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath(`/mitglieder/${personId}`)
+  return { success: true }
+}
+
+// =============================================================================
+// Bulk Invite (Issue #327)
+// =============================================================================
+
+export interface BulkInviteResult {
+  total: number
+  successful: number
+  failed: number
+  errors: { personId: string; name: string; error: string }[]
+}
+
+/**
+ * Invite multiple persons to the app in bulk
+ * Only invites persons with email and without existing profile_id
+ */
+export async function bulkInvitePersons(
+  personIds: string[]
+): Promise<BulkInviteResult> {
+  await requirePermission('mitglieder:write')
+
+  if (personIds.length === 0) {
+    return { total: 0, successful: 0, failed: 0, errors: [] }
+  }
+
+  const supabase = await createClient()
+
+  // Fetch all persons in one query
+  const { data: persons, error: fetchError } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname, email, rolle, aktiv, profile_id, invited_at')
+    .in('id', personIds)
+
+  if (fetchError || !persons) {
+    return {
+      total: personIds.length,
+      successful: 0,
+      failed: personIds.length,
+      errors: [{ personId: '', name: '', error: 'Fehler beim Laden der Personen' }],
+    }
+  }
+
+  // Filter to only invitable persons (has email, no profile_id, active)
+  const invitable = persons.filter(
+    (p) => p.email && !p.profile_id && p.aktiv
+  )
+
+  const result: BulkInviteResult = {
+    total: invitable.length,
+    successful: 0,
+    failed: 0,
+    errors: [],
+  }
+
+  const adminClient = createAdminClient()
+
+  // Sequential invites to avoid rate limiting
+  for (const person of invitable) {
+    const name = `${person.vorname} ${person.nachname}`
+    try {
+      const appRole = getDefaultAppRole(person.rolle as Rolle)
+
+      const inviteResult = await performInvite(
+        adminClient,
+        person.email!,
+        person.vorname,
+        person.nachname
+      )
+
+      if (inviteResult.error) {
+        result.failed++
+        result.errors.push({
+          personId: person.id,
+          name,
+          error: inviteResult.error,
+        })
+        continue
+      }
+
+      // Update profile role
+      if (inviteResult.user) {
+        await adminClient
+          .from('profiles')
+          .update({ role: appRole })
+          .eq('id', inviteResult.user.id)
+      }
+
+      // Track invitation timestamp
+      await adminClient
+        .from('personen')
+        .update({ invited_at: new Date().toISOString() } as never)
+        .eq('id', person.id)
+
+      result.successful++
+    } catch (err) {
+      result.failed++
+      result.errors.push({
+        personId: person.id,
+        name,
+        error: err instanceof Error ? err.message : 'Unbekannter Fehler',
+      })
+    }
+  }
+
+  revalidatePath('/mitglieder')
+  revalidatePath('/admin/users')
+
+  return result
 }

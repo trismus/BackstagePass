@@ -25,7 +25,7 @@ export async function getAllEmailTemplates(): Promise<EmailTemplate[]> {
 
   const { data, error } = await supabase
     .from('email_templates')
-    .select('*')
+    .select('id, typ, subject, body_html, body_text, placeholders, aktiv, created_at, updated_at')
     .order('typ')
 
   if (error) {
@@ -42,11 +42,12 @@ export async function getAllEmailTemplates(): Promise<EmailTemplate[]> {
 export async function getEmailTemplate(
   typ: EmailTemplateTyp
 ): Promise<EmailTemplate | null> {
+  await requirePermission('admin:access')
   const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('email_templates')
-    .select('*')
+    .select('id, typ, subject, body_html, body_text, placeholders, aktiv, created_at, updated_at')
     .eq('typ', typ)
     .single()
 
@@ -69,7 +70,7 @@ export async function getEmailTemplateInternal(
 
   const { data, error } = await supabase
     .from('email_templates')
-    .select('*')
+    .select('id, typ, subject, body_html, body_text, placeholders, aktiv, created_at, updated_at')
     .eq('typ', typ)
     .eq('aktiv', true)
     .single()
@@ -481,6 +482,65 @@ Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
         'public_link',
       ],
     },
+    waitlist_confirmation: {
+      subject: 'Warteliste: Du bist dabei bei {{veranstaltung}}',
+      body_html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #7c3aed;">Du stehst auf der Warteliste!</h1>
+  <p>Hallo {{vorname}},</p>
+  <p>du wurdest erfolgreich auf die Warteliste für <strong>{{rolle}}</strong> bei <strong>{{veranstaltung}}</strong> gesetzt.</p>
+
+  <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h2 style="margin-top: 0; color: #374151;">Deine Wartelistendetails</h2>
+    <p><strong>Veranstaltung:</strong> {{veranstaltung}}</p>
+    <p><strong>Datum:</strong> {{datum}}</p>
+    <p><strong>Rolle:</strong> {{rolle}}</p>
+    <p><strong>Deine Position:</strong> {{position}}</p>
+  </div>
+
+  <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0;">Wir benachrichtigen dich per E-Mail, sobald ein Platz für dich frei wird. Bitte reagiere dann rasch – du hast nur begrenzt Zeit, um den Platz zu bestätigen.</p>
+  </div>
+
+  <p>Bei Fragen wende dich an:</p>
+  <p>{{koordinator_name}}<br>
+  {{koordinator_email}}</p>
+
+  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
+</div>`,
+      body_text: `Du stehst auf der Warteliste!
+
+Hallo {{vorname}},
+
+du wurdest erfolgreich auf die Warteliste für {{rolle}} bei {{veranstaltung}} gesetzt.
+
+DEINE WARTELISTENDETAILS
+========================
+Veranstaltung: {{veranstaltung}}
+Datum: {{datum}}
+Rolle: {{rolle}}
+Deine Position: {{position}}
+
+Wir benachrichtigen dich per E-Mail, sobald ein Platz für dich frei wird.
+Bitte reagiere dann rasch – du hast nur begrenzt Zeit, um den Platz zu bestätigen.
+
+Bei Fragen wende dich an:
+{{koordinator_name}}
+{{koordinator_email}}
+
+---
+Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
+      placeholders: [
+        'vorname',
+        'nachname',
+        'veranstaltung',
+        'datum',
+        'rolle',
+        'position',
+        'koordinator_name',
+        'koordinator_email',
+      ],
+    },
     waitlist_assigned: {
       subject: 'Ein Platz ist frei: {{rolle}} bei {{veranstaltung}}',
       body_html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -611,6 +671,59 @@ Das TGW-Team
 ---
 Diese E-Mail wurde automatisch von BackstagePass gesendet.`,
       placeholders: ['vorname', 'nachname', 'veranstaltung', 'rolle'],
+    },
+    member_invitation: {
+      subject: 'Willkommen bei BackstagePass – Theatergruppe Widen',
+      body_html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #7c3aed;">Willkommen bei BackstagePass!</h1>
+  <p>Hallo {{vorname}},</p>
+  <p>du wurdest eingeladen, <strong>BackstagePass</strong> zu nutzen – die Vereinsplattform der <strong>Theatergruppe Widen (TGW)</strong>.</p>
+
+  <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h2 style="margin-top: 0; color: #374151;">Was ist BackstagePass?</h2>
+    <p>BackstagePass ist unsere interne Plattform für die Organisation von Vereinsaktivitäten, Aufführungen und Helfereinsätzen. Hier kannst du:</p>
+    <ul style="color: #374151;">
+      <li>Dein Profil und deine Kontaktdaten verwalten</li>
+      <li>Dich für Helfereinsätze anmelden</li>
+      <li>Vereinstermine und Proben einsehen</li>
+      <li>Mit dem Team in Kontakt bleiben</li>
+    </ul>
+  </div>
+
+  <p style="text-align: center; margin: 30px 0;">
+    <a href="{{magic_link}}" style="display: inline-block; background: #7c3aed; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; font-size: 18px;">Jetzt anmelden</a>
+  </p>
+
+  <p style="color: #6b7280; font-size: 14px;">Der Link ist 24 Stunden gültig. Falls er abgelaufen ist, wende dich an den Vorstand für eine neue Einladung.</p>
+
+  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.<br>
+  Theatergruppe Widen | <a href="https://www.theater-widen.ch" style="color: #7c3aed;">www.theater-widen.ch</a></p>
+  <p style="font-style: italic; color: #9ca3af; font-size: 11px; margin: 2px 0 0 0;">s'Theater uf em Mutschelle</p>
+</div>`,
+      body_text: `Willkommen bei BackstagePass!
+
+Hallo {{vorname}},
+
+du wurdest eingeladen, BackstagePass zu nutzen – die Vereinsplattform der Theatergruppe Widen (TGW).
+
+WAS IST BACKSTAGEPASS?
+======================
+BackstagePass ist unsere interne Plattform für die Organisation von Vereinsaktivitäten, Aufführungen und Helfereinsätzen. Hier kannst du:
+- Dein Profil und deine Kontaktdaten verwalten
+- Dich für Helfereinsätze anmelden
+- Vereinstermine und Proben einsehen
+- Mit dem Team in Kontakt bleiben
+
+Jetzt anmelden: {{magic_link}}
+
+Der Link ist 24 Stunden gültig. Falls er abgelaufen ist, wende dich an den Vorstand für eine neue Einladung.
+
+---
+Diese E-Mail wurde automatisch von BackstagePass gesendet.
+Theatergruppe Widen | www.theater-widen.ch
+s'Theater uf em Mutschelle`,
+      placeholders: ['vorname', 'magic_link'],
     },
   }
 

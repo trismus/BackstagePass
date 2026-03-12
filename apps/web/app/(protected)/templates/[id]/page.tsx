@@ -58,13 +58,13 @@ export default async function TemplateDetailPage({ params }: PageProps) {
           <div>
             <div className="rounded-lg bg-white p-4 shadow">
               <h2 className="mb-4 font-medium text-gray-900">Grunddaten</h2>
-              <TemplateForm template={template} mode="edit" />
+              <TemplateForm template={template} templateId={id} mode="edit" />
             </div>
           </div>
 
           {/* Right Column - Details */}
           <div className="lg:col-span-2">
-            <TemplateDetailEditor template={template} ressourcen={ressourcen} />
+            <TemplateDetailEditor templateId={id} template={template} ressourcen={ressourcen} />
           </div>
         </div>
 

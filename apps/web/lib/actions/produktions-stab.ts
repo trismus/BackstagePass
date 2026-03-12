@@ -19,7 +19,7 @@ export async function getStabFunktionen(): Promise<StabFunktion[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('stab_funktionen')
-    .select('*')
+    .select('id, name, kategorie, sortierung, aktiv, created_at')
     .eq('aktiv', true)
     .order('sortierung', { ascending: true })
 
@@ -43,7 +43,7 @@ export async function getProduktionsStab(
   // Fetch stab entries
   const { data: stab, error } = await supabase
     .from('produktions_stab')
-    .select('*')
+    .select('id, produktion_id, person_id, funktion, ist_leitung, von, bis, notizen, externer_name, externer_kontakt, created_at')
     .eq('produktion_id', produktionId)
     .order('funktion', { ascending: true })
 

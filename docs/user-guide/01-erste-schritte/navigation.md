@@ -1,108 +1,99 @@
 # Navigation
 
-Die Navigation hilft dir, schnell zu den verschiedenen Bereichen von BackstagePass zu gelangen.
+Die Navigation in BackstagePass ist rollenbasiert: Jede Rolle sieht nur die Bereiche, auf die sie Zugriff hat. Die Seitenleiste (Sidebar) ist auf Desktop dauerhaft sichtbar und auf mobilen Geräten über ein Menü-Symbol aufrufbar.
 
 ---
 
-## Hauptnavigation
+## Navigation nach Rolle
 
-Die Hauptnavigation findest du am oberen Bildschirmrand:
+### ADMIN / VORSTAND
 
-| Menüpunkt | Beschreibung | Wer sieht es |
-|-----------|--------------|--------------|
-| **Dashboard** | Startseite mit Übersicht | Alle |
-| **Mitglieder** | Mitgliederliste | Vorstand |
-| **Veranstaltungen** | Vereinsevents | Alle |
-| **Aufführungen** | Theatervorstellungen | Alle |
-| **Stücke** | Produktionen & Besetzungen | Alle |
-| **Proben** | Probentermine | Alle |
-| **Helfereinsätze** | Externe Arbeitseinsätze | Vorstand |
-| **Mein Bereich** | Persönlicher Bereich | Alle |
-| **Partner** | Partnerorganisationen | Vorstand |
-| **Admin** | Systemverwaltung | Administrator |
+| Bereich | Menüpunkt | Beschreibung |
+|---------|-----------|--------------|
+| — | **Dashboard** | Startseite mit Verwaltungsübersicht |
+| Personen | **Mitglieder** | Mitgliederverwaltung |
+| Personen | **Partner** | Partnerorganisationen |
+| Personen | **Alle Helfer** | Übersicht aller externen Helfer |
+| Veranstaltungen | **Kalender** | Gesamtkalender aller Termine |
+| Veranstaltungen | **Übersicht** | Liste aller Veranstaltungen |
+| Veranstaltungen | **Aufführungen** | Theatervorstellungen mit Schichtplanung |
+| Veranstaltungen | **Produktionen** | Laufende Produktionen |
+| Veranstaltungen | **Stücke** | Theaterstücke mit Szenen und Rollen |
+| Veranstaltungen | **Proben** | Probentermine |
+| Ressourcen | **Räume** | Raumverwaltung und -reservierungen |
+| Ressourcen | **Ausstattung** | Equipment-Verwaltung |
+| Ressourcen | **Templates** | Aufführungsvorlagen |
+| Verwaltung | **Helferliste** | Helfer-Events mit Belegungsstatus |
+| Mein Bereich | **Meine Termine** | Eigene Termine (Vorstand-Ansicht) |
+| Mein Bereich | **Stundenkonto** | Eigenes Stundenkonto |
+| Mein Bereich | **Meine Einsätze** | Eigene Helfereinsätze |
+| Ansichten | **Mitglieder-Ansicht** | Dashboard aus Mitglieder-Perspektive |
+| Ansichten | **Partner-Ansicht** | Partner-Portal |
+| Admin | **Benutzer** | Benutzerverwaltung (nur ADMIN) |
+| Admin | **Audit Log** | Systemprotokoll (nur ADMIN) |
+
+### MITGLIED_AKTIV
+
+| Bereich | Menüpunkt |
+|---------|-----------|
+| — | Dashboard |
+| Meine Aktivitäten | Meine Termine |
+| Meine Aktivitäten | Anmeldungen |
+| Theater | Veranstaltungen |
+| Theater | Aufführungen |
+| Theater | Proben |
+| Ressourcen | Räume |
+
+### MITGLIED_PASSIV
+
+| Bereich | Menüpunkt |
+|---------|-----------|
+| — | Dashboard |
+| Theater | Veranstaltungen |
+| Theater | Aufführungen |
+| Theater | Stücke |
+
+### HELFER
+
+| Bereich | Menüpunkt |
+|---------|-----------|
+| — | Dashboard |
+| — | Mein Profil |
+
+### PARTNER
+
+| Bereich | Menüpunkt |
+|---------|-----------|
+| — | Partner-Portal |
+| — | Meine Daten |
+| — | Veranstaltungen |
+| — | Kontakt |
+| — | Mein Profil |
 
 ---
 
-## Navigationsbereiche im Detail
+## Sidebar-Verhalten
 
-### Dashboard
-Deine Startseite mit allen wichtigen Informationen auf einen Blick.
-
-### Veranstaltungen
-Alle Vereinsevents:
-- Generalversammlung
-- Vereinsfeste
-- Workshops
-- Ausflüge
-
-### Aufführungen
-Theatervorstellungen mit:
-- Spielterminen
-- Schichtplänen
-- Helfer-Zuweisungen
-
-### Stücke
-Theaterstücke und Produktionen:
-- Szenen und Rollen
-- Besetzungen
-- Probenübersicht
-
-### Proben
-Alle Probentermine:
-- Datum und Ort
-- Zu probende Szenen
-- Teilnehmerliste
-
-### Mein Bereich
-Dein persönlicher Bereich:
-- Profil und Daten
-- Meine Einsätze
-- Stundenkonto
+- **Desktop:** Die Sidebar ist dauerhaft am linken Bildschirmrand sichtbar. Sie kann mit dem Pfeil-Symbol eingeklappt werden (zeigt dann nur Icons).
+- **Mobil:** Die Sidebar ist standardmässig ausgeblendet. Tippe auf das Menü-Symbol oben links, um sie zu öffnen. Sie schliesst sich automatisch nach einem Klick auf einen Menüpunkt.
 
 ---
 
-## Mobile Navigation
+## Breadcrumbs
 
-Auf Smartphones und Tablets:
-
-1. Tippe auf das **Menü-Symbol** (☰) oben rechts
-2. Das Navigationsmenü öffnet sich
-3. Tippe auf den gewünschten Bereich
-4. Das Menü schliesst sich automatisch
-
----
-
-## Breadcrumbs (Brotkrümel-Navigation)
-
-Auf Detailseiten siehst du oben den Pfad, wo du dich befindest:
+Auf Detailseiten erscheint oben eine Breadcrumb-Navigation, die den aktuellen Pfad anzeigt:
 
 ```
-Dashboard > Stücke > "Der Sommernachtstraum" > Probe 15.02.2026
+Dashboard > Stücke > "Der Sommernachtstraum" > Proben
 ```
 
 Klicke auf einen Teil des Pfads, um dorthin zurückzukehren.
 
 ---
 
-## Tastaturkürzel
+## Hilfe-Buttons
 
-Für schnelle Navigation (am Computer):
-
-| Kürzel | Aktion |
-|--------|--------|
-| `Alt + D` | Zum Dashboard |
-| `Alt + P` | Zu Proben |
-| `Alt + M` | Zu Mein Bereich |
-
----
-
-## Tipps zur Navigation
-
-> **Tipp 1:** Das Logo oben links bringt dich immer zum Dashboard zurück.
-
-> **Tipp 2:** Nutze die Breadcrumbs, um schnell eine Ebene zurück zu gehen.
-
-> **Tipp 3:** Auf mobilen Geräten kannst du auch wischen, um zwischen Bereichen zu wechseln.
+An vielen Stellen in der App erscheint ein **?-Symbol** (Hilfe-Button). Ein Klick darauf öffnet die kontextbezogene Hilfe für den aktuellen Bereich direkt — ohne manuell zur Hilfe-Übersicht navigieren zu müssen.
 
 ---
 

@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
+import { isManagement } from '@/lib/supabase/permissions'
 import {
   getStundenkontoForPerson,
   getStundensaldo,
@@ -25,6 +27,11 @@ export default async function StundenkontoPage() {
     )
   }
 
+  // Only management roles can access Stundenkonto
+  if (!isManagement(profile.role)) {
+    redirect('/dashboard' as never)
+  }
+
   // Try to find the person linked to this user
   const supabase = await createClient()
   const { data: person } = await supabase
@@ -39,7 +46,7 @@ export default async function StundenkontoPage() {
         <div className="mx-auto max-w-4xl px-4 py-8">
           <div className="mb-6">
             <Link
-              href="/mein-bereich"
+              href="/dashboard"
               className="text-blue-600 hover:text-blue-800"
             >
               &larr; Zurück
@@ -64,7 +71,7 @@ export default async function StundenkontoPage() {
         {/* Back Link */}
         <div className="mb-6">
           <Link
-            href="/mein-bereich"
+            href="/dashboard"
             className="text-blue-600 hover:text-blue-800"
           >
             &larr; Zurück zur Übersicht

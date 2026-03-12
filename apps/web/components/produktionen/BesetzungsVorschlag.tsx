@@ -1,11 +1,24 @@
 'use client'
 
 import type { BesetzungsVorschlag } from '@/lib/actions/produktions-besetzungen'
+import type { VerfuegbarkeitStatus } from '@/lib/supabase/types'
 
 interface BesetzungsVorschlagProps {
   vorschlaege: BesetzungsVorschlag[]
   onSelect: (personId: string) => void
   isLoading?: boolean
+}
+
+const VERFUEGBARKEIT_DOT: Record<VerfuegbarkeitStatus, string> = {
+  verfuegbar: 'bg-green-500',
+  eingeschraenkt: 'bg-amber-500',
+  nicht_verfuegbar: 'bg-red-500',
+}
+
+const VERFUEGBARKEIT_LABEL: Record<VerfuegbarkeitStatus, string> = {
+  verfuegbar: 'Verfügbar',
+  eingeschraenkt: 'Eingeschränkt',
+  nicht_verfuegbar: 'Nicht verfügbar',
 }
 
 export function BesetzungsVorschlagList({
@@ -37,13 +50,17 @@ export function BesetzungsVorschlagList({
           <div
             key={v.person.id}
             className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
-              v.hatKonflikt
+              v.hatKonflikt || v.verfuegbarkeit === 'nicht_verfuegbar'
                 ? 'bg-warning-50 opacity-70'
                 : 'bg-gray-50 hover:bg-gray-100'
             }`}
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
+                <span
+                  className={`inline-block h-2 w-2 shrink-0 rounded-full ${VERFUEGBARKEIT_DOT[v.verfuegbarkeit]}`}
+                  title={VERFUEGBARKEIT_LABEL[v.verfuegbarkeit]}
+                />
                 <span className="font-medium text-gray-900">
                   {v.person.vorname} {v.person.nachname}
                 </span>
@@ -53,8 +70,13 @@ export function BesetzungsVorschlagList({
                   </span>
                 )}
               </div>
+              {v.verfuegbarkeit !== 'verfuegbar' && v.verfuegbarkeitDetails && (
+                <p className="ml-4 text-xs text-amber-600">
+                  {VERFUEGBARKEIT_LABEL[v.verfuegbarkeit]}: {v.verfuegbarkeitDetails}
+                </p>
+              )}
               {v.matchingSkills.length > 0 && (
-                <div className="mt-0.5 flex flex-wrap gap-1">
+                <div className="ml-4 mt-0.5 flex flex-wrap gap-1">
                   {v.matchingSkills.map((skill) => (
                     <span
                       key={skill}

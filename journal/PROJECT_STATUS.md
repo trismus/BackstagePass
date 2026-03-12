@@ -1,35 +1,54 @@
 # BackstagePass - Projekt Status
 
-**Stand:** 2026-01-27
+**Stand:** 2026-02-18
 
 ---
 
 ## Milestone Übersicht
 
-| Milestone | Status | Open | Closed | Due Date |
-|-----------|--------|------|--------|----------|
-| **Modul 0** | In Progress | 5 | 6 | 2026-02-06 |
-| **Modul 1** | In Progress | 15 | 4 | - |
-| **Modul 2** | ✅ Done | 0 | 4 | - |
-| **Modul 3** | In Progress | 6 | 4 | - |
-| **Helfer Liste** | ✅ Done | 3 | 17 | 2026-02-28 |
-| **UserExperience** | In Progress | 7 | 4 | - |
+| Milestone | Status | Open | Closed |
+|-----------|--------|------|--------|
+| **Modul 0** — Foundation & Setup | ✅ Done | 0 | 11 |
+| **Modul 1** — Vereinsleben & Helfereinsätze | ✅ Done | 0 | 4 |
+| **Modul 2** — Operative Aufführungslogistik | ✅ Done | 0 | 4 |
+| **Modul 3** — Künstlerische Planung | ✅ Done | 0 | 10 |
+| **Helfer Liste** | ✅ Done | 0 | 20 |
+| **UserExperience** | ✅ Done | 0 | 11 |
+| **Vorhang auf** — Mitglieder-Integration | ✅ Done | 0 | 9 |
+| **Mitglieder** | ✅ Done | 0 | 7 |
+| **Produktionen** | ✅ Done | 0 | 10 |
+| **Künstlerische Produktion** | ✅ Done | 0 | 7 |
+| **Künstlerische Produktion (Features)** | ✅ Done | 0 | 2 |
+| **UI/UX Foundation** | ✅ Done | 0 | 6 |
+| **Security & DSGVO** | ✅ Done | 0 | 10 |
+| **Code Quality & Performance** | ✅ Done | 0 | 4 |
+| **M1–M8** (Helferliste Roadmap) | ✅ Done | 0 | 32 |
+| **Public Volunteer Booking Flow** | ✅ Done | 0 | 11 |
+| **Mitglieder-Onboarding** | ✅ Done | 0 | 5 |
+| **Probenplan: Status-Fix & Generator** | ✅ Done | 0 | 7 |
+| **Fix Email-Einladungssystem** | ✅ Done | 0 | 1 |
 
-**Gesamt:** 36 Open, 39 Closed
+**Gesamt:** 202 Issues (0 open, 202 closed)
 
 ---
 
-## Modul 0 - Foundation & Setup
+## Offene Issues
+
+Keine offenen Issues.
+
+---
+
+## Modul 0 - Foundation & Setup ✅
 
 **Beschreibung:** Fundament für alle Module - Authentifizierung & Mitgliederverwaltung
 
 | # | Status | Titel |
 |---|--------|-------|
-| #83 | 🟡 Open | Epic: Fundament für alle Module |
-| #84 | 🟡 Open | 0.1 Benutzer-Authentifizierung & Login-System |
-| #85 | 🟡 Open | 0.2 Mitgliederprofil & Benutzerverwaltung |
-| #86 | 🟡 Open | 0.3 Rollenmanagement & Permissions |
-| #87 | 🟡 Open | 0.4 Audit Log & Activity Tracking |
+| #83 | ✅ Closed | Epic: Fundament für alle Module |
+| #84 | ✅ Closed | 0.1 Benutzer-Authentifizierung & Login-System |
+| #85 | ✅ Closed | 0.2 Mitgliederprofil & Benutzerverwaltung |
+| #86 | ✅ Closed | 0.3 Rollenmanagement & Permissions |
+| #87 | ✅ Closed | 0.4 Audit Log & Activity Tracking |
 | #88 | ✅ Closed | 0.1 Benutzer-Authentifizierung & Login-System |
 | #89 | ✅ Closed | 0.2 Mitgliederprofil & Benutzerverwaltung |
 | #90 | ✅ Closed | 0.3 Rollenmanagement & Permissions |
@@ -39,27 +58,12 @@
 
 ---
 
-## Modul 1 - Vereinsleben & Helfereinsätze
+## Modul 1 - Vereinsleben & Helfereinsätze ✅
 
 **Beschreibung:** Core Features - Mitglieder, Veranstaltungen, Events
 
 | # | Status | Titel |
 |---|--------|-------|
-| #57 | 🟡 Open | Epic: Vereinsleben & Helfereinsätze zentral abbilden |
-| #58 | 🟡 Open | Vereinsevents verwalten (Erstellen/Planen/Anmelden) |
-| #59 | 🟡 Open | Externe Helfereinsätze abbilden |
-| #60 | 🟡 Open | Persönliche Einsatz- und Kalenderübersicht |
-| #61 | 🟡 Open | Epic: Operative Aufführungslogistik effizient planen |
-| #62 | 🟡 Open | Aufführungen mit Zeitblöcken planen |
-| #63 | 🟡 Open | Ressourcen & Räume verwalten |
-| #64 | 🟡 Open | Einsatz-Templates für wiederkehrende Abläufe |
-| #70 | 🟡 Open | Feature: Events anlegen und verwalten |
-| #71 | 🟡 Open | Feature: An- und Abmeldung zu Events |
-| #72 | 🟡 Open | Feature: Rollen und Schichten für Helfereinsätze |
-| #73 | 🟡 Open | Feature: Meine Einsätze und Helferstunden einsehen |
-| #75 | 🟡 Open | Feature: Aufführungen und Spieltermine verwalten |
-| #76 | 🟡 Open | Feature: Helfer-Schichten pro Aufführung definieren |
-| #77 | 🟡 Open | Feature: Räume und technische Ressourcen verwalten |
 | #92 | ✅ Closed | Epic: Vereinsleben & Helfereinsätze zentral abbilden |
 | #93 | ✅ Closed | 1.1 Vereinsevents verwalten |
 | #94 | ✅ Closed | 1.2 Externe Helfereinsätze abbilden |
@@ -69,7 +73,7 @@
 
 ## Modul 2 - Operative Aufführungslogistik ✅
 
-**Beschreibung:** Aufführungen, Ressourcen, Templates - **ABGESCHLOSSEN**
+**Beschreibung:** Aufführungen, Ressourcen, Templates
 
 | # | Status | Titel |
 |---|--------|-------|
@@ -80,91 +84,69 @@
 
 ---
 
-## Modul 3 - Künstlerische Planung
+## Modul 3 - Künstlerische Planung ✅
 
 **Beschreibung:** Stücke, Besetzungen, Proben
 
-| # | Status | Titel | Labels |
-|---|--------|-------|--------|
-| #100 | ✅ Closed | Epic: Künstlerische Planung | - |
-| #101 | ✅ Closed | 3.1 Stück, Szenen und Rollen strukturieren | - |
-| #102 | ✅ Closed | 3.2 Besetzung verwalten | - |
-| #103 | ✅ Closed | 3.3 Probenplanung mit künstlerischen Funktionen | - |
-| #109 | 🟡 Open | fix(db): RLS Policy für Teilnehmer-Status | bug, prio:high |
-| #110 | 🟡 Open | refactor: TypeScript 'any' Casts ersetzen | enhancement |
-| #111 | 🟡 Open | fix(ui): confirm() durch Modal ersetzen | enhancement |
-| #112 | 🟡 Open | perf(db): Index auf proben_teilnehmer.status | enhancement |
-| #113 | 🟡 Open | test: Tests für Künstlerische Planung | enhancement |
-| #114 | 🟡 Open | fix: Server-side Authorization Check | enhancement |
+| # | Status | Titel |
+|---|--------|-------|
+| #100 | ✅ Closed | Epic: Künstlerische Planung |
+| #101 | ✅ Closed | 3.1 Stück, Szenen und Rollen strukturieren |
+| #102 | ✅ Closed | 3.2 Besetzung verwalten |
+| #103 | ✅ Closed | 3.3 Probenplanung mit künstlerischen Funktionen |
+| #109 | ✅ Closed | fix(db): RLS Policy für Teilnehmer-Status |
+| #110 | ✅ Closed | refactor: TypeScript 'any' Casts ersetzen |
+| #111 | ✅ Closed | fix(ui): confirm() durch Modal ersetzen |
+| #112 | ✅ Closed | perf(db): Index auf proben_teilnehmer.status |
+| #113 | ✅ Closed | test: Tests für Künstlerische Planung |
+| #114 | ✅ Closed | fix: Server-side Authorization Check |
 
 ---
 
-## Helfer Liste (Feature) ✅
+## Helfer Liste ✅
 
 **Beschreibung:** Helferliste zur strukturierten Planung und Besetzung von Helferrollen
-**Due:** 2026-02-28
-**Status:** IMPLEMENTIERT (2026-01-27)
-
-### Implementierte Funktionen
+**Status:** VOLLSTÄNDIG ABGESCHLOSSEN
 
 #### Database (4 Issues) ✅
 | # | Status | Titel |
 |---|--------|-------|
-| #115 | ✅ Done | DB: Create helfer_events table and RLS policies |
-| #116 | ✅ Done | DB: Create helfer_rollen_templates table and RLS policies |
-| #117 | ✅ Done | DB: Create helfer_rollen_instanzen table and RLS policies |
-| #118 | ✅ Done | DB: Create helfer_anmeldungen table and RLS policies |
-
-**Migration:** `20260227000000_helferliste.sql`
-- 4 Tabellen mit RLS Policies
-- Helper Functions für Auth-Checks
-- Seed-Daten für Templates
+| #115 | ✅ Closed | DB: Create helfer_events table and RLS policies |
+| #116 | ✅ Closed | DB: Create helfer_rollen_templates table and RLS policies |
+| #117 | ✅ Closed | DB: Create helfer_rollen_instanzen table and RLS policies |
+| #118 | ✅ Closed | DB: Create helfer_anmeldungen table and RLS policies |
 
 #### Backend/API (6 Issues) ✅
 | # | Status | Titel |
 |---|--------|-------|
-| #119 | ✅ Done | Integrate helferliste actions with audit logging |
-| #120 | ✅ Done | API: Implement CRUD for helfer_events |
-| #121 | ✅ Done | API: Implement CRUD for helfer_rollen_instanzen |
-| #122 | ✅ Done | API: Implement HelferAnmeldungen actions |
-| #123 | ✅ Done | API: Implement double-booking/overlap prevention |
-| #131 | ✅ Done | API: Implement public link generation |
-
-**Server Actions:**
-- `lib/actions/helferliste.ts` - Haupt-CRUD für Events, Rollen, Anmeldungen
-- `lib/actions/helfer-templates.ts` - Template-Verwaltung
+| #119 | ✅ Closed | Integrate helferliste actions with audit logging |
+| #120 | ✅ Closed | API: Implement CRUD for helfer_events |
+| #121 | ✅ Closed | API: Implement CRUD for helfer_rollen_instanzen |
+| #122 | ✅ Closed | API: Implement HelferAnmeldungen actions |
+| #123 | ✅ Closed | API: Implement double-booking/overlap prevention |
+| #131 | ✅ Closed | API: Implement public link generation |
 
 #### Frontend/UI (7 Issues) ✅
 | # | Status | Titel |
 |---|--------|-------|
-| #124 | ✅ Done | UI: Admin page for HelferEvent creation/management |
-| #125 | ✅ Done | UI: Implement HelferAnmeldung forms |
-| #126 | ✅ Done | UI: Admin page for HelferRollenTemplate management |
-| #127 | ✅ Done | UI: Member/Public view for HelferEvents/Rollen |
-| #128 | ✅ Done | UI: Admin dashboard for HelferAnmeldungen management |
-| #129 | ✅ Done | UI: Admin component for HelferRollenInstanz management |
-| #134 | ✅ Done | Improve error handling and UI feedback |
+| #124 | ✅ Closed | UI: Admin page for HelferEvent creation/management |
+| #125 | ✅ Closed | UI: Implement HelferAnmeldung forms |
+| #126 | ✅ Closed | UI: Admin page for HelferRollenTemplate management |
+| #127 | ✅ Closed | UI: Member/Public view for HelferEvents/Rollen |
+| #128 | ✅ Closed | UI: Admin dashboard for HelferAnmeldungen management |
+| #129 | ✅ Closed | UI: Admin component for HelferRollenInstanz management |
+| #134 | ✅ Closed | Improve error handling and UI feedback |
 
-**Routes:**
-- `/helferliste` - Events-Liste
-- `/helferliste/neu` - Neues Event erstellen
-- `/helferliste/[id]` - Event-Details mit Rollen-Management
-- `/helferliste/templates` - Templates-Verwaltung
-- `/helferliste/templates/neu` - Neues Template
-- `/helfer/[token]` - Öffentliche Ansicht für externe Helfer
-
-**Components:** 12 Komponenten in `components/helferliste/`
-
-#### Ausstehend (3 Issues)
-| # | Status | Titel | Grund |
-|---|--------|-------|-------|
-| #130 | 🟡 Deferred | Email notifications | Erfordert Email-Infrastruktur |
-| #132 | 🟡 Deferred | Unit/Integration tests | Optional |
-| #133 | 🟡 Deferred | End-to-End tests | Optional |
+#### Ehemals Ausstehend (3 Issues) ✅
+| # | Status | Titel |
+|---|--------|-------|
+| #130 | ✅ Closed | Email notifications |
+| #132 | ✅ Closed | Unit/Integration tests |
+| #133 | ✅ Closed | End-to-End tests |
 
 ---
 
-## UserExperience
+## UserExperience ✅
 
 **Beschreibung:** Rollenbasierte UI/UX Verbesserungen
 
@@ -175,68 +157,192 @@
 | #139 | ✅ Closed | [UX] Sidebar-Komponente erstellen |
 | #140 | ✅ Closed | [UX] Header-Komponente anpassen |
 | #141 | ✅ Closed | [UX] Layout-Struktur für Bereiche implementieren |
-| #142 | 🟡 Open | [UX] Management-Dashboard erweitern |
-| #143 | 🟡 Open | [UX] Mein-Bereich Dashboard für aktive Mitglieder |
-| #144 | 🟡 Open | [UX] Mein-Bereich für passive Mitglieder |
-| #145 | 🟡 Open | [UX] Helfer-Dashboard erstellen |
-| #146 | 🟡 Open | [UX] Partner-Portal erstellen |
-| #147 | 🟡 Open | [UX] Willkommen-Seite für Gäste/Freunde |
+| #142 | ✅ Closed | [UX] Management-Dashboard erweitern |
+| #143 | ✅ Closed | [UX] Mein-Bereich Dashboard für aktive Mitglieder (via #317) |
+| #144 | ✅ Closed | [UX] Mein-Bereich für passive Mitglieder |
+| #145 | ✅ Closed | [UX] Helfer-Dashboard erstellen (via #318) |
+| #146 | ✅ Closed | [UX] Partner-Portal erstellen |
+| #147 | ✅ Closed | [UX] Willkommen-Seite für Gäste/Freunde |
+| #328 | ✅ Closed | Onboarding-Flow nach erstem Login (PR #338) |
 
 ---
 
-## Changelog (2026-01-27)
+## Vorhang auf — Mitglieder-Integration ✅
 
-### Helferliste Feature - Vollständig implementiert
+**Beschreibung:** Integration von Mitgliederprofilen mit Schichtplanung, Veranstaltungen/Aufführungen und künstlerischen Produktionen.
 
-**Neue Dateien:**
+| # | Status | Titel |
+|---|--------|-------|
+| #343 | ✅ Closed | Verfügbarkeitskonflikt-Erkennung bei Schichtzuweisung (PR #351) |
+| #344 | ✅ Closed | Besetzung → Aufführungs-Zuweisungen automatisch erstellen (PR #352) |
+| #345 | ✅ Closed | Proben-Teilnehmer aus Besetzung auto-befüllen (PR #354) |
+| #346 | ✅ Closed | Zentrale Personen-Einsatzübersicht (Mein Kalender) (PR #353) |
+| #347 | ✅ Closed | Skills-basierte Schicht-Vorschläge |
+| #348 | ✅ Closed | Produktions-Dashboard: Besetzungs- und Schicht-Fortschritt |
+| #349 | ✅ Closed | Personen-Detailseite: Rollen- und Einsatzhistorie (PR #366) |
+| #350 | ✅ Closed | Verfügbarkeiten bei Produktionsplanung berücksichtigen (PR #366) |
+| #355 | ✅ Closed | Probenplan-Generator: Optimal-Termine und Szenenauswahl |
 
-| Datei | Beschreibung |
-|-------|--------------|
-| `supabase/migrations/20260227000000_helferliste.sql` | Database Migration |
-| `lib/actions/helferliste.ts` | Server Actions (Events, Rollen, Anmeldungen) |
-| `lib/actions/helfer-templates.ts` | Server Actions (Templates) |
-| `app/(protected)/helferliste/page.tsx` | Events-Liste |
-| `app/(protected)/helferliste/neu/page.tsx` | Neues Event |
-| `app/(protected)/helferliste/[id]/page.tsx` | Event-Details |
-| `app/(protected)/helferliste/templates/page.tsx` | Templates-Liste |
-| `app/(protected)/helferliste/templates/neu/page.tsx` | Neues Template |
-| `app/(public)/helfer/[token]/page.tsx` | Öffentliche Helfer-Ansicht |
-| `components/helferliste/*.tsx` | 12 UI-Komponenten |
+---
 
-**Geänderte Dateien:**
+## Weitere abgeschlossene Milestones
 
-| Datei | Änderung |
-|-------|----------|
-| `lib/supabase/types.ts` | Neue Typen für Helferliste |
-| `lib/supabase/auth-helpers.ts` | Neue Permissions (helferliste:*) |
-| `lib/navigation.ts` | Navigation für /helferliste hinzugefügt |
+### Mitglieder ✅ (7 Issues)
+#149–#155 — Mitgliederverwaltung, Profil, Kontaktdaten, Skills, Notfallkontakte
 
-### Build-Fixes
+### Produktionen ✅ (10 Issues)
+#156–#162, #173–#175 — Produktions-Entität, Serien, Veranstaltungen, Proben-Integration
 
-| Datei | Problem | Lösung |
-|-------|---------|--------|
-| `app/page.tsx` | `let` statt `const` | Geändert zu `const` |
-| `app/(protected)/hilfe/page.tsx` | Static Generation + Cookies | `force-dynamic` hinzugefügt |
-| `app/(protected)/hilfe/[slug]/page.tsx` | Static Generation + Cookies | `force-dynamic` hinzugefügt |
-| `app/(protected)/dashboard/page.tsx` | Unbenutzte Variable `nextWeek` | Entfernt |
+### Künstlerische Produktion ✅ (9 Issues)
+#163–#165, #167–#170, #192–#193 — Szenen, Rollen, Besetzungen, Probenplan
+
+### UI/UX Foundation ✅ (6 Issues)
+#176–#181 — Design-System, Tailwind-Palette, Responsive Layout
+
+### Security & DSGVO ✅ (10 Issues)
+#186–#191, #269, #270, #274, #276 — RLS Policies, Auth-Hardening, DSGVO-Compliance
+
+### Code Quality & Performance ✅ (4 Issues)
+#271–#273, #275 — TypeScript Strict Mode, Linting, Performance-Optimierungen
+
+### M1–M8 Helferliste Roadmap ✅ (32 Issues)
+#201–#232 — Datenmodell, Template-Management, Helfer-Profile, Public Booking, Admin-Ansichten, Kommunikation, Live-Ops, Reporting
+
+### Public Volunteer Booking Flow ✅ (11 Issues)
+#242–#252 — Öffentliche Anmeldung, Token-System, Warteliste, Feedback
+
+### Mitglieder-Onboarding ✅ (5 Issues)
+#324–#328 — Einladungsflow, Passwort-Setup, Onboarding-Wizard
+
+### Probenplan: Status-Fix & Generator ✅ (7 Issues)
+#359–#365 — Status-Filterung, Konstanten, Generator-Hints, Tests
+
+### Security Fixes (ohne Milestone)
+#368, #369, #371–#377 — Open Redirect Fix, RLS Self-Escalation, IDOR Protections, Permission Checks (alle 12 Dateien)
+
+---
+
+## Changelog
+
+### 2026-02-18: Produktions-Aufführungen im Dashboard & Kalender
+
+- Mitglieder die in einer Produktion besetzt sind (via `produktions_besetzungen` oder `produktions_stab`) sehen ihre Aufführungen jetzt im Dashboard-Widget "Meine Veranstaltungen" und im MiniKalender
+- Neue Server Action `getMeineProduktionsAuffuehrungen()`: Multi-Query Join über Besetzung/Stab → Produktion → Auffuehrungsserie → Serienauffuehrung → Veranstaltung
+- `UpcomingEventsWidget` erweitert: Merged Anmeldungen + Produktions-Aufführungen mit Deduplizierung nach `veranstaltung_id`
+- `getPersonalEvents()` um Quelle #6 (Produktions-Aufführungen) erweitert — erscheinen in `/mein-bereich/termine` und iCal-Feed
+- Dashboard-Datenabfrage parallelisiert via `Promise.all`
+
+### 2026-02-18: BesetzungsMatrix auf Stück-Detailseite (PR #397)
+
+- Neue `StueckBesetzungen`-Komponente für Stück-Level Besetzungsverwaltung (Person → Rolle)
+- Rollen gruppiert nach Typ mit Fortschrittsbalken, Avatar-Initialen und Inline-Editor
+- Wichtig für `auto_invite_probe_teilnehmer`, das auf Stück-Level `besetzungen` basiert
+- Backfill-Script erneut ausgeführt: 12 Teilnehmer für bestehende Proben eingeladen
+
+### 2026-02-18: Auto-Invite Probe Teilnehmer (PR #394, #395)
+
+- DB-Funktion `auto_invite_probe_teilnehmer()` erstellt: Lädt automatisch besetzte Personen als Teilnehmer ein wenn eine Probe erstellt wird
+- Trigger `trigger_auto_invite_probe_teilnehmer` auf `proben` Tabelle (AFTER INSERT)
+- Szenen-basiert: Nur Personen einladen deren Rollen in den zugewiesenen Szenen vorkommen
+- Fallback: Ohne Szenen werden alle Besetzungen des Stücks eingeladen
+- Backfill-Migration für bestehende offene Proben ohne Teilnehmer
+
+### 2026-02-17: Probenplan Status-Konstanten, Filter, Hints & Tests (#378-382, PR #370)
+
+- Zentrale Konstanten `STUECK_STATUS_LABELS` und `PROBENPLAN_ELIGIBLE_STATUS` in `types.ts`
+- Duplizierte Label-Strings in `StatusBadge`, `StueckForm` und Generator-Page durch Konstanten ersetzt
+- Probenplan-Generator zeigt nun auch Stücke mit Status `aktiv` an (nicht nur `in_proben`/`in_planung`)
+- Stücke-Detailseite zeigt Callout-Hinweis mit Link zum Generator für berechtigte Stücke
+- `StueckMitSzenen.status` von `string` zu `StueckStatus` typisiert
+- 10 Unit Tests für Konstanten, Filterung, Generierung und Berechtigungsprüfung
+
+### 2026-02-17: Missing Permission Checks komplett (#373, PR #387)
+
+- `requirePermission()` zu allen 12 Server-Action-Dateien hinzugefügt die im Security-Audit aufgefallen sind
+- Letzte 2 Funktionen in `externe-helfer.ts` geschlossen: `findOrCreateExternalHelper` (`helfereinsaetze:write`) und `getExterneHelferProfilByEmail` (`mitglieder:read`)
+- `notifications.ts` absichtlich ohne `requirePermission()` — implizite Auth via `getUserProfile()` + RLS (user-scoped)
+
+### 2026-02-17: Security Fixes (#368-369, #371-377)
+
+- Open Redirect in Auth-Routes behoben (#368)
+- RLS Self-Escalation verhindert (#369)
+- Missing Permission Checks auf Server Actions (#371, #372, #374-377)
+- IDOR Protections für geschützte Ressourcen
+
+### 2026-02-17: Proben-Teilnehmer aus Besetzung auto-befüllen (#345, PR #354)
+
+- "Aus Besetzungen"-Button öffnet jetzt Vorschau-Dialog statt direkt einzufügen
+- `suggestProbenTeilnehmer()`: Read-only Server Action, liefert Vorschläge mit Rollennamen, Duplikat-Erkennung und Konflikt-Prüfung pro Person (max 50)
+- Fallback: Ohne zugewiesene Szenen werden alle Besetzungen des Stücks vorgeschlagen
+- `confirmProbenTeilnehmer()`: Batch-Upsert mit Status `eingeladen` und Duplikat-Sicherheit
+- `TeilnehmerPreviewDialog`: Select/Deselect-All, Rollen-Anzeige, `ConflictWarning` inline, "bereits vorhanden" ausgegraut
+- 10 Unit Tests für beide Server Actions
+
+### 2026-02-17: Zentrale Personen-Einsatzübersicht (#346, PR #353)
+
+- `getPersonalEvents()` erweitert um 2 neue Quellen: **Helfer-Anmeldungen** und **Helferschichten** — insgesamt 5 Quellen
+- `PersonalCalendar`: Verfügbarkeiten als FullCalendar-Hintergrund-Layer
+- `/mitglieder/[id]`: Einsatzübersicht-Sektion mit readOnly-Kalender
+- 9 Unit Tests
+
+### 2026-02-17: Besetzung → Aufführungs-Zuweisungen (#344, PR #352)
+
+- Neuer Status `vorgeschlagen` für `auffuehrung_zuweisungen`
+- `generateZuweisungenPreview()` und `confirmZuweisungen()` Server Actions
+- Vorschau-Dialog mit Gruppen-Auswahl und Konflikt-Prüfung
+- 10 Unit Tests
+
+### 2026-02-17: Verfügbarkeitskonflikt-Erkennung (#343, PR #351)
+
+- DB-Funktion `check_person_conflicts()` für Cross-System-Konflikterkennung
+- Nicht-blockierende Konfliktwarnung in Aufführungen, Proben und Helferliste
+- 5 Unit Tests
+
+### 2026-02-17: Onboarding-Flow nach erstem Login (#328)
+
+- `onboarding_completed` Boolean auf `profiles` Tabelle
+- Middleware-Redirect zu `/willkommen` für neue Benutzer
+- 2-Schritt OnboardingWizard
+
+### 2026-02-16: Dashboard-Restructuring & Vorstand Mein Bereich
+
+- Stundenkonto nur noch für ADMIN/VORSTAND
+- `/vorstand/termine`, `/vorstand/stundenkonto`, `/vorstand/einsaetze`
+- Dashboard-Konsolidierung für alle Rollen
+- Helfer-Dashboard mit persönlicher Einsatzübersicht
+- Template-Editor vollständig editierbar
+
+### 2026-02-05: M1 - Datenmodell & Templates Complete
+
+- Template-System mit Offset-basiertem Zeitsystem (ADR-001)
+- Seed-Daten: "Abendvorstellung" Template
+
+### 2026-01-27: Helferliste Feature - Vollständig implementiert
+
+- 4 DB-Tabellen mit RLS Policies
+- Server Actions, 12 UI-Komponenten
+- Öffentliche Helfer-Ansicht via Token-Link
 
 ---
 
 ## Statistik
 
 ```
-Total Issues:     75 (36 open, 39 closed)
-Milestones:       6
+Total Issues:     202 (0 open, 202 closed)
+Milestones:       19+ (19 complete)
 
-Progress by Milestone:
-├── Modul 0:       55% (6/11 closed)
-├── Modul 1:       21% (4/19 closed)
-├── Modul 2:      100% (4/4 closed) ✅
-├── Modul 3:       40% (4/10 closed)
-├── Helfer Liste:  85% (17/20 closed) ✅
-└── UserExperience: 45% (5/11 closed)
+Offene Issues:    Keine
+
+Abgeschlossene Kern-Module:
+├── Modul 0 (Foundation):        100% (11/11) ✅
+├── Modul 1 (Vereinsleben):      100% (4/4) ✅
+├── Modul 2 (Aufführungen):      100% (4/4) ✅
+├── Modul 3 (Künstlerisch):      100% (10/10) ✅
+├── Helfer Liste:                 100% (20/20) ✅
+├── UserExperience:               100% (11/11) ✅
+└── Vorhang auf:                  100% (9/9) ✅
 ```
 
 ---
 
-*Aktualisiert am 2026-01-27*
+*Aktualisiert am 2026-02-18*

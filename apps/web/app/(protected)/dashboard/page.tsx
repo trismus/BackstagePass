@@ -1,16 +1,35 @@
 import Link from 'next/link'
-import { getUser, getUserProfile } from '@/lib/supabase/server'
+import { getUserProfile } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { isManagement } from '@/lib/supabase/auth-helpers'
 import { HelpButton } from '@/components/help'
+import { TourButton } from '@/components/tours'
 import {
   VorstandModul,
   ModulStat,
   ModulAktivitaet,
   HandlungsbedarfCard,
   ProduktionDashboardWidget,
+  CircularProgress,
+  MetricCard,
+  MitmachenDashboard,
 } from '@/components/dashboard'
-import { getAktuelleProduktionFuerDashboard } from '@/lib/actions/produktionen'
+import { getAktuelleProduktionFuerDashboard, getMeineProduktionsAuffuehrungen } from '@/lib/actions/produktionen'
+import { getMitmachenDashboardData } from '@/lib/actions/mitmachen-dashboard'
+import { getAnmeldungenForPerson } from '@/lib/actions/anmeldungen'
+import { getMeineProben } from '@/lib/actions/proben'
+import { getRollenHistorie } from '@/lib/actions/historie'
+import { MiniKalender } from '@/components/mein-bereich/MiniKalender'
+import { EditableProfileCard } from '@/components/mein-bereich/EditableProfileCard'
+import { RollenHistorie } from '@/components/mein-bereich/RollenHistorie'
+import {
+  UpcomingEventsWidget,
+  MeineProbenWidget,
+  OffeneSchichtenWidget,
+} from '@/components/mein-bereich/DashboardWidgets'
+import { getOffeneSchichtenForDashboard } from '@/lib/actions/auffuehrung-schichten'
+import { ProfileCompletionWidget } from '@/components/mein-bereich/ProfileCompletionWidget'
+import type { KalenderTermin } from '@/components/mein-bereich/MiniKalender'
 
 export const metadata = {
   title: 'Dashboard',
@@ -67,66 +86,79 @@ const icons = {
 // Main Component
 // =============================================================================
 
-export default async function DashboardPage() {
-  const user = await getUser()
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ansicht?: string }>
+}) {
   const profile = await getUserProfile()
   const supabase = await createClient()
+  const params = await searchParams
 
   const isVorstand = profile?.role ? isManagement(profile.role) : false
-  const today = new Date().toISOString().split('T')[0]
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
 
-  // Parallel data fetching
-  const [
-    { count: mitgliederTotal },
-    { count: mitgliederAktiv },
-    { count: partnerCount },
-    { count: helferCount },
-    { data: upcomingEvents },
-    { data: aktivesStuck },
-    { data: offeneSchichten },
-    aktuelleProduktion,
-  ] = await Promise.all([
-    supabase.from('personen').select('*', { count: 'exact', head: true }),
-    supabase.from('personen').select('*', { count: 'exact', head: true }).eq('aktiv', true),
-    supabase.from('partner').select('*', { count: 'exact', head: true }),
-    supabase.from('helferschichten').select('*', { count: 'exact', head: true }).eq('status', 'zugesagt'),
-    supabase
-      .from('veranstaltungen')
-      .select('id, titel, datum, typ')
-      .gte('datum', today)
-      .order('datum', { ascending: true })
-      .limit(5),
-    supabase
-      .from('stuecke')
-      .select('id, titel, status, premiere_datum')
-      .in('status', ['in_planung', 'in_proben', 'aktiv'])
-      .order('premiere_datum', { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from('auffuehrung_schichten')
-      .select('id, rolle, anzahl_benoetigt')
-      .limit(10),
-    getAktuelleProduktionFuerDashboard(),
-  ])
-
-  // Calculate warnings
-  const offeneHelferPositionen = offeneSchichten?.length || 0
-
-  // Format date helper
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('de-CH', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    })
-  }
+  // End of current week (Sunday)
+  const dayOfWeek = now.getDay() // 0 = Sunday
+  const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
+  const endOfWeekDate = new Date(now)
+  endOfWeekDate.setDate(now.getDate() + daysUntilSunday)
+  const endOfWeek = endOfWeekDate.toISOString().split('T')[0]
 
   // =============================================================================
   // Vorstand Dashboard (3-Säulen-Layout)
   // =============================================================================
 
-  if (isVorstand) {
+  if (isVorstand && params.ansicht !== 'mitglied') {
+    // Parallel data fetching for Vorstand
+    const [
+      { count: mitgliederTotal },
+      { count: mitgliederAktiv },
+      { count: partnerCount },
+      { data: upcomingEvents },
+      { data: aktivesStuck },
+      { data: offeneSchichten },
+      aktuelleProduktion,
+      mitmachenData,
+    ] = await Promise.all([
+      supabase.from('personen').select('*', { count: 'exact', head: true }),
+      supabase.from('personen').select('*', { count: 'exact', head: true }).eq('aktiv', true),
+      supabase.from('partner').select('*', { count: 'exact', head: true }),
+      supabase
+        .from('veranstaltungen')
+        .select('id, titel, datum, typ, startzeit, ort, status')
+        .gte('datum', today)
+        .lte('datum', endOfWeek)
+        .in('typ', ['probe', 'auffuehrung'])
+        .order('datum', { ascending: true }),
+      supabase
+        .from('stuecke')
+        .select('id, titel, status, premiere_datum')
+        .in('status', ['in_planung', 'in_proben', 'aktiv'])
+        .order('premiere_datum', { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('auffuehrung_schichten')
+        .select('id, rolle, anzahl_benoetigt')
+        .limit(10),
+      getAktuelleProduktionFuerDashboard(),
+      getMitmachenDashboardData(),
+    ])
+
+    // Calculate warnings
+    const offeneHelferPositionen = offeneSchichten?.length || 0
+
+    // Format date helper
+    const formatDate = (dateStr: string) => {
+      return new Date(dateStr).toLocaleDateString('de-CH', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      })
+    }
+
     return (
       <div className="space-y-6">
         {/* Header */}
@@ -136,24 +168,119 @@ export default async function DashboardPage() {
               <h1 className="text-2xl font-semibold text-neutral-900">
                 Vorstand Dashboard
               </h1>
-              <HelpButton contextKey="dashboard" />
+              <div data-tour="help-button">
+                <HelpButton contextKey="dashboard" />
+              </div>
             </div>
             <p className="mt-1 text-neutral-600">
               Willkommen zurück
               {profile?.display_name ? `, ${profile.display_name}` : ''}!
             </p>
           </div>
+          <div>
+            <TourButton
+              tourId="dashboard:vorstand-overview"
+              label="Dashboard-Tour"
+              variant="secondary"
+              size="sm"
+            />
+          </div>
+        </div>
+
+        {/* Modern Widgets Section */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Proben & Aufführungen diese Woche */}
+          <div className="rounded-xl border border-neutral-200 bg-white p-6 lg:col-span-2">
+            <h3 className="mb-3 text-sm font-medium text-neutral-500">
+              Proben & Aufführungen diese Woche
+            </h3>
+            {upcomingEvents && upcomingEvents.length > 0 ? (
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {upcomingEvents.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/${event.typ === 'probe' ? 'proben' : 'auffuehrungen'}/${event.id}` as never}
+                    className="flex min-w-[180px] flex-col gap-1 rounded-lg border border-neutral-200 p-3 transition-colors hover:border-neutral-300 hover:bg-neutral-50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          event.typ === 'probe'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
+                      >
+                        {event.typ === 'probe' ? 'Probe' : 'Aufführung'}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-neutral-900 line-clamp-1">
+                      {event.titel}
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      {formatDate(event.datum)}
+                      {event.startzeit ? ` · ${event.startzeit.slice(0, 5)}` : ''}
+                    </p>
+                    {event.ort && (
+                      <p className="text-xs text-neutral-400 line-clamp-1">{event.ort}</p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="py-4 text-center text-sm text-neutral-400">
+                Keine Proben oder Aufführungen diese Woche
+              </p>
+            )}
+          </div>
+
+          {/* Circular Progress: Mitglieder-Aktivität */}
+          <div className="rounded-xl border border-neutral-200 bg-white p-6">
+            <CircularProgress
+              title="Mitglieder-Aktivität"
+              value={mitgliederAktiv || 0}
+              max={mitgliederTotal || 1}
+              subtitle={`${mitgliederAktiv || 0} von ${mitgliederTotal || 0} aktiv`}
+              size="md"
+              color="success"
+            />
+          </div>
+
+          {/* Metric Card: Offene Aufgaben */}
+          <MetricCard
+            title="Offene Helfer-Positionen"
+            value={offeneHelferPositionen}
+            subtitle={offeneHelferPositionen > 0 ? 'Benötigen Zuweisung' : 'Alle besetzt'}
+            variant={offeneHelferPositionen > 0 ? 'warning' : 'success'}
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            }
+          />
+
+          {/* Metric Card: Anstehende Events */}
+          <MetricCard
+            title="Nächste 7 Tage"
+            value={upcomingEvents?.length || 0}
+            subtitle="Anstehende Veranstaltungen"
+            variant="default"
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            }
+          />
         </div>
 
         {/* 3-Säulen Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3" data-tour="dashboard-modules">
           {/* Modul 1: Mitglieder & Helfer */}
           <VorstandModul
             titel="Mitglieder & Helfer"
             icon={icons.users}
             quickLinks={[
               { href: '/mitglieder', label: 'Mitglieder' },
-              { href: '/helfereinsaetze', label: 'Helfereinsätze' },
+              { href: '/helferliste', label: 'Helferliste' },
               { href: '/admin/gruppen', label: 'Gruppen' },
             ]}
           >
@@ -166,7 +293,6 @@ export default async function DashboardPage() {
                   subValue={`/ ${mitgliederTotal || 0}`}
                 />
                 <ModulStat label="Partner" value={partnerCount || 0} />
-                <ModulStat label="Aktive Helfer" value={helferCount || 0} />
               </div>
 
               {/* Handlungsbedarf */}
@@ -178,8 +304,8 @@ export default async function DashboardPage() {
                   <HandlungsbedarfCard
                     prioritaet="warnung"
                     titel="Offene Positionen"
-                    beschreibung="Helferschichten nicht besetzt"
-                    href="/helfereinsaetze"
+                    beschreibung="Schichten nicht besetzt"
+                    href="/auffuehrungen"
                     count={offeneHelferPositionen}
                   />
                 ) : (
@@ -313,8 +439,11 @@ export default async function DashboardPage() {
           naechsteTermine={aktuelleProduktion.naechsteTermine}
         />
 
+        {/* Mitmachen Dashboard */}
+        <MitmachenDashboard data={mitmachenData} />
+
         {/* Quick Actions */}
-        <div className="rounded-xl border border-neutral-200 bg-white p-6">
+        <div className="rounded-xl border border-neutral-200 bg-white p-6" data-tour="quick-actions">
           <h2 className="mb-4 font-semibold text-neutral-900">
             Schnellaktionen
           </h2>
@@ -330,11 +459,6 @@ export default async function DashboardPage() {
               label="Neues Mitglied"
             />
             <QuickAction
-              href="/helfereinsaetze/neu"
-              icon={icons.users}
-              label="Neuer Helfereinsatz"
-            />
-            <QuickAction
               href="/stuecke/neu"
               icon={icons.theater}
               label="Neues Stück"
@@ -346,135 +470,231 @@ export default async function DashboardPage() {
   }
 
   // =============================================================================
-  // Standard Dashboard (für nicht-Vorstand)
+  // Mitglieder Dashboard (persönlicher Bereich)
   // =============================================================================
 
+  if (!profile) {
+    return (
+      <div className="space-y-8">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+          <p className="text-yellow-800">
+            Bitte melde dich an, um dein Dashboard zu sehen.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Try to find the person linked to this user
+  const { data: person } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname, email, telefon, strasse, plz, ort, geburtstag, notfallkontakt_name, notfallkontakt_telefon, notfallkontakt_beziehung, skills')
+    .eq('email', profile.email)
+    .single()
+
+  // Check if user is passive member (reduced view)
+  const isPassiveMember = profile.role === 'MITGLIED_PASSIV'
+
+  // Get data if person is linked
+  const [anmeldungen, meineProben, meineAuffuehrungen, offeneSchichten] = await Promise.all([
+    person ? getAnmeldungenForPerson(person.id) : Promise.resolve([]),
+    person && !isPassiveMember ? getMeineProben(person.id) : Promise.resolve([]),
+    person && !isPassiveMember ? getMeineProduktionsAuffuehrungen(person.id) : Promise.resolve([]),
+    !isPassiveMember ? getOffeneSchichtenForDashboard() : Promise.resolve([]),
+  ])
+
+  // Get history data (only for active members)
+  const rollenHistorie = !isPassiveMember ? await getRollenHistorie() : []
+
+  // Build calendar events from all sources
+  const kalenderTermine: KalenderTermin[] = []
+
+  // Add anmeldungen as calendar events
+  anmeldungen.forEach((a) => {
+    kalenderTermine.push({
+      id: a.id,
+      datum: a.veranstaltung.datum,
+      titel: a.veranstaltung.titel,
+      typ: 'veranstaltung',
+      href: `/veranstaltungen/${a.veranstaltung.id}`,
+    })
+  })
+
+  // Add proben as calendar events
+  meineProben.forEach((p) => {
+    kalenderTermine.push({
+      id: p.id,
+      datum: p.datum,
+      titel: p.stueck_titel ? `${p.stueck_titel}: ${p.titel}` : p.titel,
+      typ: 'probe',
+      href: `/proben/${p.probe_id}`,
+    })
+  })
+
+  // Add produktions-aufführungen as calendar events (deduplicated)
+  const anmeldungVeranstaltungIds = new Set(anmeldungen.map((a) => a.veranstaltung.id))
+  meineAuffuehrungen.forEach((pa) => {
+    if (anmeldungVeranstaltungIds.has(pa.veranstaltung_id)) return
+    kalenderTermine.push({
+      id: pa.id,
+      datum: pa.datum,
+      titel: pa.titel,
+      typ: 'veranstaltung',
+      href: `/auffuehrungen/${pa.veranstaltung_id}`,
+    })
+  })
+
+  // Filter to upcoming events only
+  const upcomingAnmeldungen = anmeldungen.filter(
+    (a) =>
+      a.veranstaltung.datum >= today &&
+      (a.status === 'angemeldet' || a.status === 'warteliste')
+  )
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold text-neutral-900">Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">
+            Hallo{person ? `, ${person.vorname}` : ''}!
+          </h1>
           <HelpButton contextKey="dashboard" />
         </div>
         <p className="mt-1 text-neutral-600">
-          Willkommen zurück
-          {profile?.display_name ? `, ${profile.display_name}` : ''}!
+          {isPassiveMember
+            ? 'Dein Überblick über die Theatergruppe Widen'
+            : 'Dein persönlicher Bereich bei BackstagePass'}
         </p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link href={'/mitglieder' as never}>
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 transition-colors hover:border-neutral-300">
-            <h3 className="text-sm font-medium text-neutral-500">Mitglieder</h3>
-            <p className="mt-2 text-3xl font-bold text-neutral-900">
-              {mitgliederAktiv ?? 0}
-            </p>
-            <p className="mt-1 text-sm text-neutral-500">Aktive Personen</p>
+      {/* Outlook-Style 2-Column Layout */}
+      {isPassiveMember ? (
+        // Passive Member View - Simplified 2-column
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left Column - Calendar */}
+          <div className="lg:col-span-1">
+            <MiniKalender termine={kalenderTermine} />
           </div>
-        </Link>
-        <Link href={'/partner' as never}>
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 transition-colors hover:border-neutral-300">
-            <h3 className="text-sm font-medium text-neutral-500">Partner</h3>
-            <p className="mt-2 text-3xl font-bold text-neutral-900">
-              {partnerCount ?? 0}
-            </p>
-            <p className="mt-1 text-sm text-neutral-500">Partnerorganisationen</p>
-          </div>
-        </Link>
-        <Link href={'/veranstaltungen' as never}>
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 transition-colors hover:border-neutral-300">
-            <h3 className="text-sm font-medium text-neutral-500">Diese Woche</h3>
-            <p className="mt-2 text-3xl font-bold text-neutral-900">
-              {upcomingEvents?.length ?? 0}
-            </p>
-            <p className="mt-1 text-sm text-neutral-500">Anstehende Events</p>
-          </div>
-        </Link>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6">
-          <h3 className="text-sm font-medium text-neutral-500">Helfer</h3>
-          <p className="mt-2 text-3xl font-bold text-neutral-900">
-            {helferCount ?? 0}
-          </p>
-          <p className="mt-1 text-sm text-neutral-500">Aktive Zusagen</p>
-        </div>
-      </div>
 
-      {/* Upcoming Events */}
-      <div className="rounded-xl border border-neutral-200 bg-white p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-neutral-900">
-            Anstehende Veranstaltungen
-          </h2>
-          <Link
-            href="/veranstaltungen"
-            className="text-sm text-neutral-500 hover:text-neutral-900"
-          >
-            Alle ansehen &rarr;
-          </Link>
-        </div>
-        {upcomingEvents && upcomingEvents.length > 0 ? (
-          <div className="divide-y divide-neutral-100">
-            {upcomingEvents.map((event) => (
+          {/* Right Column - Profile & Events */}
+          <div className="space-y-6 lg:col-span-2">
+            <ProfileCompletionWidget person={person} />
+            <div id="profile-card">
+              <EditableProfileCard person={person} role={profile.role} />
+            </div>
+            <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
+
+            {/* CTA for passive members */}
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-6">
+              <h3 className="font-semibold text-blue-900">Aktiver werden?</h3>
+              <p className="mt-1 text-sm text-blue-700">
+                Möchtest du aktiver in der Theatergruppe mitwirken? Als aktives
+                Mitglied kannst du bei Aufführungen und Helfereinsätzen teilnehmen
+                und Stunden sammeln.
+              </p>
               <Link
-                key={event.id}
-                href={`/veranstaltungen/${event.id}` as never}
-                className="flex items-center justify-between py-3 transition-colors hover:bg-neutral-50"
+                href="/profile"
+                className="mt-3 inline-block text-sm font-medium text-blue-700 hover:text-blue-900"
               >
-                <div>
-                  <p className="font-medium text-neutral-900">{event.titel}</p>
-                  <p className="text-sm text-neutral-500">
-                    {formatDate(event.datum)}
-                  </p>
-                </div>
-                <span className="rounded bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-700">
-                  {event.typ}
-                </span>
+                Mehr erfahren &rarr;
               </Link>
-            ))}
+            </div>
           </div>
-        ) : (
-          <p className="py-4 text-neutral-500">
-            Keine Veranstaltungen in den nächsten 7 Tagen.
-          </p>
-        )}
-      </div>
-
-      {/* Profile Summary */}
-      <div className="rounded-xl border border-neutral-200 bg-white p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-neutral-900">Dein Profil</h2>
-          <Link
-            href="/profile"
-            className="text-sm text-neutral-500 hover:text-neutral-900"
-          >
-            Bearbeiten &rarr;
-          </Link>
         </div>
-        <dl className="grid gap-4 text-sm sm:grid-cols-3">
-          <div>
-            <dt className="text-neutral-500">E-Mail</dt>
-            <dd className="mt-1 font-medium text-neutral-900">{user?.email}</dd>
+      ) : (
+        // Active Member View - Full Outlook-Style Layout
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          {/* Left Sidebar - Profile & Calendar */}
+          <div className="space-y-6 lg:col-span-4 xl:col-span-3">
+            {/* Profile Completion */}
+            <ProfileCompletionWidget person={person} />
+
+            {/* Profile Card */}
+            <div id="profile-card">
+              <EditableProfileCard
+                person={person}
+                role={profile.role}
+              />
+            </div>
+
+            <MiniKalender termine={kalenderTermine} />
+
+            {/* Quick Stats */}
+            <div className="rounded-xl border border-neutral-200 bg-white p-4">
+              <h3 className="mb-3 text-sm font-medium text-neutral-500">Übersicht</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-600">Anstehende Termine</span>
+                  <span className="font-semibold text-neutral-900">{upcomingAnmeldungen.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-600">Anstehende Proben</span>
+                  <span className="font-semibold text-purple-600">{meineProben.length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="rounded-xl border border-neutral-200 bg-white p-4">
+              <h3 className="mb-3 text-sm font-medium text-neutral-500">Schnellzugriff</h3>
+              <div className="space-y-1">
+                <Link
+                  href="/veranstaltungen"
+                  className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                >
+                  <span className="text-blue-500">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  Veranstaltungen
+                </Link>
+                <Link
+                  href="/mein-bereich/verfuegbarkeit"
+                  className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                >
+                  <span className="text-red-500">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  Verfügbarkeit
+                </Link>
+                <Link
+                  href="/mein-bereich/einstellungen"
+                  className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                >
+                  <span className="text-purple-500">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </span>
+                  Einstellungen
+                </Link>
+              </div>
+            </div>
           </div>
-          {profile && (
-            <>
-              <div>
-                <dt className="text-neutral-500">Name</dt>
-                <dd className="mt-1 font-medium text-neutral-900">
-                  {profile.display_name || '-'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-neutral-500">Rolle</dt>
-                <dd className="mt-1 font-medium text-neutral-900">
-                  {profile.role}
-                </dd>
-              </div>
-            </>
-          )}
-        </dl>
-      </div>
+
+          {/* Main Content Area */}
+          <div className="space-y-6 lg:col-span-8 xl:col-span-9">
+            {/* Offene Schichten - full width, top priority */}
+            <OffeneSchichtenWidget schichten={offeneSchichten} maxEvents={6} />
+
+            {/* Content Widgets */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <UpcomingEventsWidget anmeldungen={upcomingAnmeldungen} produktionsAuffuehrungen={meineAuffuehrungen} />
+              <MeineProbenWidget proben={meineProben} />
+            </div>
+
+            {/* History Section */}
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+              <RollenHistorie historie={rollenHistorie} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

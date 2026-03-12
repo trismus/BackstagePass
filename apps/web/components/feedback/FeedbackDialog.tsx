@@ -3,11 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { Input } from '@/components/ui'
 import { submitFeedback } from '@/lib/actions/feedback'
-import {
-  FEEDBACK_KATEGORIEN,
-  KATEGORIE_LABELS,
-  type FeedbackKategorie,
-} from '@/lib/validations/feedback'
+import { FEEDBACK_KATEGORIEN } from '@/lib/validations/feedback'
 
 interface FeedbackDialogProps {
   open: boolean
@@ -16,7 +12,7 @@ interface FeedbackDialogProps {
 
 export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const [kategorie, setKategorie] = useState<FeedbackKategorie>(FEEDBACK_KATEGORIEN[0])
+  const kategorie = FEEDBACK_KATEGORIEN[0]
   const [titel, setTitel] = useState('')
   const [beschreibung, setBeschreibung] = useState('')
   const [screenshot, setScreenshot] = useState<File | null>(null)
@@ -58,7 +54,6 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
   }, [screenshot])
 
   function resetForm() {
-    setKategorie(FEEDBACK_KATEGORIEN[0])
     setTitel('')
     setBeschreibung('')
     setScreenshot(null)
@@ -144,30 +139,6 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="feedback-kategorie"
-              className="mb-1 block text-sm font-medium text-neutral-700"
-            >
-              Kategorie
-            </label>
-            <select
-              id="feedback-kategorie"
-              value={kategorie}
-              onChange={(e) =>
-                setKategorie(e.target.value as FeedbackKategorie)
-              }
-              className="block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 focus:border-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-0"
-              disabled={isPending}
-            >
-              {FEEDBACK_KATEGORIEN.map((k) => (
-                <option key={k} value={k}>
-                  {KATEGORIE_LABELS[k]}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <Input
             label="Titel"
             name="feedback-titel"

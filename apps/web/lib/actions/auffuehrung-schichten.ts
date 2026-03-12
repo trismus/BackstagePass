@@ -10,6 +10,7 @@ import type {
   AuffuehrungZuweisungUpdate,
   ZuweisungMitPerson,
   BedarfStatus,
+  SchichtSichtbarkeit,
 } from '../supabase/types'
 import {
   schichtSchema,
@@ -18,6 +19,7 @@ import {
   zuweisungUpdateSchema,
   validateInput,
 } from '../validations/modul2'
+import { requirePermission } from '../supabase/auth-helpers'
 
 /**
  * Get all shifts for a performance with time block details
@@ -25,6 +27,7 @@ import {
 export async function getSchichten(
   veranstaltungId: string
 ): Promise<SchichtMitZeitblock[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_schichten')
@@ -51,6 +54,7 @@ export async function getSchichten(
 export async function getSchicht(
   id: string
 ): Promise<SchichtMitZeitblock | null> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_schichten')
@@ -78,6 +82,9 @@ export async function getSchicht(
 export async function createSchicht(
   data: AuffuehrungSchichtInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(schichtSchema, data)
   if (!validation.success) {
@@ -106,6 +113,9 @@ export async function createSchicht(
 export async function createSchichten(
   data: AuffuehrungSchichtInsert[]
 ): Promise<{ success: boolean; error?: string; ids?: string[] }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   if (data.length === 0) {
     return { success: true, ids: [] }
   }
@@ -136,6 +146,9 @@ export async function updateSchicht(
   id: string,
   data: AuffuehrungSchichtUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(schichtUpdateSchema, data)
   if (!validation.success) {
@@ -175,6 +188,9 @@ export async function updateSchicht(
 export async function deleteSchicht(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
 
   // Get the veranstaltung_id for revalidation
@@ -211,13 +227,15 @@ export async function deleteSchicht(
 export async function getZuweisungen(
   schichtId: string
 ): Promise<ZuweisungMitPerson[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('auffuehrung_zuweisungen')
     .select(
       `
       *,
-      person:personen(id, vorname, nachname, email)
+      person:personen(id, vorname, nachname, email),
+      external_helper:externe_helfer_profile(id, vorname, nachname, email)
     `
     )
     .eq('schicht_id', schichtId)
@@ -237,6 +255,7 @@ export async function getZuweisungen(
 export async function getZuweisungenForVeranstaltung(
   veranstaltungId: string
 ): Promise<ZuweisungMitPerson[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // First get all shift IDs for this performance
@@ -256,7 +275,8 @@ export async function getZuweisungenForVeranstaltung(
     .select(
       `
       *,
-      person:personen(id, vorname, nachname, email)
+      person:personen(id, vorname, nachname, email),
+      external_helper:externe_helfer_profile(id, vorname, nachname, email)
     `
     )
     .in('schicht_id', schichtIds)
@@ -275,6 +295,9 @@ export async function getZuweisungenForVeranstaltung(
 export async function createZuweisung(
   data: AuffuehrungZuweisungInsert
 ): Promise<{ success: boolean; error?: string; id?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(zuweisungSchema, data)
   if (!validation.success) {
@@ -304,6 +327,9 @@ export async function updateZuweisung(
   id: string,
   data: AuffuehrungZuweisungUpdate
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   // Validate input
   const validation = validateInput(zuweisungUpdateSchema, data)
   if (!validation.success) {
@@ -331,6 +357,9 @@ export async function updateZuweisung(
 export async function deleteZuweisung(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requirePermission('veranstaltungen:write') }
+  catch { return { success: false, error: 'Keine Berechtigung' } }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('auffuehrung_zuweisungen')
@@ -357,6 +386,7 @@ export async function deleteZuweisung(
 export async function getBedarfUebersicht(
   veranstaltungId: string
 ): Promise<BedarfStatus[]> {
+  await requirePermission('veranstaltungen:read')
   const supabase = await createClient()
 
   // Get all shifts with time blocks
@@ -414,4 +444,108 @@ export async function getBedarfUebersicht(
       offen: schicht.anzahl_benoetigt - (zuweisungCounts[schicht.id] || 0),
     }
   })
+}
+
+// =============================================================================
+// Dashboard: Offene Schichten
+// =============================================================================
+
+export type DashboardSchicht = {
+  id: string
+  rolle: string
+  freie_plaetze: number
+  sichtbarkeit: SchichtSichtbarkeit
+  zeitblock: { name: string; startzeit: string; endzeit: string } | null
+  veranstaltung: { id: string; titel: string; datum: string; ort: string | null }
+}
+
+/**
+ * Get open shifts for the member dashboard.
+ * Returns shifts with free slots from published performances (intern + public).
+ */
+export async function getOffeneSchichtenForDashboard(): Promise<DashboardSchicht[]> {
+  await requirePermission('veranstaltungen:read')
+  const supabase = await createClient()
+  const today = new Date().toISOString().split('T')[0]
+
+  // Get upcoming published performances
+  const { data: veranstaltungen, error: vError } = await supabase
+    .from('veranstaltungen')
+    .select('id, titel, datum, ort')
+    .eq('helfer_status', 'veroeffentlicht')
+    .gte('datum', today)
+    .order('datum', { ascending: true })
+
+  if (vError || !veranstaltungen || veranstaltungen.length === 0) {
+    if (vError) console.error('Error fetching veranstaltungen for dashboard:', vError)
+    return []
+  }
+
+  const veranstaltungIds = veranstaltungen.map((v) => v.id)
+  const veranstaltungMap = new Map(veranstaltungen.map((v) => [v.id, v]))
+
+  // Get all shifts for these performances with time blocks
+  const { data: schichten, error: sError } = await supabase
+    .from('auffuehrung_schichten')
+    .select(`
+      id,
+      veranstaltung_id,
+      rolle,
+      anzahl_benoetigt,
+      sichtbarkeit,
+      zeitblock:zeitbloecke(name, startzeit, endzeit)
+    `)
+    .in('veranstaltung_id', veranstaltungIds)
+
+  if (sError || !schichten || schichten.length === 0) {
+    if (sError) console.error('Error fetching schichten for dashboard:', sError)
+    return []
+  }
+
+  // Get assignment counts per shift (exclude cancelled)
+  const schichtIds = schichten.map((s) => s.id)
+  const { data: zuweisungen } = await supabase
+    .from('auffuehrung_zuweisungen')
+    .select('schicht_id')
+    .in('schicht_id', schichtIds)
+    .neq('status', 'abgesagt')
+
+  const zuweisungCounts: Record<string, number> = {}
+  zuweisungen?.forEach((z) => {
+    zuweisungCounts[z.schicht_id] = (zuweisungCounts[z.schicht_id] || 0) + 1
+  })
+
+  // Build result: only shifts with free slots
+  const result: DashboardSchicht[] = []
+  for (const schicht of schichten) {
+    const assigned = zuweisungCounts[schicht.id] || 0
+    const freiePlaetze = schicht.anzahl_benoetigt - assigned
+    if (freiePlaetze <= 0) continue
+
+    const v = veranstaltungMap.get(schicht.veranstaltung_id)
+    if (!v) continue
+
+    const zb = schicht.zeitblock
+    const zeitblockData = Array.isArray(zb) ? zb[0] : zb
+
+    result.push({
+      id: schicht.id,
+      rolle: schicht.rolle,
+      freie_plaetze: freiePlaetze,
+      sichtbarkeit: schicht.sichtbarkeit,
+      zeitblock: zeitblockData ?? null,
+      veranstaltung: { id: v.id, titel: v.titel, datum: v.datum, ort: v.ort },
+    })
+  }
+
+  // Sort by date, then by zeitblock start time
+  result.sort((a, b) => {
+    const dateCmp = a.veranstaltung.datum.localeCompare(b.veranstaltung.datum)
+    if (dateCmp !== 0) return dateCmp
+    const aStart = a.zeitblock?.startzeit ?? ''
+    const bStart = b.zeitblock?.startzeit ?? ''
+    return aStart.localeCompare(bStart)
+  })
+
+  return result.slice(0, 8)
 }

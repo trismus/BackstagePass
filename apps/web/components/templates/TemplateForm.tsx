@@ -11,10 +11,11 @@ import type { AuffuehrungTemplate } from '@/lib/supabase/types'
 
 interface TemplateFormProps {
   template?: AuffuehrungTemplate
+  templateId?: string
   mode: 'create' | 'edit'
 }
 
-export function TemplateForm({ template, mode }: TemplateFormProps) {
+export function TemplateForm({ template, templateId, mode }: TemplateFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,7 +37,7 @@ export function TemplateForm({ template, mode }: TemplateFormProps) {
     const result =
       mode === 'create'
         ? await createTemplate(data)
-        : await updateTemplate(template!.id, data)
+        : await updateTemplate(templateId || template!.id, data)
 
     if (result.success) {
       if (mode === 'create' && 'id' in result && result.id) {
@@ -56,7 +57,7 @@ export function TemplateForm({ template, mode }: TemplateFormProps) {
     if (!confirm(`"${template.name}" wirklich archivieren?`)) return
 
     setLoading(true)
-    const result = await archiveTemplate(template.id)
+    const result = await archiveTemplate(templateId || template.id)
 
     if (result.success) {
       router.push('/templates' as never)
