@@ -1799,6 +1799,66 @@ export type ExterneHelferProfile = {
 }
 
 // =============================================================================
+// Schichten-Dashboard Types (Issue #461)
+// =============================================================================
+
+export type HelferZuweisungTyp = 'intern' | 'extern'
+
+export type DashboardHelferZuweisung = {
+  id: string
+  typ: HelferZuweisungTyp
+  name: string
+  email: string | null
+  telefon: string | null
+  status: ZuweisungStatus
+}
+
+export type DashboardSchicht = {
+  id: string
+  rolle: string
+  anzahl_benoetigt: number
+  sichtbarkeit: SchichtSichtbarkeit
+  zuweisungen: DashboardHelferZuweisung[]
+  offene_plaetze: number
+}
+
+export type DashboardZeitblock = {
+  id: string
+  name: string
+  startzeit: string
+  endzeit: string
+  typ: ZeitblockTyp
+  schichten: DashboardSchicht[]
+}
+
+export type DashboardAuffuehrung = {
+  id: string
+  titel: string
+  datum: string
+  startzeit: string | null
+  endzeit: string | null
+  ort: string | null
+  helfer_status: HelferStatus | null
+  helfer_buchung_deadline: string | null
+  ampel: AmpelStatus
+  belegung: { soll: number; ist: number }
+  zeitbloecke: DashboardZeitblock[]
+}
+
+export type SchichtenDashboardStats = {
+  total_schichten: number
+  besetzt_voll: number
+  besetzt_teilweise: number
+  besetzt_kritisch: number
+  belegungsquote: number
+}
+
+export type SchichtenDashboardData = {
+  stats: SchichtenDashboardStats
+  auffuehrungen: DashboardAuffuehrung[]
+}
+
+// =============================================================================
 // Cross-System Conflict Detection (Issue #343)
 // =============================================================================
 
