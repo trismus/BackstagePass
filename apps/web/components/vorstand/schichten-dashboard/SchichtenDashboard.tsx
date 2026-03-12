@@ -11,6 +11,7 @@ import { DashboardStats } from './DashboardStats'
 import { DashboardFilter } from './DashboardFilter'
 import { AuffuehrungAccordion } from './AuffuehrungAccordion'
 import { LegacyHelferlisteTab } from './LegacyHelferlisteTab'
+import { TopHelferList } from './TopHelferList'
 
 // =============================================================================
 // Types
@@ -124,11 +125,19 @@ export function SchichtenDashboard({
       {/* System B tab content */}
       {activeTab === 'system-b' && (
         <div className="space-y-6">
-          {/* Aggregated stats */}
-          <DashboardStats
-            stats={dashboardData.stats}
-            auffuehrungenCount={dashboardData.auffuehrungen.length}
-          />
+          {/* Aggregated stats + Top Helfer */}
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
+            <div className="space-y-6">
+              {/* Aggregated stats */}
+              <DashboardStats
+                stats={dashboardData.stats}
+                auffuehrungenCount={dashboardData.auffuehrungen.length}
+              />
+            </div>
+
+            {/* Top Helfer sidebar */}
+            <TopHelferList helfer={dashboardData.top_helfer} />
+          </div>
 
           {/* Filter bar */}
           <DashboardFilter

@@ -10,10 +10,12 @@ import type {
   DashboardZeitblock,
   SchichtenDashboardData,
   SchichtenDashboardStats,
+  TopHelfer,
   AuffuehrungSchicht,
   AuffuehrungZuweisung,
   Person,
   ExterneHelferProfil,
+  HelferZuweisungTyp,
   Zeitblock,
   ZuweisungStatus,
 } from '../supabase/types'
@@ -165,6 +167,7 @@ export async function getSchichtenDashboard(): Promise<{
             belegungsquote: 0,
           },
           auffuehrungen: [],
+          top_helfer: [],
         },
       }
     }
@@ -303,9 +306,42 @@ export async function getSchichtenDashboard(): Promise<{
         : 0,
     }
 
+    // 6. Compute Top 10 Helfer ranking across all performances
+    const helferCounts = new Map<string, { name: string; typ: HelferZuweisungTyp; count: number }>()
+
+    for (const auffuehrung of auffuehrungen) {
+      for (const zb of auffuehrung.zeitbloecke) {
+        for (const schicht of zb.schichten) {
+          for (const zuweisung of schicht.zuweisungen) {
+            const key = `${zuweisung.typ}:${zuweisung.name}`
+            const existing = helferCounts.get(key)
+            if (existing) {
+              existing.count++
+            } else {
+              helferCounts.set(key, {
+                name: zuweisung.name,
+                typ: zuweisung.typ,
+                count: 1,
+              })
+            }
+          }
+        }
+      }
+    }
+
+    const topHelfer: TopHelfer[] = Array.from(helferCounts.entries())
+      .map(([key, entry]) => ({
+        id: key,
+        name: entry.name,
+        typ: entry.typ,
+        schichten_count: entry.count,
+      }))
+      .sort((a, b) => b.schichten_count - a.schichten_count)
+      .slice(0, 10)
+
     return {
       success: true,
-      data: { stats, auffuehrungen },
+      data: { stats, auffuehrungen, top_helfer: topHelfer },
     }
   } catch (error) {
     console.error('getSchichtenDashboard failed:', error)

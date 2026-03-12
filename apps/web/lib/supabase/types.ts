@@ -1853,9 +1853,17 @@ export type SchichtenDashboardStats = {
   belegungsquote: number
 }
 
+export type TopHelfer = {
+  id: string
+  name: string
+  typ: HelferZuweisungTyp
+  schichten_count: number
+}
+
 export type SchichtenDashboardData = {
   stats: SchichtenDashboardStats
   auffuehrungen: DashboardAuffuehrung[]
+  top_helfer: TopHelfer[]
 }
 
 // =============================================================================
