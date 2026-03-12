@@ -125,48 +125,47 @@ export function SchichtenDashboard({
       {/* System B tab content */}
       {activeTab === 'system-b' && (
         <div className="space-y-6">
-          {/* Aggregated stats + Top Helfer */}
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
+            {/* Left column: Stats + Filter + Aufführungen */}
             <div className="space-y-6">
-              {/* Aggregated stats */}
               <DashboardStats
                 stats={dashboardData.stats}
                 auffuehrungenCount={dashboardData.auffuehrungen.length}
               />
+
+              <DashboardFilter
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                ampelFilter={ampelFilter}
+                onAmpelFilterChange={setAmpelFilter}
+              />
+
+              {filteredAuffuehrungen.length === 0 ? (
+                <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center">
+                  <p className="text-neutral-500">
+                    {dashboardData.auffuehrungen.length === 0
+                      ? 'Keine kommenden Aufführungen mit Schichten vorhanden'
+                      : 'Keine Aufführungen entsprechen den Filterkriterien'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredAuffuehrungen.map((auffuehrung) => (
+                    <AuffuehrungAccordion
+                      key={auffuehrung.id}
+                      auffuehrung={auffuehrung}
+                      defaultOpen={auffuehrung.ampel === 'rot'}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Top Helfer sidebar */}
-            <TopHelferList helfer={dashboardData.top_helfer} />
+            {/* Right column: Top Helfer sidebar */}
+            <div className="xl:sticky xl:top-4 xl:self-start">
+              <TopHelferList helfer={dashboardData.top_helfer} />
+            </div>
           </div>
-
-          {/* Filter bar */}
-          <DashboardFilter
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            ampelFilter={ampelFilter}
-            onAmpelFilterChange={setAmpelFilter}
-          />
-
-          {/* Auffuehrungen list */}
-          {filteredAuffuehrungen.length === 0 ? (
-            <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center">
-              <p className="text-neutral-500">
-                {dashboardData.auffuehrungen.length === 0
-                  ? 'Keine kommenden Aufführungen mit Schichten vorhanden'
-                  : 'Keine Aufführungen entsprechen den Filterkriterien'}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredAuffuehrungen.map((auffuehrung) => (
-                <AuffuehrungAccordion
-                  key={auffuehrung.id}
-                  auffuehrung={auffuehrung}
-                  defaultOpen={auffuehrung.ampel === 'rot'}
-                />
-              ))}
-            </div>
-          )}
         </div>
       )}
 
