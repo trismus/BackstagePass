@@ -6,6 +6,7 @@ import { getVersionInfo } from '@/lib/version'
 import { SystemStatusCard } from '@/components/admin/SystemStatusCard'
 import { DataImportExport } from '@/components/admin/DataImportExport'
 import { DocumentationCard } from '@/components/admin/DocumentationCard'
+import { ScheduleMailButton } from '@/components/admin/helferliste/ScheduleMailButton'
 import {
   Card,
   CardHeader,
@@ -178,6 +179,7 @@ export default async function AdminDashboardPage() {
                 <p className="text-sm text-neutral-500">Teams & Gremien</p>
               </div>
             </Link>
+            <ScheduleMailButton />
           </div>
         </CardContent>
       </Card>

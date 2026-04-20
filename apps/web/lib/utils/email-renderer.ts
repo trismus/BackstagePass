@@ -25,6 +25,7 @@ const TRUSTED_PLACEHOLDERS = new Set([
   'absage_link',
   'public_link',
   'magic_link',
+  'termine_liste',
 ])
 
 /**

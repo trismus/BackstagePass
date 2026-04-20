@@ -2636,6 +2636,7 @@ export type EmailTemplateTyp =
   | 'waitlist_timeout'
   | 'thank_you'
   | 'member_invitation'
+  | 'upcoming_schedule'
 
 export const EMAIL_TEMPLATE_TYP_LABELS: Record<EmailTemplateTyp, string> = {
   confirmation: 'Buchungsbestätigung',
@@ -2647,6 +2648,7 @@ export const EMAIL_TEMPLATE_TYP_LABELS: Record<EmailTemplateTyp, string> = {
   waitlist_assigned: 'Warteliste: Platz frei',
   waitlist_timeout: 'Warteliste: Timeout',
   thank_you: 'Dankeschön',
+  upcoming_schedule: 'Terminübersicht (14 Tage)',
 }
 
 export type EmailTemplate = {
@@ -2693,6 +2695,7 @@ export type EmailPlaceholderData = {
   position?: string
   frist?: string
   magic_link?: string
+  termine_liste?: string
 }
 
 // =============================================================================
