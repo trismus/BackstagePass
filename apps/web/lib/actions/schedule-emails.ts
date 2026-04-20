@@ -40,9 +40,9 @@ export interface ScheduleEmailStats {
 // =============================================================================
 
 /**
- * Build an HTML and plain-text representation of a list of shifts
+ * Build an HTML representation of a list of shifts for use in email templates
  */
-function buildTermineListe(shifts: UpcomingShift[]): { html: string; text: string } {
+function buildTermineListe(shifts: UpcomingShift[]): { html: string } {
   const html = `<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
   <thead>
     <tr style="background: #f3f4f6;">
@@ -72,20 +72,7 @@ function buildTermineListe(shifts: UpcomingShift[]): { html: string; text: strin
   </tbody>
 </table>`
 
-  const text = shifts
-    .map(
-      (s) =>
-        `• ${formatDateForEmail(s.datum)} | ${s.veranstaltung_titel}${s.ort ? ` (${s.ort})` : ''}\n  Einsatz: ${s.rolle}${s.zeitblock_name ? ` [${s.zeitblock_name}]` : ''}${
-          s.schicht_startzeit && s.schicht_endzeit
-            ? ` | ${formatTimeForEmail(s.schicht_startzeit)} – ${formatTimeForEmail(s.schicht_endzeit)} Uhr`
-            : s.schicht_startzeit
-              ? ` | ab ${formatTimeForEmail(s.schicht_startzeit)} Uhr`
-              : ''
-        }`
-    )
-    .join('\n')
-
-  return { html, text }
+  return { html }
 }
 
 /**
@@ -249,9 +236,8 @@ export async function sendUpcomingScheduleEmails(): Promise<ScheduleEmailResult>
     const first = personShifts[0]
     try {
       const koordinator = await getKoordinatorForShifts(personShifts)
-      const { html: termineListeHtml, text: termineListeText } = buildTermineListe(personShifts)
+      const { html: termineListeHtml } = buildTermineListe(personShifts)
 
-      // Build two placeholder sets: HTML and plain-text versions
       const placeholderData = {
         vorname: first.vorname,
         nachname: first.nachname,
@@ -279,12 +265,6 @@ export async function sendUpcomingScheduleEmails(): Promise<ScheduleEmailResult>
       result.errors.push(`${first.email}: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
-
-  // For plain-text body we inject the text version – but sendTemplatedEmail renders the
-  // template from DB which uses {{termine_liste}}.  The DB template body_text also uses
-  // {{termine_liste}}, so the plain-text version receives the HTML table.
-  // To get a clean plain-text version we would need a separate send path;
-  // for now the HTML table degrades acceptably in plain-text clients.
 
   console.warn(
     `[ScheduleMail] Done: sent=${result.sent}, failed=${result.failed}, errors=${result.errors.length}`
