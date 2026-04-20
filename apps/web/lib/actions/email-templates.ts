@@ -725,6 +725,42 @@ Theatergruppe Widen | www.theater-widen.ch
 s'Theater uf em Mutschelle`,
       placeholders: ['vorname', 'magic_link'],
     },
+    upcoming_schedule: {
+      subject: 'Deine nächsten Einsätze – Theatergruppe Widen',
+      body_html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #7c3aed;">Deine nächsten Einsätze</h1>
+  <p>Hallo {{vorname}},</p>
+  <p>hier ist eine Übersicht deiner bestätigten Einsätze in den nächsten 14 Tagen:</p>
+
+  {{termine_liste}}
+
+  <p>Bei Fragen wende dich an die Koordination:</p>
+  <p><strong>{{koordinator_name}}</strong><br>
+  <a href="mailto:{{koordinator_email}}" style="color: #7c3aed;">{{koordinator_email}}</a><br>
+  {{koordinator_telefon}}</p>
+
+  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+  <p style="color: #6b7280; font-size: 14px;">Diese E-Mail wurde automatisch von BackstagePass gesendet.<br>
+  Theatergruppe Widen | <a href="https://www.theatergruppe-widen.ch" style="color: #7c3aed;">www.theatergruppe-widen.ch</a></p>
+</div>`,
+      body_text: `Deine nächsten Einsätze – Theatergruppe Widen
+
+Hallo {{vorname}},
+
+hier ist eine Übersicht deiner bestätigten Einsätze in den nächsten 14 Tagen:
+
+{{termine_liste}}
+
+Bei Fragen wende dich an die Koordination:
+{{koordinator_name}}
+{{koordinator_email}}
+{{koordinator_telefon}}
+
+---
+Diese E-Mail wurde automatisch von BackstagePass gesendet.
+Theatergruppe Widen | www.theatergruppe-widen.ch`,
+      placeholders: ['vorname', 'termine_liste', 'koordinator_name', 'koordinator_email', 'koordinator_telefon'],
+    },
   }
 
   const defaultTemplate = defaults[typ]
