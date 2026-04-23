@@ -458,6 +458,129 @@ s'Theater uf em Mutschelle
   return { subject, html, text }
 }
 
+// =============================================================================
+// Schicht-Erinnerung (Bulk reminder for all helpers)
+// =============================================================================
+
+export interface ErinnerungSchicht {
+  veranstaltung: string
+  datum: string
+  rolle: string
+  zeitblock?: string
+  status: string
+}
+
+/**
+ * Email: Shift reminder
+ * Sent to all helpers as a reminder of their upcoming assignments.
+ */
+export function schichterinnerungEmail(
+  recipientName: string,
+  schichten: ErinnerungSchicht[],
+  dashboardLink?: string
+): { subject: string; html: string; text: string } {
+  const subject = `Erinnerung: Deine Schichten bei der Theatergruppe Widen`
+
+  const statusLabels: Record<string, string> = {
+    zugesagt: 'Zugesagt',
+    bestaetigt: 'Bestätigt',
+    angemeldet: 'Angemeldet',
+    vorgeschlagen: 'Vorgeschlagen',
+    warteliste: 'Warteliste',
+  }
+
+  const schichtRowsHtml = schichten
+    .map(
+      (s) => `
+        <tr>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${s.datum}</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${s.veranstaltung}</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${s.rolle}</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">${s.zeitblock || '–'}</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb;">
+            <span class="status-badge status-${s.status}">
+              ${statusLabels[s.status] ?? s.status}
+            </span>
+          </td>
+        </tr>`
+    )
+    .join('')
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><style>${baseStyles}</style></head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>BackstagePass</h1>
+        </div>
+        <div class="content">
+          <p>Hallo ${recipientName},</p>
+          <p>Hier ist eine Übersicht deiner eingetragenen Schichten bei der Theatergruppe Widen:</p>
+
+          <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            <thead>
+              <tr style="background: #f1f5f9;">
+                <th style="padding: 8px 12px; text-align: left; font-size: 13px; color: #64748b;">Datum</th>
+                <th style="padding: 8px 12px; text-align: left; font-size: 13px; color: #64748b;">Veranstaltung</th>
+                <th style="padding: 8px 12px; text-align: left; font-size: 13px; color: #64748b;">Rolle</th>
+                <th style="padding: 8px 12px; text-align: left; font-size: 13px; color: #64748b;">Zeit</th>
+                <th style="padding: 8px 12px; text-align: left; font-size: 13px; color: #64748b;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${schichtRowsHtml}
+            </tbody>
+          </table>
+
+          <p>Wir freuen uns auf dich und danken dir herzlich für deine Unterstützung!</p>
+          <p>Bei Fragen oder falls du nicht dabei sein kannst, melde dich bitte möglichst früh bei uns.</p>
+
+          ${
+            dashboardLink
+              ? `<p style="text-align: center; margin: 20px 0;">
+                  <a href="${dashboardLink}" class="button">Meine Einsätze ansehen</a>
+                </p>`
+              : ''
+          }
+        </div>
+        <div class="footer">
+          <p>Diese E-Mail wurde automatisch von BackstagePass gesendet.</p>
+          <p>Theatergruppe Widen</p>
+          <p style="font-style: italic; color: #9ca3af; font-size: 11px; margin: 2px 0 0 0;">s'Theater uf em Mutschelle</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  const schichtRowsText = schichten
+    .map(
+      (s) =>
+        `  - ${s.datum} | ${s.veranstaltung} | ${s.rolle}${s.zeitblock ? ` (${s.zeitblock})` : ''} — ${statusLabels[s.status] ?? s.status}`
+    )
+    .join('\n')
+
+  const text = `
+Hallo ${recipientName},
+
+Hier ist eine Übersicht deiner eingetragenen Schichten bei der Theatergruppe Widen:
+
+${schichtRowsText}
+
+Wir freuen uns auf dich und danken dir herzlich für deine Unterstützung!
+Bei Fragen oder falls du nicht dabei sein kannst, melde dich bitte möglichst früh bei uns.
+${dashboardLink ? `\nMeine Einsätze: ${dashboardLink}` : ''}
+
+--
+BackstagePass - Theatergruppe Widen
+s'Theater uf em Mutschelle
+  `
+
+  return { subject, html, text }
+}
+
 /**
  * Email: Waitlist promotion notification
  * Sent when a helper is auto-promoted from warteliste to angemeldet.

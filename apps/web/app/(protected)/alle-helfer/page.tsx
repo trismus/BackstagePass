@@ -8,6 +8,7 @@ import {
 } from '@/lib/actions/alle-helfer'
 import { AlleHelferTable } from '@/components/alle-helfer/AlleHelferTable'
 import { HelferErfassenDialog } from '@/components/alle-helfer/HelferErfassenDialog'
+import { HelferErinnerungButton } from '@/components/alle-helfer/HelferErinnerungButton'
 
 interface PageProps {
   searchParams: Promise<{
@@ -41,7 +42,10 @@ export default async function AlleHelferPage({ searchParams }: PageProps) {
               Übersicht aller internen und externen Helfer mit ihren Einsätzen
             </p>
           </div>
-          <HelferErfassenDialog />
+          <div className="flex items-center gap-2">
+            <HelferErinnerungButton />
+            <HelferErfassenDialog />
+          </div>
         </div>
 
         {/* Table with Filters */}
