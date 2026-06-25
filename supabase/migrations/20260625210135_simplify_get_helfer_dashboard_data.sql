@@ -5,10 +5,10 @@
 -- Description:
 --   System A (helferliste) is frozen and contains no active future entries.
 --   This migration removes the System-A query (helfer_anmeldungen) from the
---   get_helfer_dashboard_data RPC. Only System-B zuweisungen are returned.
---   The 'anmeldungen' key is retained in the JSON response as an empty array
---   for backward compatibility with any consumer that still reads it; it will
---   be removed completely together with the System-A tables in #475.
+--   get_helfer_dashboard_data RPC. The response now contains only `helper` and
+--   `zuweisungen` (System B); the previous `anmeldungen` key is dropped. The
+--   TypeScript caller in `lib/actions/helfer-dashboard.ts` was updated in the
+--   same change.
 -- =============================================================================
 
 CREATE OR REPLACE FUNCTION get_helfer_dashboard_data(p_dashboard_token UUID)
