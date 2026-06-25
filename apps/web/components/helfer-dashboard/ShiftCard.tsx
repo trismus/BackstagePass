@@ -37,27 +37,19 @@ function formatTimeValue(timeStr: string) {
 }
 
 /**
- * Get the cancellation route based on the booking system.
- * System A (helferliste): /helfer/helferliste/abmeldung/[token]
- * System B (auffuehrung): /helfer/abmeldung/[token]
+ * Get the cancellation route. All dashboard entries are now System B
+ * (auffuehrung_zuweisungen).
  */
 function getCancellationHref(anmeldung: HelferDashboardAnmeldung): string {
-  if (anmeldung.system === 'b') {
-    return `/helfer/abmeldung/${anmeldung.abmeldung_token}`
-  }
-  return `/helfer/helferliste/abmeldung/${anmeldung.abmeldung_token}`
+  return `/helfer/abmeldung/${anmeldung.abmeldung_token}`
 }
 
 /**
- * Get the "more shifts" link based on the booking system.
- * System A links to the helferliste event page.
- * System B links to the mitmachen overview page.
+ * Get the "more shifts" link. All dashboard entries are now System B,
+ * which uses the mitmachen overview page.
  */
-function getMoreShiftsHref(anmeldung: HelferDashboardAnmeldung): string {
-  if (anmeldung.system === 'b') {
-    return '/mitmachen'
-  }
-  return `/helfer/anmeldung/${anmeldung.event_public_token}`
+function getMoreShiftsHref(_anmeldung: HelferDashboardAnmeldung): string {
+  return '/mitmachen'
 }
 
 export function ShiftCard({ anmeldung, canCancel, isPast }: ShiftCardProps) {
