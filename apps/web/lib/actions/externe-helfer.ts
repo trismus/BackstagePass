@@ -255,55 +255,7 @@ export async function searchExterneHelfer(
   return data as ExterneHelferProfil[]
 }
 
-/**
- * Get registration history for an external helper
- */
-export async function getExterneHelferEinsaetze(helperId: string): Promise<
-  {
-    id: string
-    event_name: string
-    role_name: string | null
-    datum: string
-    status: string
-  }[]
-> {
-  await requirePermission('mitglieder:read')
-
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('helfer_anmeldungen')
-    .select(`
-      id,
-      status,
-      created_at,
-      rollen_instanz:helfer_rollen_instanzen(
-        custom_name,
-        template:helfer_rollen_templates(name),
-        helfer_event:helfer_events(name, datum_start)
-      )
-    `)
-    .eq('external_helper_id', helperId)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching helper assignments:', error)
-    return []
-  }
-
-  return (data || []).map((anmeldung) => {
-    const instanz = anmeldung.rollen_instanz as unknown as {
-      custom_name: string | null
-      template: { name: string } | null
-      helfer_event: { name: string; datum_start: string } | null
-    } | null
-
-    return {
-      id: anmeldung.id,
-      event_name: instanz?.helfer_event?.name || 'Unbekannt',
-      role_name: instanz?.custom_name || instanz?.template?.name || null,
-      datum: instanz?.helfer_event?.datum_start || anmeldung.created_at,
-      status: anmeldung.status,
-    }
-  })
-}
+// getExterneHelferEinsaetze removed in #474 — it queried System A tables
+// (helfer_anmeldungen / helfer_rollen_instanzen / helfer_events) which are
+// being decommissioned. A System B equivalent should be implemented when
+// the feature is needed.
