@@ -72,26 +72,21 @@ describe('Person Engagements (Issue #349)', () => {
 
     it('fetches engagement types in parallel and returns empty arrays when no data', async () => {
       let callCount = 0
-      mockSupabase.from.mockImplementation((table: string) => {
+      mockSupabase.from.mockImplementation((_table: string) => {
         callCount++
-        if (table === 'personen') {
-          return chainResolving({ profile_id: 'profile-1' })
-        }
-        // Return empty arrays for all other tables
+        // Return empty arrays for all tables
         return chainResolving([])
       })
 
       const result = await getPersonEngagements('person-1')
 
-      // Should have called `from` for: personen + at least the
-      // System-B engagement types
-      expect(callCount).toBeGreaterThanOrEqual(6)
+      // Should have called `from` for each of the 5 System-B engagement sources
+      expect(callCount).toBeGreaterThanOrEqual(5)
       expect(result.stueckBesetzungen).toEqual([])
       expect(result.produktionsBesetzungen).toEqual([])
       expect(result.produktionsStab).toEqual([])
       expect(result.auffuehrungsZuweisungen).toEqual([])
       expect(result.probenTeilnahmen).toEqual([])
-      expect(result.helferAnmeldungen).toEqual([])
     })
 
     it('calculates statistik correctly', async () => {

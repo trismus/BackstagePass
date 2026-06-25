@@ -10,7 +10,6 @@ import type {
   ProduktionsStabHistorie,
   AuffuehrungsZuweisungHistorie,
   ProbenTeilnahmeHistorie,
-  HelferAnmeldungHistorie,
   EngagementStatistik,
 } from '../supabase/types'
 
@@ -24,27 +23,18 @@ export async function getPersonEngagements(
 
   const supabase = await createClient()
 
-  // Get person's profile_id for helfer_anmeldungen lookup
-  const { data: person } = await supabase
-    .from('personen')
-    .select('profile_id')
-    .eq('id', personId)
-    .single()
-
   const [
     stueckBesetzungen,
     produktionsBesetzungen,
     produktionsStab,
     auffuehrungsZuweisungen,
     probenTeilnahmen,
-    helferAnmeldungen,
   ] = await Promise.all([
     fetchStueckBesetzungen(supabase, personId),
     fetchProduktionsBesetzungen(supabase, personId),
     fetchProduktionsStab(supabase, personId),
     fetchAuffuehrungsZuweisungen(supabase, personId),
     fetchProbenTeilnahmen(supabase, personId),
-    fetchHelferAnmeldungen(supabase, person?.profile_id ?? null),
   ])
 
   const statistik = berechneStatistik(
@@ -52,8 +42,7 @@ export async function getPersonEngagements(
     produktionsBesetzungen,
     produktionsStab,
     auffuehrungsZuweisungen,
-    probenTeilnahmen,
-    helferAnmeldungen
+    probenTeilnahmen
   )
 
   return {
@@ -62,7 +51,6 @@ export async function getPersonEngagements(
     produktionsStab,
     auffuehrungsZuweisungen,
     probenTeilnahmen,
-    helferAnmeldungen,
     statistik,
   }
 }
@@ -247,46 +235,6 @@ async function fetchProbenTeilnahmen(
   }) as ProbenTeilnahmeHistorie[]
 }
 
-async function fetchHelferAnmeldungen(
-  supabase: SupabaseClient,
-  profileId: string | null
-): Promise<HelferAnmeldungHistorie[]> {
-  if (!profileId) return []
-
-  const { data, error } = await supabase
-    .from('helfer_anmeldungen')
-    .select(`
-      id, status,
-      rollen_instanz:helfer_rollen_instanzen(
-        zeitblock_start, zeitblock_end,
-        template:helfer_rollen_templates(name),
-        helfer_event:helfer_events(id, name, datum_start)
-      )
-    `)
-    .eq('profile_id', profileId)
-
-  if (error || !data) {
-    console.error('Error fetching helfer anmeldungen:', error)
-    return []
-  }
-
-  return data.map((a: Record<string, unknown>) => {
-    const instanz = a.rollen_instanz as Record<string, unknown> | null
-    const template = instanz?.template as Record<string, unknown> | null
-    const event = instanz?.helfer_event as Record<string, unknown> | null
-    return {
-      anmeldungId: a.id as string,
-      eventId: (event?.id as string) ?? '',
-      eventName: (event?.name as string) ?? '',
-      eventDatum: (event?.datum_start as string) ?? '',
-      rollenName: (template?.name as string) ?? '',
-      zeitblockStart: (instanz?.zeitblock_start as string) ?? null,
-      zeitblockEnd: (instanz?.zeitblock_end as string) ?? null,
-      status: a.status as string,
-    }
-  }) as HelferAnmeldungHistorie[]
-}
-
 // ---------------------------------------------------------------------------
 // Statistik (pure computation)
 // ---------------------------------------------------------------------------
@@ -296,8 +244,7 @@ function berechneStatistik(
   produktionsBesetzungen: ProduktionsBesetzungHistorie[],
   produktionsStab: ProduktionsStabHistorie[],
   auffuehrungsZuweisungen: AuffuehrungsZuweisungHistorie[],
-  probenTeilnahmen: ProbenTeilnahmeHistorie[],
-  helferAnmeldungen: HelferAnmeldungHistorie[]
+  probenTeilnahmen: ProbenTeilnahmeHistorie[]
 ): EngagementStatistik {
   const totalAuffuehrungen = auffuehrungsZuweisungen.filter(
     (z) => z.status === 'erschienen' || z.status === 'zugesagt'
@@ -309,10 +256,6 @@ function berechneStatistik(
     ? Math.round((erschienen / totalProben) * 100)
     : 0
 
-  const totalHelferEinsaetze = helferAnmeldungen.filter(
-    (a) => a.status === 'angemeldet' || a.status === 'bestaetigt'
-  ).length
-
   const produktionIds = new Set([
     ...produktionsBesetzungen.map((b) => b.produktionId),
     ...produktionsStab.map((s) => s.produktionId),
@@ -322,7 +265,6 @@ function berechneStatistik(
     totalAuffuehrungen,
     totalProben,
     probenAnwesenheitsquote,
-    totalHelferEinsaetze,
     totalProduktionen: produktionIds.size,
     totalStueckBesetzungen: stueckBesetzungen.length,
   }
@@ -335,12 +277,10 @@ function emptyEngagements(): PersonEngagements {
     produktionsStab: [],
     auffuehrungsZuweisungen: [],
     probenTeilnahmen: [],
-    helferAnmeldungen: [],
     statistik: {
       totalAuffuehrungen: 0,
       totalProben: 0,
       probenAnwesenheitsquote: 0,
-      totalHelferEinsaetze: 0,
       totalProduktionen: 0,
       totalStueckBesetzungen: 0,
     },

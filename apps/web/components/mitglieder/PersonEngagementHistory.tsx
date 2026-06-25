@@ -3,14 +3,13 @@
 import { useState } from 'react'
 import type { PersonEngagements } from '@/lib/supabase/types'
 
-type TabKey = 'uebersicht' | 'produktionen' | 'auffuehrungen' | 'proben' | 'helfer'
+type TabKey = 'uebersicht' | 'produktionen' | 'auffuehrungen' | 'proben'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'uebersicht', label: 'Übersicht' },
   { key: 'produktionen', label: 'Produktionen' },
   { key: 'auffuehrungen', label: 'Aufführungen' },
   { key: 'proben', label: 'Proben' },
-  { key: 'helfer', label: 'Helfereinsätze' },
 ]
 
 interface PersonEngagementHistoryProps {
@@ -47,7 +46,6 @@ export function PersonEngagementHistory({ engagements }: PersonEngagementHistory
         {activeTab === 'produktionen' && <ProduktionenTab engagements={engagements} />}
         {activeTab === 'auffuehrungen' && <AuffuehrungenTab engagements={engagements} />}
         {activeTab === 'proben' && <ProbenTab engagements={engagements} />}
-        {activeTab === 'helfer' && <HelferTab engagements={engagements} />}
       </div>
     </div>
   )
@@ -66,7 +64,6 @@ function UebersichtTab({ engagements }: { engagements: PersonEngagements }) {
     { label: 'Aufführungen', value: statistik.totalAuffuehrungen },
     { label: 'Proben', value: statistik.totalProben },
     { label: 'Proben-Anwesenheit', value: `${statistik.probenAnwesenheitsquote}%` },
-    { label: 'Helfereinsätze', value: statistik.totalHelferEinsaetze },
   ]
 
   if (cards.every((c) => c.value === 0 || c.value === '0%')) {
@@ -185,33 +182,6 @@ function ProbenTab({ engagements }: { engagements: PersonEngagements }) {
             </p>
           </div>
           <StatusBadge status={t.status} />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Helfereinsätze
-// ---------------------------------------------------------------------------
-
-function HelferTab({ engagements }: { engagements: PersonEngagements }) {
-  const items = [...engagements.helferAnmeldungen]
-    .sort((a, b) => b.eventDatum.localeCompare(a.eventDatum))
-
-  if (items.length === 0) return <EmptyState text="Keine Helfereinsätze." />
-
-  return (
-    <div className="space-y-2">
-      {items.map((a) => (
-        <div key={a.anmeldungId} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900">{a.eventName}</p>
-            <p className="text-xs text-gray-500">
-              {formatDate(a.eventDatum)} — {a.rollenName}
-            </p>
-          </div>
-          <StatusBadge status={a.status} />
         </div>
       ))}
     </div>
