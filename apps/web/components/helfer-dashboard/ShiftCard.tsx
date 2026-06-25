@@ -68,7 +68,7 @@ export function ShiftCard({ anmeldung, canCancel, isPast }: ShiftCardProps) {
               <p className="text-sm text-neutral-500">{anmeldung.event_ort}</p>
             )}
           </div>
-          {anmeldung.status === 'abgelehnt' ? (
+          {anmeldung.status === 'abgesagt' ? (
             <span className="rounded bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
               Abgemeldet
             </span>

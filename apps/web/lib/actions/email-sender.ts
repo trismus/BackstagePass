@@ -262,7 +262,6 @@ export async function sendTemplatedEmail(
   data: EmailPlaceholderData,
   options?: {
     anmeldungId?: string
-    helferAnmeldungId?: string
     replyTo?: string
   }
 ): Promise<{ success: boolean; error?: string }> {
@@ -288,7 +287,6 @@ export async function sendTemplatedEmail(
         ? `${data.vorname} ${data.nachname}`
         : undefined,
       anmeldungId: options?.anmeldungId,
-      helferAnmeldungId: options?.helferAnmeldungId,
     },
   })
 

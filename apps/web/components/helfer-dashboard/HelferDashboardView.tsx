@@ -38,10 +38,10 @@ export function HelferDashboardView({ data, showHeader = true, dashboardToken }:
 
   const now = new Date()
   const cancelled = data.anmeldungen.filter(
-    (a) => a.status === 'abgelehnt'
+    (a) => a.status === 'abgesagt'
   )
   const active = data.anmeldungen.filter(
-    (a) => a.status !== 'abgelehnt'
+    (a) => a.status !== 'abgesagt'
   )
   const upcoming = active.filter(
     (a) => new Date(a.event_datum_start) >= now

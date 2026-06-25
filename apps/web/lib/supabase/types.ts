@@ -1645,212 +1645,14 @@ export type WartelisteEintragMitDetails = HelferWarteliste & {
 }
 
 // =============================================================================
-// Helferliste (Helper List Feature) - Issues #115-134
-// =============================================================================
-
-export type HelferEventTyp = 'auffuehrung' | 'helfereinsatz'
-export type RollenSichtbarkeit = 'intern' | 'public'
-export type HelferAnmeldungStatus =
-  | 'angemeldet'
-  | 'bestaetigt'
-  | 'abgelehnt'
-  | 'warteliste'
-
-export const HELFER_ANMELDUNG_STATUS_LABELS: Record<
-  HelferAnmeldungStatus,
-  string
-> = {
-  angemeldet: 'Angemeldet',
-  bestaetigt: 'Bestätigt',
-  abgelehnt: 'Abgelehnt',
-  warteliste: 'Warteliste',
-}
-
-export const ROLLEN_SICHTBARKEIT_LABELS: Record<RollenSichtbarkeit, string> = {
-  intern: 'Intern (nur Mitglieder)',
-  public: 'Öffentlich (mit Link)',
-}
-
-export type HelferEvent = {
-  id: string
-  typ: HelferEventTyp
-  veranstaltung_id: string | null
-  koordinator_id: string | null
-  name: string
-  beschreibung: string | null
-  datum_start: string
-  datum_end: string
-  ort: string | null
-  abmeldung_frist: string | null         // Per-event cancellation deadline (US-10)
-  public_token: string
-  max_anmeldungen_pro_helfer: number | null
-  created_at: string
-  updated_at: string
-}
-
-export type HelferEventInsert = Omit<
-  HelferEvent,
-  'id' | 'public_token' | 'koordinator_id' | 'max_anmeldungen_pro_helfer' | 'abmeldung_frist' | 'created_at' | 'updated_at'
-> & {
-  koordinator_id?: string | null
-  max_anmeldungen_pro_helfer?: number | null
-  abmeldung_frist?: string | null
-}
-export type HelferEventUpdate = Partial<HelferEventInsert>
-
-export type HelferRollenTemplate = {
-  id: string
-  name: string
-  beschreibung: string | null
-  default_anzahl: number
-  created_at: string
-  updated_at: string
-}
-
-export type HelferRollenTemplateInsert = Omit<
-  HelferRollenTemplate,
-  'id' | 'created_at' | 'updated_at'
->
-export type HelferRollenTemplateUpdate = Partial<HelferRollenTemplateInsert>
-
-export type HelferRollenInstanz = {
-  id: string
-  helfer_event_id: string
-  template_id: string | null
-  custom_name: string | null
-  zeitblock_start: string | null
-  zeitblock_end: string | null
-  anzahl_benoetigt: number
-  sichtbarkeit: RollenSichtbarkeit
-  created_at: string
-  updated_at: string
-}
-
-export type HelferRollenInstanzInsert = Omit<
-  HelferRollenInstanz,
-  'id' | 'created_at' | 'updated_at'
->
-export type HelferRollenInstanzUpdate = Partial<HelferRollenInstanzInsert>
-
-export type HelferAnmeldung = {
-  id: string
-  rollen_instanz_id: string
-  profile_id: string | null
-  external_helper_id: string | null  // FK to externe_helfer_profile (Issue #208)
-  external_name: string | null       // Legacy: inline name for external helpers
-  external_email: string | null      // Legacy: inline email
-  external_telefon: string | null    // Legacy: inline phone
-  abmeldung_token: string | null     // Public cancellation token (US-7)
-  datenschutz_akzeptiert: string | null // GDPR consent timestamp (US-3)
-  status: HelferAnmeldungStatus
-  created_at: string
-}
-
-export type HelferAnmeldungInsert = Omit<HelferAnmeldung, 'id' | 'created_at'>
-export type HelferAnmeldungUpdate = Partial<
-  Omit<HelferAnmeldungInsert, 'rollen_instanz_id'>
->
-
-// Extended types with joins
-export type HelferEventMitDetails = HelferEvent & {
-  veranstaltung: Pick<Veranstaltung, 'id' | 'titel'> | null
-  rollen_count: number
-  anmeldungen_count: number
-}
-
-export type RollenInstanzMitAnmeldungen = HelferRollenInstanz & {
-  template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
-  anmeldungen: (HelferAnmeldung & {
-    profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
-  })[]
-  angemeldet_count: number
-}
-
-export type HelferEventMitRollen = HelferEvent & {
-  veranstaltung: Pick<Veranstaltung, 'id' | 'titel'> | null
-  rollen: RollenInstanzMitAnmeldungen[]
-}
-
-export type PublicHelferEventData = HelferEventMitRollen & {
-  infoBloecke: InfoBlock[]
-}
-
-export type HelferAnmeldungMitDetails = HelferAnmeldung & {
-  rollen_instanz: HelferRollenInstanz & {
-    template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
-    helfer_event: Pick<
-      HelferEvent,
-      'id' | 'name' | 'datum_start' | 'datum_end' | 'ort'
-    >
-  }
-  profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
-}
-
-// =============================================================================
-// Atomic Booking RPC Return Types (Issue #248)
-// =============================================================================
-
-export type BookHelferSlotResult = {
-  success: boolean
-  rollen_instanz_id?: string
-  anmeldung_id?: string
-  status?: HelferAnmeldungStatus
-  is_waitlist?: boolean
-  abmeldung_token?: string
-  error?: string
-}
-
-export type BookHelferSlotsResult = {
-  success: boolean
-  results?: BookHelferSlotResult[]
-  error?: string
-}
-
-export type HelferTimeConflict = {
-  instanz_a: string
-  rolle_a: string
-  event_a: string
-  instanz_b: string
-  rolle_b: string
-  event_b: string
-}
-
-export type CheckHelferTimeConflictsResult = {
-  has_conflicts: boolean
-  conflicts: HelferTimeConflict[]
-}
-
-// =============================================================================
-// Helferliste Management Dashboard Types
+// Helferliste — System A is dropped (Issue #475, Sprint 4 of "System A
+// Abschaffung"). System B (zeitbloecke / auffuehrung_schichten /
+// auffuehrung_zuweisungen) is the only helper system going forward. The
+// management traffic-light status type (`AmpelStatus`) stays — it is used by
+// the System-B schichten-dashboard.
 // =============================================================================
 
 export type AmpelStatus = 'gruen' | 'gelb' | 'rot'
-
-export type HelferEventBelegung = {
-  event_id: string
-  name: string
-  typ: HelferEventTyp
-  datum_start: string
-  datum_end: string
-  ort: string | null
-  veranstaltung_id: string | null
-  public_token: string
-  total_benoetigt: number
-  total_belegt: number
-  ampel: AmpelStatus
-  rollen_count: number
-}
-
-export type HelferEventVollDetails = HelferEvent & {
-  veranstaltung: Pick<Veranstaltung, 'id' | 'titel'> | null
-  rollen: (HelferRollenInstanz & {
-    template: Pick<HelferRollenTemplate, 'id' | 'name'> | null
-    anmeldungen: (HelferAnmeldung & {
-      profile: Pick<Profile, 'id' | 'display_name' | 'email'> | null
-    })[]
-    angemeldet_count: number
-  })[]
-}
 
 export type ExterneHelferProfile = {
   id: string
@@ -2035,7 +1837,7 @@ export type TeilnehmerSuggestionResult = {
 
 export type HelferDashboardAnmeldung = {
   id: string
-  status: HelferAnmeldungStatus | ZuweisungStatus
+  status: ZuweisungStatus
   abmeldung_token: string | null
   created_at: string
   rolle_name: string
@@ -2516,22 +2318,10 @@ export type ProbenTeilnahmeHistorie = {
   status: TeilnehmerStatus
 }
 
-export type HelferAnmeldungHistorie = {
-  anmeldungId: string
-  eventId: string
-  eventName: string
-  eventDatum: string
-  rollenName: string
-  zeitblockStart: string | null
-  zeitblockEnd: string | null
-  status: HelferAnmeldungStatus
-}
-
 export type EngagementStatistik = {
   totalAuffuehrungen: number
   totalProben: number
   probenAnwesenheitsquote: number
-  totalHelferEinsaetze: number
   totalProduktionen: number
   totalStueckBesetzungen: number
 }
@@ -2542,7 +2332,6 @@ export type PersonEngagements = {
   produktionsStab: ProduktionsStabHistorie[]
   auffuehrungsZuweisungen: AuffuehrungsZuweisungHistorie[]
   probenTeilnahmen: ProbenTeilnahmeHistorie[]
-  helferAnmeldungen: HelferAnmeldungHistorie[]
   statistik: EngagementStatistik
 }
 
@@ -2705,7 +2494,6 @@ export type EmailLogStatus = 'pending' | 'sent' | 'failed' | 'retrying'
 export type EmailLog = {
   id: string
   anmeldung_id: string | null
-  helfer_anmeldung_id: string | null
   template_typ: string
   recipient_email: string
   recipient_name: string | null
@@ -3147,26 +2935,6 @@ export type Database = {
         Row: SachleistungZusage
         Insert: SachleistungZusageInsert
         Update: SachleistungZusageUpdate
-      }
-      helfer_events: {
-        Row: HelferEvent
-        Insert: HelferEventInsert
-        Update: HelferEventUpdate
-      }
-      helfer_rollen_templates: {
-        Row: HelferRollenTemplate
-        Insert: HelferRollenTemplateInsert
-        Update: HelferRollenTemplateUpdate
-      }
-      helfer_rollen_instanzen: {
-        Row: HelferRollenInstanz
-        Insert: HelferRollenInstanzInsert
-        Update: HelferRollenInstanzUpdate
-      }
-      helfer_anmeldungen: {
-        Row: HelferAnmeldung
-        Insert: HelferAnmeldungInsert
-        Update: HelferAnmeldungUpdate
       }
       externe_helfer_profile: {
         Row: ExterneHelferProfil
