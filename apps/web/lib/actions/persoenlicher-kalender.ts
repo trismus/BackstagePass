@@ -20,7 +20,6 @@ export type PersonalEventTyp =
   | 'veranstaltung'
   | 'probe'
   | 'schicht'
-  | 'helfer'
 
 export type PersonalEventStatus =
   | 'angemeldet'
@@ -51,9 +50,6 @@ export type PersonalEvent = {
   anmeldung_id?: string | null
   teilnehmer_id?: string | null
   zuweisung_id?: string | null
-  helfer_anmeldung_id?: string | null
-  helfer_event_id?: string | null
-  helfer_rolle?: string | null
   // Extra info
   stueck_titel?: string | null
   rolle?: string | null
@@ -129,7 +125,7 @@ export async function getPersonalEvents(
 
   if (!resolved) return []
 
-  const { resolvedPersonId, profileId } = resolved
+  const { resolvedPersonId } = resolved
   const events: PersonalEvent[] = []
 
   // 1. Get Veranstaltung Anmeldungen
@@ -287,80 +283,7 @@ export async function getPersonalEvents(
     }
   }
 
-  // 4. Get Helfer Anmeldungen (new Helferliste system)
-  if (profileId) {
-    const { data: helferAnmeldungen } = await supabase
-      .from('helfer_anmeldungen')
-      .select(`
-        id,
-        status,
-        helfer_rollen_instanzen!inner (
-          id,
-          custom_name,
-          zeitblock_start,
-          zeitblock_end,
-          helfer_rollen_templates ( name ),
-          helfer_events!inner (
-            id, name, beschreibung, datum_start, datum_end, ort
-          )
-        )
-      `)
-      .eq('profile_id', profileId)
-      .neq('status', 'abgelehnt')
-
-    type HelferAnmeldungWithDetails = {
-      id: string
-      status: string
-      helfer_rollen_instanzen: {
-        id: string
-        custom_name: string | null
-        zeitblock_start: string | null
-        zeitblock_end: string | null
-        helfer_rollen_templates: { name: string } | null
-        helfer_events: {
-          id: string
-          name: string
-          beschreibung: string | null
-          datum_start: string
-          datum_end: string
-          ort: string | null
-        }
-      }
-    }
-
-    if (helferAnmeldungen) {
-      for (const ha of helferAnmeldungen as unknown as HelferAnmeldungWithDetails[]) {
-        const instanz = ha.helfer_rollen_instanzen
-        const event = instanz.helfer_events
-        const rolleName = instanz.helfer_rollen_templates?.name ?? instanz.custom_name ?? 'Helfer'
-
-        // Use datum_start as the date (format: YYYY-MM-DD or datetime)
-        const datum = event.datum_start.split('T')[0]
-
-        if (startDatum && datum < startDatum) continue
-        if (endDatum && datum > endDatum) continue
-
-        events.push({
-          id: `ha-${ha.id}`,
-          titel: `${event.name} - ${rolleName}`,
-          beschreibung: event.beschreibung,
-          datum,
-          startzeit: instanz.zeitblock_start,
-          endzeit: instanz.zeitblock_end,
-          ort: event.ort,
-          typ: 'helfer',
-          status: ha.status as PersonalEventStatus,
-          helfer_anmeldung_id: ha.id,
-          helfer_event_id: event.id,
-          helfer_rolle: rolleName,
-          kann_zusagen: false,
-          kann_absagen: ha.status === 'angemeldet' || ha.status === 'bestaetigt',
-        })
-      }
-    }
-  }
-
-  // 5. Get Produktions-Aufführungen (via Besetzung/Stab → Produktion → Serie → Veranstaltung)
+  // 4. Get Produktions-Aufführungen (via Besetzung/Stab → Produktion → Serie → Veranstaltung)
   // Collect veranstaltung_ids already present to deduplicate
   const existingVeranstaltungIds = new Set(
     events
@@ -601,22 +524,6 @@ export async function declinePersonalEvent(
     return { success: true }
   }
 
-  if (type === 'ha') {
-    // Update Helfer Anmeldung status (new system) — with ownership filter
-    const { error } = await supabase
-      .from('helfer_anmeldungen')
-      .update({ status: 'abgelehnt' } as never)
-      .eq('id', id)
-      .eq('person_id', resolvedPersonId)
-
-    if (error) {
-      console.error('Error declining helfer anmeldung:', error)
-      return { success: false, error: 'Fehler beim Absagen' }
-    }
-
-    return { success: true }
-  }
-
   return { success: false, error: 'Aktion nicht unterstützt' }
 }
 
@@ -657,15 +564,14 @@ export async function generatePersonalICalFeed(): Promise<string> {
     if (event.ort) {
       ical += `LOCATION:${escapeICalText(event.ort)}\r\n`
     }
-    if (event.rolle || event.helfer_rolle) {
-      ical += `X-TGW-ROLLE:${escapeICalText(event.rolle || event.helfer_rolle || '')}\r\n`
+    if (event.rolle) {
+      ical += `X-TGW-ROLLE:${escapeICalText(event.rolle)}\r\n`
     }
 
     const categoryMap: Record<PersonalEventTyp, string> = {
       veranstaltung: 'VERANSTALTUNG',
       probe: 'PROBE',
       schicht: 'SCHICHT',
-      helfer: 'HELFER',
     }
     ical += `CATEGORIES:${categoryMap[event.typ]}\r\n`
 

@@ -70,9 +70,7 @@ describe('Person Engagements (Issue #349)', () => {
       expect(result.statistik.totalProduktionen).toBe(0)
     })
 
-    it('fetches all 6 engagement types in parallel', async () => {
-      // First call: personen (for profile_id)
-      // Then 6 parallel calls for each engagement type
+    it('fetches engagement types in parallel and returns empty arrays when no data', async () => {
       let callCount = 0
       mockSupabase.from.mockImplementation((table: string) => {
         callCount++
@@ -85,8 +83,9 @@ describe('Person Engagements (Issue #349)', () => {
 
       const result = await getPersonEngagements('person-1')
 
-      // Should have called `from` for: personen + besetzungen + produktions_besetzungen + produktions_stab + auffuehrung_zuweisungen + proben_teilnehmer + helfer_anmeldungen
-      expect(callCount).toBeGreaterThanOrEqual(7)
+      // Should have called `from` for: personen + at least the
+      // System-B engagement types
+      expect(callCount).toBeGreaterThanOrEqual(6)
       expect(result.stueckBesetzungen).toEqual([])
       expect(result.produktionsBesetzungen).toEqual([])
       expect(result.produktionsStab).toEqual([])
@@ -185,20 +184,6 @@ describe('Person Engagements (Issue #349)', () => {
             },
           ])
         }
-        if (table === 'helfer_anmeldungen') {
-          return chainResolving([
-            {
-              id: 'ha1',
-              status: 'bestaetigt',
-              rollen_instanz: {
-                zeitblock_start: '2026-06-15T17:00:00Z',
-                zeitblock_end: '2026-06-15T19:00:00Z',
-                template: { name: 'Einlass' },
-                helfer_event: { id: 'he1', name: 'Premiere Helfer', datum_start: '2026-06-15' },
-              },
-            },
-          ])
-        }
         return chainResolving([])
       })
 
@@ -222,16 +207,12 @@ describe('Person Engagements (Issue #349)', () => {
       // Proben
       expect(result.probenTeilnahmen).toHaveLength(3)
 
-      // Helfer
-      expect(result.helferAnmeldungen).toHaveLength(1)
-
       // Statistik
       expect(result.statistik.totalProduktionen).toBe(1) // Only 1 unique produktion
       expect(result.statistik.totalStueckBesetzungen).toBe(1)
       expect(result.statistik.totalAuffuehrungen).toBe(1) // Only zugesagt/erschienen
       expect(result.statistik.totalProben).toBe(3)
       expect(result.statistik.probenAnwesenheitsquote).toBe(67) // 2/3 = 67%
-      expect(result.statistik.totalHelferEinsaetze).toBe(1)
     })
 
     it('handles person with no engagements', async () => {
@@ -249,23 +230,8 @@ describe('Person Engagements (Issue #349)', () => {
       expect(result.produktionsStab).toEqual([])
       expect(result.auffuehrungsZuweisungen).toEqual([])
       expect(result.probenTeilnahmen).toEqual([])
-      expect(result.helferAnmeldungen).toEqual([])
       expect(result.statistik.totalProduktionen).toBe(0)
       expect(result.statistik.probenAnwesenheitsquote).toBe(0)
-    })
-
-    it('handles missing profile_id gracefully for helfer_anmeldungen', async () => {
-      mockSupabase.from.mockImplementation((table: string) => {
-        if (table === 'personen') {
-          return chainResolving({ profile_id: null })
-        }
-        return chainResolving([])
-      })
-
-      const result = await getPersonEngagements('person-no-profile')
-
-      // All should be empty — helfer_anmeldungen requires profile_id
-      expect(result.helferAnmeldungen).toEqual([])
     })
   })
 })
