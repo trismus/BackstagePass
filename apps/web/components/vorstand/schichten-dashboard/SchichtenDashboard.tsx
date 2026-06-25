@@ -5,26 +5,19 @@ import type {
   SchichtenDashboardData,
   DashboardAuffuehrung,
   AmpelStatus,
-  HelferEventBelegung,
 } from '@/lib/supabase/types'
 import { DashboardStats } from './DashboardStats'
 import { DashboardFilter } from './DashboardFilter'
 import { AuffuehrungAccordion } from './AuffuehrungAccordion'
-import { LegacyHelferlisteTab } from './LegacyHelferlisteTab'
 import { TopHelferList } from './TopHelferList'
 
 // =============================================================================
 // Types
 // =============================================================================
 
-type ActiveTab = 'system-b' | 'system-a'
-
 interface SchichtenDashboardProps {
   /** System B data (leading system) */
   dashboardData: SchichtenDashboardData
-  /** System A data (legacy, read-only) */
-  legacyEvents: HelferEventBelegung[]
-  legacyError?: string
 }
 
 // =============================================================================
@@ -61,16 +54,10 @@ function matchesSearch(auffuehrung: DashboardAuffuehrung, query: string): boolea
 
 /**
  * Main Schichten-Dashboard component.
- * Combines System B (leading) and System A (legacy) data in a tabbed view.
- * System B is the default tab showing aggregated stats and collapsible
- * performance cards with Zeitblöcke, Schichten, and Zuweisungen.
+ * Shows aggregated stats and collapsible performance cards with Zeitblöcke,
+ * Schichten, and Zuweisungen (System B - the leading helper system).
  */
-export function SchichtenDashboard({
-  dashboardData,
-  legacyEvents,
-  legacyError,
-}: SchichtenDashboardProps) {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('system-b')
+export function SchichtenDashboard({ dashboardData }: SchichtenDashboardProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [ampelFilter, setAmpelFilter] = useState<AmpelStatus | 'alle'>('alle')
 
@@ -91,88 +78,47 @@ export function SchichtenDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Tab switcher */}
-      <div className="flex border-b border-neutral-200">
-        <button
-          type="button"
-          onClick={() => setActiveTab('system-b')}
-          className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-            activeTab === 'system-b'
-              ? 'border-primary-600 text-primary-600'
-              : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'
-          }`}
-        >
-          Schichten-Übersicht
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('system-a')}
-          className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-            activeTab === 'system-a'
-              ? 'border-primary-600 text-primary-600'
-              : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'
-          }`}
-        >
-          Bisherige Events
-          {legacyEvents.length > 0 && (
-            <span className="ml-1.5 rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
-              {legacyEvents.length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* System B tab content */}
-      {activeTab === 'system-b' && (
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
+        {/* Left column: Stats + Filter + Aufführungen */}
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
-            {/* Left column: Stats + Filter + Aufführungen */}
-            <div className="space-y-6">
-              <DashboardStats
-                stats={dashboardData.stats}
-                auffuehrungenCount={dashboardData.auffuehrungen.length}
-              />
+          <DashboardStats
+            stats={dashboardData.stats}
+            auffuehrungenCount={dashboardData.auffuehrungen.length}
+          />
 
-              <DashboardFilter
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                ampelFilter={ampelFilter}
-                onAmpelFilterChange={setAmpelFilter}
-              />
+          <DashboardFilter
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            ampelFilter={ampelFilter}
+            onAmpelFilterChange={setAmpelFilter}
+          />
 
-              {filteredAuffuehrungen.length === 0 ? (
-                <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center">
-                  <p className="text-neutral-500">
-                    {dashboardData.auffuehrungen.length === 0
-                      ? 'Keine kommenden Aufführungen mit Schichten vorhanden'
-                      : 'Keine Aufführungen entsprechen den Filterkriterien'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredAuffuehrungen.map((auffuehrung) => (
-                    <AuffuehrungAccordion
-                      key={auffuehrung.id}
-                      auffuehrung={auffuehrung}
-                      defaultOpen={auffuehrung.ampel === 'rot'}
-                    />
-                  ))}
-                </div>
-              )}
+          {filteredAuffuehrungen.length === 0 ? (
+            <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center">
+              <p className="text-neutral-500">
+                {dashboardData.auffuehrungen.length === 0
+                  ? 'Keine kommenden Aufführungen mit Schichten vorhanden'
+                  : 'Keine Aufführungen entsprechen den Filterkriterien'}
+              </p>
             </div>
-
-            {/* Right column: Top Helfer sidebar */}
-            <div className="xl:sticky xl:top-4 xl:self-start">
-              <TopHelferList helfer={dashboardData.top_helfer} />
+          ) : (
+            <div className="space-y-3">
+              {filteredAuffuehrungen.map((auffuehrung) => (
+                <AuffuehrungAccordion
+                  key={auffuehrung.id}
+                  auffuehrung={auffuehrung}
+                  defaultOpen={auffuehrung.ampel === 'rot'}
+                />
+              ))}
             </div>
-          </div>
+          )}
         </div>
-      )}
 
-      {/* System A tab content */}
-      {activeTab === 'system-a' && (
-        <LegacyHelferlisteTab events={legacyEvents} error={legacyError} />
-      )}
+        {/* Right column: Top Helfer sidebar */}
+        <div className="xl:sticky xl:top-4 xl:self-start">
+          <TopHelferList helfer={dashboardData.top_helfer} />
+        </div>
+      </div>
     </div>
   )
 }

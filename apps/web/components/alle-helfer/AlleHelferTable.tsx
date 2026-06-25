@@ -174,13 +174,12 @@ function EinsatzDetailPanel({
             <th className="pb-2 pr-4">Datum</th>
             <th className="pb-2 pr-4">Rolle</th>
             <th className="pb-2 pr-4">Zeit</th>
-            <th className="pb-2 pr-4">System</th>
             <th className="pb-2">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {einsaetze.map((e) => (
-            <tr key={`${e.system}-${e.id}`}>
+            <tr key={e.id}>
               <td className="py-2 pr-4 font-medium text-gray-900">
                 {e.veranstaltung}
               </td>
@@ -192,11 +191,6 @@ function EinsatzDetailPanel({
                 {e.zeitblock_start
                   ? `${formatTimeValue(e.zeitblock_start)}${e.zeitblock_end ? ` - ${formatTimeValue(e.zeitblock_end)}` : ''}`
                   : '-'}
-              </td>
-              <td className="py-2 pr-4">
-                <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-                  {e.system === 'a' ? 'Helferliste' : 'Aufführung'}
-                </span>
               </td>
               <td className="py-2">
                 <EinsatzStatusBadge status={e.status} />

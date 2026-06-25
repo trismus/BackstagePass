@@ -36,7 +36,6 @@ export interface HelferEinsatzDetail {
   zeitblock_start: string | null
   zeitblock_end: string | null
   status: string
-  system: 'a' | 'b'
 }
 
 /**
@@ -124,8 +123,7 @@ export async function getAlleHelfer(
     const { data: externe, error: externeError } = await supabase
       .from('externe_helfer_profile')
       .select(`
-        id, vorname, nachname, email, telefon, letzter_einsatz,
-        anmeldungen:helfer_anmeldungen(id)
+        id, vorname, nachname, email, telefon, letzter_einsatz
       `)
 
     if (externeError) {
@@ -192,26 +190,14 @@ export async function getAlleHelfer(
 
         // Skip if this external helper already appears as intern (same email)
         if (emailLower && internEmails.has(emailLower)) {
-          // Add System A count to the existing intern entry
-          const systemACount = (ext.anmeldungen as unknown[] | null)?.length || 0
-          if (systemACount > 0) {
-            const internEntry = results.find(
-              (r) => r.typ === 'intern' && r.email?.toLowerCase() === emailLower
-            )
-            if (internEntry) {
-              internEntry.einsaetze_count += systemACount
-            }
-          }
           continue
         }
 
-        // Count from both systems
-        const systemACount = (ext.anmeldungen as unknown[] | null)?.length || 0
+        // Count System B assignments (looked up via matching email)
         const systemBData = emailLower ? emailZuweisungCounts.get(emailLower) : undefined
-        const systemBCount = systemBData?.count || 0
-        const totalCount = systemACount + systemBCount
+        const totalCount = systemBData?.count || 0
 
-        // Latest assignment from either system
+        // Latest assignment from System B (overrides legacy `letzter_einsatz` if newer)
         let letzter = ext.letzter_einsatz
         if (systemBData?.letzter && (!letzter || systemBData.letzter > letzter)) {
           letzter = systemBData.letzter
@@ -305,7 +291,7 @@ export async function deleteHelferFromList(
 
 /**
  * Get all Einsätze (assignments) for a specific helper.
- * Queries both System A (helfer_anmeldungen) and System B (auffuehrung_zuweisungen).
+ * Queries System B (auffuehrung_zuweisungen).
  */
 export async function getHelferEinsaetze(
   helferId: string,
@@ -359,116 +345,7 @@ export async function getHelferEinsaetze(
           zeitblock_start: schicht.zeitblock?.startzeit ?? schicht.veranstaltung.startzeit ?? null,
           zeitblock_end: schicht.zeitblock?.endzeit ?? null,
           status: z.status,
-          system: 'b',
         })
-      }
-    }
-
-    // System A: helfer_anmeldungen (for external helpers, also check this system)
-    if (typ === 'extern') {
-      const { data: anmeldungen, error: anmeldungenError } = await supabase
-        .from('helfer_anmeldungen')
-        .select(`
-          id,
-          status,
-          rollen_instanz:helfer_rollen_instanzen!inner(
-            custom_name,
-            zeitblock_start,
-            zeitblock_end,
-            template:helfer_rollen_templates(name),
-            helfer_event:helfer_events!inner(
-              name,
-              datum_start
-            )
-          )
-        `)
-        .eq('external_helper_id', helferId)
-
-      if (anmeldungenError) {
-        console.error('Error fetching helfer_anmeldungen:', anmeldungenError)
-      } else if (anmeldungen) {
-        for (const a of anmeldungen) {
-          const instanz = a.rollen_instanz as unknown as {
-            custom_name: string | null
-            zeitblock_start: string | null
-            zeitblock_end: string | null
-            template: { name: string } | null
-            helfer_event: { name: string; datum_start: string }
-          }
-          if (!instanz?.helfer_event) continue
-
-          const rolleName = instanz.custom_name ?? instanz.template?.name ?? 'Unbekannt'
-
-          results.push({
-            id: a.id,
-            veranstaltung: instanz.helfer_event.name,
-            datum: instanz.helfer_event.datum_start,
-            rolle: rolleName,
-            zeitblock_start: instanz.zeitblock_start,
-            zeitblock_end: instanz.zeitblock_end,
-            status: a.status,
-            system: 'a',
-          })
-        }
-      }
-    }
-
-    // Also check System A for internal helpers (they may have helfer_anmeldungen via profile_id)
-    if (typ === 'intern') {
-      // Internal helpers are linked via profile_id in helfer_anmeldungen
-      // First find the profile_id for this person
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('person_id', helferId)
-        .maybeSingle()
-
-      if (profile) {
-        const { data: anmeldungen, error: anmeldungenError } = await supabase
-          .from('helfer_anmeldungen')
-          .select(`
-            id,
-            status,
-            rollen_instanz:helfer_rollen_instanzen!inner(
-              custom_name,
-              zeitblock_start,
-              zeitblock_end,
-              template:helfer_rollen_templates(name),
-              helfer_event:helfer_events!inner(
-                name,
-                datum_start
-              )
-            )
-          `)
-          .eq('profile_id', profile.id)
-
-        if (anmeldungenError) {
-          console.error('Error fetching helfer_anmeldungen for intern:', anmeldungenError)
-        } else if (anmeldungen) {
-          for (const a of anmeldungen) {
-            const instanz = a.rollen_instanz as unknown as {
-              custom_name: string | null
-              zeitblock_start: string | null
-              zeitblock_end: string | null
-              template: { name: string } | null
-              helfer_event: { name: string; datum_start: string }
-            }
-            if (!instanz?.helfer_event) continue
-
-            const rolleName = instanz.custom_name ?? instanz.template?.name ?? 'Unbekannt'
-
-            results.push({
-              id: a.id,
-              veranstaltung: instanz.helfer_event.name,
-              datum: instanz.helfer_event.datum_start,
-              rolle: rolleName,
-              zeitblock_start: instanz.zeitblock_start,
-              zeitblock_end: instanz.zeitblock_end,
-              status: a.status,
-              system: 'a',
-            })
-          }
-        }
       }
     }
 

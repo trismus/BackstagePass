@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/supabase/server'
 import { isManagement } from '@/lib/supabase/permissions'
 import { getSchichtenDashboard } from '@/lib/actions/schichten-dashboard'
-import { getHelferEventsMitBelegung } from '@/lib/actions/helferliste-management'
 import { SchichtenDashboard } from '@/components/vorstand/schichten-dashboard'
 
 export const metadata = {
@@ -21,11 +20,7 @@ export default async function VorstandHelferlistePage() {
     redirect('/dashboard' as never)
   }
 
-  // Fetch both System B and System A data in parallel
-  const [dashboardResult, legacyResult] = await Promise.all([
-    getSchichtenDashboard(),
-    getHelferEventsMitBelegung(),
-  ])
+  const dashboardResult = await getSchichtenDashboard()
 
   // Handle System B error
   if (!dashboardResult.success || !dashboardResult.data) {
@@ -59,11 +54,7 @@ export default async function VorstandHelferlistePage() {
         </p>
       </div>
 
-      <SchichtenDashboard
-        dashboardData={dashboardResult.data}
-        legacyEvents={legacyResult.success ? legacyResult.data ?? [] : []}
-        legacyError={legacyResult.success ? undefined : legacyResult.error}
-      />
+      <SchichtenDashboard dashboardData={dashboardResult.data} />
     </div>
   )
 }
