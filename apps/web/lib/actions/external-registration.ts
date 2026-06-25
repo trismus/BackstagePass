@@ -1,17 +1,14 @@
 'use server'
 
 /**
- * @deprecated This file contains System B (auffuehrung_schichten / auffuehrung_zuweisungen)
- * registration logic. System A (helfer_events / helfer_rollen_instanzen / helfer_anmeldungen)
- * is now the primary system for public helper registration.
+ * Public registration flow for System B (auffuehrung_schichten /
+ * auffuehrung_zuweisungen).
  *
- * These functions remain for backwards compatibility with existing
- * /helfer/anmeldung/[token] and /helfer/abmeldung/[token] links.
+ * Backs the public token-based pages /helfer/anmeldung/[token] and the
+ * /mitmachen overview. System B is the leading helper system as of #474;
+ * System A has been removed.
  *
- * New features should use System A via lib/actions/helferliste.ts
- * and lib/actions/public-overview.ts.
- *
- * See: journal/decisions/20260307_helfer-registrierung-system-a.md
+ * See: journal/decisions/20260310_helfersystem-konsolidierung.md
  */
 
 import { revalidatePath } from 'next/cache'

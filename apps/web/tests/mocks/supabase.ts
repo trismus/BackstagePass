@@ -60,54 +60,6 @@ export function createMockClient(overrides?: {
   }
 }
 
-// Sample test data
-export const mockHelferEvent = {
-  id: 'event-1',
-  name: 'Test Event',
-  beschreibung: 'Test Description',
-  typ: 'auffuehrung' as const,
-  datum_start: '2026-03-01T18:00:00Z',
-  datum_end: '2026-03-01T22:00:00Z',
-  ort: 'Gemeindesaal',
-  abmeldung_frist: null,
-  status: 'aktiv' as const,
-  public_token: 'abc123',
-  created_at: '2026-01-01T00:00:00Z',
-  updated_at: '2026-01-01T00:00:00Z',
-}
-
-export const mockRollenTemplate = {
-  id: 'template-1',
-  name: 'Einlass',
-  beschreibung: 'Einlasskontrolle',
-  default_anzahl: 2,
-  created_at: '2026-01-01T00:00:00Z',
-}
-
-export const mockRollenInstanz = {
-  id: 'instanz-1',
-  helfer_event_id: 'event-1',
-  template_id: 'template-1',
-  anzahl_benoetigt: 2,
-  zeitblock_start: '2026-03-01T17:00:00Z',
-  zeitblock_end: '2026-03-01T19:00:00Z',
-  sichtbarkeit: 'public' as const,
-  notiz: null,
-  created_at: '2026-01-01T00:00:00Z',
-}
-
-export const mockAnmeldung = {
-  id: 'anmeldung-1',
-  rollen_instanz_id: 'instanz-1',
-  profile_id: 'user-1',
-  external_name: null,
-  external_email: null,
-  external_telefon: null,
-  abmeldung_token: 'abmeldung-token-1',
-  status: 'angemeldet' as const,
-  created_at: '2026-01-01T00:00:00Z',
-}
-
 export const mockProfile = {
   id: 'user-1',
   user_id: 'auth-user-1',

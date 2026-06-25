@@ -29,7 +29,6 @@ function revalidateSachleistungen(veranstaltungId: string) {
   revalidatePath(`/auffuehrungen/${veranstaltungId}`)
   revalidatePath('/auffuehrungen')
   revalidatePath('/mitmachen')
-  revalidatePath('/vorstand/helferliste')
 }
 
 // =============================================================================
