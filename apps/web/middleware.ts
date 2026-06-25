@@ -7,10 +7,13 @@ const rateLimitedPrefixes = [
   '/helfer/anmeldung/',
   '/helfer/abmeldung/',
   '/helfer/warteliste/',
-  '/helfer/helferliste/',
   '/helfer/feedback/',
   '/helfer/meine-einsaetze/',
 ]
+
+// UUID pattern for matching legacy System A public event URL /helfer/[token]
+const legacySystemAEventTokenPattern =
+  /^\/helfer\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/?$/i
 
 // Rate limit: 30 requests per minute per IP for public helfer routes
 const PUBLIC_RATE_LIMIT = 30
@@ -31,6 +34,18 @@ function getClientIp(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const ip = getClientIp(request)
+
+  // Redirect legacy System A public URLs to the new /mitmachen overview.
+  // Affected: /helfer/[token] (public event page) and /helfer/helferliste/*
+  // (cancellation flow). System B routes such as /helfer/anmeldung/*,
+  // /helfer/abmeldung/*, /helfer/feedback/*, /helfer/warteliste/* and
+  // /helfer/meine-einsaetze/* remain active.
+  if (
+    pathname.startsWith('/helfer/helferliste/') ||
+    legacySystemAEventTokenPattern.test(pathname)
+  ) {
+    return NextResponse.redirect(new URL('/mitmachen', request.url), 308)
+  }
 
   // Rate-limit public helfer routes
   const isRateLimitedRoute = rateLimitedPrefixes.some((prefix) =>
