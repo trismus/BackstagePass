@@ -13,7 +13,6 @@ export interface EmailLogContext {
   templateTyp?: string
   recipientName?: string
   anmeldungId?: string
-  helferAnmeldungId?: string
 }
 
 interface EmailSendOptions {
@@ -95,7 +94,6 @@ async function writeEmailLog(
         recipient_email: recipientEmail,
         recipient_name: logging?.recipientName || null,
         anmeldung_id: logging?.anmeldungId || null,
-        helfer_anmeldung_id: logging?.helferAnmeldungId || null,
         status,
         error_message: errorMessage || null,
         sent_at: status === 'sent' ? new Date().toISOString() : null,
