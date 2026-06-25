@@ -2049,8 +2049,6 @@ export type HelferDashboardAnmeldung = {
   event_ort: string | null
   event_public_token: string
   event_abmeldung_frist: string | null
-  /** Which booking system this entry comes from */
-  system: 'a' | 'b'
 }
 
 /** Raw System B zuweisung as returned by the RPC */

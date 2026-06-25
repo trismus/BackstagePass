@@ -15,14 +15,13 @@ const UUID_REGEX =
 
 /**
  * Normalize a raw System B zuweisung into a unified HelferDashboardAnmeldung.
- * The veranstaltung.datum is a date-only string (YYYY-MM-DD), while System A
- * uses full timestamps. We construct a comparable datetime using startzeit.
+ * The veranstaltung.datum is a date-only string (YYYY-MM-DD); we construct a
+ * comparable datetime using startzeit for sorting/filtering.
  */
 async function normalizeZuweisungen(
   zuweisungen: HelferDashboardZuweisung[]
 ): Promise<HelferDashboardAnmeldung[]> {
   return zuweisungen.map((z) => {
-    // Build a datetime string from datum + startzeit for sorting/filtering
     const datumStart = z.veranstaltung_startzeit
       ? `${z.veranstaltung_datum}T${z.veranstaltung_startzeit}`
       : `${z.veranstaltung_datum}T00:00:00`
@@ -43,7 +42,6 @@ async function normalizeZuweisungen(
       event_ort: z.veranstaltung_ort,
       event_public_token: z.veranstaltung_public_helfer_token ?? '',
       event_abmeldung_frist: z.veranstaltung_helfer_buchung_deadline,
-      system: 'b' as const,
     }
   })
 }
@@ -84,7 +82,6 @@ export async function getHelferDashboardData(
   const result = data as unknown as
     | {
         helper: { vorname: string; nachname: string; email: string; telefon: string | null }
-        anmeldungen: HelferDashboardAnmeldung[]
         zuweisungen?: HelferDashboardZuweisung[]
         error?: never
       }
@@ -94,25 +91,11 @@ export async function getHelferDashboardData(
     return null
   }
 
-  // Tag System A entries
-  const systemAEntries: HelferDashboardAnmeldung[] = (
-    result as { anmeldungen: HelferDashboardAnmeldung[] }
-  ).anmeldungen.map((a) => ({
-    ...a,
-    system: 'a' as const,
-  }))
-
-  // Normalize System B entries
   const rawZuweisungen = (
     result as { zuweisungen?: HelferDashboardZuweisung[] }
   ).zuweisungen ?? []
-  const systemBEntries = await normalizeZuweisungen(rawZuweisungen)
-
-  // Merge and sort
-  const allEntries = await sortAnmeldungen([
-    ...systemAEntries,
-    ...systemBEntries,
-  ])
+  const entries = await normalizeZuweisungen(rawZuweisungen)
+  const allEntries = await sortAnmeldungen(entries)
 
   return {
     helper: (result as { helper: { vorname: string; nachname: string; email: string; telefon: string | null } }).helper,
@@ -129,7 +112,7 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
   // Get person info for display name
   const { data: person } = await supabase
     .from('personen')
-    .select('vorname, nachname, email, telefon')
+    .select('id, vorname, nachname, email, telefon')
     .eq('email', profile.email)
     .single()
 
@@ -137,83 +120,10 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
     ? { vorname: person.vorname, nachname: person.nachname, email: person.email ?? profile.email, telefon: person.telefon ?? null }
     : { vorname: profile.display_name ?? profile.email, nachname: '', email: profile.email, telefon: null }
 
-  // System A: Get all non-rejected helfer_anmeldungen for this profile
-  const { data: anmeldungen, error } = await supabase
-    .from('helfer_anmeldungen')
-    .select(`
-      id,
-      status,
-      abmeldung_token,
-      created_at,
-      rollen_instanz_id,
-      helfer_rollen_instanzen!inner (
-        id,
-        custom_name,
-        zeitblock_start,
-        zeitblock_end,
-        template_id,
-        helfer_event_id,
-        helfer_rollen_templates ( name ),
-        helfer_events!inner (
-          id, name, datum_start, datum_end, ort, public_token, abmeldung_frist
-        )
-      )
-    `)
-    .eq('profile_id', profile.id)
-
-  const systemAEntries: HelferDashboardAnmeldung[] = (!error && anmeldungen)
-    ? anmeldungen.map((a) => {
-        const instanz = a.helfer_rollen_instanzen as unknown as {
-          id: string
-          custom_name: string | null
-          zeitblock_start: string | null
-          zeitblock_end: string | null
-          helfer_rollen_templates: { name: string } | null
-          helfer_events: {
-            id: string
-            name: string
-            datum_start: string
-            datum_end: string
-            ort: string | null
-            public_token: string
-            abmeldung_frist: string | null
-          }
-        }
-
-
-        return {
-          id: a.id,
-          status: a.status,
-          abmeldung_token: a.abmeldung_token,
-          created_at: a.created_at,
-          rolle_name: instanz.helfer_rollen_templates?.name ?? instanz.custom_name ?? 'Helfer',
-          zeitblock_start: instanz.zeitblock_start,
-          zeitblock_end: instanz.zeitblock_end,
-          rollen_instanz_id: instanz.id,
-          event_id: instanz.helfer_events.id,
-          event_name: instanz.helfer_events.name,
-          event_datum_start: instanz.helfer_events.datum_start,
-          event_datum_end: instanz.helfer_events.datum_end,
-          event_ort: instanz.helfer_events.ort,
-          event_public_token: instanz.helfer_events.public_token,
-          event_abmeldung_frist: instanz.helfer_events.abmeldung_frist,
-          system: 'a' as const,
-        }
-      })
-    : []
-
   // System B: Get auffuehrung_zuweisungen for this profile's person
-  // Find the person linked to this profile via email
-  const personId = person
-    ? await supabase
-        .from('personen')
-        .select('id')
-        .eq('email', profile.email)
-        .single()
-        .then(({ data: p }) => p?.id ?? null)
-    : null
+  const personId = person?.id ?? null
 
-  let systemBEntries: HelferDashboardAnmeldung[] = []
+  let entries: HelferDashboardAnmeldung[] = []
 
   if (personId) {
     const { data: zuweisungen } = await supabase
@@ -238,7 +148,7 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
       .not('status', 'in', '("abgesagt","nicht_erschienen")')
 
     if (zuweisungen) {
-      systemBEntries = zuweisungen.map((z) => {
+      entries = zuweisungen.map((z) => {
         const schicht = z.schicht as unknown as {
           id: string
           rolle: string
@@ -280,17 +190,12 @@ export async function getAuthenticatedHelferDashboard(): Promise<HelferDashboard
           event_ort: v.ort,
           event_public_token: v.public_helfer_token ?? '',
           event_abmeldung_frist: v.helfer_buchung_deadline,
-          system: 'b' as const,
         }
       })
     }
   }
 
-  // Merge and sort
-  const allEntries = await sortAnmeldungen([
-    ...systemAEntries,
-    ...systemBEntries,
-  ])
+  const allEntries = await sortAnmeldungen(entries)
 
   return { helper, anmeldungen: allEntries }
 }
