@@ -145,17 +145,6 @@ const MANAGEMENT_NAVIGATION: NavSection[] = [
     ],
   },
   {
-    title: 'Verwaltung',
-    items: [
-      {
-        href: '/vorstand/helferliste',
-        label: 'Helferliste',
-        icon: 'helper',
-        permission: 'helferliste:read',
-      },
-    ],
-  },
-  {
     title: 'Mein Bereich',
     items: [
       { href: '/vorstand/termine', label: 'Meine Termine', icon: 'calendar' },

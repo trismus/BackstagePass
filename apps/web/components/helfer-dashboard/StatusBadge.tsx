@@ -1,13 +1,18 @@
-import type { HelferAnmeldungStatus, ZuweisungStatus } from '@/lib/supabase/types'
+import type {
+  HelferAnmeldungStatus,
+  ZuweisungStatus,
+} from '@/lib/supabase/types'
 import { HELFER_ANMELDUNG_STATUS_LABELS } from '@/lib/supabase/types'
 
+// HelferDashboardAnmeldung may still carry HelferAnmeldungStatus values
+// until System A types are removed (#475). New entries are System B only.
 type StatusBadgeStatus = HelferAnmeldungStatus | ZuweisungStatus
 
 interface StatusBadgeProps {
   status: StatusBadgeStatus
 }
 
-/** Labels for ZuweisungStatus values that differ from HelferAnmeldungStatus */
+/** Labels for ZuweisungStatus values (System B). */
 const ZUWEISUNG_STATUS_LABELS: Partial<Record<ZuweisungStatus, string>> = {
   vorgeschlagen: 'Vorgeschlagen',
   zugesagt: 'Zugesagt',
@@ -16,9 +21,9 @@ const ZUWEISUNG_STATUS_LABELS: Partial<Record<ZuweisungStatus, string>> = {
   nicht_erschienen: 'Nicht erschienen',
 }
 
-/** Style mapping for all possible status values */
+/** Style mapping for all currently displayable status values. */
 const STATUS_STYLES: Record<string, string> = {
-  // System A (HelferAnmeldungStatus)
+  // Legacy System A (read-only, displayed only in historical lists)
   angemeldet: 'bg-info-100 text-info-700',
   bestaetigt: 'bg-success-100 text-success-700',
   abgelehnt: 'bg-error-100 text-error-700',
@@ -32,11 +37,9 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 function getStatusLabel(status: StatusBadgeStatus): string {
-  // Check System A labels first
   if (status in HELFER_ANMELDUNG_STATUS_LABELS) {
     return HELFER_ANMELDUNG_STATUS_LABELS[status as HelferAnmeldungStatus]
   }
-  // Then System B labels
   return ZUWEISUNG_STATUS_LABELS[status as ZuweisungStatus] ?? status
 }
 

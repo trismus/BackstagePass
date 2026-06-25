@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui'
-import { StatusBadge } from '@/components/helferliste/StatusBadge'
+import { StatusBadge } from '@/components/helfer-dashboard/StatusBadge'
 import type { HelferDashboardAnmeldung } from '@/lib/supabase/types'
 
 interface ShiftCardProps {

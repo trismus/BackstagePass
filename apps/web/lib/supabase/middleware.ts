@@ -33,16 +33,11 @@ const protectedPrefixes = [
 // Public sub-paths under /helfer that use token-based access (no auth required)
 const publicHelferPrefixes = [
   '/helfer/meine-einsaetze/',
-  '/helfer/helferliste/',
   '/helfer/abmeldung/',
   '/helfer/anmeldung/',
   '/helfer/warteliste/',
   '/helfer/feedback/',
 ]
-
-// UUID v4 pattern for matching /helfer/[token] (public event page)
-const uuidPattern =
-  /^\/helfer\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Routes only accessible when NOT authenticated
 const authRoutes = ['/login', '/signup', '/forgot-password']
@@ -96,9 +91,9 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   // Check if this is a public helfer route (token-based, no auth needed)
-  const isPublicHelferRoute =
-    publicHelferPrefixes.some((prefix) => pathname.startsWith(prefix)) ||
-    uuidPattern.test(pathname)
+  const isPublicHelferRoute = publicHelferPrefixes.some((prefix) =>
+    pathname.startsWith(prefix)
+  )
 
   // Redirect to login if accessing protected route without authentication
   if (isProtectedRoute && !user && !isPublicHelferRoute) {
