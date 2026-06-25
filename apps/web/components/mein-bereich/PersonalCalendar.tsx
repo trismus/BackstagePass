@@ -54,18 +54,12 @@ const eventColors: Record<
     border: 'rgb(245 158 11)', // amber-500
     text: 'rgb(146 64 14)', // amber-800
   },
-  helfer: {
-    bg: 'rgb(220 252 231)', // green-100
-    border: 'rgb(34 197 94)', // green-500
-    text: 'rgb(22 101 52)', // green-800
-  },
 }
 
 const typLabels: Record<PersonalEventTyp, string> = {
   veranstaltung: 'Veranstaltung',
   probe: 'Probe',
   schicht: 'Schicht',
-  helfer: 'Helfereinsatz',
 }
 
 const statusLabels: Record<string, string> = {
@@ -249,9 +243,6 @@ export function PersonalCalendar({
 
   // Get link for event detail
   const getEventLink = (event: PersonalEvent): string => {
-    if (event.helfer_event_id) {
-      return `/helferliste/${event.helfer_event_id}`
-    }
     if (event.probe_id) {
       return `/proben/${event.probe_id}`
     }
@@ -261,8 +252,6 @@ export function PersonalCalendar({
     return '#'
   }
 
-  // Check which event types actually exist
-  const hasHelfer = events.some((e) => e.typ === 'helfer')
   const hasVerfuegbarkeiten = verfuegbarkeiten.length > 0
 
   return (
@@ -345,7 +334,6 @@ export function PersonalCalendar({
             <option value="veranstaltung">Veranstaltungen</option>
             <option value="probe">Proben</option>
             <option value="schicht">Schichten</option>
-            <option value="helfer">Helfereinsätze</option>
           </select>
 
           {/* Export Button */}
@@ -464,7 +452,7 @@ export function PersonalCalendar({
       </div>
 
       {/* Stats */}
-      <div className={`grid gap-4 ${hasHelfer ? 'grid-cols-3 sm:grid-cols-4' : 'grid-cols-3'}`}>
+      <div className="grid grid-cols-3 gap-4">
         <div className="rounded-lg bg-white p-4 text-center shadow">
           <div className="text-2xl font-bold text-blue-600">
             {events.filter((e) => e.typ === 'veranstaltung').length}
@@ -483,14 +471,6 @@ export function PersonalCalendar({
           </div>
           <div className="text-sm text-gray-600">Schichten</div>
         </div>
-        {hasHelfer && (
-          <div className="rounded-lg bg-white p-4 text-center shadow">
-            <div className="text-2xl font-bold text-green-600">
-              {events.filter((e) => e.typ === 'helfer').length}
-            </div>
-            <div className="text-sm text-gray-600">Helfereinsätze</div>
-          </div>
-        )}
       </div>
 
       {/* Event Detail Modal */}
@@ -570,12 +550,6 @@ export function PersonalCalendar({
                 </div>
               )}
 
-              {selectedEvent.helfer_rolle && !selectedEvent.rolle && (
-                <div>
-                  <dt className="font-medium text-gray-500">Helfer-Rolle</dt>
-                  <dd className="text-gray-900">{selectedEvent.helfer_rolle}</dd>
-                </div>
-              )}
 
               {selectedEvent.zeitblock && (
                 <div>

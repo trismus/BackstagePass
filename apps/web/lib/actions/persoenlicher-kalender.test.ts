@@ -1,7 +1,8 @@
 /**
  * Unit Tests for Persönlicher Kalender (Issue #346)
- * Tests getPersonalEvents (4 sources), getPersonVerfuegbarkeiten,
- * personId management view, and decline actions for new types.
+ * Tests getPersonalEvents (anmeldungen, proben_teilnehmer,
+ * auffuehrung_zuweisungen, produktions_* sources), getPersonVerfuegbarkeiten,
+ * personId management view, and decline actions.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -95,7 +96,7 @@ describe('getPersonalEvents', () => {
     expect(result).toEqual([])
   })
 
-  it('returns events from all 5 sources', async () => {
+  it('returns events from anmeldungen, proben_teilnehmer and auffuehrung_zuweisungen', async () => {
     mockSupabase.from.mockImplementation((table: string) => {
       if (table === 'personen') {
         return setupPersonLookup('person-1', 'profile-1')
@@ -180,60 +181,23 @@ describe('getPersonalEvents', () => {
         return chain
       }
 
-      if (table === 'helfer_anmeldungen') {
-        const chain = createEmptyChain()
-        const resultData = [
-          {
-            id: 'ha-1',
-            status: 'bestaetigt',
-            helfer_rollen_instanzen: {
-              id: 'ri-1',
-              custom_name: null,
-              zeitblock_start: '08:00:00',
-              zeitblock_end: '12:00:00',
-              helfer_rollen_templates: { name: 'Aufbau' },
-              helfer_events: {
-                id: 'he-1',
-                name: 'Festbetrieb',
-                beschreibung: 'Dorffest',
-                datum_start: '2026-08-01',
-                datum_end: '2026-08-01',
-                ort: 'Festplatz',
-              },
-            },
-          },
-        ]
-        chain.then = (resolve: (r: { data: unknown[]; error: null }) => void) => {
-          resolve({ data: resultData, error: null })
-          return Promise.resolve({ data: resultData, error: null })
-        }
-        return chain
-      }
-
       return createEmptyChain()
     })
 
     const result = await getPersonalEvents()
 
-    expect(result).toHaveLength(4)
+    expect(result).toHaveLength(3)
 
-    // Check all 4 types are present
+    // Check all 3 types are present
     const types = result.map((e) => e.typ)
     expect(types).toContain('veranstaltung')
     expect(types).toContain('probe')
     expect(types).toContain('schicht')
-    expect(types).toContain('helfer')
 
     // Verify sorted by date
     for (let i = 1; i < result.length; i++) {
       expect(result[i].datum >= result[i - 1].datum).toBe(true)
     }
-
-    // Check helfer event details
-    const helferEvent = result.find((e) => e.typ === 'helfer')!
-    expect(helferEvent.id).toBe('ha-ha-1')
-    expect(helferEvent.helfer_rolle).toBe('Aufbau')
-    expect(helferEvent.helfer_event_id).toBe('he-1')
   })
 
   it('requires mitglieder:read when personId provided', async () => {
@@ -251,7 +215,7 @@ describe('getPersonalEvents', () => {
     expect(mockRequirePermission).toHaveBeenCalledWith('mitglieder:read')
   })
 
-  it('skips helfer_anmeldungen when person has no profile_id', async () => {
+  it('does not query helfer_anmeldungen (System A removed)', async () => {
     mockRequirePermission.mockResolvedValueOnce(undefined)
 
     const fromCalls: string[] = []
@@ -265,7 +229,6 @@ describe('getPersonalEvents', () => {
 
     await getPersonalEvents(undefined, undefined, 'person-2')
 
-    // helfer_anmeldungen should NOT be queried when profileId is null
     expect(fromCalls).not.toContain('helfer_anmeldungen')
   })
 })
@@ -339,28 +302,17 @@ describe('declinePersonalEvent', () => {
     vi.clearAllMocks()
   })
 
-  it('handles ha- prefix for helfer_anmeldungen', async () => {
-    const innerEq = vi.fn().mockResolvedValue({ data: null, error: null })
-    const updateChain = {
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnValue({ eq: innerEq }),
-    }
-
+  it('rejects unsupported ha- prefix (System A removed)', async () => {
     mockSupabase.from.mockImplementation((table: string) => {
       if (table === 'personen') {
         return setupPersonLookup('person-1', 'profile-1')
-      }
-      if (table === 'helfer_anmeldungen') {
-        return updateChain
       }
       return createEmptyChain()
     })
 
     const result = await declinePersonalEvent('ha-anm123')
 
-    expect(result.success).toBe(true)
-    expect(mockSupabase.from).toHaveBeenCalledWith('helfer_anmeldungen')
-    expect(updateChain.update).toHaveBeenCalledWith({ status: 'abgelehnt' })
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Aktion nicht unterstützt')
   })
-
 })
