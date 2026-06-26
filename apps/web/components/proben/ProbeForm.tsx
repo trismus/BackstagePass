@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import type {
@@ -14,8 +14,11 @@ import {
   updateProbe,
   updateProbeSzenen,
   checkProbeVerfuegbarkeit,
+  checkProbeKonflikteFull,
   autoInviteProbeTeilnehmer,
+  type ProbeKonflikteFullResult,
 } from '@/lib/actions/proben'
+import { ProbeKonfliktBanner } from './ProbeKonfliktBanner'
 
 interface ProbeFormProps {
   mode: 'create' | 'edit'
@@ -58,11 +61,17 @@ export function ProbeForm({
 
   const [szenenIds, setSzenenIds] = useState<string[]>(selectedSzenenIds)
 
-  // Availability warnings
+  // Availability warnings (legacy: cast-only availability check)
   const [verfuegbarkeitWarnings, setVerfuegbarkeitWarnings] = useState<
     { personId: string; personName: string; status: string; grund: string | null }[]
   >([])
   const [loadingVerfuegbarkeit, setLoadingVerfuegbarkeit] = useState(false)
+
+  // Cross-system conflict check (Issue #487)
+  const [konflikte, setKonflikte] = useState<ProbeKonflikteFullResult | null>(
+    null
+  )
+  const [loadingKonflikte, setLoadingKonflikte] = useState(false)
 
   const checkVerfuegbarkeit = useCallback(async () => {
     if (!formData.datum) {
@@ -82,6 +91,66 @@ export function ProbeForm({
   useEffect(() => {
     checkVerfuegbarkeit()
   }, [checkVerfuegbarkeit])
+
+  // Debounced cross-system conflict check. Triggers whenever datum/startzeit/
+  // endzeit/szenenIds change. ~400ms debounce keeps the form responsive while
+  // typing into the time fields.
+  const konflikteDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const konflikteRequestRef = useRef(0)
+
+  useEffect(() => {
+    if (konflikteDebounceRef.current) {
+      clearTimeout(konflikteDebounceRef.current)
+    }
+
+    if (!formData.datum) {
+      setKonflikte(null)
+      setLoadingKonflikte(false)
+      return
+    }
+
+    konflikteDebounceRef.current = setTimeout(async () => {
+      const requestId = ++konflikteRequestRef.current
+      setLoadingKonflikte(true)
+      try {
+        const result = await checkProbeKonflikteFull({
+          stueckId,
+          datum: formData.datum,
+          startzeit: formData.startzeit,
+          endzeit: formData.endzeit,
+          szenenIds: szenenIds.length > 0 ? szenenIds : undefined,
+          excludeProbeId: mode === 'edit' ? probe?.id : undefined,
+        })
+        // Drop stale responses
+        if (requestId === konflikteRequestRef.current) {
+          setKonflikte(result)
+        }
+      } catch (err) {
+        console.error('Konflikt-Prüfung fehlgeschlagen:', err)
+        if (requestId === konflikteRequestRef.current) {
+          setKonflikte(null)
+        }
+      } finally {
+        if (requestId === konflikteRequestRef.current) {
+          setLoadingKonflikte(false)
+        }
+      }
+    }, 400)
+
+    return () => {
+      if (konflikteDebounceRef.current) {
+        clearTimeout(konflikteDebounceRef.current)
+      }
+    }
+  }, [
+    stueckId,
+    formData.datum,
+    formData.startzeit,
+    formData.endzeit,
+    szenenIds,
+    mode,
+    probe?.id,
+  ])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -385,6 +454,18 @@ export function ProbeForm({
           placeholder="Interne Notizen (nur für Regie sichtbar)..."
         />
       </div>
+
+      {/* Cross-System Konflikt-Banner (Issue #487) */}
+      {formData.datum && (
+        <ProbeKonfliktBanner
+          personenMitKonflikten={konflikte?.personenMitKonflikten ?? []}
+          totalGeprueft={konflikte?.totalGeprueft ?? 0}
+          totalKonflikte={konflikte?.totalKonflikte ?? 0}
+          zeitfensterUnklar={konflikte?.zeitfensterUnklar ?? false}
+          isLoading={loadingKonflikte}
+          variant="compact"
+        />
+      )}
 
       {/* Submit Button */}
       <div className="flex justify-end gap-4">
