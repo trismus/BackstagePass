@@ -25,6 +25,13 @@ import type {
 } from '../supabase/types'
 import { checkPersonConflicts } from './conflict-check'
 import { checkMultipleMembersAvailability } from './verfuegbarkeiten'
+import {
+  sendProbeEinladungEmails,
+  sendProbeAenderungEmails,
+  sendProbeAbsageEmails,
+  getExistingTeilnehmerPersonIds,
+} from './proben-emails'
+import type { ProbeAenderungChange } from '../email/templates/proben'
 import { toZurichTimestamp } from '../utils/zurich-time'
 
 // =============================================================================
@@ -154,7 +161,9 @@ export async function updateProbe(
 
   const supabase = await createClient()
 
-  // Get stueck_id for revalidation
+  // Read the OLD probe BEFORE update so we can:
+  //  - revalidate the stueck-page
+  //  - build a field-level diff for the change/cancel email (Issue #489)
   const probe = await getProbeBasic(id)
 
   const { error } = await supabase
@@ -172,7 +181,86 @@ export async function updateProbe(
   }
   revalidatePath(`/proben/${id}`)
   revalidatePath('/proben')
+
+  // Issue #489: dispatch change/cancellation emails (best-effort, no throw)
+  if (probe) {
+    try {
+      const newStatus = data.status ?? probe.status
+      const wasCancelOrPostpone =
+        (newStatus === 'abgesagt' || newStatus === 'verschoben') &&
+        probe.status !== newStatus
+
+      if (wasCancelOrPostpone) {
+        // Status flipped to abgesagt/verschoben — send cancellation mail.
+        // No structured "Grund" field on the probe; use notizen if present.
+        const grund = data.notizen ?? probe.notizen ?? undefined
+        await sendProbeAbsageEmails(id, grund || undefined)
+      } else {
+        const changes = buildProbeAenderungChanges(probe, data)
+        if (changes.length > 0) {
+          await sendProbeAenderungEmails(id, changes)
+        }
+      }
+    } catch (mailErr) {
+      console.error('[Proben] Änderungs-/Absage-Mails failed:', mailErr)
+    }
+  }
+
   return { success: true }
+}
+
+/**
+ * Compute the human-readable diff between the OLD probe row and the partial
+ * update. Only includes fields the recipient cares about (datum, zeit, ort).
+ */
+function buildProbeAenderungChanges(
+  oldProbe: Probe,
+  update: ProbeUpdate
+): ProbeAenderungChange[] {
+  const changes: ProbeAenderungChange[] = []
+
+  const formatDate = (v: string | null | undefined) => {
+    if (!v) return ''
+    const [y, m, d] = v.split('-').map(Number)
+    if (!y || !m || !d) return v
+    return `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`
+  }
+  const formatTime = (v: string | null | undefined) => {
+    if (!v) return ''
+    const parts = v.split(':')
+    return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : v
+  }
+
+  if (update.datum !== undefined && update.datum !== oldProbe.datum) {
+    changes.push({
+      field: 'datum',
+      vorher: formatDate(oldProbe.datum),
+      nachher: formatDate(update.datum),
+    })
+  }
+  if (update.startzeit !== undefined && update.startzeit !== oldProbe.startzeit) {
+    changes.push({
+      field: 'startzeit',
+      vorher: formatTime(oldProbe.startzeit),
+      nachher: formatTime(update.startzeit),
+    })
+  }
+  if (update.endzeit !== undefined && update.endzeit !== oldProbe.endzeit) {
+    changes.push({
+      field: 'endzeit',
+      vorher: formatTime(oldProbe.endzeit),
+      nachher: formatTime(update.endzeit),
+    })
+  }
+  if (update.ort !== undefined && update.ort !== oldProbe.ort) {
+    changes.push({
+      field: 'ort',
+      vorher: oldProbe.ort ?? '',
+      nachher: update.ort ?? '',
+    })
+  }
+
+  return changes
 }
 
 /**
@@ -435,6 +523,13 @@ export async function addTeilnehmerToProbe(
     return { success: false, error: error.message }
   }
 
+  // Issue #489: send immediate invitation email (best-effort)
+  try {
+    await sendProbeEinladungEmails(data.probe_id, [data.person_id])
+  } catch (mailErr) {
+    console.error('[Proben] Einladungs-Mail failed:', mailErr)
+  }
+
   revalidatePath(`/proben/${data.probe_id}`)
   return { success: true }
 }
@@ -531,6 +626,10 @@ export async function autoInviteProbeTeilnehmer(
 
   const supabase = await createClient()
 
+  // Issue #489: capture existing teilnehmer BEFORE the RPC, so we can diff
+  // afterwards and only mail newly-added persons.
+  const existingBefore = await getExistingTeilnehmerPersonIds(probeId)
+
   // Call the database function
   const { data, error } = await supabase.rpc('auto_invite_probe_teilnehmer', {
     probe_uuid: probeId,
@@ -539,6 +638,17 @@ export async function autoInviteProbeTeilnehmer(
   if (error) {
     console.error('Error auto-inviting teilnehmer:', error)
     return { success: false, error: error.message }
+  }
+
+  // Issue #489: fire-and-forget invitation emails for newly-added persons
+  try {
+    const existingAfter = await getExistingTeilnehmerPersonIds(probeId)
+    const newPersonIds = [...existingAfter].filter((id) => !existingBefore.has(id))
+    if (newPersonIds.length > 0) {
+      await sendProbeEinladungEmails(probeId, newPersonIds)
+    }
+  } catch (mailErr) {
+    console.error('[Proben] Einladungs-Mails (auto) failed:', mailErr)
   }
 
   revalidatePath(`/proben/${probeId}`)
@@ -866,6 +976,11 @@ export async function confirmProbenTeilnehmer(
 
   const supabase = await createClient()
 
+  // Issue #489: figure out which IDs are NEW so we only mail those after the
+  // upsert (existing teilnehmer would otherwise get a stale invitation mail).
+  const existingBefore = await getExistingTeilnehmerPersonIds(probeId)
+  const newPersonIds = personIds.filter((id) => !existingBefore.has(id))
+
   const inserts = personIds.map((personId) => ({
     probe_id: probeId,
     person_id: personId,
@@ -879,6 +994,15 @@ export async function confirmProbenTeilnehmer(
   if (error) {
     console.error('Error confirming teilnehmer:', error)
     return { success: false, error: error.message }
+  }
+
+  // Issue #489: send immediate invitation emails for the newly-added persons
+  if (newPersonIds.length > 0) {
+    try {
+      await sendProbeEinladungEmails(probeId, newPersonIds)
+    } catch (mailErr) {
+      console.error('[Proben] Einladungs-Mails (confirm) failed:', mailErr)
+    }
   }
 
   revalidatePath(`/proben/${probeId}`)

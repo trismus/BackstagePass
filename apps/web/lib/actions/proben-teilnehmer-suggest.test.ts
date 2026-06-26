@@ -25,6 +25,16 @@ vi.mock('./conflict-check', () => ({
   }),
 }))
 
+// Issue #489: stub email helpers so confirmProbenTeilnehmer / addTeilnehmer
+// don't reach into the admin Supabase client (no SUPABASE_SERVICE_ROLE_KEY
+// in the unit-test environment).
+vi.mock('./proben-emails', () => ({
+  sendProbeEinladungEmails: vi.fn().mockResolvedValue({ sent: 0, skipped: 0, failed: 0 }),
+  sendProbeAenderungEmails: vi.fn().mockResolvedValue({ sent: 0, skipped: 0, failed: 0 }),
+  sendProbeAbsageEmails: vi.fn().mockResolvedValue({ sent: 0, skipped: 0, failed: 0 }),
+  getExistingTeilnehmerPersonIds: vi.fn().mockResolvedValue(new Set<string>()),
+}))
+
 // Import after mocking
 import { suggestProbenTeilnehmer, confirmProbenTeilnehmer } from './proben'
 import { checkPersonConflicts } from './conflict-check'
