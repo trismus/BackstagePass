@@ -21,9 +21,11 @@ import type {
   TeilnehmerVorschlag,
   VerfuegbarkeitStatus,
   OptimalProbeTermin,
+  PersonConflict,
 } from '../supabase/types'
 import { checkPersonConflicts } from './conflict-check'
 import { checkMultipleMembersAvailability } from './verfuegbarkeiten'
+import { toZurichTimestamp } from '../utils/zurich-time'
 
 // =============================================================================
 // Proben CRUD
@@ -1122,4 +1124,174 @@ export async function suggestOptimalProbeTermin(
   return termine
     .sort((a, b) => b.verfuegbarkeitsProzent - a.verfuegbarkeitsProzent)
     .slice(0, 10)
+}
+
+// =============================================================================
+// Cross-System Konflikt-Check für Probe (Issue #487)
+// =============================================================================
+
+export type ProbePersonKonflikt = {
+  personId: string
+  personName: string
+  conflicts: PersonConflict[]
+}
+
+export type ProbeKonflikteFullResult = {
+  /** Personen mit mindestens einem Konflikt */
+  personenMitKonflikten: ProbePersonKonflikt[]
+  /** Gesamtzahl der geprüften Personen */
+  totalGeprueft: number
+  /** Aggregierte Anzahl von Konflikten über alle Personen */
+  totalKonflikte: number
+  /** True wenn das Zeitfenster unklar war (kein startzeit/endzeit) — Genauigkeit eingeschränkt */
+  zeitfensterUnklar: boolean
+}
+
+/**
+ * Aggregate per-person Konflikte für eine geplante/bestehende Probe.
+ *
+ * Für jede betroffene Person (Cast-Mitglieder über Besetzungen oder explizit
+ * eingeladene Teilnehmer) wird `check_person_conflicts` gegen das geplante
+ * Zeitfenster aufgerufen. So werden Konflikte aus allen Subsystemen erfasst:
+ *
+ *  - Verfügbarkeits-Blöcke (verfuegbarkeiten)
+ *  - Aufführungs-Zuweisungen (auffuehrung_zuweisungen, System B)
+ *  - Veranstaltungs-Anmeldungen (anmeldungen)
+ *  - Andere Proben (proben_teilnehmer)
+ */
+export async function checkProbeKonflikteFull(input: {
+  stueckId: string
+  datum: string
+  startzeit?: string | null
+  endzeit?: string | null
+  szenenIds?: string[]
+  teilnehmerPersonIds?: string[]
+  excludeProbeId?: string
+}): Promise<ProbeKonflikteFullResult> {
+  const supabase = await createClient()
+
+  const {
+    stueckId,
+    datum,
+    startzeit,
+    endzeit,
+    szenenIds,
+    teilnehmerPersonIds,
+    excludeProbeId,
+  } = input
+
+  if (!datum) {
+    return {
+      personenMitKonflikten: [],
+      totalGeprueft: 0,
+      totalKonflikte: 0,
+      zeitfensterUnklar: true,
+    }
+  }
+
+  // Build the Cast-Person-Set from besetzungen (filtered by szenen if provided)
+  let besetzungenQuery = supabase
+    .from('besetzungen')
+    .select('person_id, rolle:rollen(stueck_id)')
+    .not('person_id', 'is', null)
+
+  if (szenenIds && szenenIds.length > 0) {
+    const { data: szenenRollen } = await supabase
+      .from('szenen_rollen')
+      .select('rolle_id')
+      .in('szene_id', szenenIds)
+    if (szenenRollen && szenenRollen.length > 0) {
+      const rolleIds = szenenRollen.map((sr) => sr.rolle_id)
+      besetzungenQuery = besetzungenQuery.in('rolle_id', rolleIds)
+    }
+  }
+
+  const { data: besetzungen } = await besetzungenQuery
+
+  const castPersonIds = new Set<string>(
+    (besetzungen || [])
+      .filter((b) => {
+        const rolle = b.rolle as unknown as Record<string, unknown> | null
+        return rolle?.stueck_id === stueckId
+      })
+      .map((b) => b.person_id as string)
+  )
+
+  // Union with explicit teilnehmerPersonIds (e.g. for already-saved Probe)
+  for (const pid of teilnehmerPersonIds || []) {
+    castPersonIds.add(pid)
+  }
+
+  const personIds = Array.from(castPersonIds)
+  if (personIds.length === 0) {
+    return {
+      personenMitKonflikten: [],
+      totalGeprueft: 0,
+      totalKonflikte: 0,
+      zeitfensterUnklar: !startzeit || !endzeit,
+    }
+  }
+
+  // Fallback: if start/end missing, use the full day so the check still catches
+  // hard "nicht_verfuegbar" blocks and other proben on the same date.
+  const effectiveStartzeit = startzeit && startzeit.length >= 5 ? startzeit : '00:00'
+  const effectiveEndzeit = endzeit && endzeit.length >= 5 ? endzeit : '23:59'
+  const zeitfensterUnklar = !startzeit || !endzeit
+
+  const startTs = toZurichTimestamp(datum, effectiveStartzeit)
+  const endTs = toZurichTimestamp(datum, effectiveEndzeit)
+
+  // Run per-person conflict checks in parallel
+  const results = await Promise.all(
+    personIds.map(async (personId) => {
+      const result = await checkPersonConflicts(personId, startTs, endTs)
+      // Filter out conflicts that point back to the same Probe (Edit-Modus)
+      const filtered = excludeProbeId
+        ? result.conflicts.filter(
+            (c) => !(c.type === 'probe' && c.reference_id === excludeProbeId)
+          )
+        : result.conflicts
+      return { personId, conflicts: filtered }
+    })
+  )
+
+  const personenWithConflicts = results.filter((r) => r.conflicts.length > 0)
+  if (personenWithConflicts.length === 0) {
+    return {
+      personenMitKonflikten: [],
+      totalGeprueft: personIds.length,
+      totalKonflikte: 0,
+      zeitfensterUnklar,
+    }
+  }
+
+  // Get names for the persons with conflicts
+  const conflictPersonIds = personenWithConflicts.map((r) => r.personId)
+  const { data: personen } = await supabase
+    .from('personen')
+    .select('id, vorname, nachname')
+    .in('id', conflictPersonIds)
+  const nameMap = new Map(
+    (personen || []).map((p) => [p.id, `${p.vorname} ${p.nachname}`])
+  )
+
+  const personenMitKonflikten: ProbePersonKonflikt[] = personenWithConflicts
+    .map((r) => ({
+      personId: r.personId,
+      personName: nameMap.get(r.personId) ?? 'Unbekannt',
+      conflicts: r.conflicts,
+    }))
+    .sort((a, b) => a.personName.localeCompare(b.personName, 'de'))
+
+  const totalKonflikte = personenMitKonflikten.reduce(
+    (sum, p) => sum + p.conflicts.length,
+    0
+  )
+
+  return {
+    personenMitKonflikten,
+    totalGeprueft: personIds.length,
+    totalKonflikte,
+    zeitfensterUnklar,
+  }
 }
