@@ -19,6 +19,15 @@ vi.mock('@/lib/supabase/server', () => ({
   getUserProfile: vi.fn(() => Promise.resolve(mockVorstandProfile)),
 }))
 
+// Issue #489: stub email helpers so probe actions don't reach into the admin
+// client (no SUPABASE_SERVICE_ROLE_KEY in the unit-test environment).
+vi.mock('./proben-emails', () => ({
+  sendProbeEinladungEmails: vi.fn().mockResolvedValue({ sent: 0, skipped: 0, failed: 0 }),
+  sendProbeAenderungEmails: vi.fn().mockResolvedValue({ sent: 0, skipped: 0, failed: 0 }),
+  sendProbeAbsageEmails: vi.fn().mockResolvedValue({ sent: 0, skipped: 0, failed: 0 }),
+  getExistingTeilnehmerPersonIds: vi.fn().mockResolvedValue(new Set<string>()),
+}))
+
 // Import after mocking
 import {
   getProbenForStueck,
