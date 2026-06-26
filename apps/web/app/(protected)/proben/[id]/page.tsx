@@ -7,13 +7,20 @@ import {
   getProbe,
   getProbeSzenen,
   getProbeTeilnehmer,
+  checkProbeKonflikteFull,
 } from '@/lib/actions/proben'
 import {
   getProbenProtokoll,
   getProtokollTemplates,
 } from '@/lib/actions/proben-protokoll'
 import { canEdit as checkCanEdit } from '@/lib/supabase/auth-helpers'
-import { ProbeStatusBadge, TeilnehmerList, ProbenProtokoll, DownloadProbenSzenenButton } from '@/components/proben'
+import {
+  ProbeStatusBadge,
+  TeilnehmerList,
+  ProbenProtokoll,
+  DownloadProbenSzenenButton,
+  ProbeKonfliktBanner,
+} from '@/components/proben'
 import type { ProbeSzene, Szene, Person } from '@/lib/supabase/types'
 
 interface ProbeDetailPageProps {
@@ -63,6 +70,23 @@ export default async function ProbeDetailPage({
     .select('id, stueck_id, nummer, titel, beschreibung, text, dauer_minuten, created_at, updated_at')
     .eq('stueck_id', probe.stueck_id)
     .order('nummer')
+
+  // Cross-System-Konflikt-Check (Issue #487)
+  // Sammelt Konflikte für alle eingeladenen Teilnehmer + Cast aus den Szenen.
+  const szenenIds = probeSzenen
+    .map((ps) => ps.szene_id)
+    .filter((sid): sid is string => Boolean(sid))
+  const teilnehmerPersonIds = teilnehmer.map((t) => t.person_id)
+  const konflikte = await checkProbeKonflikteFull({
+    stueckId: probe.stueck_id,
+    datum: probe.datum,
+    startzeit: probe.startzeit,
+    endzeit: probe.endzeit,
+    szenenIds: szenenIds.length > 0 ? szenenIds : undefined,
+    teilnehmerPersonIds:
+      teilnehmerPersonIds.length > 0 ? teilnehmerPersonIds : undefined,
+    excludeProbeId: id,
+  })
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('de-CH', {
@@ -116,6 +140,18 @@ export default async function ProbeDetailPage({
           </Link>
         )}
       </div>
+
+      {/* Cross-System Konflikt-Banner (Issue #487) — prominent oben */}
+      {(konflikte.personenMitKonflikten.length > 0 ||
+        konflikte.totalGeprueft > 0) && (
+        <ProbeKonfliktBanner
+          personenMitKonflikten={konflikte.personenMitKonflikten}
+          totalGeprueft={konflikte.totalGeprueft}
+          totalKonflikte={konflikte.totalKonflikte}
+          zeitfensterUnklar={konflikte.zeitfensterUnklar}
+          variant="prominent"
+        />
+      )}
 
       {/* Info-Karten */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
